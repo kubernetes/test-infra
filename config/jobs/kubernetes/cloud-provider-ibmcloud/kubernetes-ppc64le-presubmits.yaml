@@ -1,27 +1,27 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-integration-ppc64le
-    cluster: k8s-infra-ppc64le-prow-build
-    always_run: false
-    optional: true
-    decorate: true
-    annotations:
-      testgrid-dashboards: ibm-ppc64le-presubmits
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/test-integration-dockerized.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 20Gi
-          requests:
-            cpu: 4
-            memory: 20Gi
+    - name: pull-kubernetes-integration-ppc64le
+      cluster: k8s-infra-ppc64le-prow-build
+      always_run: false
+      optional: true
+      decorate: true
+      annotations:
+        testgrid-dashboards: ibm-ppc64le-presubmits
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - runner.sh
+            args:
+              - ./hack/jenkins/test-integration-dockerized.sh
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 4
+                memory: 20Gi
+              requests:
+                cpu: 4
+                memory: 20Gi

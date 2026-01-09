@@ -38,32 +38,32 @@ spec:
       serviceAccount: ""
       terminationGracePeriodSeconds: 180
       containers:
-      - name: cherrypicker
-        image: us-docker.pkg.dev/k8s-infra-prow/images/cherrypicker:v20240802-66b115076
-        imagePullPolicy: Always
-        args:
-        - --github-token-path=/etc/github/token
-        - --github-endpoint=http://ghproxy
-        - --github-endpoint=https://api.github.com
-        - --dry-run=false
-        ports:
-          - name: http
-            containerPort: 8888
-        volumeMounts:
-        - name: hmac
-          mountPath: /etc/webhook
-          readOnly: true
-        - name: github-token
-          mountPath: /etc/github
-          readOnly: true
-        - name: tmp
-          mountPath: /tmp
+        - name: cherrypicker
+          image: us-docker.pkg.dev/k8s-infra-prow/images/cherrypicker:v20240802-66b115076
+          imagePullPolicy: Always
+          args:
+            - --github-token-path=/etc/github/token
+            - --github-endpoint=http://ghproxy
+            - --github-endpoint=https://api.github.com
+            - --dry-run=false
+          ports:
+            - name: http
+              containerPort: 8888
+          volumeMounts:
+            - name: hmac
+              mountPath: /etc/webhook
+              readOnly: true
+            - name: github-token
+              mountPath: /etc/github
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
       volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: hmac
-        secret:
-          secretName: hmac-token
-      - name: github-token
-        secret:
-          secretName: k8s-infra-cherrypick-robot-github-token
+        - name: tmp
+          emptyDir: {}
+        - name: hmac
+          secret:
+            secretName: hmac-token
+        - name: github-token
+          secret:
+            secretName: k8s-infra-cherrypick-robot-github-token

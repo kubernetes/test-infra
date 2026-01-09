@@ -1472,7 +1472,6 @@ postsubmits:
               # We override that with the windows-servercore-cache image.
               - name: WHAT
                 value: "windows-servercore-cache"
-
 periodics:
   # NOTE(claudiub): The base image for the Windows E2E test images is nanoserver.
   # In most cases, that is sufficient. But in some cases, we are missing some DLLs.

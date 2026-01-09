@@ -1,51 +1,50 @@
 presubmits:
   kubernetes/gengo:
-  - name: pull-gengo-test
-    cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-api-machinery-gengo
-      testgrid-tab-name: test
-    decorate: true
-    path_alias: k8s.io/gengo
-    always_run: true
-    skip_report: false
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-          command:
-            - runner.sh
-          args:
-            - make
-            - test
-          resources:
-            requests:
-              memory: 4Gi
-              cpu: 2
-            limits:
-              memory: 4Gi
-              cpu: 2
-
-  - name: pull-gengo-verify
-    cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-api-machinery-gengo
-      testgrid-tab-name: verify
-    decorate: true
-    path_alias: k8s.io/gengo
-    always_run: true
-    skip_report: false
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-          command:
-            - runner.sh
-          args:
-          - make
-          - verify
-          resources:
-            requests:
-              memory: 4Gi
-              cpu: 2
-            limits:
-              memory: 4Gi
-              cpu: 2
+    - name: pull-gengo-test
+      cluster: eks-prow-build-cluster
+      annotations:
+        testgrid-dashboards: sig-api-machinery-gengo
+        testgrid-tab-name: test
+      decorate: true
+      path_alias: k8s.io/gengo
+      always_run: true
+      skip_report: false
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - test
+            resources:
+              requests:
+                memory: 4Gi
+                cpu: 2
+              limits:
+                memory: 4Gi
+                cpu: 2
+    - name: pull-gengo-verify
+      cluster: eks-prow-build-cluster
+      annotations:
+        testgrid-dashboards: sig-api-machinery-gengo
+        testgrid-tab-name: verify
+      decorate: true
+      path_alias: k8s.io/gengo
+      always_run: true
+      skip_report: false
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - verify
+            resources:
+              requests:
+                memory: 4Gi
+                cpu: 2
+              limits:
+                memory: 4Gi
+                cpu: 2

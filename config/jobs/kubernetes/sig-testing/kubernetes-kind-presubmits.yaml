@@ -1,675 +1,659 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-kind
-    cluster: k8s-infra-prow-build
-    optional: false
-    always_run: true
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 9000Mi
-          requests:
-            cpu: 7
-            memory: 9000Mi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-      fork-per-release: "true"
-      description: Uses kubetest to run e2e tests for on-by-default features against a latest kubernetes master cluster created with sigs.k8s.io/kind
+    - name: pull-kubernetes-e2e-kind
+      cluster: k8s-infra-prow-build
+      optional: false
+      always_run: true
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              - name: LABEL_FILTER
+                value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 9000Mi
+              requests:
+                cpu: 7
+                memory: 9000Mi
+      annotations:
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+        fork-per-release: "true"
+        description: Uses kubetest to run e2e tests for on-by-default features against a latest kubernetes master cluster created with sigs.k8s.io/kind
+    # NOTE: changes should generally be synced to pull-kind-e2e-kubernetes-canary
+    # in the kind repo
+    - name: pull-kubernetes-e2e-kind-canary
+      cluster: k8s-infra-prow-build
+      optional: true
+      always_run: false # manual for testing new configurations
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:latest-master
+            imagePullPolicy: Always # pull latest image for canary testing
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              - name: LABEL_FILTER
+                value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 9000Mi
+              requests:
+                cpu: 7
+                memory: 9000Mi
+      annotations:
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+    - name: pull-kubernetes-e2e-kind-ipv6
+      cluster: k8s-infra-prow-build
+      optional: true
+      always_run: false
+      skip_report: false
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              - name: LABEL_FILTER
+                value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+              # enable IPV6 in bootstrap image
+              - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+                value: "true"
+              # tell kind CI script to use ipv6
+              - name: "IP_FAMILY"
+                value: "ipv6"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 9000Mi
+              requests:
+                cpu: 7
+                memory: 9000Mi
+      annotations:
+        fork-per-release: "true"
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+        description: Uses kubetest to run e2e tests for on-by-default features against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
+    - name: pull-kubernetes-e2e-kind-ipv6-canary
+      cluster: k8s-infra-prow-build
+      optional: true
+      always_run: false # manual for testing new configurations
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:latest-master
+            imagePullPolicy: Always # pull latest image for canary testing
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              - name: LABEL_FILTER
+                value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+              # enable IPV6 in bootstrap image
+              - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+                value: "true"
+              # tell kind CI script to use ipv6
+              - name: "IP_FAMILY"
+                value: "ipv6"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 9000Mi
+              requests:
+                cpu: 7
+                memory: 9000Mi
+      annotations:
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+    - name: pull-kubernetes-conformance-kind-ga-only
+      cluster: k8s-infra-prow-build
+      optional: true
+      always_run: false
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 2h20m # allow plenty of time for a serial conformance run
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              # disable non-GA APIs and features
+              - name: FEATURE_GATES
+                value: '{"AllAlpha":false,"AllBeta":false}'
+              - name: RUNTIME_CONFIG
+                value: '{"api/alpha":"false", "api/beta":"false"}'
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 4
+                memory: 9Gi
+              requests:
+                cpu: 4
+                memory: 9Gi
+      annotations:
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+        testgrid-dashboards: sig-testing-kind
+    - name: pull-kubernetes-conformance-kind-ga-only-parallel
+      cluster: k8s-infra-prow-build
+      always_run: true
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              # disable non-GA APIs and features
+              - name: FEATURE_GATES
+                value: '{"AllAlpha":false,"AllBeta":false}'
+              - name: RUNTIME_CONFIG
+                value: '{"api/alpha":"false", "api/beta":"false"}'
+              - name: PARALLEL
+                value: "true"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 4
+                memory: 9Gi
+              requests:
+                cpu: 4
+                memory: 9Gi
+      annotations:
+        fork-per-release: "true"
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+        testgrid-dashboards: sig-testing-kind
+    - name: pull-kubernetes-e2e-kind-beta-features
+      cluster: k8s-infra-prow-build
+      annotations:
+        description: Runs tests with no special requirements other than beta feature gates in a KinD cluster where beta feature gates and APIs are enabled.
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+      optional: true
+      always_run: false
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              - name: FEATURE_GATES
+                value: '{"AllBeta":true}'
+              - name: RUNTIME_CONFIG
+                value: '{"api/beta":"true", "api/ga":"true"}'
+              - name: LABEL_FILTER
+                value: "Feature: isSubsetOf OffByDefault && !Alpha && !Deprecated && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 9000Mi
+              requests:
+                cpu: 7
+                memory: 9000Mi
+    - name: pull-kubernetes-e2e-kind-beta-enabled
+      cluster: k8s-infra-prow-build
+      annotations:
+        description: Runs tests with no special requirements in a KinD cluster where beta feature gates and APIs are enabled, i.e. this does not include tests for off-by-default beta features.
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+      optional: true
+      always_run: false
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              - name: FEATURE_GATES
+                value: '{"AllBeta":true}'
+              - name: RUNTIME_CONFIG
+                value: '{"api/beta":"true", "api/ga":"true"}'
+              - name: FOCUS
+                value: ""
+              - name: SKIP
+                value: ""
+              - name: LABEL_FILTER
+                value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 9000Mi
+              requests:
+                cpu: 7
+                memory: 9000Mi
+    - name: pull-kubernetes-e2e-kind-beta-enabled-conformance
+      cluster: k8s-infra-prow-build
+      annotations:
+        description: Runs conformance tests in a KinD cluster where beta feature gates and APIs are enabled.
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+      optional: true
+      always_run: false
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              - name: FEATURE_GATES
+                value: '{"AllBeta":true}'
+              - name: RUNTIME_CONFIG
+                value: '{"api/beta":"true", "api/ga":"true"}'
+              - name: FOCUS
+                value: ""
+              - name: SKIP
+                value: ""
+              - name: LABEL_FILTER
+                value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 9000Mi
+              requests:
+                cpu: 7
+                memory: 9000Mi
+    - name: pull-kubernetes-e2e-kind-alpha-beta-features
+      annotations:
+        description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled.
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+      cluster: k8s-infra-prow-build
+      optional: true
+      run_if_changed: ^pkg/features/
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+              - name: FEATURE_GATES
+                value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
+              - name: RUNTIME_CONFIG
+                value: '{"api/all":"true"}'
+              - name: LABEL_FILTER
+                value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 9000Mi
+              requests:
+                cpu: 7
+                memory: 9000Mi
+    - name: pull-kubernetes-e2e-kind-alpha-beta-enabled
+      annotations:
+        description: Runs tests with no special requirements in a KinD cluster where alpha and beta feature gates and APIs are enabled, i.e. this does not include tests for alpha features and off-by-default beta features.
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+      cluster: k8s-infra-prow-build
+      optional: true
+      run_if_changed: ^pkg/features/
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+              - name: FEATURE_GATES
+                value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
+              - name: RUNTIME_CONFIG
+                value: '{"api/all":"true"}'
+              - name: FOCUS
+                value: ""
+              - name: SKIP
+                value: ""
+              - name: LABEL_FILTER
+                value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 9000Mi
+              requests:
+                cpu: 7
+                memory: 9000Mi
+    - name: pull-kubernetes-e2e-kind-alpha-beta-enabled-conformance
+      annotations:
+        description: Runs conformance tests in a KinD cluster where alpha and beta feature gates and APIs are enabled.
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+      cluster: k8s-infra-prow-build
+      optional: true
+      run_if_changed: ^pkg/features/
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+              - name: FEATURE_GATES
+                value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
+              - name: RUNTIME_CONFIG
+                value: '{"api/all":"true"}'
+              - name: FOCUS
+                value: ""
+              - name: SKIP
+                value: ""
+              - name: LABEL_FILTER
+                value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 9000Mi
+              requests:
+                cpu: 7
+                memory: 9000Mi
+    - name: pull-kubernetes-e2e-kind-alpha-beta-features-race
+      annotations:
+        description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled and control plane components are built with race detection.
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+      cluster: k8s-infra-prow-build
+      optional: true
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 90m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              # The modified e2e-k8s.sh enables the log query feature in the kubelet config (off by default for security reasons).
+              - -c
+              - >
+                curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && curl -sSL https://github.com/kubernetes/test-infra/raw/master/experiment/kind-race-e2e-k8s.sh >/tmp/kind-race-e2e-k8s.sh && chmod u+x /tmp/kind-race-e2e-k8s.sh && /tmp/kind-race-e2e-k8s.sh
 
-
-  # NOTE: changes should generally be synced to pull-kind-e2e-kubernetes-canary
-  # in the kind repo
-  - name: pull-kubernetes-e2e-kind-canary
-    cluster: k8s-infra-prow-build
-    optional: true
-    always_run: false # manual for testing new configurations
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:latest-master
-        imagePullPolicy: Always # pull latest image for canary testing
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 9000Mi
-          requests:
-            cpu: 7
-            memory: 9000Mi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-
-  - name: pull-kubernetes-e2e-kind-ipv6
-    cluster: k8s-infra-prow-build
-    optional: true
-    always_run: false
-    skip_report: false
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        # enable IPV6 in bootstrap image
-        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-          value: "true"
-        # tell kind CI script to use ipv6
-        - name: "IP_FAMILY"
-          value: "ipv6"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 9000Mi
-          requests:
-            cpu: 7
-            memory: 9000Mi
-    annotations:
-      fork-per-release: "true"
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-      description: Uses kubetest to run e2e tests for on-by-default features against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
-
-  - name: pull-kubernetes-e2e-kind-ipv6-canary
-    cluster: k8s-infra-prow-build
-    optional: true
-    always_run: false # manual for testing new configurations
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:latest-master
-        imagePullPolicy: Always # pull latest image for canary testing
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        # enable IPV6 in bootstrap image
-        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-          value: "true"
-        # tell kind CI script to use ipv6
-        - name: "IP_FAMILY"
-          value: "ipv6"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 9000Mi
-          requests:
-            cpu: 7
-            memory: 9000Mi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-
-  - name: pull-kubernetes-conformance-kind-ga-only
-    cluster: k8s-infra-prow-build
-    optional: true
-    always_run: false
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 2h20m # allow plenty of time for a serial conformance run
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        # disable non-GA APIs and features
-        - name: FEATURE_GATES
-          value: '{"AllAlpha":false,"AllBeta":false}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/alpha":"false", "api/beta":"false"}'
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 9Gi
-          requests:
-            cpu: 4
-            memory: 9Gi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-testing-kind
-
-  - name: pull-kubernetes-conformance-kind-ga-only-parallel
-    cluster: k8s-infra-prow-build
-    always_run: true
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        # disable non-GA APIs and features
-        - name: FEATURE_GATES
-          value: '{"AllAlpha":false,"AllBeta":false}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/alpha":"false", "api/beta":"false"}'
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 9Gi
-          requests:
-            cpu: 4
-            memory: 9Gi
-    annotations:
-      fork-per-release: "true"
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-testing-kind
-
-  - name: pull-kubernetes-e2e-kind-beta-features
-    cluster: k8s-infra-prow-build
-    annotations:
-      description: Runs tests with no special requirements other than beta feature gates in a KinD cluster where beta feature gates and APIs are enabled.
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-    optional: true
-    always_run: false
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: FEATURE_GATES
-          value: '{"AllBeta":true}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/beta":"true", "api/ga":"true"}'
-        - name: LABEL_FILTER
-          value: "Feature: isSubsetOf OffByDefault && !Alpha && !Deprecated && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 9000Mi
-          requests:
-            cpu: 7
-            memory: 9000Mi
-
-  - name: pull-kubernetes-e2e-kind-beta-enabled
-    cluster: k8s-infra-prow-build
-    annotations:
-      description: Runs tests with no special requirements in a KinD cluster where beta feature gates and APIs are enabled, i.e. this does not include tests for off-by-default beta features.
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-    optional: true
-    always_run: false
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: FEATURE_GATES
-          value: '{"AllBeta":true}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/beta":"true", "api/ga":"true"}'
-        - name: FOCUS
-          value: ""
-        - name: SKIP
-          value: ""
-        - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 9000Mi
-          requests:
-            cpu: 7
-            memory: 9000Mi
-
-  - name: pull-kubernetes-e2e-kind-beta-enabled-conformance
-    cluster: k8s-infra-prow-build
-    annotations:
-      description: Runs conformance tests in a KinD cluster where beta feature gates and APIs are enabled.
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-    optional: true
-    always_run: false
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: FEATURE_GATES
-          value: '{"AllBeta":true}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/beta":"true", "api/ga":"true"}'
-        - name: FOCUS
-          value: ""
-        - name: SKIP
-          value: ""
-        - name: LABEL_FILTER
-          value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 9000Mi
-          requests:
-            cpu: 7
-            memory: 9000Mi
-
-  - name: pull-kubernetes-e2e-kind-alpha-beta-features
-    annotations:
-      description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled.
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-    cluster: k8s-infra-prow-build
-    optional: true
-    run_if_changed: ^pkg/features/
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
-        - name: FEATURE_GATES
-          value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/all":"true"}'
-        - name: LABEL_FILTER
-          value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 9000Mi
-          requests:
-            cpu: 7
-            memory: 9000Mi
-
-  - name: pull-kubernetes-e2e-kind-alpha-beta-enabled
-    annotations:
-      description: Runs tests with no special requirements in a KinD cluster where alpha and beta feature gates and APIs are enabled, i.e. this does not include tests for alpha features and off-by-default beta features.
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-    cluster: k8s-infra-prow-build
-    optional: true
-    run_if_changed: ^pkg/features/
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
-        - name: FEATURE_GATES
-          value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/all":"true"}'
-        - name: FOCUS
-          value: ""
-        - name: SKIP
-          value: ""
-        - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 9000Mi
-          requests:
-            cpu: 7
-            memory: 9000Mi
-
-  - name: pull-kubernetes-e2e-kind-alpha-beta-enabled-conformance
-    annotations:
-      description: Runs conformance tests in a KinD cluster where alpha and beta feature gates and APIs are enabled.
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-    cluster: k8s-infra-prow-build
-    optional: true
-    run_if_changed: ^pkg/features/
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
-        - name: FEATURE_GATES
-          value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/all":"true"}'
-        - name: FOCUS
-          value: ""
-        - name: SKIP
-          value: ""
-        - name: LABEL_FILTER
-          value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 9000Mi
-          requests:
-            cpu: 7
-            memory: 9000Mi
-
-  - name: pull-kubernetes-e2e-kind-alpha-beta-features-race
-    annotations:
-      description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled and control plane components are built with race detection.
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-    cluster: k8s-infra-prow-build
-    optional: true
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 90m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        # The modified e2e-k8s.sh enables the log query feature in the kubelet config (off by default for security reasons).
-        - -c
-        - >
-          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" &&
-          curl -sSL https://github.com/kubernetes/test-infra/raw/master/experiment/kind-race-e2e-k8s.sh >/tmp/kind-race-e2e-k8s.sh &&
-          chmod u+x /tmp/kind-race-e2e-k8s.sh &&
-          /tmp/kind-race-e2e-k8s.sh
-        env:
-        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
-        - name: FEATURE_GATES
-          value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/all":"true"}'
-        - name: LABEL_FILTER
-          value: "Feature: isSubsetOf { OffByDefault, DataRace } && !Deprecated && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        - name: KUBE_E2E_TEST_ARGS
-          value: "-logcheck-data-races"
-        # -race gets injected into the build of dynamically linked binaries during "kind build node-image".
-        - name: KUBE_RACE
-          value: -race
-        # Normally control plane components are linked statically, which does not work with -race (needs CGO).
-        # We need to override the default for components of interest.
-        - name: KUBE_CGO_OVERRIDES
-          value: kube-apiserver kube-controller-manager kube-scheduler
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 26Gi
-          requests:
-            cpu: 7
-            memory: 26Gi
-
-  - name: pull-kubernetes-e2e-kind-evented-pleg
-    cluster: k8s-infra-prow-build
-    optional: true
-    always_run: false
-    decorate: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release settings
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: FEATURE_GATES
-          value: '{"EventedPLEG":true}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/alpha":"true", "api/ga":"true"}'
-        - name: LABEL_FILTER
-          value: "Feature: isSubsetOf EventedPLEG && !Slow && !Disruptive && !Flaky"
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 9000Mi
-          requests:
-            cpu: 7
-            memory: 9000Mi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
+            env:
+              # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+              - name: FEATURE_GATES
+                value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
+              - name: RUNTIME_CONFIG
+                value: '{"api/all":"true"}'
+              - name: LABEL_FILTER
+                value: "Feature: isSubsetOf { OffByDefault, DataRace } && !Deprecated && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+              - name: KUBE_E2E_TEST_ARGS
+                value: "-logcheck-data-races"
+              # -race gets injected into the build of dynamically linked binaries during "kind build node-image".
+              - name: KUBE_RACE
+                value: -race
+              # Normally control plane components are linked statically, which does not work with -race (needs CGO).
+              # We need to override the default for components of interest.
+              - name: KUBE_CGO_OVERRIDES
+                value: kube-apiserver kube-controller-manager kube-scheduler
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 26Gi
+              requests:
+                cpu: 7
+                memory: 26Gi
+    - name: pull-kubernetes-e2e-kind-evented-pleg
+      cluster: k8s-infra-prow-build
+      optional: true
+      always_run: false
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              - name: FEATURE_GATES
+                value: '{"EventedPLEG":true}'
+              - name: RUNTIME_CONFIG
+                value: '{"api/alpha":"true", "api/ga":"true"}'
+              - name: LABEL_FILTER
+                value: "Feature: isSubsetOf EventedPLEG && !Slow && !Disruptive && !Flaky"
+              - name: PARALLEL
+                value: "true"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 9000Mi
+              requests:
+                cpu: 7
+                memory: 9000Mi
+      annotations:
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'

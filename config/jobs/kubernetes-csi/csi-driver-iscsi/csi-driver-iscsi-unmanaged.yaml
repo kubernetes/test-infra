@@ -2,35 +2,35 @@
 
 presubmits:
   kubernetes-csi/csi-driver-iscsi:
-  - name: pull-csi-driver-iscsi-sanity
-    cluster: eks-prow-build-cluster
-    decorate: true
-    always_run: true
-    path_alias: sigs.k8s.io/csi-driver-iscsi
-    branches:
-    - (master)|(^release-.+$)
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - sanity-test
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-    annotations:
-      testgrid-dashboards: sig-storage-csi-other
-      testgrid-tab-name: pull-csi-driver-iscsi-sanity
-      description: "Run sanity tests for iscsi CSI driver."
-      testgrid-num-columns-recent: '30'
+    - name: pull-csi-driver-iscsi-sanity
+      cluster: eks-prow-build-cluster
+      decorate: true
+      always_run: true
+      path_alias: sigs.k8s.io/csi-driver-iscsi
+      branches:
+        - (master)|(^release-.+$)
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - sanity-test
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+      annotations:
+        testgrid-dashboards: sig-storage-csi-other
+        testgrid-tab-name: pull-csi-driver-iscsi-sanity
+        description: "Run sanity tests for iscsi CSI driver."
+        testgrid-num-columns-recent: '30'

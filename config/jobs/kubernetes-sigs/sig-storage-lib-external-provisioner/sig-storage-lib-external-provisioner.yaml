@@ -1,24 +1,24 @@
 presubmits:
   kubernetes-sigs/sig-storage-lib-external-provisioner:
-  - name: pull-sig-storage-lib-external-provisioner-build
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/sig-storage-lib-external-provisioner
-    annotations:
-      testgrid-dashboards: sig-storage-lib-external-provisioner
-      testgrid-tab-name: build
-      description: Build test in sig-storage-lib-external-provisioner repo.
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        # Plain make runs also verify
-        - make
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
+    - name: pull-sig-storage-lib-external-provisioner-build
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/sig-storage-lib-external-provisioner
+      annotations:
+        testgrid-dashboards: sig-storage-lib-external-provisioner
+        testgrid-tab-name: build
+        description: Build test in sig-storage-lib-external-provisioner repo.
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              # Plain make runs also verify
+              - make
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi

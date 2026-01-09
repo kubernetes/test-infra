@@ -1,73 +1,71 @@
 presets:
-- labels:
-    preset-e2e-platform-aws: "true"
-  env:
-  # TODO(zmerlynn): Eliminate the other uses of this env variable
-  - name: KUBE_SSH_USER
-    value: ubuntu
-  # Log dump for kops (relies on kops-e2e-runner.sh support)
-  - name: LOG_DUMP_SSH_KEY
-    value: /workspace/.ssh/kube_aws_rsa
-  - name: LOG_DUMP_SSH_USER
-    value: ubuntu
-  - name: LOG_DUMP_SAVE_LOGS
-    value: cloud-init-output
-  - name: LOG_DUMP_SAVE_SERVICES
-    value: protokube
-  # kops testing only ever uses Cloud SDK for status and uploads
-  - name: CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK
-    value: "true"
-  - name: CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE
-    value: "false"
-    # Ignore version-we-pass vs version-kops-expects
-  - name: KOPS_RUN_OBSOLETE_VERSION
-    value: "true"
-    # Except for the updown job itself, use a version of kops that's
-    # passed updown.
-  - name: KOPS_LATEST
-    value: latest-ci-updown-green.txt
-  - name: KOPS_DEPLOY_LATEST_KUBE
-    value: "y"
-
-- labels:
-    preset-storage-e2e-service-account: "true"
-  env:
-  # storage e2e tests borrow this as a preconfigured key instead of creating and
-  # injecting a new key. this allows us to avoid mass key download warnings
-  - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
-    value: /etc/service-account/service-account.json
-  volumes:
-  - name: service
-    secret:
-      secretName: service-account
-  volumeMounts:
-  - name: service
-    mountPath: /etc/service-account
-    readOnly: true
-
-- labels:
-    preset-kops-azure-cred-wi: "true"
-  env: # below env values are not secrets
-    - name: AZURE_CLIENT_ID # AZURE_CLIENT_ID is being overloaded with Azure Workload ID
-      value: "34d8e06d-d198-477e-b166-6936e58d90ae"
-    - name: AZURE_SUBSCRIPTION_ID
-      value: "46678f10-4bbb-447e-98e8-d2829589f2d8"
-    - name: AZURE_TENANT_ID
-      value: "d1aa7522-0959-442e-80ee-8c4f7fb4c184"
-    - name: AZURE_FEDERATED_TOKEN_FILE
-      value: "/var/run/secrets/azure-token/serviceaccount/token"
-    - name: AZURE_STORAGE_ACCOUNT
-      value: "stkopsstatestore"
-  volumes:
-    - name: azure-token
-      projected:
-        defaultMode: 420
-        sources:
-          - serviceAccountToken:
-              expirationSeconds: 86400
-              path: token
-              audience: api://AzureADTokenExchange
-  volumeMounts:
-    - mountPath: /var/run/secrets/azure-token/serviceaccount
-      name: azure-token
-      readOnly: true
+  - labels:
+      preset-e2e-platform-aws: "true"
+    env:
+      # TODO(zmerlynn): Eliminate the other uses of this env variable
+      - name: KUBE_SSH_USER
+        value: ubuntu
+      # Log dump for kops (relies on kops-e2e-runner.sh support)
+      - name: LOG_DUMP_SSH_KEY
+        value: /workspace/.ssh/kube_aws_rsa
+      - name: LOG_DUMP_SSH_USER
+        value: ubuntu
+      - name: LOG_DUMP_SAVE_LOGS
+        value: cloud-init-output
+      - name: LOG_DUMP_SAVE_SERVICES
+        value: protokube
+      # kops testing only ever uses Cloud SDK for status and uploads
+      - name: CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK
+        value: "true"
+      - name: CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE
+        value: "false"
+        # Ignore version-we-pass vs version-kops-expects
+      - name: KOPS_RUN_OBSOLETE_VERSION
+        value: "true"
+        # Except for the updown job itself, use a version of kops that's
+        # passed updown.
+      - name: KOPS_LATEST
+        value: latest-ci-updown-green.txt
+      - name: KOPS_DEPLOY_LATEST_KUBE
+        value: "y"
+  - labels:
+      preset-storage-e2e-service-account: "true"
+    env:
+      # storage e2e tests borrow this as a preconfigured key instead of creating and
+      # injecting a new key. this allows us to avoid mass key download warnings
+      - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+    volumes:
+      - name: service
+        secret:
+          secretName: service-account
+    volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+  - labels:
+      preset-kops-azure-cred-wi: "true"
+    env: # below env values are not secrets
+      - name: AZURE_CLIENT_ID # AZURE_CLIENT_ID is being overloaded with Azure Workload ID
+        value: "34d8e06d-d198-477e-b166-6936e58d90ae"
+      - name: AZURE_SUBSCRIPTION_ID
+        value: "46678f10-4bbb-447e-98e8-d2829589f2d8"
+      - name: AZURE_TENANT_ID
+        value: "d1aa7522-0959-442e-80ee-8c4f7fb4c184"
+      - name: AZURE_FEDERATED_TOKEN_FILE
+        value: "/var/run/secrets/azure-token/serviceaccount/token"
+      - name: AZURE_STORAGE_ACCOUNT
+        value: "stkopsstatestore"
+    volumes:
+      - name: azure-token
+        projected:
+          defaultMode: 420
+          sources:
+            - serviceAccountToken:
+                expirationSeconds: 86400
+                path: token
+                audience: api://AzureADTokenExchange
+    volumeMounts:
+      - mountPath: /var/run/secrets/azure-token/serviceaccount
+        name: azure-token
+        readOnly: true

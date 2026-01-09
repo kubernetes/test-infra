@@ -6,36 +6,36 @@ periodics:
     decoration_config:
       timeout: 5m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: golang
-        command:
-        - /bin/bash
-        args:
-        - -c
-        - |
-          set -euo pipefail
+        - image: golang
+          command:
+            - /bin/bash
+          args:
+            - -c
+            - |
+              set -euo pipefail
 
-          export WORKDIR=${ARTIFACTS:-$TMPDIR}
-          export PATH=$PATH:$GOPATH/bin
+              export WORKDIR=${ARTIFACTS:-$TMPDIR}
+              export PATH=$PATH:$GOPATH/bin
 
-          mkdir -p "${WORKDIR}"
-          pushd "$WORKDIR"
-          go install github.com/kubernetes-sigs/depstat@latest
-          popd
+              mkdir -p "${WORKDIR}"
+              pushd "$WORKDIR"
+              go install github.com/kubernetes-sigs/depstat@latest
+              popd
 
-          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" --json | tee "${WORKDIR}/stats-base.json";
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
+              depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" --json | tee "${WORKDIR}/stats-base.json";
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-arch-code-organization

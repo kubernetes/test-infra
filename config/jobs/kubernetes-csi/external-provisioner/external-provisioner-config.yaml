@@ -2,441 +2,446 @@
 
 presubmits:
   kubernetes-csi/external-provisioner:
-  - name: pull-kubernetes-csi-external-provisioner-1-32-on-kubernetes-1-32
-    cluster: eks-prow-build-cluster
-    always_run: true
-    optional: false
-    decorate: true
-    skip_report: false
-    skip_branches: ["^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"]
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-external-provisioner
-      testgrid-tab-name: 1-32-on-kubernetes-1-32
-      description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.32 on Kubernetes 1.32
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        # We pick some version for which there are pre-built images for kind.
-        # Update only when the newer version is known to not cause issues,
-        # otherwise presubmit jobs may start to fail for reasons that are
-        # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.32.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.32"
-        - name: CSI_PROW_E2E_VERSION
-          value: "release-1.32"
-        - name: CSI_PROW_DEPLOYMENT_SUFFIX
-          value: ""
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.17.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v6.1.0"
-        - name: CSI_PROW_TESTS
-          value: "sanity serial parallel"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-  - name: pull-kubernetes-csi-external-provisioner-1-32-on-kubernetes-master
-    # Explicitly needs to be started with /test.
-    # This cannot be enabled by default because there's always the risk
-    # that something changes in master which breaks the pre-merge check.
-    cluster: eks-prow-build-cluster
-    always_run: false
-    optional: true
-    decorate: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-external-provisioner
-      testgrid-tab-name: 1-32-on-kubernetes-master
-      description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.32 on Kubernetes master
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "latest"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.17.0"
-        - name: CSI_PROW_DEPLOYMENT_SUFFIX
-          value: ""
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "master"
-        - name: CSI_PROW_TESTS
-          value: "sanity serial parallel"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-  - name: pull-kubernetes-csi-external-provisioner-1-33-on-kubernetes-1-33
-    cluster: eks-prow-build-cluster
-    always_run: true
-    optional: false
-    decorate: true
-    skip_report: false
-    skip_branches: ["^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"]
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-external-provisioner
-      testgrid-tab-name: 1-33-on-kubernetes-1-33
-      description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.33 on Kubernetes 1.33
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        # We pick some version for which there are pre-built images for kind.
-        # Update only when the newer version is known to not cause issues,
-        # otherwise presubmit jobs may start to fail for reasons that are
-        # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.33.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.33"
-        - name: CSI_PROW_E2E_VERSION
-          value: "release-1.33"
-        - name: CSI_PROW_DEPLOYMENT_SUFFIX
-          value: ""
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.17.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v6.1.0"
-        - name: CSI_PROW_TESTS
-          value: "sanity serial parallel"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-  - name: pull-kubernetes-csi-external-provisioner-1-33-on-kubernetes-master
-    # Explicitly needs to be started with /test.
-    # This cannot be enabled by default because there's always the risk
-    # that something changes in master which breaks the pre-merge check.
-    cluster: eks-prow-build-cluster
-    always_run: false
-    optional: true
-    decorate: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-external-provisioner
-      testgrid-tab-name: 1-33-on-kubernetes-master
-      description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.33 on Kubernetes master
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "latest"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.17.0"
-        - name: CSI_PROW_DEPLOYMENT_SUFFIX
-          value: ""
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "master"
-        - name: CSI_PROW_TESTS
-          value: "sanity serial parallel"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-  - name: pull-kubernetes-csi-external-provisioner-1-34-on-kubernetes-1-34
-    cluster: eks-prow-build-cluster
-    always_run: true
-    optional: true
-    decorate: true
-    skip_report: false
-    skip_branches: ["^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"]
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-external-provisioner
-      testgrid-tab-name: 1-34-on-kubernetes-1-34
-      description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.34 on Kubernetes 1.34
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        # We pick some version for which there are pre-built images for kind.
-        # Update only when the newer version is known to not cause issues,
-        # otherwise presubmit jobs may start to fail for reasons that are
-        # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.34.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.34"
-        - name: CSI_PROW_E2E_VERSION
-          value: "release-1.34"
-        - name: CSI_PROW_DEPLOYMENT_SUFFIX
-          value: ""
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.17.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v6.1.0"
-        - name: CSI_PROW_TESTS
-          value: "sanity serial parallel"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-  - name: pull-kubernetes-csi-external-provisioner-1-34-on-kubernetes-master
-    # Explicitly needs to be started with /test.
-    # This cannot be enabled by default because there's always the risk
-    # that something changes in master which breaks the pre-merge check.
-    cluster: eks-prow-build-cluster
-    always_run: false
-    optional: true
-    decorate: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-external-provisioner
-      testgrid-tab-name: 1-34-on-kubernetes-master
-      description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.34 on Kubernetes master
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "latest"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.17.0"
-        - name: CSI_PROW_DEPLOYMENT_SUFFIX
-          value: ""
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "master"
-        - name: CSI_PROW_TESTS
-          value: "sanity serial parallel"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-  - name: pull-kubernetes-csi-external-provisioner-alpha-1-33-on-kubernetes-1-33
-    cluster: eks-prow-build-cluster
-    always_run: false
-    optional: true
-    decorate: true
-    skip_report: false
-    skip_branches: ["^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"]
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-external-provisioner
-      testgrid-tab-name: alpha-1-33-on-kubernetes-1-33
-      description: Kubernetes-CSI pull job in repo external-provisioner for alpha tests, using deployment 1.33 on Kubernetes 1.33
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        # We pick some version for which there are pre-built images for kind.
-        # Update only when the newer version is known to not cause issues,
-        # otherwise presubmit jobs may start to fail for reasons that are
-        # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.33.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.33"
-        - name: CSI_PROW_E2E_VERSION
-          value: "release-1.33"
-        - name: CSI_PROW_DEPLOYMENT_SUFFIX
-          value: ""
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.17.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v6.1.0"
-        - name: CSI_PROW_TESTS
-          value: "serial-alpha parallel-alpha"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-  - name: pull-kubernetes-csi-external-provisioner-unit
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    skip_report: false
-    skip_branches: ["^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"]
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-external-provisioner
-      testgrid-tab-name: unit
-      description: Kubernetes-CSI pull job in repo external-provisioner for unit tests
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        - name: CSI_PROW_TESTS
-          value: "unit"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-
-  - name: pull-kubernetes-csi-external-provisioner-canary
-    cluster: eks-prow-build-cluster
-    optional: true
-    decorate: true
-    skip_report: false
-    skip_branches: ["^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"]
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-external-provisioner
-      testgrid-tab-name: canary
-      description: Kubernetes-CSI pull job in repo external-provisioner for canary tests
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "latest"
-        - name: CSI_PROW_TESTS
-          value: "serial-alpha parallel-alpha"
-        - name: CSI_PROW_BUILD_JOB
-          value: "true"
-        - name: CSI_PROW_HOSTPATH_CANARY
-          value: "canary"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "master"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "master"
-        # ... but the RBAC rules only when testing on master.
-        # The other jobs test against the unmodified deployment for
-        # that Kubernetes version, i.e. with the original RBAC rules.
-        - name: UPDATE_RBAC_RULES
-          value: "true"
-        - name: VOLUME_MODE_CONVERSION_TESTS
-          value: "true"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
+    - name: pull-kubernetes-csi-external-provisioner-1-32-on-kubernetes-1-32
+      cluster: eks-prow-build-cluster
+      always_run: true
+      optional: false
+      decorate: true
+      skip_report: false
+      skip_branches:
+        - "^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      annotations:
+        testgrid-dashboards: sig-storage-csi-external-provisioner
+        testgrid-tab-name: 1-32-on-kubernetes-1-32
+        description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.32 on Kubernetes 1.32
+      spec:
+        containers:
+          # We need this image because it has Docker in Docker and go.
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./.prow.sh
+            env:
+              # We pick some version for which there are pre-built images for kind.
+              # Update only when the newer version is known to not cause issues,
+              # otherwise presubmit jobs may start to fail for reasons that are
+              # unrelated to the PR. Testing against the latest Kubernetes is covered
+              # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
+              - name: CSI_PROW_KUBERNETES_VERSION
+                value: "1.32.0"
+              - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+                value: "1.32"
+              - name: CSI_PROW_E2E_VERSION
+                value: "release-1.32"
+              - name: CSI_PROW_DEPLOYMENT_SUFFIX
+                value: ""
+              - name: CSI_PROW_DRIVER_VERSION
+                value: "v1.17.0"
+              - name: CSI_SNAPSHOTTER_VERSION
+                value: "v6.1.0"
+              - name: CSI_PROW_TESTS
+                value: "sanity serial parallel"
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+    - name: pull-kubernetes-csi-external-provisioner-1-32-on-kubernetes-master
+      # Explicitly needs to be started with /test.
+      # This cannot be enabled by default because there's always the risk
+      # that something changes in master which breaks the pre-merge check.
+      cluster: eks-prow-build-cluster
+      always_run: false
+      optional: true
+      decorate: true
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      annotations:
+        testgrid-dashboards: sig-storage-csi-external-provisioner
+        testgrid-tab-name: 1-32-on-kubernetes-master
+        description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.32 on Kubernetes master
+      spec:
+        containers:
+          # We need this image because it has Docker in Docker and go.
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./.prow.sh
+            env:
+              - name: CSI_PROW_KUBERNETES_VERSION
+                value: "latest"
+              - name: CSI_PROW_DRIVER_VERSION
+                value: "v1.17.0"
+              - name: CSI_PROW_DEPLOYMENT_SUFFIX
+                value: ""
+              - name: CSI_SNAPSHOTTER_VERSION
+                value: "master"
+              - name: CSI_PROW_TESTS
+                value: "sanity serial parallel"
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+    - name: pull-kubernetes-csi-external-provisioner-1-33-on-kubernetes-1-33
+      cluster: eks-prow-build-cluster
+      always_run: true
+      optional: false
+      decorate: true
+      skip_report: false
+      skip_branches:
+        - "^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      annotations:
+        testgrid-dashboards: sig-storage-csi-external-provisioner
+        testgrid-tab-name: 1-33-on-kubernetes-1-33
+        description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.33 on Kubernetes 1.33
+      spec:
+        containers:
+          # We need this image because it has Docker in Docker and go.
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./.prow.sh
+            env:
+              # We pick some version for which there are pre-built images for kind.
+              # Update only when the newer version is known to not cause issues,
+              # otherwise presubmit jobs may start to fail for reasons that are
+              # unrelated to the PR. Testing against the latest Kubernetes is covered
+              # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
+              - name: CSI_PROW_KUBERNETES_VERSION
+                value: "1.33.0"
+              - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+                value: "1.33"
+              - name: CSI_PROW_E2E_VERSION
+                value: "release-1.33"
+              - name: CSI_PROW_DEPLOYMENT_SUFFIX
+                value: ""
+              - name: CSI_PROW_DRIVER_VERSION
+                value: "v1.17.0"
+              - name: CSI_SNAPSHOTTER_VERSION
+                value: "v6.1.0"
+              - name: CSI_PROW_TESTS
+                value: "sanity serial parallel"
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+    - name: pull-kubernetes-csi-external-provisioner-1-33-on-kubernetes-master
+      # Explicitly needs to be started with /test.
+      # This cannot be enabled by default because there's always the risk
+      # that something changes in master which breaks the pre-merge check.
+      cluster: eks-prow-build-cluster
+      always_run: false
+      optional: true
+      decorate: true
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      annotations:
+        testgrid-dashboards: sig-storage-csi-external-provisioner
+        testgrid-tab-name: 1-33-on-kubernetes-master
+        description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.33 on Kubernetes master
+      spec:
+        containers:
+          # We need this image because it has Docker in Docker and go.
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./.prow.sh
+            env:
+              - name: CSI_PROW_KUBERNETES_VERSION
+                value: "latest"
+              - name: CSI_PROW_DRIVER_VERSION
+                value: "v1.17.0"
+              - name: CSI_PROW_DEPLOYMENT_SUFFIX
+                value: ""
+              - name: CSI_SNAPSHOTTER_VERSION
+                value: "master"
+              - name: CSI_PROW_TESTS
+                value: "sanity serial parallel"
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+    - name: pull-kubernetes-csi-external-provisioner-1-34-on-kubernetes-1-34
+      cluster: eks-prow-build-cluster
+      always_run: true
+      optional: true
+      decorate: true
+      skip_report: false
+      skip_branches:
+        - "^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      annotations:
+        testgrid-dashboards: sig-storage-csi-external-provisioner
+        testgrid-tab-name: 1-34-on-kubernetes-1-34
+        description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.34 on Kubernetes 1.34
+      spec:
+        containers:
+          # We need this image because it has Docker in Docker and go.
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./.prow.sh
+            env:
+              # We pick some version for which there are pre-built images for kind.
+              # Update only when the newer version is known to not cause issues,
+              # otherwise presubmit jobs may start to fail for reasons that are
+              # unrelated to the PR. Testing against the latest Kubernetes is covered
+              # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
+              - name: CSI_PROW_KUBERNETES_VERSION
+                value: "1.34.0"
+              - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+                value: "1.34"
+              - name: CSI_PROW_E2E_VERSION
+                value: "release-1.34"
+              - name: CSI_PROW_DEPLOYMENT_SUFFIX
+                value: ""
+              - name: CSI_PROW_DRIVER_VERSION
+                value: "v1.17.0"
+              - name: CSI_SNAPSHOTTER_VERSION
+                value: "v6.1.0"
+              - name: CSI_PROW_TESTS
+                value: "sanity serial parallel"
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+    - name: pull-kubernetes-csi-external-provisioner-1-34-on-kubernetes-master
+      # Explicitly needs to be started with /test.
+      # This cannot be enabled by default because there's always the risk
+      # that something changes in master which breaks the pre-merge check.
+      cluster: eks-prow-build-cluster
+      always_run: false
+      optional: true
+      decorate: true
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      annotations:
+        testgrid-dashboards: sig-storage-csi-external-provisioner
+        testgrid-tab-name: 1-34-on-kubernetes-master
+        description: Kubernetes-CSI pull job in repo external-provisioner for non-alpha tests, using deployment 1.34 on Kubernetes master
+      spec:
+        containers:
+          # We need this image because it has Docker in Docker and go.
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./.prow.sh
+            env:
+              - name: CSI_PROW_KUBERNETES_VERSION
+                value: "latest"
+              - name: CSI_PROW_DRIVER_VERSION
+                value: "v1.17.0"
+              - name: CSI_PROW_DEPLOYMENT_SUFFIX
+                value: ""
+              - name: CSI_SNAPSHOTTER_VERSION
+                value: "master"
+              - name: CSI_PROW_TESTS
+                value: "sanity serial parallel"
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+    - name: pull-kubernetes-csi-external-provisioner-alpha-1-33-on-kubernetes-1-33
+      cluster: eks-prow-build-cluster
+      always_run: false
+      optional: true
+      decorate: true
+      skip_report: false
+      skip_branches:
+        - "^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      annotations:
+        testgrid-dashboards: sig-storage-csi-external-provisioner
+        testgrid-tab-name: alpha-1-33-on-kubernetes-1-33
+        description: Kubernetes-CSI pull job in repo external-provisioner for alpha tests, using deployment 1.33 on Kubernetes 1.33
+      spec:
+        containers:
+          # We need this image because it has Docker in Docker and go.
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./.prow.sh
+            env:
+              # We pick some version for which there are pre-built images for kind.
+              # Update only when the newer version is known to not cause issues,
+              # otherwise presubmit jobs may start to fail for reasons that are
+              # unrelated to the PR. Testing against the latest Kubernetes is covered
+              # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
+              - name: CSI_PROW_KUBERNETES_VERSION
+                value: "1.33.0"
+              - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+                value: "1.33"
+              - name: CSI_PROW_E2E_VERSION
+                value: "release-1.33"
+              - name: CSI_PROW_DEPLOYMENT_SUFFIX
+                value: ""
+              - name: CSI_PROW_DRIVER_VERSION
+                value: "v1.17.0"
+              - name: CSI_SNAPSHOTTER_VERSION
+                value: "v6.1.0"
+              - name: CSI_PROW_TESTS
+                value: "serial-alpha parallel-alpha"
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+    - name: pull-kubernetes-csi-external-provisioner-unit
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      skip_report: false
+      skip_branches:
+        - "^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      annotations:
+        testgrid-dashboards: sig-storage-csi-external-provisioner
+        testgrid-tab-name: unit
+        description: Kubernetes-CSI pull job in repo external-provisioner for unit tests
+      spec:
+        containers:
+          # We need this image because it has Docker in Docker and go.
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./.prow.sh
+            env:
+              - name: CSI_PROW_TESTS
+                value: "unit"
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+    - name: pull-kubernetes-csi-external-provisioner-canary
+      cluster: eks-prow-build-cluster
+      optional: true
+      decorate: true
+      skip_report: false
+      skip_branches:
+        - "^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      annotations:
+        testgrid-dashboards: sig-storage-csi-external-provisioner
+        testgrid-tab-name: canary
+        description: Kubernetes-CSI pull job in repo external-provisioner for canary tests
+      spec:
+        containers:
+          # We need this image because it has Docker in Docker and go.
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./.prow.sh
+            env:
+              - name: CSI_PROW_KUBERNETES_VERSION
+                value: "latest"
+              - name: CSI_PROW_TESTS
+                value: "serial-alpha parallel-alpha"
+              - name: CSI_PROW_BUILD_JOB
+                value: "true"
+              - name: CSI_PROW_HOSTPATH_CANARY
+                value: "canary"
+              - name: CSI_SNAPSHOTTER_VERSION
+                value: "master"
+              - name: CSI_PROW_DRIVER_VERSION
+                value: "master"
+              # ... but the RBAC rules only when testing on master.
+              # The other jobs test against the unmodified deployment for
+              # that Kubernetes version, i.e. with the original RBAC rules.
+              - name: UPDATE_RBAC_RULES
+                value: "true"
+              - name: VOLUME_MODE_CONVERSION_TESTS
+                value: "true"
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4

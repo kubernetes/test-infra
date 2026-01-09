@@ -1,312 +1,256 @@
 periodics:
-- name: ci-npd-build
-  cluster: k8s-infra-prow-build
-  interval: 2h
-  decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: node-problem-detector
-    base_ref: master
-    path_alias: k8s.io/node-problem-detector
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - ./test/build.sh
-      - ci
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
-    testgrid-num-failures-to-alert: '12'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-num-columns-recent: '30'
-- name: ci-npd-test
-  cluster: k8s-infra-prow-build
-  interval: 2h
-  decorate: true
-  labels:
-    preset-service-account: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: node-problem-detector
-    base_ref: master
-    path_alias: k8s.io/node-problem-detector
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - >-
-        ./test/build.sh install-lib &&
-        make test
-      resources:
-        limits:
-          cpu: 2
-          memory: 4Gi
-        requests:
-          cpu: 2
-          memory: 4Gi
-  annotations:
-    testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
-    testgrid-num-failures-to-alert: '12'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-num-columns-recent: '30'
-- name: ci-npd-e2e-node
-  cluster: k8s-infra-prow-build
-  interval: 2h
-  decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: node-problem-detector
-    base_ref: master
-    path_alias: k8s.io/node-problem-detector
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - >-
-        ./test/build.sh get-ci-env &&
-        source ci.env &&
-        cd $(GOPATH)/src/k8s.io/kubernetes &&
-        /workspace/scenarios/kubernetes_e2e.py
-        --deployment=node
-        --provider=gce
-        --gcp-zone=us-central1-b
-        --node-tests=true
-        "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml --extra-envs=${EXTRA_ENVS}"
-        '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
-        '--test_args=--nodes=8 --focus=NodeProblemDetector'
-        --timeout=60m
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
-    testgrid-num-failures-to-alert: '12'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-num-columns-recent: '30'
-- name: ci-npd-e2e-kubernetes-gce-gci
-  cluster: k8s-infra-prow-build
-  interval: 2h
-  decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: node-problem-detector
-    base_ref: master
-    path_alias: k8s.io/node-problem-detector
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - >-
-        ./test/build.sh get-ci-env &&
-        source ci.env &&
-        /workspace/scenarios/kubernetes_e2e.py
-        --cluster=
-        --extract=ci/latest
-        --provider=gce
-        --gcp-node-image=gci
-        --gcp-zone=us-central1-b
-        --ginkgo-parallel=30
-        --test_args=--ginkgo.focus=NodeProblemDetector
-        --timeout=60m
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
-    testgrid-num-failures-to-alert: '12'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-num-columns-recent: '30'
-- name: ci-npd-e2e-kubernetes-gce-gci-custom-flags
-  cluster: k8s-infra-prow-build
-  interval: 2h
-  decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: node-problem-detector
-    base_ref: master
-    path_alias: k8s.io/node-problem-detector
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - >-
-        ./test/build.sh -f get-ci-env &&
-        source ci-custom-flags.env &&
-        /workspace/scenarios/kubernetes_e2e.py
-        --cluster=
-        --extract=ci/latest
-        --provider=gce
-        --gcp-node-image=gci
-        --gcp-zone=us-central1-b
-        --ginkgo-parallel=30
-        --test_args=--ginkgo.focus=NodeProblemDetector
-        --timeout=60m
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
-    testgrid-num-failures-to-alert: '12'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-num-columns-recent: '30'
-- name: ci-npd-e2e-kubernetes-gce-ubuntu
-  cluster: k8s-infra-prow-build
-  interval: 2h
-  decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: node-problem-detector
-    base_ref: master
-    path_alias: k8s.io/node-problem-detector
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
-      args:
-      - bash
-      - -c
-      - >-
-        ./test/build.sh get-ci-env &&
-        source ci.env &&
-        /workspace/scenarios/kubernetes_e2e.py
-        --cluster=
-        --extract=ci/latest
-        --provider=gce
-        --gcp-node-image=ubuntu
-        --gcp-zone=us-central1-b
-        --ginkgo-parallel=30
-        --image-family=ubuntu-2404-lts-amd64
-        --image-project=ubuntu-os-cloud
-        --test_args=--ginkgo.focus=NodeProblemDetector
-        --timeout=60m
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
-    testgrid-num-failures-to-alert: '12'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-num-columns-recent: '30'
-- name: ci-npd-e2e-kubernetes-gce-ubuntu-custom-flags
-  cluster: k8s-infra-prow-build
-  interval: 2h
-  decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: node-problem-detector
-    base_ref: master
-    path_alias: k8s.io/node-problem-detector
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
-      args:
-      - bash
-      - -c
-      - >-
-        ./test/build.sh -f get-ci-env &&
-        source ci-custom-flags.env &&
-        /workspace/scenarios/kubernetes_e2e.py
-        --cluster=
-        --extract=ci/latest
-        --provider=gce
-        --gcp-node-image=ubuntu
-        --gcp-zone=us-central1-b
-        --ginkgo-parallel=30
-        --image-family=ubuntu-2404-lts-amd64
-        --image-project=ubuntu-os-cloud
-        --test_args=--ginkgo.focus=NodeProblemDetector
-        --timeout=60m
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
-    testgrid-num-failures-to-alert: '12'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-num-columns-recent: '30'
+  - name: ci-npd-build
+    cluster: k8s-infra-prow-build
+    interval: 2h
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+      - org: kubernetes
+        repo: node-problem-detector
+        base_ref: master
+        path_alias: k8s.io/node-problem-detector
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - ./test/build.sh
+            - ci
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+    annotations:
+      testgrid-dashboards: sig-node-node-problem-detector
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
+      testgrid-num-failures-to-alert: '12'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-num-columns-recent: '30'
+  - name: ci-npd-test
+    cluster: k8s-infra-prow-build
+    interval: 2h
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    extra_refs:
+      - org: kubernetes
+        repo: node-problem-detector
+        base_ref: master
+        path_alias: k8s.io/node-problem-detector
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - >-
+              ./test/build.sh install-lib && make test
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-node-node-problem-detector
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
+      testgrid-num-failures-to-alert: '12'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-num-columns-recent: '30'
+  - name: ci-npd-e2e-node
+    cluster: k8s-infra-prow-build
+    interval: 2h
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    extra_refs:
+      - org: kubernetes
+        repo: node-problem-detector
+        base_ref: master
+        path_alias: k8s.io/node-problem-detector
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - >-
+              ./test/build.sh get-ci-env && source ci.env && cd $(GOPATH)/src/k8s.io/kubernetes && /workspace/scenarios/kubernetes_e2e.py --deployment=node --provider=gce --gcp-zone=us-central1-b --node-tests=true "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml --extra-envs=${EXTRA_ENVS}" '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"' '--test_args=--nodes=8 --focus=NodeProblemDetector' --timeout=60m
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-node-node-problem-detector
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
+      testgrid-num-failures-to-alert: '12'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-num-columns-recent: '30'
+  - name: ci-npd-e2e-kubernetes-gce-gci
+    cluster: k8s-infra-prow-build
+    interval: 2h
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    extra_refs:
+      - org: kubernetes
+        repo: node-problem-detector
+        base_ref: master
+        path_alias: k8s.io/node-problem-detector
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - >-
+              ./test/build.sh get-ci-env && source ci.env && /workspace/scenarios/kubernetes_e2e.py --cluster= --extract=ci/latest --provider=gce --gcp-node-image=gci --gcp-zone=us-central1-b --ginkgo-parallel=30 --test_args=--ginkgo.focus=NodeProblemDetector --timeout=60m
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-node-node-problem-detector
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
+      testgrid-num-failures-to-alert: '12'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-num-columns-recent: '30'
+  - name: ci-npd-e2e-kubernetes-gce-gci-custom-flags
+    cluster: k8s-infra-prow-build
+    interval: 2h
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    extra_refs:
+      - org: kubernetes
+        repo: node-problem-detector
+        base_ref: master
+        path_alias: k8s.io/node-problem-detector
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - >-
+              ./test/build.sh -f get-ci-env && source ci-custom-flags.env && /workspace/scenarios/kubernetes_e2e.py --cluster= --extract=ci/latest --provider=gce --gcp-node-image=gci --gcp-zone=us-central1-b --ginkgo-parallel=30 --test_args=--ginkgo.focus=NodeProblemDetector --timeout=60m
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-node-node-problem-detector
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
+      testgrid-num-failures-to-alert: '12'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-num-columns-recent: '30'
+  - name: ci-npd-e2e-kubernetes-gce-ubuntu
+    cluster: k8s-infra-prow-build
+    interval: 2h
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    extra_refs:
+      - org: kubernetes
+        repo: node-problem-detector
+        base_ref: master
+        path_alias: k8s.io/node-problem-detector
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
+          args:
+            - bash
+            - -c
+            - >-
+              ./test/build.sh get-ci-env && source ci.env && /workspace/scenarios/kubernetes_e2e.py --cluster= --extract=ci/latest --provider=gce --gcp-node-image=ubuntu --gcp-zone=us-central1-b --ginkgo-parallel=30 --image-family=ubuntu-2404-lts-amd64 --image-project=ubuntu-os-cloud --test_args=--ginkgo.focus=NodeProblemDetector --timeout=60m
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-node-node-problem-detector
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
+      testgrid-num-failures-to-alert: '12'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-num-columns-recent: '30'
+  - name: ci-npd-e2e-kubernetes-gce-ubuntu-custom-flags
+    cluster: k8s-infra-prow-build
+    interval: 2h
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    extra_refs:
+      - org: kubernetes
+        repo: node-problem-detector
+        base_ref: master
+        path_alias: k8s.io/node-problem-detector
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
+          args:
+            - bash
+            - -c
+            - >-
+              ./test/build.sh -f get-ci-env && source ci-custom-flags.env && /workspace/scenarios/kubernetes_e2e.py --cluster= --extract=ci/latest --provider=gce --gcp-node-image=ubuntu --gcp-zone=us-central1-b --ginkgo-parallel=30 --image-family=ubuntu-2404-lts-amd64 --image-project=ubuntu-os-cloud --test_args=--ginkgo.focus=NodeProblemDetector --timeout=60m
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-node-node-problem-detector
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
+      testgrid-num-failures-to-alert: '12'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-num-columns-recent: '30'

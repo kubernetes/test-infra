@@ -1,121 +1,119 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-cross
-    optional: true
-    always_run: false
-    run_if_changed: '(^.go-version)|(^build/build-image/)|(^hack/lib/golang.sh)|(^build/common.sh)'
-    cluster: eks-prow-build-cluster
+    - name: pull-kubernetes-cross
+      optional: true
+      always_run: false
+      run_if_changed: '(^.go-version)|(^build/build-image/)|(^hack/lib/golang.sh)|(^build/common.sh)'
+      cluster: eks-prow-build-cluster
+      decorate: true
+      path_alias: k8s.io/kubernetes
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - release
+              - KUBE_RELEASE_RUN_TESTS=n
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: "25Gi"
+              requests:
+                cpu: 7
+                memory: "25Gi"
+      annotations:
+        testgrid-create-test-group: 'true'
+periodics:
+  - name: ci-kubernetes-build
+    interval: 1h
+    cluster: k8s-infra-prow-build
     decorate: true
-    path_alias: k8s.io/kubernetes
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
     labels:
+      preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - release
-        - KUBE_RELEASE_RUN_TESTS=n
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: "25Gi"
-          requests:
-            cpu: 7
-            memory: "25Gi"
+        - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+          imagePullPolicy: Always
+          command:
+            - wrapper.sh
+            - /krel
+            - ci-build
+            - --configure-docker
+            - --allow-dup=false
+            - --bucket=k8s-release-dev
+            - --registry=gcr.io/k8s-staging-ci-images
+            - --extra-version-markers=k8s-master
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: "7"
+              memory: "34Gi"
+            requests:
+              cpu: "7"
+              memory: "34Gi"
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes
+          slug: release-managers
     annotations:
-      testgrid-create-test-group: 'true'
-
-periodics:
-- name: ci-kubernetes-build
-  interval: 1h
-  cluster: k8s-infra-prow-build
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
-      imagePullPolicy: Always
-      command:
-      - wrapper.sh
-      - /krel
-      - ci-build
-      - --configure-docker
-      - --allow-dup=false
-      - --bucket=k8s-release-dev
-      - --registry=gcr.io/k8s-staging-ci-images
-      - --extra-version-markers=k8s-master
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: "7"
-          memory: "34Gi"
-        requests:
-          cpu: "7"
-          memory: "34Gi"
-  rerun_auth_config:
-    github_team_slugs:
+      fork-per-release: "true"
+      fork-per-release-replacements: "k8s-master -> k8s-beta, latest-default -> latest-{{.Version}}"
+      testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
+      testgrid-tab-name: build-master
+      testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
+  - interval: 5m
+    name: ci-kubernetes-build-fast
+    cluster: k8s-infra-prow-build
+    decorate: true
+    extra_refs:
       - org: kubernetes
-        slug: release-managers
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-replacements: "k8s-master -> k8s-beta, latest-default -> latest-{{.Version}}"
-    testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
-    testgrid-tab-name: build-master
-    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
-
-- interval: 5m
-  name: ci-kubernetes-build-fast
-  cluster: k8s-infra-prow-build
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
-      imagePullPolicy: Always
-      command:
-      - wrapper.sh
-      - /krel
-      - ci-build
-      - --configure-docker
-      - --allow-dup=false
-      - --fast
-      - --bucket=k8s-release-dev
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 6
-          memory: "12Gi"
-        requests:
-          cpu: 6
-          memory: "12Gi"
-  rerun_auth_config:
-    github_team_slugs:
-      - org: kubernetes
-        slug: release-managers
-  annotations:
-    testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
-    testgrid-tab-name: build-master-fast
-    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
-    description: 'Ends up running: make quick-release'
+        repo: kubernetes
+        base_ref: master
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+          imagePullPolicy: Always
+          command:
+            - wrapper.sh
+            - /krel
+            - ci-build
+            - --configure-docker
+            - --allow-dup=false
+            - --fast
+            - --bucket=k8s-release-dev
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 6
+              memory: "12Gi"
+            requests:
+              cpu: 6
+              memory: "12Gi"
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes
+          slug: release-managers
+    annotations:
+      testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
+      testgrid-tab-name: build-master-fast
+      testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
+      description: 'Ends up running: make quick-release'

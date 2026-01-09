@@ -1,56 +1,56 @@
 presubmits:
   kubernetes-sigs/tejolote:
-  - name: pull-tejolote-test
-    always_run: true
-    decorate: true
-    path_alias: "sigs.k8s.io/tejolote"
-    cluster: eks-prow-build-cluster
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.25-bookworm
-        imagePullPolicy: Always
-        command:
-        - go
-        args:
-        - run
-        - mage.go
-        - Test
-        resources:
-          requests:
-            cpu: 6
-            memory: 8Gi
-          limits:
-            cpu: 6
-            memory: 8Gi
-    annotations:
-      testgrid-dashboards: sig-release-releng-presubmits
-      testgrid-tab-name: tejolote-test
-      testgrid-alert-email: release-managers+alerts@kubernetes.io
-      testgrid-num-columns-recent: '30'
-  - name: pull-tejolote-verify
-    always_run: true
-    decorate: true
-    path_alias: "sigs.k8s.io/tejolote"
-    cluster: eks-prow-build-cluster
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.25-bookworm
-        imagePullPolicy: Always
-        command:
-        - go
-        args:
-        - run
-        - mage.go
-        - Verify
-        resources:
-          requests:
-            cpu: 6
-            memory: 8Gi
-          limits:
-            cpu: 6
-            memory: 8Gi
-    annotations:
-      testgrid-dashboards: sig-release-releng-presubmits
-      testgrid-tab-name: tejolote-verify
-      testgrid-alert-email: release-managers+alerts@kubernetes.io
-      testgrid-num-columns-recent: '30'
+    - name: pull-tejolote-test
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/tejolote"
+      cluster: eks-prow-build-cluster
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.25-bookworm
+            imagePullPolicy: Always
+            command:
+              - go
+            args:
+              - run
+              - mage.go
+              - Test
+            resources:
+              requests:
+                cpu: 6
+                memory: 8Gi
+              limits:
+                cpu: 6
+                memory: 8Gi
+      annotations:
+        testgrid-dashboards: sig-release-releng-presubmits
+        testgrid-tab-name: tejolote-test
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
+        testgrid-num-columns-recent: '30'
+    - name: pull-tejolote-verify
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/tejolote"
+      cluster: eks-prow-build-cluster
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.25-bookworm
+            imagePullPolicy: Always
+            command:
+              - go
+            args:
+              - run
+              - mage.go
+              - Verify
+            resources:
+              requests:
+                cpu: 6
+                memory: 8Gi
+              limits:
+                cpu: 6
+                memory: 8Gi
+      annotations:
+        testgrid-dashboards: sig-release-releng-presubmits
+        testgrid-tab-name: tejolote-verify
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
+        testgrid-num-columns-recent: '30'

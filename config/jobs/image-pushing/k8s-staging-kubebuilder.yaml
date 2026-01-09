@@ -1,6 +1,5 @@
 postsubmits:
   kubernetes-sigs/kubebuilder:
-
     - name: post-kube-rbac-proxy-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:

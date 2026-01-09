@@ -1,163 +1,158 @@
 presubmits:
   kubernetes-sigs/container-object-storage-interface:
-
-  - name: pull-container-object-storage-interface-build
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/container-object-storage-interface
-    labels:
-      preset-dind-enabled: "true" # build uses docker, requires DinD
-    annotations:
-      testgrid-dashboards: sig-storage-container-object-storage-interface
-      testgrid-tab-name: build
-      description: Build test in container-object-storage-interface repo.
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - build
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
-          valueFrom:
-            resourceFieldRef:
-              resource: limits.cpu
-
-  - name: pull-container-object-storage-interface-unit
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/container-object-storage-interface
-    annotations:
-      testgrid-dashboards: sig-storage-container-object-storage-interface
-      testgrid-tab-name: unit
-      description: Unit tests in container-object-storage-interface repo.
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/prow-test.sh
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        env:
-        - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
-          valueFrom:
-            resourceFieldRef:
-              resource: limits.cpu
-
-  - name: pull-container-object-storage-interface-lint
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/container-object-storage-interface
-    labels:
-      preset-dind-enabled: "true" # build uses docker, requires DinD
-    annotations:
-      testgrid-dashboards: sig-storage-container-object-storage-interface
-      testgrid-tab-name: lint
-      description: Linters in container-object-storage-interface repo.
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/prow-lint.sh
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
-          valueFrom:
-            resourceFieldRef:
-              resource: limits.cpu
-
-  - name: pull-container-object-storage-interface-check-generated-files
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/container-object-storage-interface
-    annotations:
-      testgrid-dashboards: sig-storage-container-object-storage-interface
-      testgrid-tab-name: check-generated-files
-      description: Check generated files in container-object-storage-interface repo.
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/prow-check-generate.sh
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        env:
-        - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
-          valueFrom:
-            resourceFieldRef:
-              resource: limits.cpu
-
-  - name: pull-container-object-storage-interface-e2e
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/container-object-storage-interface
-    labels:
-      preset-dind-enabled: "true" # e2e uses docker and kind, requires DinD
-    annotations:
-      testgrid-dashboards: sig-storage-container-object-storage-interface
-      testgrid-tab-name: e2e
-      description: E2e tests in container-object-storage-interface repo.
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/prow-e2e.sh
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
-          valueFrom:
-            resourceFieldRef:
-              resource: limits.cpu
+    - name: pull-container-object-storage-interface-build
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/container-object-storage-interface
+      labels:
+        preset-dind-enabled: "true" # build uses docker, requires DinD
+      annotations:
+        testgrid-dashboards: sig-storage-container-object-storage-interface
+        testgrid-tab-name: build
+        description: Build test in container-object-storage-interface repo.
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - build
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            env:
+              - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
+                valueFrom:
+                  resourceFieldRef:
+                    resource: limits.cpu
+    - name: pull-container-object-storage-interface-unit
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/container-object-storage-interface
+      annotations:
+        testgrid-dashboards: sig-storage-container-object-storage-interface
+        testgrid-tab-name: unit
+        description: Unit tests in container-object-storage-interface repo.
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./hack/prow-test.sh
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            env:
+              - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
+                valueFrom:
+                  resourceFieldRef:
+                    resource: limits.cpu
+    - name: pull-container-object-storage-interface-lint
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/container-object-storage-interface
+      labels:
+        preset-dind-enabled: "true" # build uses docker, requires DinD
+      annotations:
+        testgrid-dashboards: sig-storage-container-object-storage-interface
+        testgrid-tab-name: lint
+        description: Linters in container-object-storage-interface repo.
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./hack/prow-lint.sh
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            env:
+              - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
+                valueFrom:
+                  resourceFieldRef:
+                    resource: limits.cpu
+    - name: pull-container-object-storage-interface-check-generated-files
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/container-object-storage-interface
+      annotations:
+        testgrid-dashboards: sig-storage-container-object-storage-interface
+        testgrid-tab-name: check-generated-files
+        description: Check generated files in container-object-storage-interface repo.
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./hack/prow-check-generate.sh
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            env:
+              - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
+                valueFrom:
+                  resourceFieldRef:
+                    resource: limits.cpu
+    - name: pull-container-object-storage-interface-e2e
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/container-object-storage-interface
+      labels:
+        preset-dind-enabled: "true" # e2e uses docker and kind, requires DinD
+      annotations:
+        testgrid-dashboards: sig-storage-container-object-storage-interface
+        testgrid-tab-name: e2e
+        description: E2e tests in container-object-storage-interface repo.
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./hack/prow-e2e.sh
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            env:
+              - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
+                valueFrom:
+                  resourceFieldRef:
+                    resource: limits.cpu

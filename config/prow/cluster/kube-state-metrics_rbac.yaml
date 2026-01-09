@@ -19,9 +19,9 @@ roleRef:
   kind: ClusterRole
   name: kube-state-metrics
 subjects:
-- kind: ServiceAccount
-  name: kube-state-metrics
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: kube-state-metrics
+    namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -31,10 +31,10 @@ metadata:
     app.kubernetes.io/version: 2.10.0
   name: kube-state-metrics
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - list
-  - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - list
+      - watch

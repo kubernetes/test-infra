@@ -1,158 +1,158 @@
 presubmits:
   kubernetes-sigs/kro:
-  - name: presubmits-unit-tests
-    always_run: true
-    optional: false
-    decorate: true
-    decoration_config:
-      timeout: 3h
-    path_alias: "sigs.k8s.io/kro"
-    cluster: eks-prow-build-cluster
-    branches:
-    - ^main$
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.33
-        command:
-        - scripts/ci/presubmits/unit-tests
-        resources:
-          limits:
-            cpu: 4
-            memory: 4Gi
-          requests:
-            cpu: 4
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-cloud-provider-kro-presubmits
-      testgrid-tab-name: presubmits-unit-tests
-  - name: presubmits-verify-lint
-    always_run: true
-    optional: false
-    decorate: true
-    decoration_config:
-      timeout: 3h
-    path_alias: "sigs.k8s.io/kro"
-    cluster: eks-prow-build-cluster
-    branches:
-    - ^main$
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.33
-        command:
-        - scripts/ci/presubmits/lint
-        resources:
-          limits:
-            cpu: 4
-            memory: 4Gi
-          requests:
-            cpu: 4
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-cloud-provider-kro-presubmits
-      testgrid-tab-name: presubmits-verify-lint
-  - name: presubmits-integration-tests
-    always_run: true
-    optional: false
-    decorate: true
-    decoration_config:
-      timeout: 3h
-    path_alias: "sigs.k8s.io/kro"
-    cluster: eks-prow-build-cluster
-    branches:
-    - ^main$
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.33
-        command:
-        - scripts/ci/presubmits/integration-tests
-        resources:
-          limits:
-            cpu: 7
-            memory: 16Gi
-          requests:
-            cpu: 7
-            memory: 16Gi
-    annotations:
-      testgrid-dashboards: sig-cloud-provider-kro-presubmits
-      testgrid-tab-name: presubmits-integration-tests
-  - name: presubmits-e2e-tests
-    labels:
-      preset-dind-enabled: "true"
-    always_run: true
-    optional: false
-    decorate: true
-    decoration_config:
-      timeout: 3h
-    path_alias: "sigs.k8s.io/kro"
-    cluster: eks-prow-build-cluster
-    branches:
-    - ^main$
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.33
-        securityContext:
-          privileged: true
-        command:
-        - runner.sh
-        - scripts/ci/presubmits/e2e-tests
-        resources:
-          limits:
-            cpu: 7
-            memory: 16Gi
-          requests:
-            cpu: 7
-            memory: 16Gi
-    annotations:
-      testgrid-dashboards: sig-cloud-provider-kro-presubmits
-      testgrid-tab-name: presubmits-e2e-tests
-  - name: presubmits-build-image
-    always_run: true
-    optional: false
-    decorate: true
-    decoration_config:
-      timeout: 2h
-    path_alias: "sigs.k8s.io/kro"
-    cluster: eks-prow-build-cluster
-    branches:
-    - ^main$
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.33
-        command:
-        - scripts/ci/presubmits/build-image
-        resources:
-          limits:
-            cpu: 4
-            memory: 8Gi
-          requests:
-            cpu: 4
-            memory: 8Gi
-    annotations:
-      testgrid-dashboards: sig-cloud-provider-kro-presubmits
-      testgrid-tab-name: presubmits-build-image
-  - name: presubmits-docs-tests
-    always_run: false
-    run_if_changed: "^website/"
-    optional: false
-    decorate: true
-    decoration_config:
-      timeout: 30m
-    path_alias: "sigs.k8s.io/kro"
-    cluster: eks-prow-build-cluster
-    branches:
-    - ^main$
-    spec:
-      containers:
-      - image: node:20
-        command:
-        - scripts/ci/presubmits/docs-tests
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-cloud-provider-kro-presubmits
-      testgrid-tab-name: presubmits-docs-tests
+    - name: presubmits-unit-tests
+      always_run: true
+      optional: false
+      decorate: true
+      decoration_config:
+        timeout: 3h
+      path_alias: "sigs.k8s.io/kro"
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main$
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.33
+            command:
+              - scripts/ci/presubmits/unit-tests
+            resources:
+              limits:
+                cpu: 4
+                memory: 4Gi
+              requests:
+                cpu: 4
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-cloud-provider-kro-presubmits
+        testgrid-tab-name: presubmits-unit-tests
+    - name: presubmits-verify-lint
+      always_run: true
+      optional: false
+      decorate: true
+      decoration_config:
+        timeout: 3h
+      path_alias: "sigs.k8s.io/kro"
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main$
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.33
+            command:
+              - scripts/ci/presubmits/lint
+            resources:
+              limits:
+                cpu: 4
+                memory: 4Gi
+              requests:
+                cpu: 4
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-cloud-provider-kro-presubmits
+        testgrid-tab-name: presubmits-verify-lint
+    - name: presubmits-integration-tests
+      always_run: true
+      optional: false
+      decorate: true
+      decoration_config:
+        timeout: 3h
+      path_alias: "sigs.k8s.io/kro"
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main$
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.33
+            command:
+              - scripts/ci/presubmits/integration-tests
+            resources:
+              limits:
+                cpu: 7
+                memory: 16Gi
+              requests:
+                cpu: 7
+                memory: 16Gi
+      annotations:
+        testgrid-dashboards: sig-cloud-provider-kro-presubmits
+        testgrid-tab-name: presubmits-integration-tests
+    - name: presubmits-e2e-tests
+      labels:
+        preset-dind-enabled: "true"
+      always_run: true
+      optional: false
+      decorate: true
+      decoration_config:
+        timeout: 3h
+      path_alias: "sigs.k8s.io/kro"
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main$
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.33
+            securityContext:
+              privileged: true
+            command:
+              - runner.sh
+              - scripts/ci/presubmits/e2e-tests
+            resources:
+              limits:
+                cpu: 7
+                memory: 16Gi
+              requests:
+                cpu: 7
+                memory: 16Gi
+      annotations:
+        testgrid-dashboards: sig-cloud-provider-kro-presubmits
+        testgrid-tab-name: presubmits-e2e-tests
+    - name: presubmits-build-image
+      always_run: true
+      optional: false
+      decorate: true
+      decoration_config:
+        timeout: 2h
+      path_alias: "sigs.k8s.io/kro"
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main$
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.33
+            command:
+              - scripts/ci/presubmits/build-image
+            resources:
+              limits:
+                cpu: 4
+                memory: 8Gi
+              requests:
+                cpu: 4
+                memory: 8Gi
+      annotations:
+        testgrid-dashboards: sig-cloud-provider-kro-presubmits
+        testgrid-tab-name: presubmits-build-image
+    - name: presubmits-docs-tests
+      always_run: false
+      run_if_changed: "^website/"
+      optional: false
+      decorate: true
+      decoration_config:
+        timeout: 30m
+      path_alias: "sigs.k8s.io/kro"
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main$
+      spec:
+        containers:
+          - image: node:20
+            command:
+              - scripts/ci/presubmits/docs-tests
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-cloud-provider-kro-presubmits
+        testgrid-tab-name: presubmits-docs-tests

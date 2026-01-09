@@ -573,7 +573,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-
     - name: pull-kubernetes-node-kubelet-serial-containerd
       cluster: k8s-infra-prow-build
       always_run: false
@@ -2014,7 +2013,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-
     - name: pull-kubernetes-node-swap-fedora-serial
       cluster: k8s-infra-prow-build
       skip_branches:
@@ -2068,7 +2066,6 @@ presubmits:
                 value: /go
               - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
                 value: "1"
-
     - name: pull-kubernetes-node-swap-conformance-ubuntu-serial
       cluster: k8s-infra-prow-build
       always_run: false
@@ -2123,7 +2120,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-
     - name: pull-kubernetes-node-swap-conformance-fedora-serial
       cluster: k8s-infra-prow-build
       skip_branches:
@@ -2229,7 +2225,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-
     - name: pull-kubernetes-e2e-gce-kubelet-credential-provider
       cluster: k8s-infra-prow-build
       always_run: false
@@ -2763,7 +2758,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-
     - name: pull-kubernetes-node-e2e-containerd-standalone-mode-serial-all-alpha
       cluster: k8s-infra-prow-build
       branches:
@@ -2818,7 +2812,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-
     - name: pull-kubernetes-node-e2e-containerd-standalone-mode
       cluster: k8s-infra-prow-build
       branches:
@@ -2873,7 +2866,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-
     - name: pull-kubernetes-node-e2e-resource-health-status
       cluster: k8s-infra-prow-build
       skip_branches:
@@ -2922,7 +2914,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-
     - name: pull-kubernetes-node-e2e-containerd-serial-ec2
       skip_branches:
         - release-\d+\.\d+ # per-release image

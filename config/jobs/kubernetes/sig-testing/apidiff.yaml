@@ -1,87 +1,86 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-apidiff
-    cluster: eks-prow-build-cluster
-    # A job which automatically runs for changes in staging and then only
-    # diffs staging might be useful. For now, this checks everything and
-    # has to be started manually with:
-    #   /test pull-kubernetes-apidiff
-    always_run: false
-    optional: true
-    decorate: true
-    annotations:
-      # The apidiff.sh script uses the latest revision of apidiff.
-      # There is no guarantee that this will continue to work for
-      # older branches, so let's not even create per-release
-      # copies of this job.
-      fork-per-release: "false"
-      testgrid-dashboards: sig-testing-misc
-      testgrid-create-test-group: 'true'
-    path_alias: k8s.io/kubernetes
-    # Additional downstream projects can be checked out for a trial build.
-    # For now, controller-runtime is used because it tends to exercise
-    # quite a lot of the more advanced client-go functionality and breaking
-    # builds with it tends to be disruptive for additional downstream
-    # consumers.
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: controller-runtime
-      base_ref: main
-      path_alias: sigs.k8s.io/controller-runtime
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - /bin/sh
-        - -c
-        # Base and target are detected automatically by the script based on Prow variables.
-        # -b can be used more than once.
-        - "./hack/apidiff.sh -b ${GOPATH}/src/sigs.k8s.io/controller-runtime"
-        resources:
-          # Memory limits are derived from pull-kubernetes-verify, with less CPUs.
-          limits:
-            cpu: 2
-            memory: 12Gi
-          requests:
-            cpu: 2
-            memory: 12Gi
-
-  - name: pull-kubernetes-apidiff-client-go
-    cluster: eks-prow-build-cluster
-    # A job which automatically runs for changes in client-go or the generated code
-    # to have visibility on the changes that will impact the external projects
-    # that are using the Kubernetes golang clients
-    run_if_changed: '((^staging\/src\/k8s.io\/client-go)|(^staging\/src\/k8s.io\/code-generator\/examples))/.*\.go'
-    optional: true
-    decorate: true
-    annotations:
-      # The script runs for all branches. The behavior of hack/apidiff.sh must be the same
-      # for all branches. If that changes, the job will have to be forked.
-      fork-per-release: "false"
-      testgrid-dashboards: sig-testing-misc
-      testgrid-create-test-group: 'true'
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - /bin/sh
-        - -c
-        # Base and target are detected automatically by the script based on Prow variables.
-        - "./hack/apidiff.sh ./staging/src/k8s.io/code-generator/examples ./staging/src/k8s.io/client-go"
-        resources:
-          # Memory limits are derived from pull-kubernetes-verify, with less CPUs.
-          limits:
-            cpu: 2
-            memory: 12Gi
-          requests:
-            cpu: 2
-            memory: 12Gi
+    - name: pull-kubernetes-apidiff
+      cluster: eks-prow-build-cluster
+      # A job which automatically runs for changes in staging and then only
+      # diffs staging might be useful. For now, this checks everything and
+      # has to be started manually with:
+      #   /test pull-kubernetes-apidiff
+      always_run: false
+      optional: true
+      decorate: true
+      annotations:
+        # The apidiff.sh script uses the latest revision of apidiff.
+        # There is no guarantee that this will continue to work for
+        # older branches, so let's not even create per-release
+        # copies of this job.
+        fork-per-release: "false"
+        testgrid-dashboards: sig-testing-misc
+        testgrid-create-test-group: 'true'
+      path_alias: k8s.io/kubernetes
+      # Additional downstream projects can be checked out for a trial build.
+      # For now, controller-runtime is used because it tends to exercise
+      # quite a lot of the more advanced client-go functionality and breaking
+      # builds with it tends to be disruptive for additional downstream
+      # consumers.
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: controller-runtime
+          base_ref: main
+          path_alias: sigs.k8s.io/controller-runtime
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - /bin/sh
+              - -c
+              # Base and target are detected automatically by the script based on Prow variables.
+              # -b can be used more than once.
+              - "./hack/apidiff.sh -b ${GOPATH}/src/sigs.k8s.io/controller-runtime"
+            resources:
+              # Memory limits are derived from pull-kubernetes-verify, with less CPUs.
+              limits:
+                cpu: 2
+                memory: 12Gi
+              requests:
+                cpu: 2
+                memory: 12Gi
+    - name: pull-kubernetes-apidiff-client-go
+      cluster: eks-prow-build-cluster
+      # A job which automatically runs for changes in client-go or the generated code
+      # to have visibility on the changes that will impact the external projects
+      # that are using the Kubernetes golang clients
+      run_if_changed: '((^staging\/src\/k8s.io\/client-go)|(^staging\/src\/k8s.io\/code-generator\/examples))/.*\.go'
+      optional: true
+      decorate: true
+      annotations:
+        # The script runs for all branches. The behavior of hack/apidiff.sh must be the same
+        # for all branches. If that changes, the job will have to be forked.
+        fork-per-release: "false"
+        testgrid-dashboards: sig-testing-misc
+        testgrid-create-test-group: 'true'
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - /bin/sh
+              - -c
+              # Base and target are detected automatically by the script based on Prow variables.
+              - "./hack/apidiff.sh ./staging/src/k8s.io/code-generator/examples ./staging/src/k8s.io/client-go"
+            resources:
+              # Memory limits are derived from pull-kubernetes-verify, with less CPUs.
+              limits:
+                cpu: 2
+                memory: 12Gi
+              requests:
+                cpu: 2
+                memory: 12Gi
 
 # A periodic job which shows API diffs for staging repos since the last release
 # might be useful. Not done yet.

@@ -21,9 +21,9 @@ postsubmits:
         slack:
           channel: "kops-dev"
           job_states_to_report:
-          - failure
-          - aborted
-          - error
+            - failure
+            - aborted
+            - error
           report_template: 'Postsubmit push to staging failed: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/kops-misc#kops-postsubmit-push-to-staging|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       spec:
         serviceAccountName: gcb-builder

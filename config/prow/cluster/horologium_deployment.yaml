@@ -34,26 +34,26 @@ spec:
       serviceAccountName: horologium
       terminationGracePeriodSeconds: 30
       containers:
-      - name: horologium
-        image: us-docker.pkg.dev/k8s-infra-prow/images/horologium:v20240802-66b115076
-        args:
-        - --config-path=/etc/config/config.yaml
-        - --job-config-path=/etc/job-config
-        - --dry-run=false
-        ports:
-        - name: metrics
-          containerPort: 9090
-        volumeMounts:
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
-          readOnly: true
+        - name: horologium
+          image: us-docker.pkg.dev/k8s-infra-prow/images/horologium:v20240802-66b115076
+          args:
+            - --config-path=/etc/config/config.yaml
+            - --job-config-path=/etc/job-config
+            - --dry-run=false
+          ports:
+            - name: metrics
+              containerPort: 9090
+          volumeMounts:
+            - name: config
+              mountPath: /etc/config
+              readOnly: true
+            - name: job-config
+              mountPath: /etc/job-config
+              readOnly: true
       volumes:
-      - name: config
-        configMap:
-          name: config
-      - name: job-config
-        configMap:
-          name: job-config
+        - name: config
+          configMap:
+            name: config
+        - name: job-config
+          configMap:
+            name: job-config

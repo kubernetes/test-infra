@@ -32,42 +32,42 @@ spec:
       serviceAccountName: statusreconciler
       terminationGracePeriodSeconds: 180
       containers:
-      - name: statusreconciler
-        image: us-docker.pkg.dev/k8s-infra-prow/images/status-reconciler:v20240802-66b115076
-        imagePullPolicy: Always
-        args:
-        - --dry-run=false
-        - --continue-on-error=true
-        - --plugin-config=/etc/plugins/plugins.yaml
-        - --config-path=/etc/config/config.yaml
-        - --github-token-path=/etc/github/oauth
-        - --github-endpoint=http://ghproxy
-        - --github-endpoint=https://api.github.com
-        - --job-config-path=/etc/job-config
-        - --denylist=kubernetes/kubernetes
-        volumeMounts:
-        - name: oauth
-          mountPath: /etc/github
-          readOnly: true
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
-          readOnly: true
-        - name: plugins
-          mountPath: /etc/plugins
-          readOnly: true
+        - name: statusreconciler
+          image: us-docker.pkg.dev/k8s-infra-prow/images/status-reconciler:v20240802-66b115076
+          imagePullPolicy: Always
+          args:
+            - --dry-run=false
+            - --continue-on-error=true
+            - --plugin-config=/etc/plugins/plugins.yaml
+            - --config-path=/etc/config/config.yaml
+            - --github-token-path=/etc/github/oauth
+            - --github-endpoint=http://ghproxy
+            - --github-endpoint=https://api.github.com
+            - --job-config-path=/etc/job-config
+            - --denylist=kubernetes/kubernetes
+          volumeMounts:
+            - name: oauth
+              mountPath: /etc/github
+              readOnly: true
+            - name: config
+              mountPath: /etc/config
+              readOnly: true
+            - name: job-config
+              mountPath: /etc/job-config
+              readOnly: true
+            - name: plugins
+              mountPath: /etc/plugins
+              readOnly: true
       volumes:
-      - name: oauth
-        secret:
-          secretName: oauth-token
-      - name: config
-        configMap:
-          name: config
-      - name: job-config
-        configMap:
-          name: job-config
-      - name: plugins
-        configMap:
-          name: plugins
+        - name: oauth
+          secret:
+            secretName: oauth-token
+        - name: config
+          configMap:
+            name: config
+        - name: job-config
+          configMap:
+            name: job-config
+        - name: plugins
+          configMap:
+            name: plugins

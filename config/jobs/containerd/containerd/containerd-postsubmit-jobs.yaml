@@ -31,7 +31,6 @@ postsubmits:
         testgrid-dashboards: sig-node-containerd,containerd-postsubmits
         testgrid-tab-name: post-containerd-build
         description: "builds development in progress branch of upstream containerd"
-
     - name: post-containerd-build-1-7
       labels:
         preset-service-account: "true"
@@ -62,7 +61,6 @@ postsubmits:
         testgrid-dashboards: sig-node-containerd,containerd-postsubmits
         testgrid-tab-name: post-containerd-build-1.7
         description: "builds release/1.7 branch of upstream containerd"
-
     - name: post-containerd-build-2-0
       labels:
         preset-service-account: "true"
@@ -93,7 +91,6 @@ postsubmits:
         testgrid-dashboards: sig-node-containerd,containerd-postsubmits
         testgrid-tab-name: post-containerd-build-2.0
         description: "builds release/2.0 branch of upstream containerd"
-
     - name: post-containerd-build-2-1
       labels:
         preset-service-account: "true"
@@ -124,8 +121,6 @@ postsubmits:
         testgrid-dashboards: sig-node-containerd,containerd-postsubmits
         testgrid-tab-name: post-containerd-build-2.1
         description: "builds release/2.1 branch of upstream containerd"
-
-
     - name: post-containerd-build-test-images
       labels:
         preset-service-account: "true"

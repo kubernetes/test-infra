@@ -1,62 +1,61 @@
 periodics:
-- name: maintenance-ci-shared-aws-janitor
-  cluster: eks-prow-build-cluster
-  interval: 1h
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential-aws-shared-testing: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  spec:
-    containers:
-    - command:
-      - /app
-      args:
-      - --ttl=6h
-      - --path=s3://cloud-provider-aws-shared-e2e/objs.json
-      - --exclude-tags=Shared=Ignore
-      - --enable-target-group-clean=true
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
-      resources:
-        requests:
-          cpu: 1
-          memory: "2Gi"
-        limits:
-          cpu: 1
-          memory: "2Gi"
-  annotations:
-    testgrid-dashboards: sig-testing-maintenance
-    testgrid-tab-name: ci-shared-aws-janitor
-    description: Deletes old AWS resources for shared jobs
-
-- interval: 1h
-  name: maintenance-ci-aws-janitor
-  cluster: k8s-infra-kops-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  spec:
-    containers:
-    - command:
-      - /app
-      args:
-      - --ttl=2h30m
-      - --path=s3://k8s-kops-prow/objs.json
-      - --exclude-tags=Shared=Ignore
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
-  annotations:
-    testgrid-dashboards: sig-testing-maintenance
-    testgrid-tab-name: ci-aws-janitor
-    description: Deletes old AWS resources
+  - name: maintenance-ci-shared-aws-janitor
+    cluster: eks-prow-build-cluster
+    interval: 1h
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential-aws-shared-testing: "true"
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - command:
+            - /app
+          args:
+            - --ttl=6h
+            - --path=s3://cloud-provider-aws-shared-e2e/objs.json
+            - --exclude-tags=Shared=Ignore
+            - --enable-target-group-clean=true
+          image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
+          resources:
+            requests:
+              cpu: 1
+              memory: "2Gi"
+            limits:
+              cpu: 1
+              memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-testing-maintenance
+      testgrid-tab-name: ci-shared-aws-janitor
+      description: Deletes old AWS resources for shared jobs
+  - interval: 1h
+    name: maintenance-ci-aws-janitor
+    cluster: k8s-infra-kops-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - command:
+            - /app
+          args:
+            - --ttl=2h30m
+            - --path=s3://k8s-kops-prow/objs.json
+            - --exclude-tags=Shared=Ignore
+          image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
+    annotations:
+      testgrid-dashboards: sig-testing-maintenance
+      testgrid-tab-name: ci-aws-janitor
+      description: Deletes old AWS resources

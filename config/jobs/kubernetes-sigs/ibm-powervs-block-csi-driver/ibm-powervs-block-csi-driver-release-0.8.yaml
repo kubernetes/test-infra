@@ -31,7 +31,6 @@ presubmits:
                 memory: 4Gi
             securityContext:
               privileged: true
-
     - name: pull-ibm-powervs-block-csi-driver-image-build-test-release-0-8
       cluster: eks-prow-build-cluster
       always_run: true
@@ -63,7 +62,6 @@ presubmits:
                 memory: 4Gi
             securityContext:
               privileged: true
-
     - name: pull-ibm-powervs-block-csi-driver-unit-test-release-0-8
       cluster: eks-prow-build-cluster
       always_run: true
@@ -90,7 +88,6 @@ presubmits:
               requests:
                 cpu: 2
                 memory: 4Gi
-
     - name: pull-ibm-powervs-block-csi-driver-verify-test-release-0-8
       cluster: eks-prow-build-cluster
       always_run: true

@@ -29,13 +29,7 @@ presubmits:
               - wrapper.sh
               - bash
               - -c
-              -
-                  curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
-                  && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
-                  && bash e2e-k8s.sh
-                  && apt-get update && apt-get install -y --no-install-recommends python3-pip && pip3 install --no-cache-dir --break-system-packages pyyaml
-                  && python3 ./../test-infra/experiment/audit/audit_log_parser.py --audit-logs ${ARTIFACTS}/audit/audit*.log --output "${ARTIFACTS}/audit/audit-endpoints.txt" --audit-operations-json "${ARTIFACTS}/audit/audit-operations.json" --swagger-url "file://$PWD/api/openapi-spec/swagger.json" --ineligible-endpoints-url "file://$PWD/test/conformance/testdata/ineligible_endpoints.yaml" --pending-eligible-endpoints-url "file://$PWD/test/conformance/testdata/pending_eligible_endpoints.yaml"
-                  && python3 ./../test-infra/experiment/audit/kubernetes_api_analysis.py --pull-audit-endpoints "${ARTIFACTS}/audit/audit-endpoints.txt" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh && bash e2e-k8s.sh && apt-get update && apt-get install -y --no-install-recommends python3-pip && pip3 install --no-cache-dir --break-system-packages pyyaml && python3 ./../test-infra/experiment/audit/audit_log_parser.py --audit-logs ${ARTIFACTS}/audit/audit*.log --output "${ARTIFACTS}/audit/audit-endpoints.txt" --audit-operations-json "${ARTIFACTS}/audit/audit-operations.json" --swagger-url "file://$PWD/api/openapi-spec/swagger.json" --ineligible-endpoints-url "file://$PWD/test/conformance/testdata/ineligible_endpoints.yaml" --pending-eligible-endpoints-url "file://$PWD/test/conformance/testdata/pending_eligible_endpoints.yaml" && python3 ./../test-infra/experiment/audit/kubernetes_api_analysis.py --pull-audit-endpoints "${ARTIFACTS}/audit/audit-endpoints.txt" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
             env:
               - name: BUILD_TYPE
                 value: docker
@@ -57,62 +51,56 @@ presubmits:
         testgrid-tab-name: presubmit-kind-conformance-audit
         testgrid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com, davanum@gmail.com
         testgrid-num-failures-to-alert: '1'
-
 periodics:
-# conformance test against kubernetes master branch with `kind` and auditlogs
-# Other than annotations and modified ci-audit-logging e2e-k8s.sh
-# This should be the same as ci-kubernetes-kind-conformance
-- interval: 3h
-  name: ci-kubernetes-audit-kind-conformance
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        -
-            curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
-            && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
-            && bash e2e-k8s.sh
-            && apt-get update && apt-get install -y --no-install-recommends python3-pip && pip3 install --no-cache-dir --break-system-packages pyyaml
-            && python3 ./../test-infra/experiment/audit/audit_log_parser.py --audit-logs ${ARTIFACTS}/audit/audit*.log --output "${ARTIFACTS}/audit/audit-endpoints.txt" --audit-operations-json "${ARTIFACTS}/audit/audit-operations.json" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
-      env:
-      - name: BUILD_TYPE
-        value: docker
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        # these are both a bit below peak usage during build
-        # this is mostly for building kubernetes
-        limits:
-          cpu: 2000m
-          memory: "9000Mi"
-        requests:
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-          memory: "9000Mi"
-  annotations:
-    testgrid-dashboards: sig-arch-conformance
-    testgrid-tab-name: kind-conformance-audit
-    testgrid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com, davanum@gmail.com
-    testgrid-num-failures-to-alert: '1'
-    description: 'Uses patched ci-kubernetes-kind-conformance job to generate ARTIFACT/audit/audit.log'
+  # conformance test against kubernetes master branch with `kind` and auditlogs
+  # Other than annotations and modified ci-audit-logging e2e-k8s.sh
+  # This should be the same as ci-kubernetes-kind-conformance
+  - interval: 3h
+    name: ci-kubernetes-audit-kind-conformance
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    decoration_config:
+      timeout: 150m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh && bash e2e-k8s.sh && apt-get update && apt-get install -y --no-install-recommends python3-pip && pip3 install --no-cache-dir --break-system-packages pyyaml && python3 ./../test-infra/experiment/audit/audit_log_parser.py --audit-logs ${ARTIFACTS}/audit/audit*.log --output "${ARTIFACTS}/audit/audit-endpoints.txt" --audit-operations-json "${ARTIFACTS}/audit/audit-operations.json" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
+          env:
+            - name: BUILD_TYPE
+              value: docker
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            limits:
+              cpu: 2000m
+              memory: "9000Mi"
+            requests:
+              # during the tests more like 3-20m is used
+              cpu: 2000m
+              memory: "9000Mi"
+    annotations:
+      testgrid-dashboards: sig-arch-conformance
+      testgrid-tab-name: kind-conformance-audit
+      testgrid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com, davanum@gmail.com
+      testgrid-num-failures-to-alert: '1'
+      description: 'Uses patched ci-kubernetes-kind-conformance job to generate ARTIFACT/audit/audit.log'

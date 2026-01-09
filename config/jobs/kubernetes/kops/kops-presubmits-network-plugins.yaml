@@ -2,1332 +2,1312 @@
 # 20 jobs
 presubmits:
   kubernetes/kops:
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
-  - name: pull-kops-e2e-cni-amazonvpc
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/containerd|components\/kubeproxy|iam\/iam_builder)\.go|nodeup\/pkg\/model\/kubelet\.go)'
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=amazonvpc --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: amazonvpc
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-amazonvpc
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-2a --dns=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
-  - name: pull-kops-e2e-cni-amazonvpc-ipv6
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=amazonvpc --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: amazonvpc
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-amazonvpc-ipv6
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-e2e-cni-calico
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)'
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: calico
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-calico
-
-  # {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-e2e-azure-cni-calico
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)'
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-kops-azure-cred-wi: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      serviceAccountName: azure
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=azure \
-            --create-args="--channel=alpha --networking=calico" \
-            --env=KOPS_FEATURE_FLAGS=Azure \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: azure
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/feature_flags: Azure
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: calico
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-azure-cni-calico
-
-  # {"cloud": "gce", "distro": "u2404", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-e2e-gce-cni-calico
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)'
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-k8s-ssh: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      serviceAccountName: k8s-kops-test
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=gce \
-            --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=calico --gce-service-account=default" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/extra_flags: --gce-service-account=default
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: calico
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-gce-cni-calico
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-2a --dns=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-e2e-cni-calico-ipv6
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)'
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: calico
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-calico-ipv6
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-e2e-cni-cilium
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --master-size=c6g.large --node-size=t4g.large" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: cilium
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-cilium
-
-  # {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-e2e-azure-cni-cilium
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-kops-azure-cred-wi: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      serviceAccountName: azure
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=azure \
-            --create-args="--channel=alpha --networking=cilium" \
-            --env=KOPS_FEATURE_FLAGS=Azure \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: azure
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/feature_flags: Azure
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: cilium
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-azure-cni-cilium
-
-  # {"cloud": "gce", "distro": "u2404", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-e2e-gce-cni-cilium
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-k8s-ssh: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      serviceAccountName: k8s-kops-test
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=gce \
-            --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=cilium --gce-service-account=default" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/extra_flags: --gce-service-account=default
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: cilium
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-gce-cni-cilium
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-2a --dns=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-e2e-cni-cilium-ipv6
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: cilium
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-cilium-ipv6
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium-etcd"}
-  - name: pull-kops-e2e-cni-cilium-etcd
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium-etcd --master-size=c6g.large --node-size=t4g.large" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: cilium-etcd
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-cilium-etcd
-
-  # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium-eni"}
-  - name: pull-kops-e2e-cni-cilium-eni
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20251122' --channel=alpha --networking=cilium-eni --master-size=c6g.large --node-size=t4g.large" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: cilium-eni
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-cilium-eni
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "flannel"}
-  - name: pull-kops-e2e-cni-flannel
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)'
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=flannel --master-size=c6g.large --node-size=t4g.large" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: flannel
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-flannel
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "ci", "kops_channel": "alpha", "networking": "kube-router"}
-  - name: pull-kops-e2e-cni-kuberouter
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)'
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=kube-router --master-size=c6g.large --node-size=t4g.large" \
-            --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-url=https://dl.k8s.io \
-            --test-package-dir=ci \
-            --test-package-marker=latest.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
-      test.kops.k8s.io/k8s_version: ci
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: kube-router
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-kuberouter
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
-  - name: pull-kops-e2e-cni-kindnet
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)'
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=kindnet --master-size=c6g.large --node-size=t4g.large" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: kindnet
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-kindnet
-
-  # {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
-  - name: pull-kops-e2e-azure-cni-kindnet
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)'
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-kops-azure-cred-wi: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      serviceAccountName: azure
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=azure \
-            --create-args="--channel=alpha --networking=kindnet" \
-            --env=KOPS_FEATURE_FLAGS=Azure \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: azure
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/feature_flags: Azure
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: kindnet
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-azure-cni-kindnet
-
-  # {"cloud": "gce", "distro": "u2404", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
-  - name: pull-kops-e2e-gce-cni-kindnet
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)'
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-k8s-ssh: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      serviceAccountName: k8s-kops-test
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=gce \
-            --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=kindnet --gce-service-account=default" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/extra_flags: --gce-service-account=default
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: kindnet
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-gce-cni-kindnet
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-2a --dns=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
-  - name: pull-kops-e2e-cni-kindnet-ipv6
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)'
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=kindnet --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: kindnet
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-kindnet-ipv6
-
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large --topology=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kubenet"}
-  - name: pull-kops-e2e-cni-kubenet
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    run_if_changed: '^pkg\/apis\/kops\/networking.go'
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=kubenet --master-size=c6g.large --node-size=t4g.large --topology=public" \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large --topology=public
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: kubenet
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-kubenet
-
-  # {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kubenet"}
-  - name: pull-kops-e2e-azure-cni-kubenet
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    run_if_changed: '^pkg\/apis\/kops\/networking.go'
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-kops-azure-cred-wi: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      serviceAccountName: azure
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=azure \
-            --create-args="--channel=alpha --networking=kubenet" \
-            --env=KOPS_FEATURE_FLAGS=Azure \
-            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --test=kops \
-            -- \
-            --test-args="-test.timeout=60m" \
-            --test-package-marker=stable.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          limits:
-            cpu: "4"
-            memory: 6Gi
-          requests:
-            cpu: "4"
-            memory: 6Gi
-    annotations:
-      test.kops.k8s.io/cloud: azure
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/feature_flags: Azure
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: kubenet
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-azure-cni-kubenet
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+    - name: pull-kops-e2e-cni-amazonvpc
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/containerd|components\/kubeproxy|iam\/iam_builder)\.go|nodeup\/pkg\/model\/kubelet\.go)'
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=amazonvpc --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: amazonvpc
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-amazonvpc
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-2a --dns=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+    - name: pull-kops-e2e-cni-amazonvpc-ipv6
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      always_run: false
+      optional: true
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=amazonvpc --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: amazonvpc
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-amazonvpc-ipv6
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+    - name: pull-kops-e2e-cni-calico
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)'
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: calico
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-calico
+    # {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+    - name: pull-kops-e2e-azure-cni-calico
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)'
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-kops-azure-cred-wi: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=azure \
+                --create-args="--channel=alpha --networking=calico" \
+                --env=KOPS_FEATURE_FLAGS=Azure \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: azure
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/feature_flags: Azure
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: calico
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-azure-cni-calico
+    # {"cloud": "gce", "distro": "u2404", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+    - name: pull-kops-e2e-gce-cni-calico
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)'
+      always_run: false
+      optional: true
+      skip_report: false
+      labels:
+        preset-k8s-ssh: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        serviceAccountName: k8s-kops-test
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=gce \
+                --admin-access=0.0.0.0/0 \
+                --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=calico --gce-service-account=default" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/ssh-key-secret/ssh-private
+              - name: KUBE_SSH_USER
+                value: prow
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: gce
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/extra_flags: --gce-service-account=default
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: calico
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-gce-cni-calico
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-2a --dns=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+    - name: pull-kops-e2e-cni-calico-ipv6
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)'
+      always_run: false
+      optional: true
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: calico
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-calico-ipv6
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+    - name: pull-kops-e2e-cni-cilium
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --master-size=c6g.large --node-size=t4g.large" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: cilium
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-cilium
+    # {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+    - name: pull-kops-e2e-azure-cni-cilium
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-kops-azure-cred-wi: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=azure \
+                --create-args="--channel=alpha --networking=cilium" \
+                --env=KOPS_FEATURE_FLAGS=Azure \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: azure
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/feature_flags: Azure
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: cilium
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-azure-cni-cilium
+    # {"cloud": "gce", "distro": "u2404", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+    - name: pull-kops-e2e-gce-cni-cilium
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
+      always_run: false
+      optional: true
+      skip_report: false
+      labels:
+        preset-k8s-ssh: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        serviceAccountName: k8s-kops-test
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=gce \
+                --admin-access=0.0.0.0/0 \
+                --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=cilium --gce-service-account=default" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/ssh-key-secret/ssh-private
+              - name: KUBE_SSH_USER
+                value: prow
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: gce
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/extra_flags: --gce-service-account=default
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: cilium
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-gce-cni-cilium
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-2a --dns=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+    - name: pull-kops-e2e-cni-cilium-ipv6
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
+      always_run: false
+      optional: true
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: cilium
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-cilium-ipv6
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium-etcd"}
+    - name: pull-kops-e2e-cni-cilium-etcd
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium-etcd --master-size=c6g.large --node-size=t4g.large" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: cilium-etcd
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-cilium-etcd
+    # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium-eni"}
+    - name: pull-kops-e2e-cni-cilium-eni
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20251122' --channel=alpha --networking=cilium-eni --master-size=c6g.large --node-size=t4g.large" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2204arm64
+        test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: cilium-eni
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-cilium-eni
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "flannel"}
+    - name: pull-kops-e2e-cni-flannel
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)'
+      always_run: false
+      optional: true
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=flannel --master-size=c6g.large --node-size=t4g.large" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: flannel
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-flannel
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "ci", "kops_channel": "alpha", "networking": "kube-router"}
+    - name: pull-kops-e2e-cni-kuberouter
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)'
+      always_run: false
+      optional: true
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=kube-router --master-size=c6g.large --node-size=t4g.large" \
+                --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-url=https://dl.k8s.io \
+                --test-package-dir=ci \
+                --test-package-marker=latest.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+        test.kops.k8s.io/k8s_version: ci
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: kube-router
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-kuberouter
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
+    - name: pull-kops-e2e-cni-kindnet
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)'
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=kindnet --master-size=c6g.large --node-size=t4g.large" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: kindnet
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-kindnet
+    # {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
+    - name: pull-kops-e2e-azure-cni-kindnet
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)'
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-kops-azure-cred-wi: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=azure \
+                --create-args="--channel=alpha --networking=kindnet" \
+                --env=KOPS_FEATURE_FLAGS=Azure \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: azure
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/feature_flags: Azure
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: kindnet
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-azure-cni-kindnet
+    # {"cloud": "gce", "distro": "u2404", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
+    - name: pull-kops-e2e-gce-cni-kindnet
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)'
+      always_run: false
+      optional: true
+      skip_report: false
+      labels:
+        preset-k8s-ssh: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        serviceAccountName: k8s-kops-test
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=gce \
+                --admin-access=0.0.0.0/0 \
+                --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=kindnet --gce-service-account=default" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/ssh-key-secret/ssh-private
+              - name: KUBE_SSH_USER
+                value: prow
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: gce
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/extra_flags: --gce-service-account=default
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: kindnet
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-gce-cni-kindnet
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-2a --dns=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
+    - name: pull-kops-e2e-cni-kindnet-ipv6
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)'
+      always_run: false
+      optional: true
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=kindnet --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --zones=us-west-2a --dns=public
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: kindnet
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-kindnet-ipv6
+    # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large --topology=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kubenet"}
+    - name: pull-kops-e2e-cni-kubenet
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      run_if_changed: '^pkg\/apis\/kops\/networking.go'
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=aws \
+                --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=kubenet --master-size=c6g.large --node-size=t4g.large --topology=public" \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404arm64
+        test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large --topology=public
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: kubenet
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-kubenet
+    # {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kubenet"}
+    - name: pull-kops-e2e-azure-cni-kubenet
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+      run_if_changed: '^pkg\/apis\/kops\/networking.go'
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-kops-azure-cred-wi: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                make test-e2e-install
+                kubetest2 kops \
+                -v 2 \
+                --up --build --down \
+                --cloud-provider=azure \
+                --create-args="--channel=alpha --networking=kubenet" \
+                --env=KOPS_FEATURE_FLAGS=Azure \
+                --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+                --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+                --test=kops \
+                -- \
+                --test-args="-test.timeout=60m" \
+                --test-package-marker=stable.txt \
+                --parallel=25
+            securityContext:
+              privileged: true
+            env:
+              - name: GOPATH
+                value: /home/prow/go
+            resources:
+              limits:
+                cpu: "4"
+                memory: 6Gi
+              requests:
+                cpu: "4"
+                memory: 6Gi
+      annotations:
+        test.kops.k8s.io/cloud: azure
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/feature_flags: Azure
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: kubenet
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: e2e-azure-cni-kubenet

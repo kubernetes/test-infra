@@ -21,6 +21,6 @@ spec:
   selector:
     app: needs-rebase
   ports:
-  - port: 80
-    targetPort: 8888
+    - port: 80
+      targetPort: 8888
   type: NodePort

@@ -1,154 +1,154 @@
 periodics:
-- name: ci-kubernetes-node-release-branch-1-32
-  cluster: k8s-infra-prow-build
-  interval: 24h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 240m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.32
-    path_alias: k8s.io/kubernetes
-    workdir: true
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  spec:
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-          - --deployment=node
-          - --gcp-zone=us-central1-a
-          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/k8s-release-branches/image-config-1.32.yaml
-          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
-          - --node-tests=true
-          - --provider=gce
-          - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
-          - --timeout=180m
-        env:
-          - name: GOPATH
-            value: /go
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-node-release-blocking
-    testgrid-tab-name: node-conformance-release-1.32
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    description: Node conformance tests in release branch 1.32
-- name: ci-kubernetes-node-release-branch-1-33
-  cluster: k8s-infra-prow-build
-  interval: 24h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 240m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.33
-    path_alias: k8s.io/kubernetes
-    workdir: true
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  spec:
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-          - kubetest2
-          - noop
-          - --test=node
-          - --
-          - --repo-root=.
-          - --gcp-zone=us-central1-a
-          - --parallelism=8
-          - --focus-regex=\[NodeConformance\]
-          - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
-          - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
-          - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/k8s-release-branches/image-config-1.33.yaml
-          - --timeout=180m
-        env:
-          - name: GOPATH
-            value: /go
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-node-release-blocking
-    testgrid-tab-name: node-conformance-release-1.33
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    description: Node conformance tests in release branch 1.33
-- name: ci-kubernetes-node-release-branch-1-34
-  cluster: k8s-infra-prow-build
-  interval: 24h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 240m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.34
-    path_alias: k8s.io/kubernetes
-    workdir: true
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  spec:
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-          - kubetest2
-          - noop
-          - --test=node
-          - --
-          - --repo-root=.
-          - --gcp-zone=us-central1-a
-          - --parallelism=8
-          - --focus-regex=\[NodeConformance\]
-          - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
-          - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
-          - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/k8s-release-branches/image-config-1.34.yaml
-          - --timeout=180m
-        env:
-          - name: GOPATH
-            value: /go
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-node-release-blocking
-    testgrid-tab-name: node-conformance-release-1.34
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    description: Node conformance tests in release branch 1.34
+  - name: ci-kubernetes-node-release-branch-1-32
+    cluster: k8s-infra-prow-build
+    interval: 24h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: release-1.32
+        path_alias: k8s.io/kubernetes
+        workdir: true
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
+            - --deployment=node
+            - --gcp-zone=us-central1-a
+            - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/k8s-release-branches/image-config-1.32.yaml
+            - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+            - --node-tests=true
+            - --provider=gce
+            - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-node-release-blocking
+      testgrid-tab-name: node-conformance-release-1.32
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+      description: Node conformance tests in release branch 1.32
+  - name: ci-kubernetes-node-release-branch-1-33
+    cluster: k8s-infra-prow-build
+    interval: 24h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: release-1.33
+        path_alias: k8s.io/kubernetes
+        workdir: true
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - kubetest2
+            - noop
+            - --test=node
+            - --
+            - --repo-root=.
+            - --gcp-zone=us-central1-a
+            - --parallelism=8
+            - --focus-regex=\[NodeConformance\]
+            - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
+            - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+            - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/k8s-release-branches/image-config-1.33.yaml
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-node-release-blocking
+      testgrid-tab-name: node-conformance-release-1.33
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+      description: Node conformance tests in release branch 1.33
+  - name: ci-kubernetes-node-release-branch-1-34
+    cluster: k8s-infra-prow-build
+    interval: 24h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: release-1.34
+        path_alias: k8s.io/kubernetes
+        workdir: true
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - kubetest2
+            - noop
+            - --test=node
+            - --
+            - --repo-root=.
+            - --gcp-zone=us-central1-a
+            - --parallelism=8
+            - --focus-regex=\[NodeConformance\]
+            - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
+            - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+            - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/k8s-release-branches/image-config-1.34.yaml
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-node-release-blocking
+      testgrid-tab-name: node-conformance-release-1.34
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+      description: Node conformance tests in release branch 1.34

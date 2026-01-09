@@ -83,7 +83,7 @@ require (
 	knative.dev/pkg v0.0.0-20230221145627-8efb3485adcf // indirect
 	sigs.k8s.io/controller-runtime v0.12.3
 	sigs.k8s.io/prow v0.0.0-20240419142743-3cb2506c2ff3
-	sigs.k8s.io/yaml v1.4.0
+	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
@@ -171,6 +171,7 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.3 // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	golang.org/x/term v0.36.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect

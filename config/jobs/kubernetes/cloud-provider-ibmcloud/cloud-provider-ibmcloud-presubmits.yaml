@@ -1,105 +1,104 @@
 presubmits:
   kubernetes-sigs/provider-ibmcloud-test-infra:
-  - name: pull-provider-ibmcloud-test-infra-kubernetes
-    cluster: k8s-infra-ppc64le-prow-build
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 220m
-    annotations:
-      description: Optional presubmit job to test changes in kubernetes-sigs/provider-ibmcloud-test-infra repo
-      testgrid-dashboards: ibm-ppc64le-presubmits
-      testgrid-tab-name: pull-provider-ibmcloud-test-infra-kubernetes
-    labels:
-      preset-ibmcloud-cred: "true"
-    spec:
-      containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-          securityContext:
-            privileged: true
-          env:
-            - name: "BOSKOS_HOST"
-              value: "boskos.test-pods.svc.cluster.local"
-            - name: "USER"
-              value: "pull-provider-ibmcloud-test-infra-kubernetes"
-          resources:
-            requests:
-              cpu: 2
-              memory: "10Gi"
-            limits:
-              cpu: 2
-              memory: "10Gi"
-          command:
-            - runner.sh
-          args:
-            - bash
-            - -c
-            - |
-              set -o errexit
-              set -o nounset
-              set -o pipefail
-              set -o xtrace
+    - name: pull-provider-ibmcloud-test-infra-kubernetes
+      cluster: k8s-infra-ppc64le-prow-build
+      always_run: false
+      decorate: true
+      decoration_config:
+        timeout: 220m
+      annotations:
+        description: Optional presubmit job to test changes in kubernetes-sigs/provider-ibmcloud-test-infra repo
+        testgrid-dashboards: ibm-ppc64le-presubmits
+        testgrid-tab-name: pull-provider-ibmcloud-test-infra-kubernetes
+      labels:
+        preset-ibmcloud-cred: "true"
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            securityContext:
+              privileged: true
+            env:
+              - name: "BOSKOS_HOST"
+                value: "boskos.test-pods.svc.cluster.local"
+              - name: "USER"
+                value: "pull-provider-ibmcloud-test-infra-kubernetes"
+            resources:
+              requests:
+                cpu: 2
+                memory: "10Gi"
+              limits:
+                cpu: 2
+                memory: "10Gi"
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                set -o errexit
+                set -o nounset
+                set -o pipefail
+                set -o xtrace
 
-              RESOURCE_TYPE="powervs"
-              #Call to boskos to checkout resource
-              source "./hack/boskos.sh"
+                RESOURCE_TYPE="powervs"
+                #Call to boskos to checkout resource
+                source "./hack/boskos.sh"
 
-              #Setup of kubetest2 tf deployer and ginkgo tester
-              make install-deployer-tf
-              go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
+                #Setup of kubetest2 tf deployer and ginkgo tester
+                make install-deployer-tf
+                go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
-              #Install ansible required to bring up k8s cluster on infra
-              apt-get update && apt-get install -y ansible
+                #Install ansible required to bring up k8s cluster on infra
+                apt-get update && apt-get install -y ansible
 
-              K8S_BUILD_VERSION=$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
+                K8S_BUILD_VERSION=$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
 
-              TIMESTAMP=$(date +%s)
+                TIMESTAMP=$(date +%s)
 
-              set +o errexit
-              set -o xtrace
-              kubetest2 tf --powervs-image-name CentOS-Stream-10 \
-                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
-                --powervs-ssh-key k8s-prow-sshkey \
-                --ssh-private-key /etc/secret-volume/ssh-privatekey \
-                --build-version $K8S_BUILD_VERSION \
-                --release-marker $K8S_BUILD_VERSION \
-                --cluster-name pull-$TIMESTAMP \
-                --workers-count 1 \
-                --up --down --auto-approve --retry-on-tf-failure 3 \
-                --break-kubetest-on-upfail true \
-                --powervs-memory 32 \
-                --test=ginkgo -- --parallel 30 --test-package-dir ci --test-package-version $K8S_BUILD_VERSION --focus-regex='Pods should be submitted and removed'; rc=$?
+                set +o errexit
+                set -o xtrace
+                kubetest2 tf --powervs-image-name CentOS-Stream-10 \
+                  --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
+                  --powervs-service-id ${BOSKOS_RESOURCE_ID} \
+                  --powervs-ssh-key k8s-prow-sshkey \
+                  --ssh-private-key /etc/secret-volume/ssh-privatekey \
+                  --build-version $K8S_BUILD_VERSION \
+                  --release-marker $K8S_BUILD_VERSION \
+                  --cluster-name pull-$TIMESTAMP \
+                  --workers-count 1 \
+                  --up --down --auto-approve --retry-on-tf-failure 3 \
+                  --break-kubetest-on-upfail true \
+                  --powervs-memory 32 \
+                  --test=ginkgo -- --parallel 30 --test-package-dir ci --test-package-version $K8S_BUILD_VERSION --focus-regex='Pods should be submitted and removed'; rc=$?
 
-              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
+                [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
 
-              if [ $rc != 0 ]; then
-                  echo "ERROR: k8s setup and quick run exited with code: $rc"
-                  exit $rc
-              fi
-
-  - name: pull-provider-ibmcloud-test-infra-kubetest2-secretmanager-build
-    cluster: k8s-infra-ppc64le-prow-build
-    always_run: true
-    decorate: true
-    decoration_config:
-      timeout: 30m
-    annotations:
-      testgrid-dashboards: ibm-ppc64le-presubmits
-      testgrid-tab-name: kubetest2-tf-secretmanager-build
-    spec:
-      containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-          command:
-            - runner.sh
-          args:
-            - make
-            - build-deployer-tf
-            - build-secret-manager
-          resources:
-            requests:
-              cpu: 1
-              memory: "2Gi"
-            limits:
-              cpu: 1
-              memory: "2Gi"
+                if [ $rc != 0 ]; then
+                    echo "ERROR: k8s setup and quick run exited with code: $rc"
+                    exit $rc
+                fi
+    - name: pull-provider-ibmcloud-test-infra-kubetest2-secretmanager-build
+      cluster: k8s-infra-ppc64le-prow-build
+      always_run: true
+      decorate: true
+      decoration_config:
+        timeout: 30m
+      annotations:
+        testgrid-dashboards: ibm-ppc64le-presubmits
+        testgrid-tab-name: kubetest2-tf-secretmanager-build
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - build-deployer-tf
+              - build-secret-manager
+            resources:
+              requests:
+                cpu: 1
+                memory: "2Gi"
+              limits:
+                cpu: 1
+                memory: "2Gi"

@@ -9,15 +9,15 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/codesearch\/(.*.yaml|deploy.sh)$'
       branches:
-      - ^main$
+        - ^main$
       reporter_config:
         slack:
           channel: "k8s-infra-alerts"
           job_states_to_report:
-          - success
-          - failure
-          - aborted
-          - error
+            - success
+            - failure
+            - aborted
+            - error
           report_template: 'Deploying codesearch: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-apps#deploy-codesearch|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
@@ -28,26 +28,26 @@ postsubmits:
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
-        - org: kubernetes
-          slug: sig-k8s-infra-leads
-        - org: kubernetes
-          slug: test-infra-admins
-        # TODO: sig-specific team in charge of this app
-        # - org: kubernetes
-        #   slug: sig-foo-bar
+          - org: kubernetes
+            slug: sig-k8s-infra-leads
+          - org: kubernetes
+            slug: test-infra-admins
+            # TODO: sig-specific team in charge of this app
+            # - org: kubernetes
+            #   slug: sig-foo-bar
       spec:
         serviceAccountName: prow-deployer
         containers:
-        - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-          command:
-          - ./apps/codesearch/deploy.sh
-          resources:
-            limits:
-              cpu: 100m
-              memory: 512Mi
-            requests:
-              cpu: 100m
-              memory: 512Mi
+          - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+            command:
+              - ./apps/codesearch/deploy.sh
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 512Mi
     - name: post-k8sio-deploy-app-elekto
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -55,15 +55,15 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/elekto\/(.*.yaml|deploy.sh)$'
       branches:
-      - ^main$
+        - ^main$
       reporter_config:
         slack:
           channel: "k8s-infra-alerts"
           job_states_to_report:
-          - success
-          - failure
-          - aborted
-          - error
+            - success
+            - failure
+            - aborted
+            - error
           report_template: 'Deploying elekto: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-apps#deploy-elekto|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
@@ -74,26 +74,26 @@ postsubmits:
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
-        - org: kubernetes
-          slug: sig-k8s-infra-leads
-        - org: kubernetes
-          slug: test-infra-admins
-        # TODO: sig-specific team in charge of this app
-        # - org: kubernetes
-        #   slug: sig-foo-bar
+          - org: kubernetes
+            slug: sig-k8s-infra-leads
+          - org: kubernetes
+            slug: test-infra-admins
+            # TODO: sig-specific team in charge of this app
+            # - org: kubernetes
+            #   slug: sig-foo-bar
       spec:
         serviceAccountName: prow-deployer
         containers:
-        - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-          command:
-          - ./apps/elekto/deploy.sh
-          resources:
-            limits:
-              cpu: 100m
-              memory: 512Mi
-            requests:
-              cpu: 100m
-              memory: 512Mi
+          - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+            command:
+              - ./apps/elekto/deploy.sh
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 512Mi
     - name: post-k8sio-deploy-app-gcsweb
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -101,15 +101,15 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/gcsweb\/(.*.yaml|deploy.sh)$'
       branches:
-      - ^main$
+        - ^main$
       reporter_config:
         slack:
           channel: "k8s-infra-alerts"
           job_states_to_report:
-          - success
-          - failure
-          - aborted
-          - error
+            - success
+            - failure
+            - aborted
+            - error
           report_template: 'Deploying gcsweb: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-apps#deploy-gcsweb|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
@@ -120,26 +120,26 @@ postsubmits:
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
-        - org: kubernetes
-          slug: sig-k8s-infra-leads
-        - org: kubernetes
-          slug: test-infra-admins
-        # TODO: sig-specific team in charge of this app
-        # - org: kubernetes
-        #   slug: sig-foo-bar
+          - org: kubernetes
+            slug: sig-k8s-infra-leads
+          - org: kubernetes
+            slug: test-infra-admins
+            # TODO: sig-specific team in charge of this app
+            # - org: kubernetes
+            #   slug: sig-foo-bar
       spec:
         serviceAccountName: prow-deployer
         containers:
-        - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-          command:
-          - ./apps/gcsweb/deploy.sh
-          resources:
-            limits:
-              cpu: 100m
-              memory: 512Mi
-            requests:
-              cpu: 100m
-              memory: 512Mi
+          - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+            command:
+              - ./apps/gcsweb/deploy.sh
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 512Mi
     - name: post-k8sio-deploy-app-kettle
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -147,15 +147,15 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/kettle\/(.*.yaml|deploy.sh)$'
       branches:
-      - ^main$
+        - ^main$
       reporter_config:
         slack:
           channel: "k8s-infra-alerts"
           job_states_to_report:
-          - success
-          - failure
-          - aborted
-          - error
+            - success
+            - failure
+            - aborted
+            - error
           report_template: 'Deploying kettle: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-apps#deploy-kettle|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
@@ -166,26 +166,26 @@ postsubmits:
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
-        - org: kubernetes
-          slug: sig-k8s-infra-leads
-        - org: kubernetes
-          slug: test-infra-admins
-        # TODO: sig-specific team in charge of this app
-        # - org: kubernetes
-        #   slug: sig-foo-bar
+          - org: kubernetes
+            slug: sig-k8s-infra-leads
+          - org: kubernetes
+            slug: test-infra-admins
+            # TODO: sig-specific team in charge of this app
+            # - org: kubernetes
+            #   slug: sig-foo-bar
       spec:
         serviceAccountName: prow-deployer
         containers:
-        - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-          command:
-          - ./apps/kettle/deploy.sh
-          resources:
-            limits:
-              cpu: 100m
-              memory: 512Mi
-            requests:
-              cpu: 100m
-              memory: 512Mi
+          - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+            command:
+              - ./apps/kettle/deploy.sh
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 512Mi
     - name: post-k8sio-deploy-app-k8s-io
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -193,15 +193,15 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/k8s-io\/(.*.yaml|deploy.sh)$'
       branches:
-      - ^main$
+        - ^main$
       reporter_config:
         slack:
           channel: "k8s-infra-alerts"
           job_states_to_report:
-          - success
-          - failure
-          - aborted
-          - error
+            - success
+            - failure
+            - aborted
+            - error
           report_template: 'Deploying k8s-io: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-apps#deploy-k8s-io|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
@@ -212,26 +212,26 @@ postsubmits:
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
-        - org: kubernetes
-          slug: sig-k8s-infra-leads
-        - org: kubernetes
-          slug: test-infra-admins
-        # TODO: sig-specific team in charge of this app
-        # - org: kubernetes
-        #   slug: sig-foo-bar
+          - org: kubernetes
+            slug: sig-k8s-infra-leads
+          - org: kubernetes
+            slug: test-infra-admins
+            # TODO: sig-specific team in charge of this app
+            # - org: kubernetes
+            #   slug: sig-foo-bar
       spec:
         serviceAccountName: prow-deployer
         containers:
-        - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-          command:
-          - ./apps/k8s-io/deploy.sh
-          resources:
-            limits:
-              cpu: 100m
-              memory: 512Mi
-            requests:
-              cpu: 100m
-              memory: 512Mi
+          - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+            command:
+              - ./apps/k8s-io/deploy.sh
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 512Mi
     - name: post-k8sio-deploy-app-kubernetes-external-secrets
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -239,15 +239,15 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/kubernetes-external-secrets\/(.*.yaml|deploy.sh)$'
       branches:
-      - ^main$
+        - ^main$
       reporter_config:
         slack:
           channel: "k8s-infra-alerts"
           job_states_to_report:
-          - success
-          - failure
-          - aborted
-          - error
+            - success
+            - failure
+            - aborted
+            - error
           report_template: 'Deploying kubernetes-external-secrets: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-apps#deploy-kubernetes-external-secrets|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
@@ -258,26 +258,26 @@ postsubmits:
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
-        - org: kubernetes
-          slug: sig-k8s-infra-leads
-        - org: kubernetes
-          slug: test-infra-admins
-        # TODO: sig-specific team in charge of this app
-        # - org: kubernetes
-        #   slug: sig-foo-bar
+          - org: kubernetes
+            slug: sig-k8s-infra-leads
+          - org: kubernetes
+            slug: test-infra-admins
+            # TODO: sig-specific team in charge of this app
+            # - org: kubernetes
+            #   slug: sig-foo-bar
       spec:
         serviceAccountName: prow-deployer
         containers:
-        - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-          command:
-          - ./apps/kubernetes-external-secrets/deploy.sh
-          resources:
-            limits:
-              cpu: 100m
-              memory: 512Mi
-            requests:
-              cpu: 100m
-              memory: 512Mi
+          - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+            command:
+              - ./apps/kubernetes-external-secrets/deploy.sh
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 512Mi
     - name: post-k8sio-deploy-app-perfdash
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -285,15 +285,15 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/perfdash\/(.*.yaml|deploy.sh)$'
       branches:
-      - ^main$
+        - ^main$
       reporter_config:
         slack:
           channel: "k8s-infra-alerts"
           job_states_to_report:
-          - success
-          - failure
-          - aborted
-          - error
+            - success
+            - failure
+            - aborted
+            - error
           report_template: 'Deploying perfdash: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-apps#deploy-perfdash|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
@@ -304,26 +304,26 @@ postsubmits:
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
-        - org: kubernetes
-          slug: sig-k8s-infra-leads
-        - org: kubernetes
-          slug: test-infra-admins
-        # TODO: sig-specific team in charge of this app
-        # - org: kubernetes
-        #   slug: sig-foo-bar
+          - org: kubernetes
+            slug: sig-k8s-infra-leads
+          - org: kubernetes
+            slug: test-infra-admins
+            # TODO: sig-specific team in charge of this app
+            # - org: kubernetes
+            #   slug: sig-foo-bar
       spec:
         serviceAccountName: prow-deployer
         containers:
-        - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-          command:
-          - ./apps/perfdash/deploy.sh
-          resources:
-            limits:
-              cpu: 100m
-              memory: 512Mi
-            requests:
-              cpu: 100m
-              memory: 512Mi
+          - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+            command:
+              - ./apps/perfdash/deploy.sh
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 512Mi
     - name: post-k8sio-deploy-app-publishing-bot
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -331,15 +331,15 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/publishing-bot\/(.*.yaml|deploy.sh)$'
       branches:
-      - ^main$
+        - ^main$
       reporter_config:
         slack:
           channel: "k8s-infra-alerts"
           job_states_to_report:
-          - success
-          - failure
-          - aborted
-          - error
+            - success
+            - failure
+            - aborted
+            - error
           report_template: 'Deploying publishing-bot: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-apps#deploy-publishing-bot|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
@@ -350,26 +350,26 @@ postsubmits:
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
-        - org: kubernetes
-          slug: sig-k8s-infra-leads
-        - org: kubernetes
-          slug: test-infra-admins
-        # TODO: sig-specific team in charge of this app
-        # - org: kubernetes
-        #   slug: sig-foo-bar
+          - org: kubernetes
+            slug: sig-k8s-infra-leads
+          - org: kubernetes
+            slug: test-infra-admins
+            # TODO: sig-specific team in charge of this app
+            # - org: kubernetes
+            #   slug: sig-foo-bar
       spec:
         serviceAccountName: prow-deployer
         containers:
-        - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-          command:
-          - ./apps/publishing-bot/deploy.sh
-          resources:
-            limits:
-              cpu: 100m
-              memory: 512Mi
-            requests:
-              cpu: 100m
-              memory: 512Mi
+          - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+            command:
+              - ./apps/publishing-bot/deploy.sh
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 512Mi
     - name: post-k8sio-deploy-app-slack-infra
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -377,15 +377,15 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/slack-infra\/(.*.yaml|deploy.sh)$'
       branches:
-      - ^main$
+        - ^main$
       reporter_config:
         slack:
           channel: "k8s-infra-alerts"
           job_states_to_report:
-          - success
-          - failure
-          - aborted
-          - error
+            - success
+            - failure
+            - aborted
+            - error
           report_template: 'Deploying slack-infra: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-apps#deploy-slack-infra|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
@@ -396,23 +396,23 @@ postsubmits:
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
-        - org: kubernetes
-          slug: sig-k8s-infra-leads
-        - org: kubernetes
-          slug: test-infra-admins
-        # TODO: sig-specific team in charge of this app
-        # - org: kubernetes
-        #   slug: sig-foo-bar
+          - org: kubernetes
+            slug: sig-k8s-infra-leads
+          - org: kubernetes
+            slug: test-infra-admins
+            # TODO: sig-specific team in charge of this app
+            # - org: kubernetes
+            #   slug: sig-foo-bar
       spec:
         serviceAccountName: prow-deployer
         containers:
-        - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-          command:
-          - ./apps/slack-infra/deploy.sh
-          resources:
-            limits:
-              cpu: 100m
-              memory: 512Mi
-            requests:
-              cpu: 100m
-              memory: 512Mi
+          - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+            command:
+              - ./apps/slack-infra/deploy.sh
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 512Mi
