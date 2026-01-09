@@ -7,81 +7,81 @@ presubmits:
   kubernetes/kubernetes:
 {%- endif %}
 {%- endif %}
-{%- if not ci %}
+{% if not ci %}
 {%- set testgrid_dashboards = testgrid_dashboards + ", sig-node-presubmits" %}
-{%- endif %}
+{%- endif -%}
 {%- if "crio" in job_name %}
 {%- set testgrid_dashboards = testgrid_dashboards + ", sig-node-cri-o" %}
 {%- set runtime = "crio" %}
-{%- endif %}
+{%- endif -%}
 {%- if "containerd" in job_name %}
 {%- set testgrid_dashboards = testgrid_dashboards + ", sig-node-containerd" %}
 {%- set runtime = "containerd" %}
-{%- endif %}
+{%- endif -%}
 {%- if ci and release_informing %}
 {%- set testgrid_dashboards = testgrid_dashboards + ", sig-release-master-informing" %}
 {%- set testgrid_alert_email = testgrid_alert_email + ", release-team@kubernetes.io" %}
-{%- endif %}
-{% set indent_width = 2 if not ci else 0 %}
-{% filter indent(width=indent_width, first=True) -%}
-  - name: {{job_name}}
-    cluster: {{cluster}}
-    {%- if ci %}
-    interval: 6h
-    {%- else %}
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    always_run: false
-    {%- if run_if_changed and presubmit %}
-    run_if_changed: {{run_if_changed}}
+{%- endif -%}
+{%- set indent_width = 4 if not ci else 2 -%}
+{%- filter indent(width=indent_width, first=True) -%}
+- name: {{job_name}}
+  cluster: {{cluster}}
+  {%- if ci %}
+  interval: 6h
+  {%- else %}
+  skip_branches:
+    - release-\d+\.\d+ # per-release image
+  always_run: false
+  {%- if run_if_changed and presubmit %}
+  run_if_changed: {{run_if_changed}}
+  {%- endif %}
+  optional: true
+  {%- if job_type == "node" %}
+  skip_report: false
+  {%- endif %}
+  {%- endif %}
+  labels:
+    preset-service-account: "true"
+    {%- if use_dind %}
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
     {%- endif %}
-    optional: true
     {%- if job_type == "node" %}
-    skip_report: false
+    preset-k8s-ssh: "true"
+    {%- endif %}
+  annotations:
+    testgrid-dashboards: {{testgrid_dashboards}}
+    description: {{description}}
+    testgrid-alert-email: {{testgrid_alert_email}}
+    {%- if not canary and ( not all_features or presubmit ) %}
+    fork-per-release: "true"
+    {%- if ci %}
+    fork-per-release-periodic-interval: 24h
+    fork-per-release-replacements: latest-fast.txt -> latest-{% raw %}{{.Version}}{% endraw %}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
     {%- endif %}
     {%- endif %}
-    labels:
-      preset-service-account: "true"
-      {%- if use_dind %}
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      {%- endif %}
-      {%- if job_type == "node" %}
-      preset-k8s-ssh: "true"
-      {%- endif %}
-    annotations:
-      testgrid-dashboards: {{testgrid_dashboards}}
-      description: {{description}}
-      testgrid-alert-email: {{testgrid_alert_email}}
-      {%- if not canary and ( not all_features or presubmit ) %}
-      fork-per-release: "true"
-      {%- if ci %}
-      fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{% raw %}{{.Version}}{% endraw %}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
-      {%- endif %}
-      {%- endif %}
-    decorate: true
-    decoration_config:
-      timeout: {{timeout}}
-    {%- if not ci %}
-    path_alias: k8s.io/kubernetes
-    {%- endif %}
-    {%- if ci and need_kubernetes_repo or need_test_infra_repo or need_containerd_repo %}
-    extra_refs:
-    {%- if ci and need_kubernetes_repo %}
+  decorate: true
+  decoration_config:
+    timeout: {{timeout}}
+  {%- if not ci %}
+  path_alias: k8s.io/kubernetes
+  {%- endif %}
+  {%- if ci and need_kubernetes_repo or need_test_infra_repo or need_containerd_repo %}
+  extra_refs:
+  {%- if ci and need_kubernetes_repo %}
     - org: kubernetes
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
       workdir: true
-    {%- endif %}
-    {%- if need_test_infra_repo %}
+  {%- endif %}
+  {%- if need_test_infra_repo %}
     - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
-    {%- endif %}
-    {%- if need_containerd_repo %}
+  {%- endif %}
+  {%- if need_containerd_repo %}
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -91,179 +91,179 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
         command:
-        - runner.sh
+          - runner.sh
 
         {%- if job_type == "node" %}
         args:
-        - kubetest2
-        - noop
-        - --test=node
-        - --
-        - --repo-root=.
-        - --gcp-zone=us-central1-b
-        - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { {% if all_features %}OffByDefault,{% endif -%} DynamicResourceAllocation } && !Flaky {%- if not ci %} && !Slow {%- endif %}'
-        - --timeout={{e2e_node_timeout}}
-        - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args={% if all_features -%} --feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true {% endif -%} --container-runtime-endpoint=unix:///var/run/{{runtime}}/{{runtime}}.sock --container-runtime-process-name=/usr/local/bin/{{runtime}} --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/{{runtime}}.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"{{runtime}}.log\", \"journalctl\": [\"-u\", \"{{runtime}}\"]}"'
-        - --image-config-file={{image_config_file}}
+          - kubetest2
+          - noop
+          - --test=node
+          - --
+          - --repo-root=.
+          - --gcp-zone=us-central1-b
+          - --parallelism=1
+          - '--label-filter=DRA && Feature: isSubsetOf { {% if all_features %}OffByDefault,{% endif -%} DynamicResourceAllocation } && !Flaky {%- if not ci %} && !Slow {%- endif %}'
+          - --timeout={{e2e_node_timeout}}
+          - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
+          - '--test-args={% if all_features -%} --feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true {% endif -%} --container-runtime-endpoint=unix:///var/run/{{runtime}}/{{runtime}}.sock --container-runtime-process-name=/usr/local/bin/{{runtime}} --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/{{runtime}}.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"{{runtime}}.log\", \"journalctl\": [\"-u\", \"{{runtime}}\"]}"'
+          - --image-config-file={{image_config_file}}
         {%- if inject_ssh_public_key %}
         env:
-        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-          value: "1"
-        - name: GOPATH
-          value: /go
-        - name: KUBE_SSH_USER
-          value: core
+          - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+            value: "1"
+          - name: GOPATH
+            value: /go
+          - name: KUBE_SSH_USER
+            value: core
         {%- endif %}
 
         {%- elif job_type == "integration" %}
-        - /bin/bash
-        - -xce
-        - |
-          # test/e2e_dra is a separate Ginkgo suite with a dependency on local-up-cluster.sh.
-          # We could use "make test WHAT=./test/e2e_dra", but then we would get a test JUnit file
-          # in addition to the better one from Ginkgo, so instead we build the test binary and
-          # invoke it directly. The Ginkgo CLI doesn't add any benefit because we cannot run
-          # tests in parallel.
-          #
-          # We also need the control plane binaries.
-          make WHAT="./test/e2e_dra/e2e_dra.test cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
-          KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir _output/local/go/bin/e2e_dra.test -ginkgo.timeout=30m -ginkgo.junit-report=${ARTIFACTS}/junit.xml -ginkgo.v -test.v
+          - /bin/bash
+          - -xce
+          - |
+            # test/e2e_dra is a separate Ginkgo suite with a dependency on local-up-cluster.sh.
+            # We could use "make test WHAT=./test/e2e_dra", but then we would get a test JUnit file
+            # in addition to the better one from Ginkgo, so instead we build the test binary and
+            # invoke it directly. The Ginkgo CLI doesn't add any benefit because we cannot run
+            # tests in parallel.
+            #
+            # We also need the control plane binaries.
+            make WHAT="./test/e2e_dra/e2e_dra.test cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
+            KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir _output/local/go/bin/e2e_dra.test -ginkgo.timeout=30m -ginkgo.junit-report=${ARTIFACTS}/junit.xml -ginkgo.v -test.v
 
         {%- elif job_type == "e2e" %}
         args:
-        - /bin/bash
-        - -xce
-        - |
-          set -o pipefail
-          {%- if ci %}
-          # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
-          revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/fast/latest-fast.txt)
-          # Report what was tested.
-          echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
-          # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
-          hash=${revision/*+/}
-          kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
-          kind_node_source="https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
-          {%- else %}
-          # A presubmit job uses the checked out and merged source code.
-          revision=$(git describe --tags)
-          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
-          kind_node_source=.
-          {%- endif %}
-          {%- if all_features %}
-          # Which DRA features exist can change over time.
-          features=( $( {%- if ci %} curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/pkg/features/kube_features.go" | grep '"DRA' {% else %} grep '"DRA' pkg/features/kube_features.go {%- endif %} | sed 's/.*"\(.*\)"/\1/' ) )
-          : "Enabling DRA feature(s): ${features[*]}."
-          {%- else %}
-          features=( )
-          {%- endif %}
-          {%- if ci %}
-          curl --fail --silent --show-error --location "https://dl.k8s.io/ci/fast/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
-          ginkgo=kubernetes/test/bin/ginkgo
-          e2e_test=kubernetes/test/bin/e2e.test
-          {%- else %}
-          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
-          ginkgo=_output/bin/ginkgo
-          e2e_test=_output/bin/e2e.test
-          {%- endif %}
-          # The latest kind is assumed to work also for older release branches, should this job get forked.
-          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          kind build node-image --image=dra/node:latest "${kind_node_source}"
-          GINKGO_E2E_PID=
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
-          # and adding something at the end.
-          (
-              ${kind_yaml_cmd[@]}
+          - /bin/bash
+          - -xce
+          - |
+            set -o pipefail
+            {%- if ci %}
+            # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
+            revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/fast/latest-fast.txt)
+            # Report what was tested.
+            echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
+            # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
+            hash=${revision/*+/}
+            kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
+            kind_node_source="https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
+            {%- else %}
+            # A presubmit job uses the checked out and merged source code.
+            revision=$(git describe --tags)
+            kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
+            kind_node_source=.
+            {%- endif %}
+            {%- if all_features %}
+            # Which DRA features exist can change over time.
+            features=( $( {%- if ci %} curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/pkg/features/kube_features.go" | grep '"DRA' {% else %} grep '"DRA' pkg/features/kube_features.go {%- endif %} | sed 's/.*"\(.*\)"/\1/' ) )
+            : "Enabling DRA feature(s): ${features[*]}."
+            {%- else %}
+            features=( )
+            {%- endif %}
+            {%- if ci %}
+            curl --fail --silent --show-error --location "https://dl.k8s.io/ci/fast/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
+            ginkgo=kubernetes/test/bin/ginkgo
+            e2e_test=kubernetes/test/bin/e2e.test
+            {%- else %}
+            make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+            ginkgo=_output/bin/ginkgo
+            e2e_test=_output/bin/e2e.test
+            {%- endif %}
+            # The latest kind is assumed to work also for older release branches, should this job get forked.
+            curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+            kind build node-image --image=dra/node:latest "${kind_node_source}"
+            GINKGO_E2E_PID=
+            trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+            trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+            # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+            # and adding something at the end.
+            (
+                ${kind_yaml_cmd[@]}
 
-              # Additional features are not in kind.yaml, but they can be added at the end.
-              for feature in ${features[@]}; do echo "  ${feature}: true"; done
-          ) >/tmp/kind.yaml
+                # Additional features are not in kind.yaml, but they can be added at the end.
+                for feature in ${features[@]}; do echo "  ${feature}: true"; done
+            ) >/tmp/kind.yaml
 
-          # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
-          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-          # kind.yaml may or may not have a `kubeadmConfigPatches`, so we have to be
-          # careful.
-          if ! grep -q '^kubeadmConfigPatches:$' /tmp/kind.yaml; then
-              echo "kubeadmConfigPatches:" >>/tmp/kind.yaml
-          fi
-          sed -i -e '/^kubeadmConfigPatches:$/a\' -e '  - |\n    kind: ClusterConfiguration\n    etcd:\n      local:\n        dataDir: /tmp/etcd\n' /tmp/kind.yaml
+            # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
+            # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+            # kind.yaml may or may not have a `kubeadmConfigPatches`, so we have to be
+            # careful.
+            if ! grep -q '^kubeadmConfigPatches:$' /tmp/kind.yaml; then
+                echo "kubeadmConfigPatches:" >>/tmp/kind.yaml
+            fi
+            sed -i -e '/^kubeadmConfigPatches:$/a\' -e '  - |\n    kind: ClusterConfiguration\n    etcd:\n      local:\n        dataDir: /tmp/etcd\n' /tmp/kind.yaml
 
-          mkdir -p "${ARTIFACTS}/kind"
-          cp /tmp/kind.yaml "${ARTIFACTS}/kind"
-          cat /tmp/kind.yaml
+            mkdir -p "${ARTIFACTS}/kind"
+            cp /tmp/kind.yaml "${ARTIFACTS}/kind"
+            cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
-          atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
-          }
-          trap atexit EXIT
-          {%- if kubelet_skew|int > 0 %}
+            kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+            atexit () {
+                kind export logs "${ARTIFACTS}/kind"
+                kind delete cluster
+            }
+            trap atexit EXIT
+            {%- if kubelet_skew|int > 0 %}
 
-          # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
-          # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
-          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
-          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
-          previous_minor=$((minor - {{kubelet_skew}}))
-          if [[ $revision == *alpha.0* ]]; then
-              : Treating alpha.0 like previous release because it already gets set on the master branch during code freeze and/or is too similar to the previous release to justify a change in what the jobs test against.
-              previous_minor=$((previous_minor - 1))
-          fi
-          {%- if ci %}
-          # Test with the most recent CI build, doesn't even need to be released yet.
-          # We want to know if those are broken.
-          previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
-          curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
-          {%- else %}
-          # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
-          # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
-          # Then parse the output using Bash parameter expansion:
-          #   ${response% *}  → everything before the last space (the body)
-          #   ${response##* } → everything after the last space (the HTTP code)
-          response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
-          previous="${response% *}"
-          status="${response##* }"
-          if [ "$status" == 404 ] ; then
-              # if stable doesn't exist - use latest
-              response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/latest-$major.$previous_minor.txt" )
-              previous="${response% *}"
-              status="${response##* }"
-          fi
-          if [ "$status" -ne 200 ] ; then
-              echo "error: unable to get release $major.$previous_minor info, HTTP status: $status, response: $previous"
-              exit 1
-          fi
-          curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
-          {%- endif %}
-          chmod a+rx /tmp/kubelet
-          /tmp/kubelet --version
-          worker_nodes=$(kind get nodes | grep worker)
-          for n in $worker_nodes; do
-              docker cp /tmp/kubelet $n:/usr/bin/kubelet
-              docker exec $n systemctl restart kubelet
-          done
+            # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+            # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+            major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+            minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+            previous_minor=$((minor - {{kubelet_skew}}))
+            if [[ $revision == *alpha.0* ]]; then
+                : Treating alpha.0 like previous release because it already gets set on the master branch during code freeze and/or is too similar to the previous release to justify a change in what the jobs test against.
+                previous_minor=$((previous_minor - 1))
+            fi
+            {%- if ci %}
+            # Test with the most recent CI build, doesn't even need to be released yet.
+            # We want to know if those are broken.
+            previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
+            curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+            {%- else %}
+            # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
+            # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
+            # Then parse the output using Bash parameter expansion:
+            #   ${response% *}  → everything before the last space (the body)
+            #   ${response##* } → everything after the last space (the HTTP code)
+            response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
+            previous="${response% *}"
+            status="${response##* }"
+            if [ "$status" == 404 ] ; then
+                # if stable doesn't exist - use latest
+                response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/latest-$major.$previous_minor.txt" )
+                previous="${response% *}"
+                status="${response##* }"
+            fi
+            if [ "$status" -ne 200 ] ; then
+                echo "error: unable to get release $major.$previous_minor info, HTTP status: $status, response: $previous"
+                exit 1
+            fi
+            curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+            {%- endif %}
+            chmod a+rx /tmp/kubelet
+            /tmp/kubelet --version
+            worker_nodes=$(kind get nodes | grep worker)
+            for n in $worker_nodes; do
+                docker cp /tmp/kubelet $n:/usr/bin/kubelet
+                docker exec $n systemctl restart kubelet
+            done
 
-          # We need support for disabling tests which need a recent kubelet.
-          # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
-          # when the deployed kubelet is 1.32. This is enforced by
-          # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
-          # including all unsupportd kubelet versions in a deny list.
-          kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+            # We need support for disabling tests which need a recent kubelet.
+            # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
+            # when the deployed kubelet is 1.32. This is enforced by
+            # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+            # including all unsupportd kubelet versions in a deny list.
+            kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
 
-          # Running tests which only cover control plane behavior are not useful
-          # in a kubelet version skew job. We can filter them out by including
-          # only tests which have the DynamicResourceAllocation feature because
-          # only those cover kubelet behavior.
-          kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
-          {%- endif %}
+            # Running tests which only cover control plane behavior are not useful
+            # in a kubelet version skew job. We can filter them out by including
+            # only tests which have the DynamicResourceAllocation feature because
+            # only those cover kubelet behavior.
+            kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
+            {%- endif %}
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
-          GINKGO_E2E_PID=$!
-          wait "${GINKGO_E2E_PID}"
+            KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+            GINKGO_E2E_PID=$!
+            wait "${GINKGO_E2E_PID}"
         {%- endif %}
         {%- if use_dind %}
         # docker-in-docker needs privileged mode
@@ -277,4 +277,4 @@ presubmits:
           requests:
             cpu: 2
             memory: 6Gi
-{% endfilter %}
+{%- endfilter -%}
