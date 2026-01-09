@@ -1,15 +1,59 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-local-e2e
-    branches:
-    # TODO(releng): Remove once repo default branch has been renamed
-    - master
-    - main
-    always_run: false
-    skip_report: false
-    max_concurrency: 8
-    optional: true
-    run_if_changed: 'local-up-cluster'
+    - name: pull-kubernetes-local-e2e
+      branches:
+        # TODO(releng): Remove once repo default branch has been renamed
+        - master
+        - main
+      always_run: false
+      skip_report: false
+      max_concurrency: 8
+      optional: true
+      run_if_changed: 'local-up-cluster'
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-dind-enabled: "true"
+      cluster: k8s-infra-prow-build
+      decorate: true
+      decoration_config:
+        timeout: 240m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            env:
+              - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+                value: "true"
+              - name: CONTAINER_RUNTIME_ENDPOINT
+                value: "/var/run/docker/containerd/containerd.sock"
+            command:
+              - runner.sh
+              - /workspace/scenarios/kubernetes_e2e.py
+            args:
+              - --build=quick
+              - --deployment=local
+              - --ginkgo-parallel=1
+              - --provider=local
+              - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
+              - --timeout=180m
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+      annotations:
+        testgrid-create-test-group: 'true'
+        testgrid-dashboards: sig-testing-misc
+        description: Runs single node conformance tests using kubetest with local-up-cluster
+periodics:
+  - name: ci-kubernetes-local-e2e
+    interval: 3h
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -18,88 +62,43 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 240m
-    path_alias: k8s.io/kubernetes
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        env:
-        - name: DOCKER_IN_DOCKER_IPV6_ENABLED
-          value: "true"
-        - name: CONTAINER_RUNTIME_ENDPOINT
-          value: "/var/run/docker/containerd/containerd.sock"
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --build=quick
-        - --deployment=local
-        - --ginkgo-parallel=1
-        - --provider=local
-        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
-        - --timeout=180m
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          env:
+            - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+              value: "true"
+            - name: CONTAINER_RUNTIME_ENDPOINT
+              value: "/var/run/docker/containerd/containerd.sock"
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
+            - --deployment=local
+            - --extract=ci/latest
+            - --extract-source
+            - --ginkgo-parallel=1
+            - --provider=local
+            - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
+            - --timeout=180m
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
     annotations:
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-testing-misc
-      description: Runs single node conformance tests using kubetest with local-up-cluster
-
-periodics:
-- name: ci-kubernetes-local-e2e
-  interval: 3h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 240m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      env:
-      - name: DOCKER_IN_DOCKER_IPV6_ENABLED
-        value: "true"
-      - name: CONTAINER_RUNTIME_ENDPOINT
-        value: "/var/run/docker/containerd/containerd.sock"
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --deployment=local
-      - --extract=ci/latest
-      - --extract-source
-      - --ginkgo-parallel=1
-      - --provider=local
-      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
-      - --timeout=180m
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-  annotations:
-    testgrid-dashboards: conformance-all, conformance-hack-local-up-cluster, sig-testing-misc
-    testgrid-tab-name: local-up-cluster, master (dev)
-    description: Runs single node conformance tests using kubetest with hack/local-up-cluster.sh
-    testgrid-num-failures-to-alert: '1'
-    testgrid-alert-stale-results-hours: '24'
+      testgrid-dashboards: conformance-all, conformance-hack-local-up-cluster, sig-testing-misc
+      testgrid-tab-name: local-up-cluster, master (dev)
+      description: Runs single node conformance tests using kubetest with hack/local-up-cluster.sh
+      testgrid-num-failures-to-alert: '1'
+      testgrid-alert-stale-results-hours: '24'

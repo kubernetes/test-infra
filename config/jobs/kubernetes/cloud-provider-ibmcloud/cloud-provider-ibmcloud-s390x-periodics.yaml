@@ -35,109 +35,105 @@ periodics:
             limits:
               cpu: 6
               memory: "28Gi"
-
   - name: ci-kubernetes-integration-master-s390x
     interval: 1h
     cluster: k8s-infra-s390x-prow-build
     decorate: true
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
     annotations:
       testgrid-dashboards: ibm-s390x-k8s, ibm-s390x-periodics
       testgrid-tab-name: ci-kubernetes-integration-master-s390x
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/test-integration-dockerized.sh
-        env:
-        - name: SHORT
-          value: --short=false
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 6
-            memory: 20Gi
-          requests:
-            cpu: 6
-            memory: 20Gi
-
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          command:
+            - runner.sh
+          args:
+            - ./hack/jenkins/test-integration-dockerized.sh
+          env:
+            - name: SHORT
+              value: --short=false
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 6
+              memory: 20Gi
+            requests:
+              cpu: 6
+              memory: 20Gi
   - name: ci-kubernetes-integration-1-34-s390x
     interval: 6h # bump to 24h after initial debugging
     cluster: k8s-infra-s390x-prow-build
     decorate: true
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.34
-      path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: release-1.34
+        path_alias: k8s.io/kubernetes
     annotations:
       testgrid-dashboards: ibm-s390x-k8s, ibm-s390x-periodics
       testgrid-tab-name: ci-kubernetes-integration-1.34-s390x
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/test-integration-dockerized.sh
-        env:
-        - name: SHORT
-          value: --short=false
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 6
-            memory: 20Gi
-          requests:
-            cpu: 6
-            memory: 20Gi
-
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          command:
+            - runner.sh
+          args:
+            - ./hack/jenkins/test-integration-dockerized.sh
+          env:
+            - name: SHORT
+              value: --short=false
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 6
+              memory: 20Gi
+            requests:
+              cpu: 6
+              memory: 20Gi
   - name: ci-kubernetes-integration-1-33-s390x
     interval: 6h # bump to 24h after initial debugging
     cluster: k8s-infra-s390x-prow-build
     decorate: true
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.33
-      path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: release-1.33
+        path_alias: k8s.io/kubernetes
     annotations:
       testgrid-dashboards: ibm-s390x-k8s, ibm-s390x-periodics
       testgrid-tab-name: ci-kubernetes-integration-1.33-s390x
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/test-integration-dockerized.sh
-        env:
-        - name: SHORT
-          value: --short=false
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 6
-            memory: 20Gi
-          requests:
-            cpu: 6
-            memory: 20Gi
-
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          command:
+            - runner.sh
+          args:
+            - ./hack/jenkins/test-integration-dockerized.sh
+          env:
+            - name: SHORT
+              value: --short=false
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 6
+              memory: 20Gi
+            requests:
+              cpu: 6
+              memory: 20Gi
   - name: ci-kubernetes-s390x-conformance-latest-kubetest2
     cron: "0 2-23/3 * * *" # every 3h starting at 02:00 UTC
     cluster: k8s-infra-s390x-prow-build

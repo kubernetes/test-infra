@@ -1,12 +1,50 @@
 postsubmits:
   kubernetes/k8s.io:
-  - name: post-k8sio-dns
+    - name: post-k8sio-dns
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
+      max_concurrency: 1
+      run_if_changed: "^dns/zone-configs/"
+      branches:
+        - ^main$
+      annotations:
+        testgrid-create-test-group: 'true'
+        testgrid-dashboards: sig-k8s-infra-dns
+        testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+      rerun_auth_config:
+        github_team_slugs:
+          # TODO(spiffxp): team specifically for this service
+          # - org: kubernetes
+          #   slug: k8s-infra-dns-admins
+          - org: kubernetes
+            slug: sig-k8s-infra-leads
+      spec:
+        serviceAccountName: k8s-infra-dns-updater
+        containers:
+          - image: registry.k8s.io/infra-tools/octodns:v20220319-97d14a558
+            command:
+              - bash
+            args:
+              - -c
+              - "cd dns && make push-local"
+        resources:
+          limits:
+            cpu: 1
+            memory: 512Mi
+          requests:
+            cpu: 1
+            memory: 512Mi
+periodics:
+  - name: ci-k8sio-dns
+    interval: 6h
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
-    run_if_changed: "^dns/zone-configs/"
-    branches:
-    - ^main$
+    extra_refs:
+      - org: kubernetes
+        repo: k8s.io
+        base_ref: main
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-dns
@@ -14,64 +52,24 @@ postsubmits:
       testgrid-num-failures-to-alert: '1'
     rerun_auth_config:
       github_team_slugs:
-      # TODO(spiffxp): team specifically for this service
-      # - org: kubernetes
-      #   slug: k8s-infra-dns-admins
-      - org: kubernetes
-        slug: sig-k8s-infra-leads
-
+        # TODO(spiffxp): team specifically for this service
+        # - org: kubernetes
+        #   slug: k8s-infra-dns-admins
+        - org: kubernetes
+          slug: sig-k8s-infra-leads
     spec:
       serviceAccountName: k8s-infra-dns-updater
       containers:
-      - image: registry.k8s.io/infra-tools/octodns:v20220319-97d14a558
-        command:
-        - bash
-        args:
-        - -c
-        - "cd dns && make push-local"
-      resources:
-        limits:
-          cpu: 1
-          memory: 512Mi
-        requests:
-          cpu: 1
-          memory: 512Mi
-
-periodics:
-- name: ci-k8sio-dns
-  interval: 6h
-  cluster: k8s-infra-prow-build-trusted
-  decorate: true
-  max_concurrency: 1
-  extra_refs:
-  - org: kubernetes
-    repo: k8s.io
-    base_ref: main
-  annotations:
-    testgrid-create-test-group: 'true'
-    testgrid-dashboards: sig-k8s-infra-dns
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: '1'
-  rerun_auth_config:
-    github_team_slugs:
-    # TODO(spiffxp): team specifically for this service
-    # - org: kubernetes
-    #   slug: k8s-infra-dns-admins
-    - org: kubernetes
-      slug: sig-k8s-infra-leads
-  spec:
-    serviceAccountName: k8s-infra-dns-updater
-    containers:
-    - image: registry.k8s.io/infra-tools/octodns:v20220319-97d14a558
-      command:
-      - bash
-      args:
-      - -c
-      - "cd dns && make push-local"
-      resources:
-        limits:
-          cpu: 100m
-          memory: 512Mi
-        requests:
-          cpu: 100m
-          memory: 512Mi
+        - image: registry.k8s.io/infra-tools/octodns:v20220319-97d14a558
+          command:
+            - bash
+          args:
+            - -c
+            - "cd dns && make push-local"
+          resources:
+            limits:
+              cpu: 100m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 512Mi

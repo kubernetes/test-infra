@@ -24,27 +24,27 @@ spec:
       hostPID: true
       hostIPC: true
       tolerations:
-      - operator: Exists
-        effect: NoSchedule
+        - operator: Exists
+          effect: NoSchedule
       containers:
-      - name: setsysctls
-        command:
-        - sh
-        - -c
-        - |
-          while true; do
-            sysctl -w fs.inotify.max_user_watches=524288
-            sleep 10
-          done
-        image: alpine:20240606
-        imagePullPolicy: IfNotPresent
-        resources: {}
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: sys
-          mountPath: /sys
+        - name: setsysctls
+          command:
+            - sh
+            - -c
+            - |
+              while true; do
+                sysctl -w fs.inotify.max_user_watches=524288
+                sleep 10
+              done
+          image: alpine:20240606
+          imagePullPolicy: IfNotPresent
+          resources: {}
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: sys
+              mountPath: /sys
       volumes:
-      - name: sys
-        hostPath:
-          path: /sys
+        - name: sys
+          hostPath:
+            path: /sys

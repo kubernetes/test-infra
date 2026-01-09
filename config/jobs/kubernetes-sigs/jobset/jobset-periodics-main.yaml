@@ -18,25 +18,25 @@ periodics:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        env:
-        - name: GO_TEST_FLAGS
-          value: "-race -count 3"
-        command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
-        - runner.sh
-        args:
-        - make
-        - test
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 3
-            memory: 10Gi
-          requests:
-            cpu: 3
-            memory: 10Gi
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          env:
+            - name: GO_TEST_FLAGS
+              value: "-race -count 3"
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - test
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 3
+              memory: 10Gi
+            requests:
+              cpu: 3
+              memory: 10Gi
   - interval: 12h
     name: periodic-jobset-test-integration-main
     cluster: eks-prow-build-cluster
@@ -56,18 +56,18 @@ periodics:
     decorate: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.25
-        command:
-        - make
-        args:
-        - test-integration
-        resources:
-          limits:
-            cpu: 3
-            memory: 10Gi
-          requests:
-            cpu: 3
-            memory: 10Gi
+        - image: public.ecr.aws/docker/library/golang:1.25
+          command:
+            - make
+          args:
+            - test-integration
+          resources:
+            limits:
+              cpu: 3
+              memory: 10Gi
+            requests:
+              cpu: 3
+              memory: 10Gi
   - interval: 12h
     name: periodic-jobset-test-e2e-main-1-32
     cluster: eks-prow-build-cluster

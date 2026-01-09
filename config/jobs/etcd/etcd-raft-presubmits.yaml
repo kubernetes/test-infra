@@ -1,4 +1,3 @@
----
 presubmits:
   etcd-io/raft:
     - name: pull-raft-test-arm64

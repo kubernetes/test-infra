@@ -1,45 +1,45 @@
 periodics:
-#  Periodic CI job for running snyk scans against k/k master
-# - It installs snyk CLI and requires 'snyk-token' secret available
-#   in test infra with key name 'SNYK_TOKEN'. This secret is used to
-#   populate env var 'SNYK_TOKEN', required for snyk CLI auth.
-# - Licenses and few false positive deps (eg version '0.0.0') are
-#   filtered from the snyk scan results.
-- name: ci-kubernetes-snyk-master
-  interval: 6h
-  cluster: eks-prow-build-cluster
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: sig-security
-    base_ref: main
-    workdir: false
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-    workdir: true
-  spec:
-    containers:
-    - image: golang
-      envFrom:
-      - secretRef:
-          # secret key should be defined as SNYK_TOKEN
-          name: snyk-token
-      resources:
-        requests:
-          cpu: "2"
-          memory: "8Gi"
-        limits:
-          cpu: "2"
-          memory: "8Gi"
-      command:
-      - sh
-      - "-c"
-      - "/home/prow/go/src/github.com/kubernetes/sig-security/sig-security-tooling/scanning/build-deps-and-release-images.sh"
-  annotations:
-    testgrid-create-test-group: "true"
-    testgrid-alert-email: security-tooling-private@kubernetes.io
-    testgrid-num-failures-to-alert: '1'
-    testgrid-dashboards: sig-security-snyk-scan
-    description: Run snyk scan on k/k master periodically
+  #  Periodic CI job for running snyk scans against k/k master
+  # - It installs snyk CLI and requires 'snyk-token' secret available
+  #   in test infra with key name 'SNYK_TOKEN'. This secret is used to
+  #   populate env var 'SNYK_TOKEN', required for snyk CLI auth.
+  # - Licenses and few false positive deps (eg version '0.0.0') are
+  #   filtered from the snyk scan results.
+  - name: ci-kubernetes-snyk-master
+    interval: 6h
+    cluster: eks-prow-build-cluster
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: sig-security
+        base_ref: main
+        workdir: false
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+        workdir: true
+    spec:
+      containers:
+        - image: golang
+          envFrom:
+            - secretRef:
+                # secret key should be defined as SNYK_TOKEN
+                name: snyk-token
+          resources:
+            requests:
+              cpu: "2"
+              memory: "8Gi"
+            limits:
+              cpu: "2"
+              memory: "8Gi"
+          command:
+            - sh
+            - "-c"
+            - "/home/prow/go/src/github.com/kubernetes/sig-security/sig-security-tooling/scanning/build-deps-and-release-images.sh"
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-alert-email: security-tooling-private@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      testgrid-dashboards: sig-security-snyk-scan
+      description: Run snyk scan on k/k master periodically

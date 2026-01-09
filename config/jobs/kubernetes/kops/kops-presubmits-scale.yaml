@@ -2,586 +2,580 @@
 # 6 jobs
 presubmits:
   kubernetes/kops:
-
-  # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
-  - name: presubmit-kops-aws-scale-amazonvpc
-    cluster: k8s-infra-kops-prow-build
-    branches:
-    - master
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-k8s-kops-aws-credential: "true"
-    max_concurrency: 1
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    extra_refs:
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        - name: CNI_PLUGIN
-          value: "amazonvpc"
-        - name: CLOUD_PROVIDER
-          value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-ed860ed5de-2df82.tests-kops-aws.k8s.io"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-ci-prow-state-store"
-        - name: KOPS_IRSA
-          value: "true"
-        resources:
-          requests:
-            cpu: "6"
-            memory: "16Gi"
-          limits:
-            cpu: "6"
-            memory: "16Gi"
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: amazonvpc
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-aws-scale-amazonvpc
-
-  # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
-  - name: presubmit-kops-aws-scale-amazonvpc-using-cl2
-    cluster: eks-prow-build-cluster
-    branches:
-    - master
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential-boskos-scale-001-kops: "true"
-    max_concurrency: 1
-    decorate: true
-    decoration_config:
-      timeout: 480m
-    path_alias: k8s.io/kops
-    extra_refs:
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
-        - name: CNI_PLUGIN
-          value: "amazonvpc"
-        - name: KUBE_NODE_COUNT
-          value: "5000"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_DELETE_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "3"
-        - name: CONTROL_PLANE_SIZE
-          value: "c5.18xlarge"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-infra-kops-scale-tests"
-        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
-          value: "true"
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        - name: CL2_ALLOWED_SLOW_API_CALLS
-          value: "1"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
-        - name: CL2_NETWORK_LATENCY_THRESHOLD
-          value: "0.5s"
-        - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
-          value: "true"
-        - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
-          value: "20s"
-        - name: CL2_ENABLE_DNSTESTS
-          value: "false"
-        - name: CL2_USE_ADVANCED_DNSTEST
-          value: "false"
-        - name: CLOUD_PROVIDER
-          value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-ff02749ef8-a423a.tests-kops-aws.k8s.io"
-        - name: KOPS_IRSA
-          value: "true"
-        resources:
-          requests:
-            cpu: "6"
-            memory: "16Gi"
-          limits:
-            cpu: "6"
-            memory: "16Gi"
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: amazonvpc
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-aws-scale-amazonvpc-using-cl2
-
-  # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
-  - name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
-    cluster: eks-prow-build-cluster
-    branches:
-    - master
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential-boskos-scale-001-kops: "true"
-    max_concurrency: 1
-    decorate: true
-    decoration_config:
-      timeout: 480m
-    path_alias: k8s.io/kops
-    extra_refs:
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
-        - name: CNI_PLUGIN
-          value: "amazonvpc"
-        - name: KUBE_NODE_COUNT
-          value: "500"
-        - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-          value: "20"
-        - name: CONTROL_PLANE_COUNT
-          value: "3"
-        - name: CONTROL_PLANE_SIZE
-          value: "c5.4xlarge"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_DELETE_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-infra-kops-scale-tests"
-        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
-          value: "true"
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        - name: CL2_ALLOWED_SLOW_API_CALLS
-          value: "1"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
-        - name: CL2_NETWORK_LATENCY_THRESHOLD
-          value: "0.5s"
-        - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
-          value: "true"
-        - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
-          value: "20s"
-        - name: CLOUD_PROVIDER
-          value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-fa029a0ba8-a2033.tests-kops-aws.k8s.io"
-        - name: KOPS_IRSA
-          value: "true"
-        resources:
-          requests:
-            cpu: "6"
-            memory: "16Gi"
-          limits:
-            cpu: "6"
-            memory: "16Gi"
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: amazonvpc
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
-
-  # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
-  - name: presubmit-kops-gce-scale-ipalias-using-cl2
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    job_queue_name: "5k-gce-scale-test"
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-k8s-ssh: "true"
-    max_concurrency: 1
-    decorate: true
-    decoration_config:
-      timeout: 480m
-    path_alias: k8s.io/kops
-    extra_refs:
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
-    spec:
-      serviceAccountName: k8s-kops-test
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
-        - name: GOPATH
-          value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
-        - name: CNI_PLUGIN
-          value: "gce"
-        - name: KUBE_NODE_COUNT
-          value: "5000"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_DELETE_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: CONTROL_PLANE_SIZE
-          value: "c4-standard-96"
-        - name: KUBE_PROXY_MODE
-          value: "nftables"
-        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
-          value: "true"
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        - name: CL2_ALLOWED_SLOW_API_CALLS
-          value: "1"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "ssd-csi"
-        - name: CL2_NETWORK_LATENCY_THRESHOLD
-          value: "0.5s"
-        - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
-          value: "true"
-        - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
-          value: "20s"
-        - name: CL2_ENABLE_DNSTESTS
-          value: "false"
-        - name: CL2_USE_ADVANCED_DNSTEST
-          value: "false"
-        - name: BOSKOS_RESOURCE_TYPE
-          value: "scalability-scale-project"
-        - name: CLOUD_PROVIDER
-          value: "gce"
-        resources:
-          requests:
-            cpu: "6"
-            memory: "16Gi"
-          limits:
-            cpu: "6"
-            memory: "16Gi"
-    annotations:
-      test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: gce
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-gce-scale-ipalias-using-cl2
-
-  # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
-  - name: presubmit-kops-gce-small-scale-ipalias-using-cl2
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    run_if_changed: '^tests\/e2e\/scenarios\/scalability\/run-test.sh'
-    job_queue_name: "5k-gce-scale-test"
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-k8s-ssh: "true"
-    max_concurrency: 1
-    decorate: true
-    decoration_config:
-      timeout: 480m
-    path_alias: k8s.io/kops
-    extra_refs:
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
-    spec:
-      serviceAccountName: k8s-kops-test
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
-        - name: GOPATH
-          value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
-        - name: CNI_PLUGIN
-          value: "gce"
-        - name: KUBE_NODE_COUNT
-          value: "500"
-        - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-          value: "20"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: KUBE_PROXY_MODE
-          value: "nftables"
-        - name: CONTROL_PLANE_SIZE
-          value: "c4-standard-48"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_DELETE_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
-          value: "true"
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        - name: CL2_ALLOWED_SLOW_API_CALLS
-          value: "1"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "ssd-csi"
-        - name: CL2_NETWORK_LATENCY_THRESHOLD
-          value: "0.5s"
-        - name: BOSKOS_RESOURCE_TYPE
-          value: "scalability-scale-project"
-        - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
-          value: "true"
-        - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
-          value: "20s"
-        - name: CLOUD_PROVIDER
-          value: "gce"
-        resources:
-          requests:
-            cpu: "6"
-            memory: "16Gi"
-          limits:
-            cpu: "6"
-            memory: "16Gi"
-    annotations:
-      test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: gce
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-gce-small-scale-ipalias-using-cl2
-
-  # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
-  - name: presubmit-kops-gce-small-scale-kindnet-using-cl2
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    job_queue_name: "5k-gce-scale-test"
-    always_run: false
-    optional: false
-    skip_report: false
-    labels:
-      preset-k8s-ssh: "true"
-    max_concurrency: 1
-    decorate: true
-    decoration_config:
-      timeout: 480m
-    path_alias: k8s.io/kops
-    extra_refs:
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
-    spec:
-      serviceAccountName: k8s-kops-test
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
-        - name: GOPATH
-          value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
-        - name: CNI_PLUGIN
-          value: "kindnet"
-        - name: KUBE_PROXY_MODE
-          value: "nftables"
-        - name: KUBE_NODE_COUNT
-          value: "100"
-        - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-          value: "20"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: CONTROL_PLANE_SIZE
-          value: "c3-standard-88"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_DELETE_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
-          value: "true"
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        - name: CL2_ALLOWED_SLOW_API_CALLS
-          value: "1"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "ssd-csi"
-        - name: CL2_NETWORK_LATENCY_THRESHOLD
-          value: "0.5s"
-        - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
-          value: "true"
-        - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
-          value: "20s"
-        - name: CLOUD_PROVIDER
-          value: "gce"
-        resources:
-          requests:
-            cpu: "6"
-            memory: "16Gi"
-          limits:
-            cpu: "6"
-            memory: "16Gi"
-    annotations:
-      test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/k8s_version: stable
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: gce
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-gce-small-scale-kindnet-using-cl2
+    # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+    - name: presubmit-kops-aws-scale-amazonvpc
+      cluster: k8s-infra-kops-prow-build
+      branches:
+        - master
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-k8s-kops-aws-credential: "true"
+      max_concurrency: 1
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kops
+      extra_refs:
+        - org: kubernetes
+          repo: perf-tests
+          base_ref: master
+          path_alias: k8s.io/perf-tests
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - ./tests/e2e/scenarios/scalability/run-test.sh
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+              - name: CNI_PLUGIN
+                value: "amazonvpc"
+              - name: CLOUD_PROVIDER
+                value: "aws"
+              - name: CLUSTER_NAME
+                value: "e2e-ed860ed5de-2df82.tests-kops-aws.k8s.io"
+              - name: KOPS_STATE_STORE
+                value: "s3://k8s-kops-ci-prow-state-store"
+              - name: KOPS_IRSA
+                value: "true"
+            resources:
+              requests:
+                cpu: "6"
+                memory: "16Gi"
+              limits:
+                cpu: "6"
+                memory: "16Gi"
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: amazonvpc
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: presubmit-kops-aws-scale-amazonvpc
+    # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+    - name: presubmit-kops-aws-scale-amazonvpc-using-cl2
+      cluster: eks-prow-build-cluster
+      branches:
+        - master
+      always_run: false
+      optional: true
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-aws-credential-boskos-scale-001-kops: "true"
+      max_concurrency: 1
+      decorate: true
+      decoration_config:
+        timeout: 480m
+      path_alias: k8s.io/kops
+      extra_refs:
+        - org: kubernetes
+          repo: perf-tests
+          base_ref: master
+          path_alias: k8s.io/perf-tests
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - ./tests/e2e/scenarios/scalability/run-test.sh
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+              - name: ARTIFACTS
+                value: $(ARTIFACTS)
+              - name: CNI_PLUGIN
+                value: "amazonvpc"
+              - name: KUBE_NODE_COUNT
+                value: "5000"
+              - name: CL2_LOAD_TEST_THROUGHPUT
+                value: "50"
+              - name: CL2_DELETE_TEST_THROUGHPUT
+                value: "50"
+              - name: CL2_RATE_LIMIT_POD_CREATION
+                value: "false"
+              - name: NODE_MODE
+                value: "master"
+              - name: CONTROL_PLANE_COUNT
+                value: "3"
+              - name: CONTROL_PLANE_SIZE
+                value: "c5.18xlarge"
+              - name: KOPS_STATE_STORE
+                value: "s3://k8s-infra-kops-scale-tests"
+              - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+                value: "true"
+              - name: CL2_ENABLE_DNS_PROGRAMMING
+                value: "true"
+              - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+                value: "true"
+              - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+                value: "99.5"
+              - name: CL2_ALLOWED_SLOW_API_CALLS
+                value: "1"
+              - name: ENABLE_PROMETHEUS_SERVER
+                value: "true"
+              - name: PROMETHEUS_PVC_STORAGE_CLASS
+                value: "gp2"
+              - name: CL2_NETWORK_LATENCY_THRESHOLD
+                value: "0.5s"
+              - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
+                value: "true"
+              - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
+                value: "20s"
+              - name: CL2_ENABLE_DNSTESTS
+                value: "false"
+              - name: CL2_USE_ADVANCED_DNSTEST
+                value: "false"
+              - name: CLOUD_PROVIDER
+                value: "aws"
+              - name: CLUSTER_NAME
+                value: "e2e-ff02749ef8-a423a.tests-kops-aws.k8s.io"
+              - name: KOPS_IRSA
+                value: "true"
+            resources:
+              requests:
+                cpu: "6"
+                memory: "16Gi"
+              limits:
+                cpu: "6"
+                memory: "16Gi"
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: amazonvpc
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: presubmit-kops-aws-scale-amazonvpc-using-cl2
+    # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+    - name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
+      cluster: eks-prow-build-cluster
+      branches:
+        - master
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-aws-credential-boskos-scale-001-kops: "true"
+      max_concurrency: 1
+      decorate: true
+      decoration_config:
+        timeout: 480m
+      path_alias: k8s.io/kops
+      extra_refs:
+        - org: kubernetes
+          repo: perf-tests
+          base_ref: master
+          path_alias: k8s.io/perf-tests
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - ./tests/e2e/scenarios/scalability/run-test.sh
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/aws-ssh/aws-ssh-private
+              - name: KUBE_SSH_USER
+                value: ubuntu
+              - name: GOPATH
+                value: /home/prow/go
+              - name: ARTIFACTS
+                value: $(ARTIFACTS)
+              - name: CNI_PLUGIN
+                value: "amazonvpc"
+              - name: KUBE_NODE_COUNT
+                value: "500"
+              - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+                value: "20"
+              - name: CONTROL_PLANE_COUNT
+                value: "3"
+              - name: CONTROL_PLANE_SIZE
+                value: "c5.4xlarge"
+              - name: CL2_LOAD_TEST_THROUGHPUT
+                value: "50"
+              - name: CL2_DELETE_TEST_THROUGHPUT
+                value: "50"
+              - name: CL2_RATE_LIMIT_POD_CREATION
+                value: "false"
+              - name: NODE_MODE
+                value: "master"
+              - name: KOPS_STATE_STORE
+                value: "s3://k8s-infra-kops-scale-tests"
+              - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+                value: "true"
+              - name: CL2_ENABLE_DNS_PROGRAMMING
+                value: "true"
+              - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+                value: "true"
+              - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+                value: "99.5"
+              - name: CL2_ALLOWED_SLOW_API_CALLS
+                value: "1"
+              - name: ENABLE_PROMETHEUS_SERVER
+                value: "true"
+              - name: PROMETHEUS_PVC_STORAGE_CLASS
+                value: "gp2"
+              - name: CL2_NETWORK_LATENCY_THRESHOLD
+                value: "0.5s"
+              - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
+                value: "true"
+              - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
+                value: "20s"
+              - name: CLOUD_PROVIDER
+                value: "aws"
+              - name: CLUSTER_NAME
+                value: "e2e-fa029a0ba8-a2033.tests-kops-aws.k8s.io"
+              - name: KOPS_IRSA
+                value: "true"
+            resources:
+              requests:
+                cpu: "6"
+                memory: "16Gi"
+              limits:
+                cpu: "6"
+                memory: "16Gi"
+      annotations:
+        test.kops.k8s.io/cloud: aws
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: amazonvpc
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
+    # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+    - name: presubmit-kops-gce-scale-ipalias-using-cl2
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+      job_queue_name: "5k-gce-scale-test"
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-k8s-ssh: "true"
+      max_concurrency: 1
+      decorate: true
+      decoration_config:
+        timeout: 480m
+      path_alias: k8s.io/kops
+      extra_refs:
+        - org: kubernetes
+          repo: perf-tests
+          base_ref: master
+          path_alias: k8s.io/perf-tests
+      spec:
+        serviceAccountName: k8s-kops-test
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - ./tests/e2e/scenarios/scalability/run-test.sh
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/ssh-key-secret/ssh-private
+              - name: KUBE_SSH_USER
+                value: prow
+              - name: GOPATH
+                value: /home/prow/go
+              - name: ARTIFACTS
+                value: $(ARTIFACTS)
+              - name: CNI_PLUGIN
+                value: "gce"
+              - name: KUBE_NODE_COUNT
+                value: "5000"
+              - name: CL2_LOAD_TEST_THROUGHPUT
+                value: "50"
+              - name: CL2_DELETE_TEST_THROUGHPUT
+                value: "50"
+              - name: CL2_RATE_LIMIT_POD_CREATION
+                value: "false"
+              - name: NODE_MODE
+                value: "master"
+              - name: CONTROL_PLANE_COUNT
+                value: "1"
+              - name: CONTROL_PLANE_SIZE
+                value: "c4-standard-96"
+              - name: KUBE_PROXY_MODE
+                value: "nftables"
+              - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+                value: "true"
+              - name: CL2_ENABLE_DNS_PROGRAMMING
+                value: "true"
+              - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+                value: "true"
+              - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+                value: "99.5"
+              - name: CL2_ALLOWED_SLOW_API_CALLS
+                value: "1"
+              - name: ENABLE_PROMETHEUS_SERVER
+                value: "true"
+              - name: PROMETHEUS_PVC_STORAGE_CLASS
+                value: "ssd-csi"
+              - name: CL2_NETWORK_LATENCY_THRESHOLD
+                value: "0.5s"
+              - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
+                value: "true"
+              - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
+                value: "20s"
+              - name: CL2_ENABLE_DNSTESTS
+                value: "false"
+              - name: CL2_USE_ADVANCED_DNSTEST
+                value: "false"
+              - name: BOSKOS_RESOURCE_TYPE
+                value: "scalability-scale-project"
+              - name: CLOUD_PROVIDER
+                value: "gce"
+            resources:
+              requests:
+                cpu: "6"
+                memory: "16Gi"
+              limits:
+                cpu: "6"
+                memory: "16Gi"
+      annotations:
+        test.kops.k8s.io/cloud: gce
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: gce
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: presubmit-kops-gce-scale-ipalias-using-cl2
+    # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+    - name: presubmit-kops-gce-small-scale-ipalias-using-cl2
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+      run_if_changed: '^tests\/e2e\/scenarios\/scalability\/run-test.sh'
+      job_queue_name: "5k-gce-scale-test"
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-k8s-ssh: "true"
+      max_concurrency: 1
+      decorate: true
+      decoration_config:
+        timeout: 480m
+      path_alias: k8s.io/kops
+      extra_refs:
+        - org: kubernetes
+          repo: perf-tests
+          base_ref: master
+          path_alias: k8s.io/perf-tests
+      spec:
+        serviceAccountName: k8s-kops-test
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - ./tests/e2e/scenarios/scalability/run-test.sh
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/ssh-key-secret/ssh-private
+              - name: KUBE_SSH_USER
+                value: prow
+              - name: GOPATH
+                value: /home/prow/go
+              - name: ARTIFACTS
+                value: $(ARTIFACTS)
+              - name: CNI_PLUGIN
+                value: "gce"
+              - name: KUBE_NODE_COUNT
+                value: "500"
+              - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+                value: "20"
+              - name: CONTROL_PLANE_COUNT
+                value: "1"
+              - name: KUBE_PROXY_MODE
+                value: "nftables"
+              - name: CONTROL_PLANE_SIZE
+                value: "c4-standard-48"
+              - name: CL2_LOAD_TEST_THROUGHPUT
+                value: "50"
+              - name: CL2_DELETE_TEST_THROUGHPUT
+                value: "50"
+              - name: CL2_RATE_LIMIT_POD_CREATION
+                value: "false"
+              - name: NODE_MODE
+                value: "master"
+              - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+                value: "true"
+              - name: CL2_ENABLE_DNS_PROGRAMMING
+                value: "true"
+              - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+                value: "true"
+              - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+                value: "99.5"
+              - name: CL2_ALLOWED_SLOW_API_CALLS
+                value: "1"
+              - name: ENABLE_PROMETHEUS_SERVER
+                value: "true"
+              - name: PROMETHEUS_PVC_STORAGE_CLASS
+                value: "ssd-csi"
+              - name: CL2_NETWORK_LATENCY_THRESHOLD
+                value: "0.5s"
+              - name: BOSKOS_RESOURCE_TYPE
+                value: "scalability-scale-project"
+              - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
+                value: "true"
+              - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
+                value: "20s"
+              - name: CLOUD_PROVIDER
+                value: "gce"
+            resources:
+              requests:
+                cpu: "6"
+                memory: "16Gi"
+              limits:
+                cpu: "6"
+                memory: "16Gi"
+      annotations:
+        test.kops.k8s.io/cloud: gce
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: gce
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: presubmit-kops-gce-small-scale-ipalias-using-cl2
+    # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+    - name: presubmit-kops-gce-small-scale-kindnet-using-cl2
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+      job_queue_name: "5k-gce-scale-test"
+      always_run: false
+      optional: false
+      skip_report: false
+      labels:
+        preset-k8s-ssh: "true"
+      max_concurrency: 1
+      decorate: true
+      decoration_config:
+        timeout: 480m
+      path_alias: k8s.io/kops
+      extra_refs:
+        - org: kubernetes
+          repo: perf-tests
+          base_ref: master
+          path_alias: k8s.io/perf-tests
+      spec:
+        serviceAccountName: k8s-kops-test
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            imagePullPolicy: Always
+            command:
+              - runner.sh
+            args:
+              - ./tests/e2e/scenarios/scalability/run-test.sh
+            securityContext:
+              privileged: true
+            env:
+              - name: KUBE_SSH_KEY_PATH
+                value: /etc/ssh-key-secret/ssh-private
+              - name: KUBE_SSH_USER
+                value: prow
+              - name: GOPATH
+                value: /home/prow/go
+              - name: ARTIFACTS
+                value: $(ARTIFACTS)
+              - name: CNI_PLUGIN
+                value: "kindnet"
+              - name: KUBE_PROXY_MODE
+                value: "nftables"
+              - name: KUBE_NODE_COUNT
+                value: "100"
+              - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+                value: "20"
+              - name: CONTROL_PLANE_COUNT
+                value: "1"
+              - name: CONTROL_PLANE_SIZE
+                value: "c3-standard-88"
+              - name: CL2_LOAD_TEST_THROUGHPUT
+                value: "50"
+              - name: CL2_DELETE_TEST_THROUGHPUT
+                value: "50"
+              - name: CL2_RATE_LIMIT_POD_CREATION
+                value: "false"
+              - name: NODE_MODE
+                value: "master"
+              - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+                value: "true"
+              - name: CL2_ENABLE_DNS_PROGRAMMING
+                value: "true"
+              - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+                value: "true"
+              - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+                value: "99.5"
+              - name: CL2_ALLOWED_SLOW_API_CALLS
+                value: "1"
+              - name: ENABLE_PROMETHEUS_SERVER
+                value: "true"
+              - name: PROMETHEUS_PVC_STORAGE_CLASS
+                value: "ssd-csi"
+              - name: CL2_NETWORK_LATENCY_THRESHOLD
+                value: "0.5s"
+              - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
+                value: "true"
+              - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
+                value: "20s"
+              - name: CLOUD_PROVIDER
+                value: "gce"
+            resources:
+              requests:
+                cpu: "6"
+                memory: "16Gi"
+              limits:
+                cpu: "6"
+                memory: "16Gi"
+      annotations:
+        test.kops.k8s.io/cloud: gce
+        test.kops.k8s.io/distro: u2404
+        test.kops.k8s.io/k8s_version: stable
+        test.kops.k8s.io/kops_channel: alpha
+        test.kops.k8s.io/networking: gce
+        testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+        testgrid-days-of-results: '90'
+        testgrid-tab-name: presubmit-kops-gce-small-scale-kindnet-using-cl2

@@ -1,9 +1,9 @@
 periodics:
   - name: ci-kubernetes-e2e-azure-dra-scalability
     tags:
-    - "perfDashPrefix: azure-dra-100Nodes"
-    - "perfDashBuildsCount: 270"
-    - "perfDashJobType: performance"
+      - "perfDashPrefix: azure-dra-100Nodes"
+      - "perfDashBuildsCount: 270"
+      - "perfDashJobType: performance"
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
@@ -15,109 +15,100 @@ periodics:
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
     extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: main
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    - org: kubernetes-sigs
-      repo: cloud-provider-azure
-      base_ref: master
-      path_alias: sigs.k8s.io/cloud-provider-azure
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: perf-tests
+        base_ref: master
+        path_alias: k8s.io/perf-tests
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - ./scripts/ci-entrypoint.sh
-        args:
-        - bash
-        - -c
-        - >-
-          sleep 300 &&
-          cd ${GOPATH}/src/k8s.io/perf-tests/ &&
-          ./run-e2e.sh cluster-loader2
-          --nodes=100 \
-          --provider=aks \
-          --enable-prometheus-server=true \
-          --testconfig=testing/dra-baseline/config.yaml \
-          --report-dir=${ARTIFACTS}
-          --nodes=100
-          --v=2
-        securityContext:
-          privileged: true
-        env:
-        # CAPZ variables
-        - name: TEST_K8S
-          value: "true"
-        - name: WINDOWS
-          value: "false"
-        - name: CLUSTER_TEMPLATE
-          value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
-        - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: AZURE_NODE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: NODE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
-        - name: MONITORING_MACHINE_COUNT # This is the number of dedicated nodes for prometheus server
-          value: "1" # We use the same VM size as control plane nodes, see CONTROL_PLANE_MACHINE_TYPE
-        - name: AZURE_LOCATION
-          value: "canadacentral" # Use canadacentral for proximity to prow container
-        # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
-        - name: DEPLOY_AZURE_CSI_DRIVER
-          value: "false"
-        - name: "CONTROL_PLANE_MACHINE_COUNT"
-          value: "5"
-        - name: WINDOWS_WORKER_MACHINE_COUNT
-          value: "0" # Don't create windows workers
-        - name: WORKER_MACHINE_COUNT
-          value: "100"
-        # Based on pull-kubernetes-e2e-gce-100-performance CL2 config
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-          value: "0"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.99"
-        - name: CL2_REPEATS
-          value: "10"
-        # For DRA cl2 tests
-        - name: CL2_MODE
-          value: "Indexed"
-        - name: CL2_NODES_PER_NAMESPACE
-          value: "10"
-        - name: CL2_JOB_RUNNING_TIME
-          value: "3s"
-        - name: CL2_LONG_JOB_RUNNING_TIME
-          value: "45m"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "default"
-        - name: PROMETHEUS_APISERVER_SCRAPE_PORT
-          value: "6443"
-        - name: NODE_PRELOAD_IMAGES
-          value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-        resources:
-          requests:
-            cpu: "6"
-            memory: "9Gi"
-          limits:
-            cpu: "6"
-            memory: "9Gi"
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              sleep 300 && cd ${GOPATH}/src/k8s.io/perf-tests/ && ./run-e2e.sh cluster-loader2 --nodes=100 \ --provider=aks \ --enable-prometheus-server=true \ --testconfig=testing/dra-baseline/config.yaml \ --report-dir=${ARTIFACTS} --nodes=100 --v=2
+          securityContext:
+            privileged: true
+          env:
+            # CAPZ variables
+            - name: TEST_K8S
+              value: "true"
+            - name: WINDOWS
+              value: "false"
+            - name: CLUSTER_TEMPLATE
+              value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
+            - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: CONTROL_PLANE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: AZURE_NODE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: NODE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: TEST_WINDOWS
+              value: "false"
+            - name: MONITORING_MACHINE_COUNT # This is the number of dedicated nodes for prometheus server
+              value: "1" # We use the same VM size as control plane nodes, see CONTROL_PLANE_MACHINE_TYPE
+            - name: AZURE_LOCATION
+              value: "canadacentral" # Use canadacentral for proximity to prow container
+            # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
+            - name: DEPLOY_AZURE_CSI_DRIVER
+              value: "false"
+            - name: "CONTROL_PLANE_MACHINE_COUNT"
+              value: "5"
+            - name: WINDOWS_WORKER_MACHINE_COUNT
+              value: "0" # Don't create windows workers
+            - name: WORKER_MACHINE_COUNT
+              value: "100"
+            # Based on pull-kubernetes-e2e-gce-100-performance CL2 config
+            - name: CL2_ENABLE_DNS_PROGRAMMING
+              value: "true"
+            - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+              value: "0"
+            - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+              value: "true"
+            - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+              value: "99.99"
+            - name: CL2_REPEATS
+              value: "10"
+            # For DRA cl2 tests
+            - name: CL2_MODE
+              value: "Indexed"
+            - name: CL2_NODES_PER_NAMESPACE
+              value: "10"
+            - name: CL2_JOB_RUNNING_TIME
+              value: "3s"
+            - name: CL2_LONG_JOB_RUNNING_TIME
+              value: "45m"
+            - name: PROMETHEUS_PVC_STORAGE_CLASS
+              value: "default"
+            - name: PROMETHEUS_APISERVER_SCRAPE_PORT
+              value: "6443"
+            - name: NODE_PRELOAD_IMAGES
+              value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+          resources:
+            requests:
+              cpu: "6"
+              memory: "9Gi"
+            limits:
+              cpu: "6"
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-scalability-dra
       testgrid-tab-name: azure-dra-master-scalability-100
@@ -164,16 +155,7 @@ periodics:
             - bash
             - -c
             - >-
-              sleep 300 &&
-              cd ${GOPATH}/src/k8s.io/perf-tests/ &&
-              ./run-e2e.sh cluster-loader2
-              --nodes=100 \
-              --provider=aks \
-              --enable-prometheus-server=true \
-              --testconfig=testing/dra/config.yaml \
-              --report-dir=${ARTIFACTS}
-              --nodes=100
-              --v=2
+              sleep 300 && cd ${GOPATH}/src/k8s.io/perf-tests/ && ./run-e2e.sh cluster-loader2 --nodes=100 \ --provider=aks \ --enable-prometheus-server=true \ --testconfig=testing/dra/config.yaml \ --report-dir=${ARTIFACTS} --nodes=100 --v=2
           securityContext:
             privileged: true
           env:
@@ -243,7 +225,6 @@ periodics:
     annotations:
       testgrid-dashboards: sig-scalability-dra
       testgrid-tab-name: azure-dra-with-workload-master-scalability-100
-
   - name: ci-kubernetes-e2e-gce-100-node-dra-with-workload
     cluster: k8s-infra-prow-build
     tags:
@@ -323,7 +304,6 @@ periodics:
               value: "true"
             - name: NODE_PRELOAD_IMAGES
               value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-
   - name: ci-kubernetes-e2e-gce-100-node-dra-extended-resources-with-workload
     cluster: k8s-infra-prow-build
     tags:
@@ -407,12 +387,11 @@ periodics:
               value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
             - name: CL2_ENABLE_EXTENDED_RESOURCES
               value: "true"
-
   - name: ci-kubernetes-e2e-kops-gce-100-node-dra-with-workload-ipalias-using-cl2
     tags:
-    - "perfDashPrefix: gce-dra-100Nodes-with-workload-dev"
-    - "perfDashBuildsCount: 270"
-    - "perfDashJobType: performance"
+      - "perfDashPrefix: gce-dra-100Nodes-with-workload-dev"
+      - "perfDashBuildsCount: 270"
+      - "perfDashJobType: performance"
     cluster: k8s-infra-prow-build
     interval: 4h
     labels:
@@ -422,19 +401,19 @@ periodics:
     decoration_config:
       timeout: 480m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      path_alias: k8s.io/kops
-      workdir: true
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: perf-tests
+        base_ref: master
+        path_alias: k8s.io/perf-tests
+      - org: kubernetes
+        repo: kops
+        base_ref: master
+        path_alias: k8s.io/kops
+        workdir: true
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: u2404
@@ -447,76 +426,75 @@ periodics:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
-        - name: GOPATH
-          value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
-        - name: CNI_PLUGIN
-          value: gce
-        - name: KUBE_NODE_COUNT
-          value: "100"
-        - name: CL2_MODE
-          value: "Indexed"
-        - name: CL2_NODES_PER_NAMESPACE
-          value: "10"
-        - name: CL2_JOB_RUNNING_TIME
-          value: "3s"
-        - name: CL2_LONG_JOB_RUNNING_TIME
-          value: "45m"
-        # - name: CL2_LOAD_TEST_THROUGHPUT
-        #   value: "50"
-        # - name: CL2_DELETE_TEST_THROUGHPUT
-        #   value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: CONTROL_PLANE_SIZE
-          value: "c4-standard-96"
-        - name: KUBE_PROXY_MODE
-          value: "nftables"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: PROMETHEUS_SCRAPE_KUBELETS
-          value: "true"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "ssd-csi"
-        - name: CLOUD_PROVIDER
-          value: "gce"
-        - name: BOSKOS_RESOURCE_TYPE
-          value: "scalability-project"
-        - name: NODE_PRELOAD_IMAGES
-          value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-        - name: KOPS_CL2_TEST_CONFIG
-          value: testing/dra/config.yaml
-        resources:
-          requests:
-            cpu: "7"
-            memory: "28Gi"
-          limits:
-            cpu: "7"
-            memory: "28Gi"
-
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          imagePullPolicy: Always
+          command:
+            - runner.sh
+          args:
+            - ./tests/e2e/scenarios/scalability/run-test.sh
+          securityContext:
+            privileged: true
+          env:
+            - name: KUBE_SSH_KEY_PATH
+              value: /etc/ssh-key-secret/ssh-private
+            - name: KUBE_SSH_USER
+              value: prow
+            - name: GOPATH
+              value: /home/prow/go
+            - name: ARTIFACTS
+              value: $(ARTIFACTS)
+            - name: CNI_PLUGIN
+              value: gce
+            - name: KUBE_NODE_COUNT
+              value: "100"
+            - name: CL2_MODE
+              value: "Indexed"
+            - name: CL2_NODES_PER_NAMESPACE
+              value: "10"
+            - name: CL2_JOB_RUNNING_TIME
+              value: "3s"
+            - name: CL2_LONG_JOB_RUNNING_TIME
+              value: "45m"
+            # - name: CL2_LOAD_TEST_THROUGHPUT
+            #   value: "50"
+            # - name: CL2_DELETE_TEST_THROUGHPUT
+            #   value: "50"
+            - name: CL2_RATE_LIMIT_POD_CREATION
+              value: "false"
+            - name: NODE_MODE
+              value: "master"
+            - name: CONTROL_PLANE_COUNT
+              value: "1"
+            - name: CONTROL_PLANE_SIZE
+              value: "c4-standard-96"
+            - name: KUBE_PROXY_MODE
+              value: "nftables"
+            - name: ENABLE_PROMETHEUS_SERVER
+              value: "true"
+            - name: PROMETHEUS_SCRAPE_KUBELETS
+              value: "true"
+            - name: PROMETHEUS_PVC_STORAGE_CLASS
+              value: "ssd-csi"
+            - name: CLOUD_PROVIDER
+              value: "gce"
+            - name: BOSKOS_RESOURCE_TYPE
+              value: "scalability-project"
+            - name: NODE_PRELOAD_IMAGES
+              value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+            - name: KOPS_CL2_TEST_CONFIG
+              value: testing/dra/config.yaml
+          resources:
+            requests:
+              cpu: "7"
+              memory: "28Gi"
+            limits:
+              cpu: "7"
+              memory: "28Gi"
   - name: ci-kubernetes-e2e-kops-gce-5000-node-dra-with-workload-ipalias-using-cl2
     tags:
-    - "perfDashPrefix: gce-dra-5000Nodes-with-workload"
-    - "perfDashBuildsCount: 270"
-    - "perfDashJobType: performance"
+      - "perfDashPrefix: gce-dra-5000Nodes-with-workload"
+      - "perfDashBuildsCount: 270"
+      - "perfDashJobType: performance"
     cluster: k8s-infra-prow-build
     cron: '0 3 * * *' # Run once a day at 03:00 UTC
     labels:
@@ -527,19 +505,19 @@ periodics:
     decoration_config:
       timeout: 480m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    - org: alaypatel07
-      repo: perf-tests
-      base_ref: dra-scalability-bump-timeout
-      path_alias: k8s.io/perf-tests
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      path_alias: k8s.io/kops
-      workdir: true
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: alaypatel07
+        repo: perf-tests
+        base_ref: dra-scalability-bump-timeout
+        path_alias: k8s.io/perf-tests
+      - org: kubernetes
+        repo: kops
+        base_ref: master
+        path_alias: k8s.io/kops
+        workdir: true
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: u2404
@@ -554,75 +532,75 @@ periodics:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
-        - name: GOPATH
-          value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
-        - name: CNI_PLUGIN
-          value: gce
-        - name: KUBE_NODE_COUNT
-          value: "5000"
-        - name: CL2_MODE
-          value: "Indexed"
-        - name: CL2_NODES_PER_NAMESPACE
-          value: "2500"
-        - name: CL2_JOB_RUNNING_TIME
-          value: "30s"
-        - name: CL2_LONG_JOB_RUNNING_TIME
-          value: "240m"
-        # - name: CL2_LOAD_TEST_THROUGHPUT
-        #   value: "50"
-        # - name: CL2_DELETE_TEST_THROUGHPUT
-        #   value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: CONTROL_PLANE_SIZE
-          value: "c4-standard-96"
-        - name: KOPS_CONTROLLER_MANAGER_BURST
-          value: "1000"
-        - name: KOPS_CONTROLLER_MANAGER_QPS
-          value: "1000"
-        - name: KOPS_SCHEDULER_QPS
-          value: "1200"
-        - name: KOPS_SCHEDULER_BURST
-          value: "1200"
-        - name: KOPS_APISERVER_MAX_REQUESTS_INFLIGHT
-          value: "2700"
-        - name: KUBE_PROXY_MODE
-          value: "nftables"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "ssd-csi"
-        - name: CLOUD_PROVIDER
-          value: "gce"
-        - name: BOSKOS_RESOURCE_TYPE
-          value: "scalability-scale-project"
-        - name: NODE_PRELOAD_IMAGES
-          value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-        - name: KOPS_CL2_TEST_CONFIG
-          value: testing/dra/config.yaml
-        resources:
-          requests:
-            cpu: "7"
-            memory: "28Gi"
-          limits:
-            cpu: "7"
-            memory: "28Gi"
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          imagePullPolicy: Always
+          command:
+            - runner.sh
+          args:
+            - ./tests/e2e/scenarios/scalability/run-test.sh
+          securityContext:
+            privileged: true
+          env:
+            - name: KUBE_SSH_KEY_PATH
+              value: /etc/ssh-key-secret/ssh-private
+            - name: KUBE_SSH_USER
+              value: prow
+            - name: GOPATH
+              value: /home/prow/go
+            - name: ARTIFACTS
+              value: $(ARTIFACTS)
+            - name: CNI_PLUGIN
+              value: gce
+            - name: KUBE_NODE_COUNT
+              value: "5000"
+            - name: CL2_MODE
+              value: "Indexed"
+            - name: CL2_NODES_PER_NAMESPACE
+              value: "2500"
+            - name: CL2_JOB_RUNNING_TIME
+              value: "30s"
+            - name: CL2_LONG_JOB_RUNNING_TIME
+              value: "240m"
+            # - name: CL2_LOAD_TEST_THROUGHPUT
+            #   value: "50"
+            # - name: CL2_DELETE_TEST_THROUGHPUT
+            #   value: "50"
+            - name: CL2_RATE_LIMIT_POD_CREATION
+              value: "false"
+            - name: NODE_MODE
+              value: "master"
+            - name: CONTROL_PLANE_COUNT
+              value: "1"
+            - name: CONTROL_PLANE_SIZE
+              value: "c4-standard-96"
+            - name: KOPS_CONTROLLER_MANAGER_BURST
+              value: "1000"
+            - name: KOPS_CONTROLLER_MANAGER_QPS
+              value: "1000"
+            - name: KOPS_SCHEDULER_QPS
+              value: "1200"
+            - name: KOPS_SCHEDULER_BURST
+              value: "1200"
+            - name: KOPS_APISERVER_MAX_REQUESTS_INFLIGHT
+              value: "2700"
+            - name: KUBE_PROXY_MODE
+              value: "nftables"
+            - name: ENABLE_PROMETHEUS_SERVER
+              value: "true"
+            - name: PROMETHEUS_PVC_STORAGE_CLASS
+              value: "ssd-csi"
+            - name: CLOUD_PROVIDER
+              value: "gce"
+            - name: BOSKOS_RESOURCE_TYPE
+              value: "scalability-scale-project"
+            - name: NODE_PRELOAD_IMAGES
+              value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+            - name: KOPS_CL2_TEST_CONFIG
+              value: testing/dra/config.yaml
+          resources:
+            requests:
+              cpu: "7"
+              memory: "28Gi"
+            limits:
+              cpu: "7"
+              memory: "28Gi"

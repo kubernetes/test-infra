@@ -1,117 +1,118 @@
 presubmits:
   kubernetes-sigs/kernel-module-management:
-  - name: pull-kernel-module-management-build
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    annotations:
-      testgrid-dashboards: sig-node-kernel-module-management
-      testgrid-tab-name: build
-      description: "build the kernel-module-management controller binary."
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.23
-        command:
-        - ci/prow/build
-        resources:
-          limits:
-            cpu: 1
-            memory: 4Gi
-          requests:
-            cpu: 1
-            memory: 4Gi
-  - name: pull-kernel-module-management-check-api-changes
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    annotations:
-      testgrid-dashboards: sig-node-kernel-module-management
-      testgrid-tab-name: check-api-changes
-      description: "make sure deployment manifests and bundle are up-to-date."
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.23-alpine
-        command: [sh]
-        args:
-        - -c
-        - |
-          apk add bash curl gcc git make
+    - name: pull-kernel-module-management-build
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-node-kernel-module-management
+        testgrid-tab-name: build
+        description: "build the kernel-module-management controller binary."
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.23
+            command:
+              - ci/prow/build
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+    - name: pull-kernel-module-management-check-api-changes
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-node-kernel-module-management
+        testgrid-tab-name: check-api-changes
+        description: "make sure deployment manifests and bundle are up-to-date."
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.23-alpine
+            command:
+              - sh
+            args:
+              - -c
+              - |
+                apk add bash curl gcc git make
 
-          # Install kubectl
-          curl -Lo /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x /usr/local/bin/kubectl
+                # Install kubectl
+                curl -Lo /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                chmod +x /usr/local/bin/kubectl
 
-          # Include the destination directory of `go install` in $PATH
-          export PATH=$(go env GOPATH)/bin:${PATH}
+                # Include the destination directory of `go install` in $PATH
+                export PATH=$(go env GOPATH)/bin:${PATH}
 
-          ./ci/prow/check-api-changes
-        env:
-        - name: CGO_ENABLED
-          value: '0'
-        resources:
-          limits:
-            cpu: 1
-            memory: 4Gi
-          requests:
-            cpu: 1
-            memory: 4Gi
-  - name: pull-kernel-module-management-check-commits-count
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    annotations:
-      testgrid-dashboards: sig-node-kernel-module-management
-      testgrid-tab-name: check-commits-count
-      description: "make sure each PR to kernel-module-management has a single commit."
-    spec:
-      containers:
-      - image: docker.io/bitnami/git
-        command:
-        - ci/prow/check-commits-count
-        resources:
-          limits:
-            cpu: 1
-            memory: 4Gi
-          requests:
-            cpu: 1
-            memory: 4Gi
-  - name: pull-kernel-module-management-lint
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    annotations:
-      testgrid-dashboards: sig-node-kernel-module-management
-      testgrid-tab-name: lint
-      description: "lint the source code of kernel-module-management."
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.23
-        command:
-        - ci/prow/lint
-        resources:
-          limits:
-            cpu: 4
-            memory: 4Gi
-          requests:
-            cpu: 4
-            memory: 4Gi
-  - name: pull-kernel-module-management-unit-tests
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    annotations:
-      testgrid-dashboards: sig-node-kernel-module-management
-      testgrid-tab-name: unit-tests
-      description: "unit-tests the source code of kernel-module-management."
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.23
-        command:
-        - ci/prow/unit-tests
-        resources:
-          limits:
-            cpu: 4
-            memory: 4Gi
-          requests:
-            cpu: 4
-            memory: 4Gi
+                ./ci/prow/check-api-changes
+            env:
+              - name: CGO_ENABLED
+                value: '0'
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+    - name: pull-kernel-module-management-check-commits-count
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-node-kernel-module-management
+        testgrid-tab-name: check-commits-count
+        description: "make sure each PR to kernel-module-management has a single commit."
+      spec:
+        containers:
+          - image: docker.io/bitnami/git
+            command:
+              - ci/prow/check-commits-count
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+    - name: pull-kernel-module-management-lint
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-node-kernel-module-management
+        testgrid-tab-name: lint
+        description: "lint the source code of kernel-module-management."
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.23
+            command:
+              - ci/prow/lint
+            resources:
+              limits:
+                cpu: 4
+                memory: 4Gi
+              requests:
+                cpu: 4
+                memory: 4Gi
+    - name: pull-kernel-module-management-unit-tests
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-node-kernel-module-management
+        testgrid-tab-name: unit-tests
+        description: "unit-tests the source code of kernel-module-management."
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.23
+            command:
+              - ci/prow/unit-tests
+            resources:
+              limits:
+                cpu: 4
+                memory: 4Gi
+              requests:
+                cpu: 4
+                memory: 4Gi

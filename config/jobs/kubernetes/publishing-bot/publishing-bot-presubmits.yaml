@@ -1,181 +1,181 @@
 presubmits:
   kubernetes/publishing-bot:
-  - name: pull-publishing-bot-build
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/publishing-bot
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.24
-        command:
-        - make
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-release-publishing-bot
-      testgrid-tab-name: build
-  - name: pull-publishing-bot-test
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/publishing-bot
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.25
-        command:
-        - make
-        - test
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-release-publishing-bot
-      testgrid-tab-name: test
-  - name: pull-publishing-bot-validate-rules
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/publishing-bot
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.25
-        env:
-        - name: "GOWORK"
-          value: "off"
-        command:
-        - go
-        args:
-        - run
-        - -mod=mod
-        - k8s.io/publishing-bot/cmd/validate-rules
-        - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-release-publishing-bot
-      testgrid-tab-name: validate-rules
-  - name: pull-publishing-bot-test-kubernetes-master
-    cluster: eks-prow-build-cluster
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 3h
-    annotations:
-      testgrid-dashboards: sig-release-publishing-bot
-      testgrid-tab-name: pull-publishing-bot-test-k8s-master
-      description: test publishing bot against k/k master
-    labels:
-      preset-dind-enabled: "true"
-    path_alias: k8s.io/publishing-bot
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-          command:
-            - runner.sh
-          args:
-            - bash
-            - -ce
-            - |
-              make build-image
-              test/k8s-gen-bot-config.sh k8s-bot-config
-              test/run-bot-local.sh k8s-bot-config
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 2
-              memory: 2Gi
-            limits:
-              cpu: 2
-              memory: 2Gi
-  - name: pull-publishing-bot-image
-    cluster: k8s-infra-prow-build
-    decorate: true
-    path_alias: "k8s.io/publishing-bot"
-    always_run: true
-    spec:
-      serviceAccountName: gcb-builder-releng-test
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-            - /run.sh
-          args:
-            - --project=k8s-staging-releng-test
-            - --scratch-bucket=gs://k8s-staging-releng-test
-            - --env-passthrough=PULL_BASE_REF
-            - .
-          env:
-            - name: LOG_TO_STDOUT
-              value: "y"
-            - name: REGISTRY
-              value: "gcr.io/k8s-staging-releng-test"
-          resources:
-            requests:
-              cpu: 1000m
-              memory: 1Gi
-            limits:
-              cpu: 1000m
-              memory: 1Gi
-    annotations:
-      testgrid-dashboards: sig-release-releng-presubmits
-      testgrid-tab-name: publishing-bot-image
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-email: release-managers+alerts@kubernetes.io
-      testgrid-num-columns-recent: '30'
-  kubernetes/kubernetes:
-  - name: pull-publishing-bot-validate
-    cluster: eks-prow-build-cluster
-    always_run: false
-    decorate: true
-    path_alias: k8s.io/kubernetes
-    skip_report: false
-    optional: true
-    run_if_changed: '^staging/publishing.*$'
-    extra_refs:
-    - org: kubernetes
-      repo: publishing-bot
-      base_ref: master
+    - name: pull-publishing-bot-build
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
       path_alias: k8s.io/publishing-bot
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.25
-        env:
-        - name: "GOWORK"
-          value: "off"
-        command:
-        - go
-        args:
-        - run
-        - -mod=mod
-        - k8s.io/publishing-bot/cmd/validate-rules
-        - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-release-publishing-bot
-      testgrid-tab-name: validate
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.24
+            command:
+              - make
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-release-publishing-bot
+        testgrid-tab-name: build
+    - name: pull-publishing-bot-test
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: k8s.io/publishing-bot
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.25
+            command:
+              - make
+              - test
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-release-publishing-bot
+        testgrid-tab-name: test
+    - name: pull-publishing-bot-validate-rules
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: k8s.io/publishing-bot
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.25
+            env:
+              - name: "GOWORK"
+                value: "off"
+            command:
+              - go
+            args:
+              - run
+              - -mod=mod
+              - k8s.io/publishing-bot/cmd/validate-rules
+              - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-release-publishing-bot
+        testgrid-tab-name: validate-rules
+    - name: pull-publishing-bot-test-kubernetes-master
+      cluster: eks-prow-build-cluster
+      always_run: false
+      decorate: true
+      decoration_config:
+        timeout: 3h
+      annotations:
+        testgrid-dashboards: sig-release-publishing-bot
+        testgrid-tab-name: pull-publishing-bot-test-k8s-master
+        description: test publishing bot against k/k master
+      labels:
+        preset-dind-enabled: "true"
+      path_alias: k8s.io/publishing-bot
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -ce
+              - |
+                make build-image
+                test/k8s-gen-bot-config.sh k8s-bot-config
+                test/run-bot-local.sh k8s-bot-config
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: 2Gi
+              limits:
+                cpu: 2
+                memory: 2Gi
+    - name: pull-publishing-bot-image
+      cluster: k8s-infra-prow-build
+      decorate: true
+      path_alias: "k8s.io/publishing-bot"
+      always_run: true
+      spec:
+        serviceAccountName: gcb-builder-releng-test
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-releng-test
+              - --scratch-bucket=gs://k8s-staging-releng-test
+              - --env-passthrough=PULL_BASE_REF
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-releng-test"
+            resources:
+              requests:
+                cpu: 1000m
+                memory: 1Gi
+              limits:
+                cpu: 1000m
+                memory: 1Gi
+      annotations:
+        testgrid-dashboards: sig-release-releng-presubmits
+        testgrid-tab-name: publishing-bot-image
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
+        testgrid-num-columns-recent: '30'
+  kubernetes/kubernetes:
+    - name: pull-publishing-bot-validate
+      cluster: eks-prow-build-cluster
+      always_run: false
+      decorate: true
+      path_alias: k8s.io/kubernetes
+      skip_report: false
+      optional: true
+      run_if_changed: '^staging/publishing.*$'
+      extra_refs:
+        - org: kubernetes
+          repo: publishing-bot
+          base_ref: master
+          path_alias: k8s.io/publishing-bot
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.25
+            env:
+              - name: "GOWORK"
+                value: "off"
+            command:
+              - go
+            args:
+              - run
+              - -mod=mod
+              - k8s.io/publishing-bot/cmd/validate-rules
+              - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-release-publishing-bot
+        testgrid-tab-name: validate

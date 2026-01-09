@@ -1,273 +1,270 @@
 periodics:
-- name: ci-kubernetes-e2e-gci-gce-scalability-networkpolicies
-  cluster: k8s-infra-prow-build
-  interval: 24h
-  tags:
-    - "perfDashPrefix: networkpolicies"
-    - "perfDashJobType: performance"
-    - "perfDashBuildsCount: 500"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: perf-tests
-    base_ref: master
-    path_alias: k8s.io/perf-tests
-  annotations:
-    testgrid-dashboards: sig-scalability-experiments
-    testgrid-tab-name: kube-network-policies
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      env:
-      - name: NETWORK_POLICY_PROVIDER
-        value: "kube-network-policies"
-      - name: ADDITIONAL_MACHINE_TYPE
-        value: "e2-standard-2"
-      - name: NUM_ADDITIONAL_NODES
-        value: "4"
-      args:
-      - --check-leaked-resources
-      - --cluster=e2e-scalability-calico
-      - --env=CL2_ENABLE_NETWORKPOLICIES=true
-      - --env=CL2_ENABLE_NETWORK_POLICY_ENFORCEMENT_LATENCY_TEST=true
-      - --env=CL2_NET_POLICY_ENFORCEMENT_LATENCY_MAX_TARGET_PODS_PER_NS=200
-      - --env=CL2_NET_POLICY_ENFORCEMENT_LATENCY_NODE_LABEL_VALUE=net-policy-client
-      - --env=CL2_NET_POLICY_ENFORCEMENT_LOAD_COUNT=1000
-      - --env=CL2_NET_POLICY_ENFORCEMENT_LOAD_QPS=20
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-nodes=100
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
-      - --provider=gce
-      - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=ci-kubernetes-e2e-gci-gce-scalability-np-$(BUILD_ID)
-      - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
-      - --test-cmd-args=--nodes=100
-      - --test-cmd-args=--prometheus-scrape-node-exporter
-      - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=$(ARTIFACTS)
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-      - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-kube-network-policies.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=120m
-      - --use-logexporter
-      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
-      resources:
-        limits:
-          cpu: 2
-          memory: "6Gi"
-        requests:
-          cpu: 2
-          memory: "6Gi"
-
-- name: ci-kubernetes-e2e-gci-gce-scalability-nftables-proxy
-  cluster: k8s-infra-prow-build
-  interval: 12h
-  tags:
-    - "perfDashPrefix: nftables-100Nodes-master"
-    - "perfDashJobType: performance"
-    - "perfDashBuildsCount: 500"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: perf-tests
-    base_ref: master
-    path_alias: k8s.io/perf-tests
-  annotations:
-    testgrid-dashboards: sig-scalability-experiments
-    testgrid-tab-name: nftables-100
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
-    description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh using kube-proxy nftables"
-    testgrid-num-failures-to-alert: '2'
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --cluster=e2e-big
-      - --env=APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
-      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
-      - --env=KUBE_PROXY_MODE=nftables
-      - --extract=ci/fast/latest-fast
-      - --gcp-node-image=gci
-      - --gcp-nodes=100
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
-      - --provider=gce
-      - --metadata-sources=cl2-metadata.json
-      - --env=CL2_ENABLE_DNS_PROGRAMMING=true
-      - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-      - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
-      - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
-      - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
-      - --test-cmd-args=--nodes=100
-      - --test-cmd-args=--prometheus-scrape-kubelets=true
-      - --test-cmd-args=--prometheus-scrape-node-exporter
-      - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=$(ARTIFACTS)
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
-      - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-      - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=120m
-      - --use-logexporter
-      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
-      resources:
-        requests:
-          cpu: 2
-          memory: 6Gi
-        limits:
-          cpu: 2
-          memory: 6Gi
-
-
-- name: ci-kubernetes-kops-gce-small-scale-kindnet-using-cl2
-  cluster: k8s-infra-prow-build
-  interval: 12h
-  tags:
-    - "perfDashPrefix: kindnet-100Nodes-master"
-    - "perfDashJobType: performance"
-    - "perfDashBuildsCount: 500"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 480m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: perf-tests
-    base_ref: master
-    path_alias: k8s.io/perf-tests
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    path_alias: k8s.io/kops
-    workdir: true
-  spec:
-    serviceAccountName: k8s-kops-test
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      imagePullPolicy: Always
-      command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/scalability/run-test.sh
-      securityContext:
-        privileged: true
-      env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
-      - name: KUBE_SSH_USER
-        value: prow
-      - name: GOPATH
-        value: /home/prow/go
-      - name: ARTIFACTS
-        value: $(ARTIFACTS)
-      - name: CNI_PLUGIN
-        value: "kindnet"
-      - name: KUBE_PROXY_MODE
-        value: "nftables"
-      - name: KUBE_NODE_COUNT
-        value: "100"
-      - name: CONTROL_PLANE_COUNT
-        value: "1"
-      - name: CONTROL_PLANE_SIZE
-        value: "c3-standard-88"
-      - name: CL2_LOAD_TEST_THROUGHPUT
-        value: "50"
-      - name: CL2_DELETE_TEST_THROUGHPUT
-        value: "50"
-      - name: CL2_RATE_LIMIT_POD_CREATION
-        value: "false"
-      - name: NODE_MODE
-        value: "master"
-      - name: PROMETHEUS_SCRAPE_KUBE_PROXY
-        value: "true"
-      - name: CL2_ENABLE_DNS_PROGRAMMING
-        value: "true"
-      - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-        value: "true"
-      - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-        value: "99.5"
-      - name: PROMETHEUS_PVC_STORAGE_CLASS
-        value: "ssd-csi"
-      - name: CL2_NETWORK_LATENCY_THRESHOLD
-        value: "0.5s"
-      - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
-        value: "true"
-      - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
-        value: "20s"
-      - name: CLOUD_PROVIDER
-        value: "gce"
-      resources:
-        requests:
-          cpu: "6"
-          memory: "16Gi"
-        limits:
-          cpu: "6"
-          memory: "16Gi"
-  annotations:
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com
-    testgrid-num-failures-to-alert: '2'
-    test.kops.k8s.io/cloud: gce
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/networking: kindnet
-    testgrid-dashboards: sig-cluster-lifecycle-kops, sig-scalability-experiments
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: ci-kubernetes-kops-gce-small-scale-kindnet-using-cl2
+  - name: ci-kubernetes-e2e-gci-gce-scalability-networkpolicies
+    cluster: k8s-infra-prow-build
+    interval: 24h
+    tags:
+      - "perfDashPrefix: networkpolicies"
+      - "perfDashJobType: performance"
+      - "perfDashBuildsCount: 500"
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-periodics: "true"
+      preset-e2e-scalability-periodics-master: "true"
+    decorate: true
+    decoration_config:
+      timeout: 140m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: perf-tests
+        base_ref: master
+        path_alias: k8s.io/perf-tests
+    annotations:
+      testgrid-dashboards: sig-scalability-experiments
+      testgrid-tab-name: kube-network-policies
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          env:
+            - name: NETWORK_POLICY_PROVIDER
+              value: "kube-network-policies"
+            - name: ADDITIONAL_MACHINE_TYPE
+              value: "e2-standard-2"
+            - name: NUM_ADDITIONAL_NODES
+              value: "4"
+          args:
+            - --check-leaked-resources
+            - --cluster=e2e-scalability-calico
+            - --env=CL2_ENABLE_NETWORKPOLICIES=true
+            - --env=CL2_ENABLE_NETWORK_POLICY_ENFORCEMENT_LATENCY_TEST=true
+            - --env=CL2_NET_POLICY_ENFORCEMENT_LATENCY_MAX_TARGET_PODS_PER_NS=200
+            - --env=CL2_NET_POLICY_ENFORCEMENT_LATENCY_NODE_LABEL_VALUE=net-policy-client
+            - --env=CL2_NET_POLICY_ENFORCEMENT_LOAD_COUNT=1000
+            - --env=CL2_NET_POLICY_ENFORCEMENT_LOAD_QPS=20
+            - --extract=ci/latest
+            - --gcp-node-image=gci
+            - --gcp-nodes=100
+            - --gcp-project-type=scalability-project
+            - --gcp-zone=us-east1-b
+            - --provider=gce
+            - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
+            - --test=false
+            - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+            - --test-cmd-args=cluster-loader2
+            - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+            - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=ci-kubernetes-e2e-gci-gce-scalability-np-$(BUILD_ID)
+            - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+            - --test-cmd-args=--nodes=100
+            - --test-cmd-args=--prometheus-scrape-node-exporter
+            - --test-cmd-args=--provider=gce
+            - --test-cmd-args=--report-dir=$(ARTIFACTS)
+            - --test-cmd-args=--testconfig=testing/load/config.yaml
+            - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
+            - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+            - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-kube-network-policies.yaml
+            - --test-cmd-name=ClusterLoaderV2
+            - --timeout=120m
+            - --use-logexporter
+            - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+          resources:
+            limits:
+              cpu: 2
+              memory: "6Gi"
+            requests:
+              cpu: 2
+              memory: "6Gi"
+  - name: ci-kubernetes-e2e-gci-gce-scalability-nftables-proxy
+    cluster: k8s-infra-prow-build
+    interval: 12h
+    tags:
+      - "perfDashPrefix: nftables-100Nodes-master"
+      - "perfDashJobType: performance"
+      - "perfDashBuildsCount: 500"
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-periodics: "true"
+      preset-e2e-scalability-periodics-master: "true"
+    decorate: true
+    decoration_config:
+      timeout: 140m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: perf-tests
+        base_ref: master
+        path_alias: k8s.io/perf-tests
+    annotations:
+      testgrid-dashboards: sig-scalability-experiments
+      testgrid-tab-name: nftables-100
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+      description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh using kube-proxy nftables"
+      testgrid-num-failures-to-alert: '2'
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
+            - --check-leaked-resources
+            - --cluster=e2e-big
+            - --env=APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
+            - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
+            - --env=KUBE_PROXY_MODE=nftables
+            - --extract=ci/fast/latest-fast
+            - --gcp-node-image=gci
+            - --gcp-nodes=100
+            - --gcp-project-type=scalability-project
+            - --gcp-zone=us-east1-b
+            - --provider=gce
+            - --metadata-sources=cl2-metadata.json
+            - --env=CL2_ENABLE_DNS_PROGRAMMING=true
+            - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
+            - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
+            - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
+            - --test=false
+            - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+            - --test-cmd-args=cluster-loader2
+            - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+            - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+            - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+            - --test-cmd-args=--nodes=100
+            - --test-cmd-args=--prometheus-scrape-kubelets=true
+            - --test-cmd-args=--prometheus-scrape-node-exporter
+            - --test-cmd-args=--provider=gce
+            - --test-cmd-args=--report-dir=$(ARTIFACTS)
+            - --test-cmd-args=--testconfig=testing/load/config.yaml
+            - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
+            - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
+            - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+            - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+            - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
+            - --test-cmd-name=ClusterLoaderV2
+            - --timeout=120m
+            - --use-logexporter
+            - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+          resources:
+            requests:
+              cpu: 2
+              memory: 6Gi
+            limits:
+              cpu: 2
+              memory: 6Gi
+  - name: ci-kubernetes-kops-gce-small-scale-kindnet-using-cl2
+    cluster: k8s-infra-prow-build
+    interval: 12h
+    tags:
+      - "perfDashPrefix: kindnet-100Nodes-master"
+      - "perfDashJobType: performance"
+      - "perfDashBuildsCount: 500"
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-periodics: "true"
+      preset-e2e-scalability-periodics-master: "true"
+    max_concurrency: 1
+    decorate: true
+    decoration_config:
+      timeout: 480m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: perf-tests
+        base_ref: master
+        path_alias: k8s.io/perf-tests
+      - org: kubernetes
+        repo: kops
+        base_ref: master
+        path_alias: k8s.io/kops
+        workdir: true
+    spec:
+      serviceAccountName: k8s-kops-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          imagePullPolicy: Always
+          command:
+            - runner.sh
+          args:
+            - ./tests/e2e/scenarios/scalability/run-test.sh
+          securityContext:
+            privileged: true
+          env:
+            - name: KUBE_SSH_KEY_PATH
+              value: /etc/ssh-key-secret/ssh-private
+            - name: KUBE_SSH_USER
+              value: prow
+            - name: GOPATH
+              value: /home/prow/go
+            - name: ARTIFACTS
+              value: $(ARTIFACTS)
+            - name: CNI_PLUGIN
+              value: "kindnet"
+            - name: KUBE_PROXY_MODE
+              value: "nftables"
+            - name: KUBE_NODE_COUNT
+              value: "100"
+            - name: CONTROL_PLANE_COUNT
+              value: "1"
+            - name: CONTROL_PLANE_SIZE
+              value: "c3-standard-88"
+            - name: CL2_LOAD_TEST_THROUGHPUT
+              value: "50"
+            - name: CL2_DELETE_TEST_THROUGHPUT
+              value: "50"
+            - name: CL2_RATE_LIMIT_POD_CREATION
+              value: "false"
+            - name: NODE_MODE
+              value: "master"
+            - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+              value: "true"
+            - name: CL2_ENABLE_DNS_PROGRAMMING
+              value: "true"
+            - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+              value: "true"
+            - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+              value: "99.5"
+            - name: PROMETHEUS_PVC_STORAGE_CLASS
+              value: "ssd-csi"
+            - name: CL2_NETWORK_LATENCY_THRESHOLD
+              value: "0.5s"
+            - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
+              value: "true"
+            - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
+              value: "20s"
+            - name: CLOUD_PROVIDER
+              value: "gce"
+          resources:
+            requests:
+              cpu: "6"
+              memory: "16Gi"
+            limits:
+              cpu: "6"
+              memory: "16Gi"
+    annotations:
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com
+      testgrid-num-failures-to-alert: '2'
+      test.kops.k8s.io/cloud: gce
+      test.kops.k8s.io/distro: u2204
+      test.kops.k8s.io/k8s_version: stable
+      test.kops.k8s.io/kops_channel: alpha
+      test.kops.k8s.io/networking: kindnet
+      testgrid-dashboards: sig-cluster-lifecycle-kops, sig-scalability-experiments
+      testgrid-days-of-results: '90'
+      testgrid-tab-name: ci-kubernetes-kops-gce-small-scale-kindnet-using-cl2

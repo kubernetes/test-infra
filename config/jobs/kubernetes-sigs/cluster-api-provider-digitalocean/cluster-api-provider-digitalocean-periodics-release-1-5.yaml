@@ -1,36 +1,36 @@
 periodics:
-- name: periodic-cluster-api-provider-digitalocean-conformance-release-1-5
-  decorate: true
-  cluster: k8s-infra-prow-build
-  decoration_config:
-    timeout: 4h
-  interval: 24h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-do-credential: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-digitalocean
-      base_ref: release-1.5
-      path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.28
-      command:
-        - "runner.sh"
-        - "./scripts/ci-conformance.sh"
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: "7Gi"
-        requests:
-          cpu: 4
-          memory: "7Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-    testgrid-tab-name: capdo-periodic-conformance-release-1-5
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-do-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "3"
+  - name: periodic-cluster-api-provider-digitalocean-conformance-release-1-5
+    decorate: true
+    cluster: k8s-infra-prow-build
+    decoration_config:
+      timeout: 4h
+    interval: 24h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-do-credential: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-digitalocean
+        base_ref: release-1.5
+        path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.28
+          command:
+            - "runner.sh"
+            - "./scripts/ci-conformance.sh"
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: "7Gi"
+            requests:
+              cpu: 4
+              memory: "7Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: capdo-periodic-conformance-release-1-5
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-do-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: "3"

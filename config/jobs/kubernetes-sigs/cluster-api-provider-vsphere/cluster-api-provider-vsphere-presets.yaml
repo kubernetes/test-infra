@@ -1,26 +1,26 @@
 presets:
-- labels:
-    preset-gcve-e2e-config: "true"
-  env:
-  - name: BOSKOS_HOST
-    value: http://boskos.test-pods.svc.cluster.local
-  - name: GOVC_URL
-    valueFrom:
-      secretKeyRef:
-        name: k8s-gcp-gcve-credentials
-        key: url
-  - name: GOVC_USERNAME
-    valueFrom:
-      secretKeyRef:
-        name: k8s-gcp-gcve-credentials
-        key: username
-  - name: GOVC_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: k8s-gcp-gcve-credentials
-        key: password
-  - name: VSPHERE_TLS_THUMBPRINT
-    valueFrom:
-      secretKeyRef:
-        name: k8s-gcp-gcve-credentials
-        key: thumbprint
+  - labels:
+      preset-gcve-e2e-config: "true"
+    env:
+      - name: BOSKOS_HOST
+        value: http://boskos.test-pods.svc.cluster.local
+      - name: GOVC_URL
+        valueFrom:
+          secretKeyRef:
+            name: k8s-gcp-gcve-credentials
+            key: url
+      - name: GOVC_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: k8s-gcp-gcve-credentials
+            key: username
+      - name: GOVC_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: k8s-gcp-gcve-credentials
+            key: password
+      - name: VSPHERE_TLS_THUMBPRINT
+        valueFrom:
+          secretKeyRef:
+            name: k8s-gcp-gcve-credentials
+            key: thumbprint

@@ -1,170 +1,164 @@
 presubmits:
   kubernetes-sigs/ingress-controller-conformance:
-
-  - name: pull-ingress-controller-conformance-boilerplate
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: sigs.k8s.io/ingress-controller-conformance
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-boilerplate.sh
-        resources:
-          limits:
-            cpu: 1
-            memory: 4Gi
-          requests:
-            cpu: 1
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-network-ingress-controller-conformance
-      testgrid-tab-name: boilerplate
-
-  - name: pull-ingress-controller-conformance-codegen
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: sigs.k8s.io/ingress-controller-conformance
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - verify-codegen
-        resources:
-          limits:
-            cpu: 1
-            memory: 4Gi
-          requests:
-            cpu: 1
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-network-ingress-controller-conformance
-      testgrid-tab-name: verify-codegen
-
-  - name: pull-ingress-controller-conformance-gherkin
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: sigs.k8s.io/ingress-controller-conformance
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-gherkin.sh
-        resources:
-          limits:
-            cpu: 1
-            memory: 4Gi
-          requests:
-            cpu: 1
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-network-ingress-controller-conformance
-      testgrid-tab-name: verify-gherkin
-
-  - name: pull-ingress-controller-conformance-gofmt
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/ingress-controller-conformance
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-gofmt.sh
-        resources:
-          limits:
-            cpu: 1
-            memory: 4Gi
-          requests:
-            cpu: 1
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-network-ingress-controller-conformance
-      testgrid-tab-name: gofmt
-
-  - name: pull-ingress-controller-conformance-golint
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: sigs.k8s.io/ingress-controller-conformance
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-golint.sh
-        resources:
-          limits:
-            cpu: 1
-            memory: 4Gi
-          requests:
-            cpu: 1
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-network-ingress-controller-conformance
-      testgrid-tab-name: golint
-
-  - name: pull-ingress-controller-conformance-build
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: sigs.k8s.io/ingress-controller-conformance
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - build
-        resources:
-          limits:
-            cpu: 1
-            memory: 4Gi
-          requests:
-            cpu: 1
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-network-ingress-controller-conformance
-      testgrid-tab-name: build
+    - name: pull-ingress-controller-conformance-boilerplate
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      decoration_config:
+        timeout: 10m
+      path_alias: sigs.k8s.io/ingress-controller-conformance
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./hack/verify-boilerplate.sh
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-network-ingress-controller-conformance
+        testgrid-tab-name: boilerplate
+    - name: pull-ingress-controller-conformance-codegen
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      decoration_config:
+        timeout: 10m
+      path_alias: sigs.k8s.io/ingress-controller-conformance
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - verify-codegen
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-network-ingress-controller-conformance
+        testgrid-tab-name: verify-codegen
+    - name: pull-ingress-controller-conformance-gherkin
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      decoration_config:
+        timeout: 10m
+      path_alias: sigs.k8s.io/ingress-controller-conformance
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./hack/verify-gherkin.sh
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-network-ingress-controller-conformance
+        testgrid-tab-name: verify-gherkin
+    - name: pull-ingress-controller-conformance-gofmt
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/ingress-controller-conformance
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./hack/verify-gofmt.sh
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-network-ingress-controller-conformance
+        testgrid-tab-name: gofmt
+    - name: pull-ingress-controller-conformance-golint
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      decoration_config:
+        timeout: 10m
+      path_alias: sigs.k8s.io/ingress-controller-conformance
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - ./hack/verify-golint.sh
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-network-ingress-controller-conformance
+        testgrid-tab-name: golint
+    - name: pull-ingress-controller-conformance-build
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      decoration_config:
+        timeout: 10m
+      path_alias: sigs.k8s.io/ingress-controller-conformance
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - build
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-network-ingress-controller-conformance
+        testgrid-tab-name: build

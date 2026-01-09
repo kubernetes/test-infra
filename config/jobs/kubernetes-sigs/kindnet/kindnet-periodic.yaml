@@ -1,104 +1,104 @@
 periodics:
-- interval: 24h
-  name: ci-kubernetes-kindnet-conformance-parallel
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: kindnet
-    base_ref: main
-    path_alias: sigs.k8s.io/kindnet
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      env:
-      - name: KUBE_PROXY_MODE
-        value: "nftables"
-      - name: "PARALLEL"
-        value: "true"
-      - name: LABEL_FILTER
-        value: "!Slow && !Disruptive && !Flaky && Feature: containsAny NetworkPolicy || Conformance"
-      - name: SKIP
-        value: \[Feature:SCTPConnectivity\]
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/kindnet/hack/ci/e2e.sh
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: "4"
-          memory: 9000Mi
-        requests:
-          cpu: "4"
-          memory: 9000Mi
-  annotations:
-    testgrid-dashboards: sig-network-kindnet
-    testgrid-tab-name: kindnet conformance, master (dev) [non-serial]
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
-# conformance test against kubernetes master branch with `kind` ipv6
-- interval: 24h
-  name: ci-kubernetes-kindnet-conformance-parallel-ipv6
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: kindnet
-    base_ref: main
-    path_alias: sigs.k8s.io/kindnet
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      env:
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
-      # tell kind CI script to use ipv6
-      - name: "IP_FAMILY"
-        value: "ipv6"
-      - name: KUBE_PROXY_MODE
-        value: "nftables"
-      - name: "PARALLEL"
-        value: "true"
-      - name: LABEL_FILTER
-        value: "!Slow && !Disruptive && !Flaky && Feature: containsAny NetworkPolicy || Conformance"
-      - name: SKIP
-        value: \[Feature:SCTPConnectivity\]
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/kindnet/hack/ci/e2e.sh
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: "4"
-          memory: 9000Mi
-        requests:
-          cpu: "4"
-          memory: 9000Mi
-  annotations:
-    testgrid-dashboards: sig-network-kindnet
-    testgrid-tab-name: kindnet (IPv6), master (dev) [non-serial]
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+  - interval: 24h
+    name: ci-kubernetes-kindnet-conformance-parallel
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kindnet
+        base_ref: main
+        path_alias: sigs.k8s.io/kindnet
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          env:
+            - name: KUBE_PROXY_MODE
+              value: "nftables"
+            - name: "PARALLEL"
+              value: "true"
+            - name: LABEL_FILTER
+              value: "!Slow && !Disruptive && !Flaky && Feature: containsAny NetworkPolicy || Conformance"
+            - name: SKIP
+              value: \[Feature:SCTPConnectivity\]
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/kindnet/hack/ci/e2e.sh
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: "4"
+              memory: 9000Mi
+            requests:
+              cpu: "4"
+              memory: 9000Mi
+    annotations:
+      testgrid-dashboards: sig-network-kindnet
+      testgrid-tab-name: kindnet conformance, master (dev) [non-serial]
+      testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+  # conformance test against kubernetes master branch with `kind` ipv6
+  - interval: 24h
+    name: ci-kubernetes-kindnet-conformance-parallel-ipv6
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kindnet
+        base_ref: main
+        path_alias: sigs.k8s.io/kindnet
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          env:
+            # enable IPV6 in bootstrap image
+            - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+              value: "true"
+            # tell kind CI script to use ipv6
+            - name: "IP_FAMILY"
+              value: "ipv6"
+            - name: KUBE_PROXY_MODE
+              value: "nftables"
+            - name: "PARALLEL"
+              value: "true"
+            - name: LABEL_FILTER
+              value: "!Slow && !Disruptive && !Flaky && Feature: containsAny NetworkPolicy || Conformance"
+            - name: SKIP
+              value: \[Feature:SCTPConnectivity\]
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/kindnet/hack/ci/e2e.sh
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: "4"
+              memory: 9000Mi
+            requests:
+              cpu: "4"
+              memory: 9000Mi
+    annotations:
+      testgrid-dashboards: sig-network-kindnet
+      testgrid-tab-name: kindnet (IPv6), master (dev) [non-serial]
+      testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com

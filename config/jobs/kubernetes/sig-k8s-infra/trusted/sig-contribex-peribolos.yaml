@@ -1,9 +1,47 @@
 postsubmits:
   kubernetes/org:
-  - name: post-org-peribolos
+    - name: post-org-peribolos
+      annotations:
+        testgrid-dashboards: sig-contribex-org
+        testgrid-tab-name: post-peribolos
+        # TODO: remove kubernetes-github-managment-alerts@googlegroups.com,
+        # when new kubernetes.io mailing list is stable.
+        testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, github-managment-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: owners
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
+      decoration_config:
+        timeout: 180m
+      branches:
+        - ^main$
+      max_concurrency: 1
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - ./admin/update.sh
+            args:
+              - --github-endpoint=http://ghproxy.test-pods.svc.cluster.local
+              - --github-endpoint=https://api.github.com
+              - --github-token-path=/etc/github/token
+              - --confirm
+            volumeMounts:
+              - name: github
+                mountPath: /etc/github
+        volumes:
+          - name: github
+            secret:
+              secretName: k8s-github-robot-github-token
+periodics:
+  - interval: 24h
+    name: ci-org-peribolos
     annotations:
       testgrid-dashboards: sig-contribex-org
-      testgrid-tab-name: post-peribolos
+      testgrid-tab-name: ci-peribolos
       # TODO: remove kubernetes-github-managment-alerts@googlegroups.com,
       # when new kubernetes.io mailing list is stable.
       testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, github-managment-alerts@kubernetes.io
@@ -16,63 +54,25 @@ postsubmits:
     decorate: true
     decoration_config:
       timeout: 180m
-    branches:
-    - ^main$
     max_concurrency: 1
+    extra_refs:
+      - org: kubernetes
+        repo: org
+        base_ref: main
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - ./admin/update.sh
-        args:
-        - --github-endpoint=http://ghproxy.test-pods.svc.cluster.local
-        - --github-endpoint=https://api.github.com
-        - --github-token-path=/etc/github/token
-        - --confirm
-        volumeMounts:
-        - name: github
-          mountPath: /etc/github
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          command:
+            - ./admin/update.sh
+          args:
+            - --github-endpoint=http://ghproxy.test-pods.svc.cluster.local
+            - --github-endpoint=https://api.github.com
+            - --github-token-path=/etc/github/token
+            - --confirm
+          volumeMounts:
+            - name: github
+              mountPath: /etc/github
       volumes:
-      - name: github
-        secret:
-          secretName: k8s-github-robot-github-token
-periodics:
-- interval: 24h
-  name: ci-org-peribolos
-  annotations:
-    testgrid-dashboards: sig-contribex-org
-    testgrid-tab-name: ci-peribolos
-    # TODO: remove kubernetes-github-managment-alerts@googlegroups.com,
-    # when new kubernetes.io mailing list is stable.
-    testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, github-managment-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: '1'
-  rerun_auth_config:
-    github_team_slugs:
-      - org: kubernetes
-        slug: owners
-  cluster: k8s-infra-prow-build-trusted
-  decorate: true
-  decoration_config:
-    timeout: 180m
-  max_concurrency: 1
-  extra_refs:
-  - org: kubernetes
-    repo: org
-    base_ref: main
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-      command:
-      - ./admin/update.sh
-      args:
-      - --github-endpoint=http://ghproxy.test-pods.svc.cluster.local
-      - --github-endpoint=https://api.github.com
-      - --github-token-path=/etc/github/token
-      - --confirm
-      volumeMounts:
-      - name: github
-        mountPath: /etc/github
-    volumes:
-    - name: github
-      secret:
-        secretName: k8s-github-robot-github-token
+        - name: github
+          secret:
+            secretName: k8s-github-robot-github-token

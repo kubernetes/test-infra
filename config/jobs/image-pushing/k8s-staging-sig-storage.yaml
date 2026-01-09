@@ -841,7 +841,6 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
-
 # Canary images are used by some Prow jobs to ensure that the upcoming releases
 # of the sidecars work together. We don't promote those canary images.
 # To avoid getting them evicted from the staging area, we have to rebuild

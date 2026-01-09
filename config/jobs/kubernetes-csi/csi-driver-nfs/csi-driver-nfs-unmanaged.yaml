@@ -2,263 +2,261 @@
 
 presubmits:
   kubernetes-csi/csi-driver-nfs:
-  - name: pull-csi-driver-nfs-sanity
-    cluster: k8s-infra-prow-build
-    decorate: true
-    always_run: true
-    path_alias: github.com/kubernetes-csi/csi-driver-nfs
-    branches:
-    - (master)|(^release-.+$)
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - sanity-test
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-    annotations:
-      testgrid-dashboards: sig-storage-csi-other
-      testgrid-tab-name: pull-csi-driver-nfs-sanity
-      description: "Run sanity tests for NFS CSI driver."
-      testgrid-num-columns-recent: '30'
-  - name: pull-csi-driver-nfs-unit
-    cluster: k8s-infra-prow-build
-    decorate: true
-    always_run: true
-    path_alias: github.com/kubernetes-csi/csi-driver-nfs
-    branches:
-    - (master)|(^release-.+$)
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - unit-test
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-    annotations:
-      testgrid-dashboards: sig-storage-csi-other
-      testgrid-tab-name: pull-csi-driver-nfs-unit
-      description: "Run unit tests for NFS CSI driver."
-      testgrid-num-columns-recent: '30'
-  - name: pull-csi-driver-nfs-integration
-    cluster: k8s-infra-prow-build
-    decorate: true
-    always_run: false
-    path_alias: github.com/kubernetes-csi/csi-driver-nfs
-    branches:
-    - (master)|(^release-.+$)
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - integration-test
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-    annotations:
-      testgrid-dashboards: sig-storage-csi-other
-      testgrid-tab-name: pull-csi-driver-nfs-integration
-      description: "Run integration tests for NFS CSI driver."
-      testgrid-num-columns-recent: '30'
-  - name: pull-csi-driver-nfs-e2e
-    cluster: eks-prow-build-cluster
-    decorate: true
-    always_run: false
-    path_alias: sigs.k8s.io/csi-driver-nfs
-    branches:
-    - (master)|(^release-.+$)
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-azure-community: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --provider=skeleton
-        - --deployment=aksengine
-        - --aksengine-admin-username=azureuser
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.23
-        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/test/e2e/manifest/linux.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-        # Specific test args
-        - --test-csi-driver-nfs
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-    annotations:
-      testgrid-dashboards: sig-storage-csi-other
-      testgrid-tab-name: pull-csi-driver-nfs-e2e
-      description: "Run E2E tests for NFS CSI driver."
-      testgrid-num-columns-recent: '30'
-  - name: pull-csi-driver-nfs-e2e-capz
-    cluster: eks-prow-build-cluster
-    decorate: true
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    optional: true
-    path_alias: github.com/kubernetes-csi/csi-driver-nfs
-    branches:
-      - (master)|(^release-.+$)
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-community: "true"
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cluster-api-provider-azure
-        base_ref: release-1.21
-        path_alias: sigs.k8s.io/cluster-api-provider-azure
-        workdir: true
-      - org: kubernetes-sigs
-        repo: cloud-provider-azure
-        base_ref: release-1.30
-        path_alias: sigs.k8s.io/cloud-provider-azure
-        workdir: false
-    spec:
-      serviceAccountName: azure
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-          command:
-            - runner.sh
-            - ./scripts/ci-entrypoint.sh
-          args:
-            - bash
-            - -c
-            - >-
-              cd ${GOPATH}/src/github.com/kubernetes-csi/csi-driver-nfs &&
-              make e2e-test
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              memory: "9Gi"
-              cpu: 4
-            limits:
-              memory: "9Gi"
-              cpu: 4
-          env:
-            - name: NODE_MACHINE_TYPE # CAPZ config
-              value: "Standard_D2s_v3"
-            - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.30.2"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-other
-      testgrid-tab-name: pull-csi-driver-nfs-e2e-capz
-      description: "Run E2E tests on a capz cluster for nfs CSI driver."
-      testgrid-num-columns-recent: '30'
-  - name: pull-csi-driver-nfs-external-e2e
-    cluster: eks-prow-build-cluster
-    decorate: true
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: github.com/kubernetes-csi/csi-driver-nfs
-    branches:
-    - (master)|(^release-.+$)
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-community: "true"
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cluster-api-provider-azure
-        base_ref: release-1.21
-        path_alias: sigs.k8s.io/cluster-api-provider-azure
-        workdir: true
-      - org: kubernetes-sigs
-        repo: cloud-provider-azure
-        base_ref: release-1.30
-        path_alias: sigs.k8s.io/cloud-provider-azure
-        workdir: false
-    spec:
-      serviceAccountName: azure
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-          command:
-            - runner.sh
-            - ./scripts/ci-entrypoint.sh
-          args:
-            - bash
-            - -c
-            - >-
-              cd ${GOPATH}/src/github.com/kubernetes-csi/csi-driver-nfs &&
-              make e2e-test
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              memory: "9Gi"
-              cpu: 4
-            limits:
-              memory: "9Gi"
-              cpu: 4
-          env:
-            - name: NODE_MACHINE_TYPE # CAPZ config
-              value: "Standard_D2s_v3"
-            - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.30.2"
-            - name: EXTERNAL_E2E_TEST
-              value: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-other
-      testgrid-tab-name: pull-csi-driver-nfs-external-e2e
-      description: "Run External E2E tests for NFS CSI driver."
-      testgrid-num-columns-recent: '30'
+    - name: pull-csi-driver-nfs-sanity
+      cluster: k8s-infra-prow-build
+      decorate: true
+      always_run: true
+      path_alias: github.com/kubernetes-csi/csi-driver-nfs
+      branches:
+        - (master)|(^release-.+$)
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - sanity-test
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+      annotations:
+        testgrid-dashboards: sig-storage-csi-other
+        testgrid-tab-name: pull-csi-driver-nfs-sanity
+        description: "Run sanity tests for NFS CSI driver."
+        testgrid-num-columns-recent: '30'
+    - name: pull-csi-driver-nfs-unit
+      cluster: k8s-infra-prow-build
+      decorate: true
+      always_run: true
+      path_alias: github.com/kubernetes-csi/csi-driver-nfs
+      branches:
+        - (master)|(^release-.+$)
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - unit-test
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+      annotations:
+        testgrid-dashboards: sig-storage-csi-other
+        testgrid-tab-name: pull-csi-driver-nfs-unit
+        description: "Run unit tests for NFS CSI driver."
+        testgrid-num-columns-recent: '30'
+    - name: pull-csi-driver-nfs-integration
+      cluster: k8s-infra-prow-build
+      decorate: true
+      always_run: false
+      path_alias: github.com/kubernetes-csi/csi-driver-nfs
+      branches:
+        - (master)|(^release-.+$)
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - integration-test
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+      annotations:
+        testgrid-dashboards: sig-storage-csi-other
+        testgrid-tab-name: pull-csi-driver-nfs-integration
+        description: "Run integration tests for NFS CSI driver."
+        testgrid-num-columns-recent: '30'
+    - name: pull-csi-driver-nfs-e2e
+      cluster: eks-prow-build-cluster
+      decorate: true
+      always_run: false
+      path_alias: sigs.k8s.io/csi-driver-nfs
+      branches:
+        - (master)|(^release-.+$)
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-azure-community: "true"
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+          workdir: true
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - kubetest
+            args:
+              # Generic e2e test args
+              - --test
+              - --up
+              - --down
+              - --dump=$(ARTIFACTS)
+              # Azure-specific test args
+              - --provider=skeleton
+              - --deployment=aksengine
+              - --aksengine-admin-username=azureuser
+              - --aksengine-creds=$(AZURE_CREDENTIALS)
+              - --aksengine-orchestratorRelease=1.23
+              - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+              - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/test/e2e/manifest/linux.json
+              - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+              # Specific test args
+              - --test-csi-driver-nfs
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+      annotations:
+        testgrid-dashboards: sig-storage-csi-other
+        testgrid-tab-name: pull-csi-driver-nfs-e2e
+        description: "Run E2E tests for NFS CSI driver."
+        testgrid-num-columns-recent: '30'
+    - name: pull-csi-driver-nfs-e2e-capz
+      cluster: eks-prow-build-cluster
+      decorate: true
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+      optional: true
+      path_alias: github.com/kubernetes-csi/csi-driver-nfs
+      branches:
+        - (master)|(^release-.+$)
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-azure-community: "true"
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: cluster-api-provider-azure
+          base_ref: release-1.21
+          path_alias: sigs.k8s.io/cluster-api-provider-azure
+          workdir: true
+        - org: kubernetes-sigs
+          repo: cloud-provider-azure
+          base_ref: release-1.30
+          path_alias: sigs.k8s.io/cloud-provider-azure
+          workdir: false
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - ./scripts/ci-entrypoint.sh
+            args:
+              - bash
+              - -c
+              - >-
+                cd ${GOPATH}/src/github.com/kubernetes-csi/csi-driver-nfs && make e2e-test
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+            env:
+              - name: NODE_MACHINE_TYPE # CAPZ config
+                value: "Standard_D2s_v3"
+              - name: KUBERNETES_VERSION # CAPZ config
+                value: "v1.30.2"
+      annotations:
+        testgrid-dashboards: sig-storage-csi-other
+        testgrid-tab-name: pull-csi-driver-nfs-e2e-capz
+        description: "Run E2E tests on a capz cluster for nfs CSI driver."
+        testgrid-num-columns-recent: '30'
+    - name: pull-csi-driver-nfs-external-e2e
+      cluster: eks-prow-build-cluster
+      decorate: true
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+      path_alias: github.com/kubernetes-csi/csi-driver-nfs
+      branches:
+        - (master)|(^release-.+$)
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-azure-community: "true"
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: cluster-api-provider-azure
+          base_ref: release-1.21
+          path_alias: sigs.k8s.io/cluster-api-provider-azure
+          workdir: true
+        - org: kubernetes-sigs
+          repo: cloud-provider-azure
+          base_ref: release-1.30
+          path_alias: sigs.k8s.io/cloud-provider-azure
+          workdir: false
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - ./scripts/ci-entrypoint.sh
+            args:
+              - bash
+              - -c
+              - >-
+                cd ${GOPATH}/src/github.com/kubernetes-csi/csi-driver-nfs && make e2e-test
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
+            env:
+              - name: NODE_MACHINE_TYPE # CAPZ config
+                value: "Standard_D2s_v3"
+              - name: KUBERNETES_VERSION # CAPZ config
+                value: "v1.30.2"
+              - name: EXTERNAL_E2E_TEST
+                value: "true"
+      annotations:
+        testgrid-dashboards: sig-storage-csi-other
+        testgrid-tab-name: pull-csi-driver-nfs-external-e2e
+        description: "Run External E2E tests for NFS CSI driver."
+        testgrid-num-columns-recent: '30'

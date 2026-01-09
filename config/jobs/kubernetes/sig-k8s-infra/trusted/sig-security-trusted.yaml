@@ -1,29 +1,29 @@
 periodics:
-- name: auto-refreshing-official-cve-feed
-  interval: 2h
-  cluster: k8s-infra-prow-build-trusted
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: sig-security
-    base_ref: main
-    workdir: true
-  labels:
-    preset-service-account: "true"
-  spec:
-    serviceAccountName: k8s-cve-feed
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
-      command:
-      - sh
-      - "-c"
-      - "cd sig-security-tooling/cve-feed/hack/ && ./fetch-cve-feed.sh"
-      env:
-      - name: CVE_GCS_PATH
-        value: "gs://k8s-cve-feed"
-  annotations:
-    testgrid-create-test-group: "true"
-    testgrid-alert-email: cve-feed-maintainers@kubernetes.io
-    testgrid-num-failures-to-alert: '1'
-    testgrid-dashboards: sig-security-cve-feed
-    description: Auto refreshing official cve feed KEP 3203
+  - name: auto-refreshing-official-cve-feed
+    interval: 2h
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: sig-security
+        base_ref: main
+        workdir: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      serviceAccountName: k8s-cve-feed
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
+          command:
+            - sh
+            - "-c"
+            - "cd sig-security-tooling/cve-feed/hack/ && ./fetch-cve-feed.sh"
+          env:
+            - name: CVE_GCS_PATH
+              value: "gs://k8s-cve-feed"
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-alert-email: cve-feed-maintainers@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      testgrid-dashboards: sig-security-cve-feed
+      description: Auto refreshing official cve feed KEP 3203

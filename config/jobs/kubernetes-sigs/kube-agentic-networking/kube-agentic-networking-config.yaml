@@ -1,64 +1,64 @@
 presubmits:
   kubernetes-sigs/kube-agentic-networking:
-  - name: pull-kube-agentic-networking-verify
-    cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-network-kube-agentic-networking
-      testgrid-tab-name: verify
-    labels:
-      preset-kind-volume-mounts: "true"
-      preset-dind-enabled: "true"
-    decorate: true
-    path_alias: sigs.k8s.io/kube-agentic-networking
-    always_run: true
-    skip_report: false
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-          # generic runner script, handles DIND, bazelrc for caching, etc.
-          - runner.sh
-        args:
-          - make
-          - verify
-        # docker-in-docker needs privileged mode.
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 1
-            memory: 4Gi
-          requests:
-            cpu: 1
-            memory: 4Gi
-  - name: pull-kube-agentic-networking-test
-    cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-network-kube-agentic-networking
-      testgrid-tab-name: test
-    labels:
-      preset-kind-volume-mounts: "true"
-      preset-dind-enabled: "true"
-    decorate: true
-    path_alias: sigs.k8s.io/kube-agentic-networking
-    always_run: true
-    skip_report: false
-    spec:
-      containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-          command:
-            # generic runner script, handles DIND, bazelrc for caching, etc.
-            - runner.sh
-          args:
-            - make
-            - test
-          # docker-in-docker needs privileged mode.
-          securityContext:
-            privileged: true
-          resources:
-            limits:
-              cpu: 1
-              memory: 4Gi
-            requests:
-              cpu: 1
-              memory: 4Gi
+    - name: pull-kube-agentic-networking-verify
+      cluster: eks-prow-build-cluster
+      annotations:
+        testgrid-dashboards: sig-network-kube-agentic-networking
+        testgrid-tab-name: verify
+      labels:
+        preset-kind-volume-mounts: "true"
+        preset-dind-enabled: "true"
+      decorate: true
+      path_alias: sigs.k8s.io/kube-agentic-networking
+      always_run: true
+      skip_report: false
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - verify
+            # docker-in-docker needs privileged mode.
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+    - name: pull-kube-agentic-networking-test
+      cluster: eks-prow-build-cluster
+      annotations:
+        testgrid-dashboards: sig-network-kube-agentic-networking
+        testgrid-tab-name: test
+      labels:
+        preset-kind-volume-mounts: "true"
+        preset-dind-enabled: "true"
+      decorate: true
+      path_alias: sigs.k8s.io/kube-agentic-networking
+      always_run: true
+      skip_report: false
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - test
+            # docker-in-docker needs privileged mode.
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi

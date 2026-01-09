@@ -1,42 +1,42 @@
 periodics:
-- name: periodic-cluster-api-provider-ibmcloud-coverage
-  cluster: eks-prow-build-cluster
-  interval: 12h
-  decorate: true
-  annotations:
-    testgrid-dashboards: ibm-ppc64le-periodics, ibm-cluster-api
-    testgrid-tab-name: periodic-cluster-api-provider-ibmcloud-coverage
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-ibmcloud
-      base_ref: main
-      path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-1164926229-1.27
-      command:
-        - runner.sh
-      args:
-        - bash
-        - -c
-        - |
-          result=0
-          ./scripts/ci-test-coverage.sh || result=$?
-          cp cover.* ${ARTIFACTS}
-          cd ../../k8s.io/test-infra/gopherage
-          GO111MODULE=on go build .
-          ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/cover.out" > "${ARTIFACTS}/filtered.cov" || result=$?
-          ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
-          ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
-          exit $result
-      resources:
-        limits:
-          cpu: "2"
-          memory: "6Gi"
-        requests:
-          cpu: "2"
-          memory: "6Gi"
+  - name: periodic-cluster-api-provider-ibmcloud-coverage
+    cluster: eks-prow-build-cluster
+    interval: 12h
+    decorate: true
+    annotations:
+      testgrid-dashboards: ibm-ppc64le-periodics, ibm-cluster-api
+      testgrid-tab-name: periodic-cluster-api-provider-ibmcloud-coverage
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-ibmcloud
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-1164926229-1.27
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              result=0
+              ./scripts/ci-test-coverage.sh || result=$?
+              cp cover.* ${ARTIFACTS}
+              cd ../../k8s.io/test-infra/gopherage
+              GO111MODULE=on go build .
+              ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/cover.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+              ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
+              ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+              exit $result
+          resources:
+            limits:
+              cpu: "2"
+              memory: "6Gi"
+            requests:
+              cpu: "2"
+              memory: "6Gi"

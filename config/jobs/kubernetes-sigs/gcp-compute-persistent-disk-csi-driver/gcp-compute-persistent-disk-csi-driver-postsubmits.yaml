@@ -1,125 +1,125 @@
 periodics:
-- name: ci-gcp-compute-persistent-disk-csi-driver-release-staging-k8s-master-integration
-  cluster: k8s-infra-prow-build
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 180m # Minutes (120m runs consistently time out)
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: gcp-compute-persistent-disk-csi-driver
-    base_ref: master
-    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - "test/run-k8s-integration-ci.sh"
-      env:
-      - name: GCE_PD_OVERLAY_NAME
-        value: "prow-stable-sidecar-rc-master"
-      - name: GCE_PD_DO_DRIVER_BUILD
-        value: "false"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 2
-          memory: "6Gi"
-        requests:
-          cpu: 2
-          memory: "6Gi"
-  annotations:
-    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: Kubernetes Master Driver Latest Release Candidate
-    testgrid-alert-email: gke-managed-storage-alerts@google.com
-    description: Kubernetes Integration tests for Kubernetes Master branch, Driver latest Release Candidate, and Stable Sidecars. Used to test release candidates when a new release is being cut.
-- name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-integration
-  cluster: k8s-infra-prow-build
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 180m # Minutes (120m runs consistently time out)
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: gcp-compute-persistent-disk-csi-driver
-    base_ref: master
-    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - "test/run-k8s-integration-ci.sh"
-      env:
-      - name: GCE_PD_OVERLAY_NAME
-        value: "dev"
-      - name: GCE_PD_DO_DRIVER_BUILD
-        value: "true"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 2
-          memory: "6Gi"
-        requests:
-          cpu: 2
-          memory: "6Gi"
-  annotations:
-    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: Kubernetes Master Driver Latest
-    testgrid-alert-email: gke-managed-storage-alerts@google.com
-    description: Kubernetes Integration tests for Kubernetes Master branch, Driver latest build, and Stable Sidecars
-- name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-integration-canary-sidecars
-  cluster: k8s-infra-prow-build
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 180m
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: gcp-compute-persistent-disk-csi-driver
-    base_ref: master
-    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
-    workdir: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - "test/run-k8s-integration-ci.sh"
-      env:
-      - name: GCE_PD_OVERLAY_NAME
-        value: "prow-canary-sidecar"
-      - name: GCE_PD_DO_DRIVER_BUILD
-        value: "true"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 2
-          memory: "6Gi"
-        requests:
-          cpu: 2
-          memory: "6Gi"
-  annotations:
-    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: Kubernetes Master Driver Latest Canary Sidecars
-    testgrid-alert-email: gke-managed-storage-alerts@google.com
-    description: Kubernetes Integration tests for Kubernetes Master branch, Driver latest build, and Canary Sidecars. Used to test the latest sidecars.
+  - name: ci-gcp-compute-persistent-disk-csi-driver-release-staging-k8s-master-integration
+    cluster: k8s-infra-prow-build
+    interval: 4h
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 180m # Minutes (120m runs consistently time out)
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: gcp-compute-persistent-disk-csi-driver
+        base_ref: master
+        path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - "test/run-k8s-integration-ci.sh"
+          env:
+            - name: GCE_PD_OVERLAY_NAME
+              value: "prow-stable-sidecar-rc-master"
+            - name: GCE_PD_DO_DRIVER_BUILD
+              value: "false"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 2
+              memory: "6Gi"
+            requests:
+              cpu: 2
+              memory: "6Gi"
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: Kubernetes Master Driver Latest Release Candidate
+      testgrid-alert-email: gke-managed-storage-alerts@google.com
+      description: Kubernetes Integration tests for Kubernetes Master branch, Driver latest Release Candidate, and Stable Sidecars. Used to test release candidates when a new release is being cut.
+  - name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-integration
+    cluster: k8s-infra-prow-build
+    interval: 4h
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 180m # Minutes (120m runs consistently time out)
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: gcp-compute-persistent-disk-csi-driver
+        base_ref: master
+        path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - "test/run-k8s-integration-ci.sh"
+          env:
+            - name: GCE_PD_OVERLAY_NAME
+              value: "dev"
+            - name: GCE_PD_DO_DRIVER_BUILD
+              value: "true"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 2
+              memory: "6Gi"
+            requests:
+              cpu: 2
+              memory: "6Gi"
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: Kubernetes Master Driver Latest
+      testgrid-alert-email: gke-managed-storage-alerts@google.com
+      description: Kubernetes Integration tests for Kubernetes Master branch, Driver latest build, and Stable Sidecars
+  - name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-integration-canary-sidecars
+    cluster: k8s-infra-prow-build
+    interval: 4h
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 180m
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: gcp-compute-persistent-disk-csi-driver
+        base_ref: master
+        path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - "test/run-k8s-integration-ci.sh"
+          env:
+            - name: GCE_PD_OVERLAY_NAME
+              value: "prow-canary-sidecar"
+            - name: GCE_PD_DO_DRIVER_BUILD
+              value: "true"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 2
+              memory: "6Gi"
+            requests:
+              cpu: 2
+              memory: "6Gi"
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: Kubernetes Master Driver Latest Canary Sidecars
+      testgrid-alert-email: gke-managed-storage-alerts@google.com
+      description: Kubernetes Integration tests for Kubernetes Master branch, Driver latest build, and Canary Sidecars. Used to test the latest sidecars.
