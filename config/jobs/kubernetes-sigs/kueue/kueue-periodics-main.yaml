@@ -476,6 +476,52 @@ periodics:
               cpu: "7"
               memory: "10Gi"
   - interval: 12h
+    name: periodic-kueue-test-e2e-dra-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-dra-main
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic DRA end to end tests"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          env:
+            - name: E2E_K8S_VERSION
+              value: "1.34"
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e-dra
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
+              memory: "10Gi"
+  - interval: 12h
     name: periodic-kueue-test-e2e-kueueviz-main
     cluster: eks-prow-build-cluster
     annotations:
