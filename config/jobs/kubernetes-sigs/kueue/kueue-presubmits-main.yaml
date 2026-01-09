@@ -228,44 +228,6 @@ presubmits:
             limits:
               cpu: "7"
               memory: "10Gi"
-  - name: pull-kueue-test-e2e-main-1-35
-    cluster: eks-prow-build-cluster
-    branches:
-      - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
-    decorate: true
-    path_alias: sigs.k8s.io/kueue
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-test-e2e-main-1-35
-      description: "Run kueue end to end tests for Kubernetes 1.35"
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-          env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
-            - name: BASE_BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang
-          command:
-            # generic runner script, handles DIND, bazelrc for caching, etc.
-            - runner.sh
-          args:
-            - make
-            - kind-image-build
-            - test-e2e
-          # docker-in-docker needs privileged mode
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: "7"
-              memory: "10Gi"
-            limits:
-              cpu: "7"
-              memory: "10Gi"
   - name: pull-kueue-test-e2e-multikueue-main
     cluster: eks-prow-build-cluster
     branches:
