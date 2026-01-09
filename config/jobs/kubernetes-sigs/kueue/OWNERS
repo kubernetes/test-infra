@@ -1,10 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-- ahg-g
 - mimowo
 - tenzen-y
+- kannon92
 reviewers:
-- ahg-g
 - mimowo
 - tenzen-y
+- kannon92
