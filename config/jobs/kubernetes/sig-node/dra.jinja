@@ -22,6 +22,8 @@ presubmits:
 {%- set testgrid_dashboards = testgrid_dashboards + ", sig-release-master-informing" %}
 {%- set testgrid_alert_email = testgrid_alert_email + ", release-team@kubernetes.io" %}
 {%- endif %}
+{% set indent_width = 2 if not ci else 0 %}
+{% filter indent(width=indent_width, first=True) -%}
   - name: {{job_name}}
     cluster: {{cluster}}
     {%- if ci %}
@@ -275,4 +277,4 @@ presubmits:
           requests:
             cpu: 2
             memory: 6Gi
-
+{% endfilter %}
