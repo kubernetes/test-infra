@@ -35,7 +35,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: us-docker.pkg.dev/k8s-infra-prow/images/checkconfig:v20251218-6bd26c8c5
+      - image: us-docker.pkg.dev/k8s-infra-prow/images/checkconfig:v20260109-e821f0db6
         command:
         - checkconfig
         args:
@@ -74,7 +74,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
         command:
         - runner.sh
         args:
@@ -85,10 +85,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
@@ -105,7 +105,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
         command:
         - runner.sh
         args:
@@ -117,10 +117,10 @@ presubmits:
         resources:
           requests:
             # This job is very CPU intensive as it builds images in parallel.
-            cpu: "14"
+            cpu: "7"
             memory: "16Gi"
           limits:
-            cpu: "14"
+            cpu: "7"
             memory: "16Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
@@ -136,7 +136,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
         command:
         - runner.sh
         args:
@@ -147,10 +147,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
@@ -166,7 +166,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
         command:
         - runner.sh
         args:

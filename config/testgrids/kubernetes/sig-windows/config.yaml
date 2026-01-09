@@ -2,7 +2,6 @@ dashboard_groups:
 - name: sig-windows
   dashboard_names:
     - sig-windows-signal
-    - sig-windows-1.31-release
     - sig-windows-1.32-release
     - sig-windows-1.33-release
     - sig-windows-1.34-release
@@ -15,7 +14,6 @@ dashboard_groups:
 
 dashboards:
 - name: sig-windows-signal
-- name: sig-windows-1.31-release
 - name: sig-windows-1.32-release
 - name: sig-windows-1.33-release
 - name: sig-windows-1.34-release

@@ -3,13 +3,18 @@ periodics:
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     testgrid-tab-name: retester
     description: Automatically /retest-required for approved PRs that are failing tests
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251212-3f863f26d7
       command:
       - commenter
       args:
@@ -56,6 +61,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:

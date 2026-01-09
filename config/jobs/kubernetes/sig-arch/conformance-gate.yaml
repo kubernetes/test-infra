@@ -9,6 +9,11 @@ periodics:
     testgrid-num-failures-to-alert: '1'
     description: 'Uses APISnoop to check that new GA endpoints are conformance tested in latest e2e test run'
   decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: apisnoop
+    base_ref: main
+    path_alias: sigs.k8s.io/apisnoop
   spec:
     containers:
     - name: apisnoop-gate

@@ -7,6 +7,11 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential-boskos-scale-001-kops: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - command:
@@ -14,7 +19,7 @@ periodics:
       args:
       - --ttl=12h
       - --path=s3://k8s-infra-kops-scale-tests/objs.json
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20240801-1221bfe
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
       resources:
         requests:
           cpu: 1
@@ -67,7 +72,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com, release-team@kubernetes.io
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -124,11 +129,11 @@ periodics:
         value: "true"
       resources:
         requests:
-          cpu: "10"
-          memory: "48Gi"
+          cpu: 7
+          memory: 24Gi
         limits:
-          cpu: "10"
-          memory: "48Gi"
+          cpu: 7
+          memory: 24Gi
 
 # This job is the same as above, but using 100 nodes instead of 5000
 - name: ci-kubernetes-e2e-kops-aws-small-scale-amazonvpc-using-cl2
@@ -172,7 +177,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -229,8 +234,8 @@ periodics:
         value: "true"
       resources:
         requests:
-          cpu: "10"
-          memory: "48Gi"
+          cpu: 7
+          memory: 24Gi
         limits:
-          cpu: "10"
-          memory: "48Gi"
+          cpu: 7
+          memory: 24Gi

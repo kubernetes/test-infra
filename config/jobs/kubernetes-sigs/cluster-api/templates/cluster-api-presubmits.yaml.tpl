@@ -101,10 +101,10 @@ presubmits:
         - ./scripts/ci-test.sh
         resources:
           requests:
-            cpu: 7300m
+            cpu: 7
             memory: 8Gi
           limits:
-            cpu: 7300m
+            cpu: 7
             memory: 8Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
@@ -137,10 +137,10 @@ presubmits:
           value: "{{ $.config.KubebuilderEnvtestKubernetesVersion }}"
         resources:
           requests:
-            cpu: 7300m
+            cpu: 7
             memory: 8Gi
           limits:
-            cpu: 7300m
+            cpu: 7
             memory: 8Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}

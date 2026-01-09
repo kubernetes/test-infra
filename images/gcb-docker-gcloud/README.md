@@ -6,10 +6,10 @@ combination of `docker`, `gcloud`, and `go` all in the same build step
 ## contents
 
 - base:
-  - golang:1.24.3-alpine
+  - golang:1.25.5-alpine3.22
 - languages:
   - `go`
 - tools:
   - `docker`
-  - `docker-buildx`, `qemu` binaries, `/buildx-entrypoint` for multi-arch support
+  - `docker-buildx` and `tonistiigi/binfmt` for multi-arch support
   - `gcloud` via rapid channel, with default components

@@ -3,7 +3,8 @@ dashboard_groups:
   dashboard_names:
   - minikube-presubmits
   - minikube-periodics
-  
+  - minikube-images
 dashboards:
 - name: minikube-presubmits
 - name: minikube-periodics
+- name: minikube-images

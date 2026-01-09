@@ -37,16 +37,29 @@ import (
 )
 
 var flakeReasonDateRE *regexp.Regexp = regexp.MustCompile(
-	`[A-Z][a-z]{2}, \d+ \w+ 2\d{3} [\d.-: ]*([-+]\d+)?|` +
-		`\w{3}\s+\d{1,2} \d+:\d+:\d+(\.\d+)?|(\d{4}-\d\d-\d\d.|.\d{4} )\d\d:\d\d:\d\d(.\d+)?`)
+	`[A-Z][a-z]{2}, \d+ \w+ 2\d{3} [\d.-: ]*([-+]\d+)?|` + // "Mon, 12 January 2017 11:34:35 -0700"
+		`\w{3}\s+\d{1,2} \d+:\d+:\d+(\.\d+)?|` + // "Jan 1 00:00:00" or "Jan 01 00:00:00.000"
+		`(\d{4}-\d\d-\d\d.|.\d{4} )\d\d:\d\d:\d\d(.\d+)?|` + // "2006-01-02T15:04:05.000" or "I0102 15:04:05.000"
+		`\d{1,2}/\d{1,2}/\d{2,4} \d{1,2}:\d{2}:\d{2}(\.\d+)?`) // "12/10/25 13:52:29.244" or "1/2/2025 1:02:03"
 
 // Find random noisy strings that should be replaced with renumbered strings, for more similarity.
 var flakeReasonOrdinalRE *regexp.Regexp = regexp.MustCompile(
-	`0x[0-9a-fA-F]+` + // hex constants
+	`0x[0-9a-fA-F]+` + // hex constants (including Go pointer addresses)
 		`|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?` + // IPs + optional port
 		`|[0-9a-fA-F]{8}-\S{4}-\S{4}-\S{4}-\S{12}(-\d+)?` + // UUIDs + trailing digits
 		`|[0-9a-f]{12,32}` + // hex garbage
-		`|(minion-group-|default-pool-)[-0-9a-z]{4,}`) // node names
+		`|(minion-group-|default-pool-)[-0-9a-z]{4,}` + // node names (GCE)
+		`|nodes-[-a-z0-9]+-[a-z0-9]{4,}` + // node names (GKE/Azure style: nodes-us-west1-a-w0fq, nodes-uksouth-2000002)
+		`|i-[0-9a-f]{10,}` + // node names (AWS style: i-0d1f2dfeb37c586ad)
+		`|kind-worker\d*` + // node names (kind clusters)
+		`|pod-[a-z-]+-\d+-\d+` + // pod names with numeric suffixes (pod-terminate-status-2-7)
+		`|\.go:\d+` + // Go source file line numbers
+		`|-[a-z0-9]{4,5}(?:"|$|\s|/)` + // Kubernetes random suffixes (e.g., -7mhp, -bdf5, -9w7bf, -5405)
+		`|localhost:\d{4,5}` + // localhost with ephemeral ports
+		`|:\d{5}(?:\s|$|"|]|/)` + // standalone high ports (30000-65535)
+		`|(cluster|logger|Server #)_?\d+` + // test server/cluster instance numbers
+		`|goroutine \d+` + // Go goroutine IDs in stack traces
+		`|\d+\.\d{3}s`) // durations with milliseconds (300.001s -> normalize)
 
 /*
 normalize reduces excess entropy to make clustering easier, given

@@ -85,11 +85,11 @@ presubmits:
     - org: containerd
       repo: containerd
       base_ref: release/2.1
-  {%- endif %}
-  {%- endif %}
-  spec:
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    {%- endif %}
+    {%- endif %}
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
         command:
           - runner.sh
 

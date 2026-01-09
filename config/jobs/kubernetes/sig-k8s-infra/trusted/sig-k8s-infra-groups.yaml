@@ -32,6 +32,13 @@ periodics:
       - run
       - --
       - --confirm
+      resources:
+        limits:
+          cpu: 1
+          memory: 1000Mi
+        requests:
+          cpu: 1
+          memory: 1500Mi
 
 postsubmits:
   kubernetes/k8s.io:
@@ -66,3 +73,10 @@ postsubmits:
         - run
         - --
         - --confirm
+      resources:
+        limits:
+          cpu: 1
+          memory: 1000Mi
+        requests:
+          cpu: 1
+          memory: 1500Mi

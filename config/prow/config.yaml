@@ -12,16 +12,16 @@ plank:
     # limits concurrency for k8s-test-infra-staging project
     'test-infra-staging-image-push': 1
     # limits concurrency for 5k GCE jobs
-    '5k-gce-scale-test': 1
+    '5k-gce-scale-test': 4
   default_decoration_config_entries:
   - config:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20251218-6bd26c8c5"
-        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20251218-6bd26c8c5"
-        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20251218-6bd26c8c5"
-        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20251218-6bd26c8c5"
+        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20260109-e821f0db6"
+        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20260109-e821f0db6"
+        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20260109-e821f0db6"
+        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20260109-e821f0db6"
       gcs_configuration:
         bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
@@ -42,14 +42,9 @@ plank:
           requests:
             cpu: 100m
       blobless_fetch: true
-  - cluster: gke_rules-k8s_us-central1-f_testing
+  - cluster: k8s-infra-aks-prow-build
     config:
       gcs_credentials_secret: ""
-      default_service_account_name: "prowjob-default-sa"
-  - cluster: test-infra-trusted
-    config:
-      gcs_credentials_secret: ""
-      default_service_account_name: "prowjob-default-sa"
 
 sinker:
   resync_period: 1m

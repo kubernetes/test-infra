@@ -21,7 +21,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.24
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
         command:
         - ./admin/update.sh
         args:
@@ -61,7 +61,7 @@ periodics:
     base_ref: main
   spec:
     containers:
-    - image: public.ecr.aws/docker/library/golang:1.24
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
       command:
       - ./admin/update.sh
       args:

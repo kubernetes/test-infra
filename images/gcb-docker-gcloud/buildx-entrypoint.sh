@@ -15,7 +15,7 @@
 
 set -eo pipefail
 
-/register --reset -p yes
+docker run --privileged --rm tonistiigi/binfmt:qemu-v10.0.4 --install all
 if [ -z "${BUILDX_NO_DEFAULT_ATTESTATIONS}" ]; then
     export BUILDX_NO_DEFAULT_ATTESTATIONS=1
 fi
