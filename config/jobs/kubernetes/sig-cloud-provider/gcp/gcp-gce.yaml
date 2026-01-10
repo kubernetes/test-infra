@@ -14,6 +14,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+  # Keep the job in sync with pull-kubernetes-e2e-gci-gce.
   name: ci-kubernetes-e2e-gci-gce
   spec:
     containers:
@@ -534,6 +535,54 @@ periodics:
 postsubmits: null
 presubmits:
   kubernetes/kubernetes:
+  - always_run: false
+    optional: true # Optional because it does not always run. ci-kubernetes-e2e-gci-gce is release blocking.
+    annotations:
+      description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature)
+        against a cluster created with cluster/kube-up.sh
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    # Keep the job in sync with ci-kubernetes-e2e-gci-gce.
+    name: pull-kubernetes-e2e-gci-gce
+    path_alias: k8s.io/kubernetes
+    skip_branches:
+    - release-\d+\.\d+
+    spec:
+      containers:
+      - args:
+        - --check-leaked-resources
+        - --build=quick
+        - --gcp-node-image=gci
+        - --gcp-region=us-central1
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+        - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
+        - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+          --minStartupPods=8
+        - --timeout=120m
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+        name: ""
+        resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
+          requests:
+            cpu: "2"
+            memory: 6Gi
   - always_run: false
     annotations:
       fork-per-release: "true"
