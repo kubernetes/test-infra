@@ -47,15 +47,15 @@ aws_distro_options = {
     "ubuntu2204arm64": kops_versions,
     "ubuntu2404": kops_versions,
     "ubuntu2404arm64": kops_versions,
-    "ubuntu2510": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
-    "ubuntu2510arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "ubuntu2510": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
+    "ubuntu2510arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
     "amazonlinux2": kops_versions,
     "al2023": kops_versions,
     "al2023arm64": kops_versions,
     "rhel9": kops_versions,
-    "rhel10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "rhel10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
     "rocky9": kops_versions,
-    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
     "flatcar": kops_versions,
 }
 
@@ -76,9 +76,9 @@ gce_distro_options = {
     "ubuntu2404arm64": drop_unsupported_versions(kops_versions, ['1.32']),
     "ubuntuminimal2404": kops_versions,
     "ubuntuminimal2404arm64": drop_unsupported_versions(kops_versions, ['1.32']),
-    "rhel10": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
-    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
-    "rocky10": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "rhel10": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
+    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
+    "rocky10": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
 }
 
 
