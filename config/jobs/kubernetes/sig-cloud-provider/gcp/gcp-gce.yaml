@@ -548,8 +548,16 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 2h20m0s
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/release
+      repo: release
     labels:
+      preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     # Keep the job in sync with ci-kubernetes-e2e-gci-gce.
     name: pull-kubernetes-e2e-gci-gce
@@ -583,6 +591,8 @@ presubmits:
           requests:
             cpu: "2"
             memory: 6Gi
+        securityContext:
+          privileged: true
   - always_run: false
     annotations:
       fork-per-release: "true"
