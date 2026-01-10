@@ -116,3 +116,72 @@ periodics:
     testgrid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com, davanum@gmail.com
     testgrid-num-failures-to-alert: '1'
     description: 'Uses patched ci-kubernetes-kind-conformance job to generate ARTIFACT/audit/audit.log'
+
+# Full e2e test against kubernetes master branch with `kind` and audit logs enabled.
+# This job provides maximum API endpoint coverage for APISnoop by:
+# - Enabling all alpha/beta feature gates and APIs
+# - Running broad e2e tests (not just conformance)
+# - Generating audit logs for all API calls
+- interval: 3h
+  name: ci-kubernetes-e2e-kind-alpha-beta-audit
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 180m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        -
+            curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
+            && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
+            && bash e2e-k8s.sh
+            && apt-get update && apt-get install -y --no-install-recommends python3-pip && pip3 install --no-cache-dir --break-system-packages pyyaml
+            && python3 ./../test-infra/experiment/audit/audit_log_parser.py --audit-logs ${ARTIFACTS}/audit/audit*.log --output "${ARTIFACTS}/audit/audit-endpoints.txt" --audit-operations-json "${ARTIFACTS}/audit/audit-operations.json" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
+      env:
+      - name: BUILD_TYPE
+        value: docker
+      # Enable all alpha and beta feature gates for maximum API coverage
+      - name: FEATURE_GATES
+        value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
+      # Enable all API groups including alpha/beta
+      - name: RUNTIME_CONFIG
+        value: '{"api/all":"true"}'
+      # Run broad e2e tests - only skip Serial (requires single-node), Deprecated, and Flaky
+      # This provides much broader coverage than conformance-only tests
+      - name: LABEL_FILTER
+        value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Flaky && !Serial"
+      - name: PARALLEL
+        value: "true"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 7
+          memory: "9Gi"
+        requests:
+          cpu: 7
+          memory: "9Gi"
+  annotations:
+    testgrid-dashboards: sig-arch-conformance, sig-testing-kind
+    testgrid-tab-name: kind-e2e-alpha-beta-audit
+    testgrid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
+    testgrid-num-failures-to-alert: '3'
+    description: 'Runs full e2e tests with all alpha/beta features enabled and audit logging for maximum API coverage'
