@@ -134,35 +134,34 @@ network_plugins_presubmits = {
 
 
 # Upgrade test versions
-kops29 = "v1.29.2"
-kops30 = "v1.30.3"
+kops30 = "v1.30.4"
 kops31 = "v1.31.0"
-kops32 = "v1.32.0"
-kops33 = "v1.33.0"
+kops32 = "v1.32.2"
+kops33 = "v1.33.1"
 kops34 = "v1.34.0"
 
 upgrade_versions_list = [
     #  kops    k8s          kops      k8s
-    # 1.29 release branch
-    ((kops29, "v1.29.8"), ("1.29", "v1.29.9")),
-    # 1.30 release branch
-    ((kops29, "v1.29.9"), ("1.30", "v1.30.5")),
-    ((kops30, "v1.30.4"), ("1.30", "v1.30.5")),
-    # kOps 1.29 upgrade to latest
-    ((kops29, "v1.26.0"), ("latest", "v1.27.0")),
-    ((kops29, "v1.27.0"), ("latest", "v1.28.0")),
-    ((kops29, "v1.28.0"), ("latest", "v1.29.0")),
-    ((kops29, "v1.29.0"), ("latest", "v1.30.0")),
-    # kOps 1.30 upgrade to latest
-    ((kops30, "v1.26.0"), ("latest", "v1.27.0")),
-    ((kops30, "v1.27.0"), ("latest", "v1.28.0")),
-    ((kops30, "v1.28.0"), ("latest", "v1.29.0")),
-    ((kops30, "v1.29.0"), ("latest", "v1.30.0")),
-    # kOps 1.31 upgrade to latest
-    ((kops31, "v1.28.0"), ("latest", "v1.29.0")),
-    ((kops31, "v1.29.0"), ("latest", "v1.30.0")),
-    ((kops31, "v1.30.0"), ("latest", "v1.31.0")),
-    ((kops31, "v1.31.0"), ("latest", "v1.32.0")),
+    # 1.33 release branch
+    ((kops33, "v1.33.6"), ("1.33", "v1.33.7")),
+    # 1.34 release branch
+    ((kops33, "v1.33.7"), ("1.34", "v1.34.3")),
+    ((kops34, "v1.34.2"), ("1.34", "v1.34.3")),
+    # kOps 1.32 upgrade to latest
+    ((kops32, "v1.28.15"), ("latest", "v1.29.15")),
+    ((kops32, "v1.29.15"), ("latest", "v1.30.14")),
+    ((kops32, "v1.30.14"), ("latest", "v1.31.14")),
+    ((kops32, "v1.31.14"), ("latest", "v1.32.11")),
+    # kOps 1.33 upgrade to latest
+    ((kops33, "v1.29.15"), ("latest", "v1.30.14")),
+    ((kops33, "v1.30.14"), ("latest", "v1.31.14")),
+    ((kops33, "v1.31.14"), ("latest", "v1.32.11")),
+    ((kops33, "v1.32.11"), ("latest", "v1.33.7")),
+    # kOps 1.34 upgrade to latest
+    ((kops34, "v1.30.14"), ("latest", "v1.31.14")),
+    ((kops34, "v1.31.14"), ("latest", "v1.32.11")),
+    ((kops34, "v1.32.11"), ("latest", "v1.33.7")),
+    ((kops34, "v1.33.7"), ("latest", "v1.34.3")),
     # we should have an upgrade test for every supported K8s version
     (("latest", "v1.32.0"), ("latest", "latest")),
     (("latest", "v1.31.0"), ("latest", "v1.32.0")),
