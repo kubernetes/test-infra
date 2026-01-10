@@ -2,7 +2,7 @@
 # 17 jobs, total of 357 runs per week
 periodics:
 
-# {"cloud": "aws", "distro": "deb11", "extra_flags": "--set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.0", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "deb11", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-distro-deb11
   cron: '11 4-23/8 * * *'
   labels:
@@ -57,7 +57,6 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: deb11
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.0
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -96,7 +95,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20251112-2294' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-12-amd64-20251112-2294' --channel=alpha --networking=cilium --set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.0" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -573,7 +572,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-u2510arm64
 
-# {"cloud": "aws", "distro": "amzn2", "extra_flags": "--set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.0", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "amzn2", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-distro-amzn2
   cron: '53 2-23/8 * * *'
   labels:
@@ -628,7 +627,6 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: amzn2
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.0
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest

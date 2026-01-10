@@ -172,7 +172,7 @@ def build_test(cloud='aws',
     #         extra_flags.append("--discovery-store=s3://k8s-kops-ci-prow/discovery")
 
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
-    args = create_args(kops_channel, networking, extra_flags, kops_image)
+    args = create_args(kops_channel, networking, extra_flags, kops_image, distro)
 
     node_ig_overrides = ""
     cp_ig_overrides = ""
@@ -378,7 +378,7 @@ def presubmit_test(branch='master',
     #     extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
-    args = create_args(kops_channel, networking, extra_flags, kops_image)
+    args = create_args(kops_channel, networking, extra_flags, kops_image, distro)
 
     # Scenario-specific parameters
     if env is None:
@@ -1350,11 +1350,6 @@ def generate_distros():
                 "--node-size=m6g.large",
                 "--master-size=m6g.large"
             ])
-        if distro in ['amazonlinux2', 'debian11']:
-            extra_flags.extend([
-                "--set=cluster.spec.containerd.version=1.7.29",
-                "--set=cluster.spec.containerd.runc.version=1.3.0",
-            ])
         results.append(
             build_test(distro=distro_short,
                        networking='cilium',
@@ -1381,11 +1376,6 @@ def generate_presubmits_distros():
                 "--zones=eu-west-1a",
                 "--node-size=m6g.large",
                 "--master-size=m6g.large"
-            ])
-        if distro in ['amazonlinux2', 'debian11', 'rhel8']:
-            extra_flags.extend([
-                "--set=cluster.spec.containerd.version=1.7.28",
-                "--set=cluster.spec.containerd.runc.version=1.3.0",
             ])
         results.append(
             presubmit_test(

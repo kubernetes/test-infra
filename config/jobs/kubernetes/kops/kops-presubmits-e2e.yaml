@@ -368,7 +368,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20251209' --channel=alpha --networking=kindnet --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20251209' --channel=alpha --networking=kindnet --set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.0 --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
