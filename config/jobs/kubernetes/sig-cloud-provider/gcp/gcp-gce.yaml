@@ -71,11 +71,9 @@ periodics:
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
       - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-      - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20220712a
-      - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+      - --env=KUBE_GCE_IMAGE_FAMILY=ubuntu-2404-lts-amd64
+      - --env=KUBE_GCE_IMAGE_PROJECT=ubuntu-os-cloud
       - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-      - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
-      - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
       - --extract=ci/fast/latest-fast
       - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
@@ -840,11 +838,9 @@ presubmits:
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20220712a
-        - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+        - --env=KUBE_GCE_IMAGE_FAMILY=ubuntu-2404-lts-amd64
+        - --env=KUBE_GCE_IMAGE_PROJECT=ubuntu-os-cloud
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
-        - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-region=us-central1
@@ -903,11 +899,9 @@ presubmits:
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20220712a
-        - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+        - --env=KUBE_GCE_IMAGE_FAMILY=ubuntu-2404-lts-amd64
+        - --env=KUBE_GCE_IMAGE_PROJECT=ubuntu-os-cloud
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
-        - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-region=us-central1
@@ -1211,11 +1205,9 @@ presubmits:
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20220712a
-        - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+        - --env=KUBE_GCE_IMAGE_FAMILY=ubuntu-2404-lts-amd64
+        - --env=KUBE_GCE_IMAGE_PROJECT=ubuntu-os-cloud
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
-        - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-region=us-central1
