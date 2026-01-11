@@ -609,7 +609,7 @@ milestone_applier:
   kubernetes-sigs/boskos:
     master: v1.23
   kubernetes/website:
-    dev-1.35: 1.35
+    dev-1.36: 1.36
   kubernetes-sigs/node-problem-detector:
     main: v1.36
     release-1.35: v1.35
