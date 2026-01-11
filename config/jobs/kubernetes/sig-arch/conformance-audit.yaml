@@ -219,7 +219,10 @@ periodics:
       env:
       - name: BUILD_TYPE
         value: docker
-      # Match ci-kubernetes-e2e-gci-gce skip pattern exactly
+      # Match ci-kubernetes-e2e-gci-gce test coverage exactly
+      # FOCUS="" overrides the default [Conformance] focus to run all tests
+      - name: FOCUS
+        value: ""
       # Skip: Driver:gcepd (GCE-specific), Slow, Serial, Disruptive, Flaky, Feature tests
       - name: SKIP
         value: "\\[Driver:.gcepd\\]|\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
