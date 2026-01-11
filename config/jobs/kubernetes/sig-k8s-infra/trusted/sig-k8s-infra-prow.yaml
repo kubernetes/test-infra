@@ -59,7 +59,7 @@ periodics:
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, k8s-infra-prow-oncall@kubernetes.io
   spec:
     containers:
-    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+    - image: alpine:latest
       command:
       - "echo"
       args:
