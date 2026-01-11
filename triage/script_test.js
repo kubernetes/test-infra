@@ -36,12 +36,16 @@ describe('spyglassURLForBuild', () => {
         'pr:pull-kubernetes-verify': 'gs://kubernetes-ci-logs/pr-logs/pull/122078/pull-kubernetes-verify',
         'pr:cloud-provider-gcp-e2e-full': 'gs://kubernetes-ci-logs/pr-logs/pull/cloud-provider-gcp/636/cloud-provider-gcp-e2e-full',
         'pr:pull-cluster-api-provider-azure-e2e': 'gs://kubernetes-ci-logs/pr-logs/pull/kubernetes-sigs_cluster-api-provider-azure/4302/pull-cluster-api-provider-azure-e2e',
+        'pr:batch-logic-test': 'gs://kubernetes-ci-logs/pr-logs/pull/12345/batch-logic-test',
       }
     };
     expect('handles k/k jobs', 'https://prow.k8s.io/view/gs/kubernetes-ci-logs/pr-logs/pull/122272/pull-kubernetes-verify/1734547176656211968', {job: 'pr:pull-kubernetes-verify', number: '1734547176656211968', pr: '122272'});
     expect('handles non-k/k jobs in the kubernetes org', 'https://prow.k8s.io/view/gs/kubernetes-ci-logs/pr-logs/pull/cloud-provider-gcp/638/cloud-provider-gcp-e2e-full/1734630461432401920', {job: 'pr:cloud-provider-gcp-e2e-full', number: '1734630461432401920', pr: '638'});
     expect('handles non-kubernetes org jobs', 'https://prow.k8s.io/view/gs/kubernetes-ci-logs/pr-logs/pull/kubernetes-sigs_cluster-api-provider-azure/4345/pull-cluster-api-provider-azure-e2e/1734613965410930688', {job: 'pr:pull-cluster-api-provider-azure-e2e', number: '1734613965410930688', pr: '4345'});
-})
+    
+    // Ensure numeric path segments are preserved when PR type is 'batch'
+    expect('ignores batch jobs with numeric paths', 'https://prow.k8s.io/view/gs/kubernetes-ci-logs/pr-logs/pull/12345/batch-logic-test/build-1', {job: 'pr:batch-logic-test', number: 'build-1', pr: 'batch'});
+});
 
 describe('Clusters', () => {
     describe('refilter', () => {
