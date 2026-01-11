@@ -80,6 +80,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     always_run: false
     run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
+    optional: true # Doesn't always run and regressions shouldn't block merging PRs where it gets run.
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
