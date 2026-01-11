@@ -190,9 +190,8 @@ periodics:
                   mountPath: /var/log/kubernetes\
                   readOnly: false' e2e-k8s.sh
 
-            # Also add the extraMounts to copy audit policy into the node
-            sed -i '/nodes:/a\
-            - role: control-plane\
+            # Add extraMounts to the existing control-plane node to mount audit policy
+            sed -i '/- role: control-plane$/a\
               extraMounts:\
               - hostPath: '"${ARTIFACTS}"'/audit\
                 containerPath: /audit' e2e-k8s.sh
