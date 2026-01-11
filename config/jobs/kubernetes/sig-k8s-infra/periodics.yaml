@@ -15,7 +15,7 @@ periodics:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
       containers:
-        - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+        - image: alpine:latest
           command:
             - "echo"
           args:
@@ -66,7 +66,6 @@ periodics:
     cluster: k8s-infra-aks-prow-build
     name: ci-kubernetes-verify-master-canary
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
     annotations:
       testgrid-dashboards: sig-k8s-infra-canaries
