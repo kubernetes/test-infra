@@ -120,6 +120,11 @@ periodics:
 # E2E tests against kubernetes master branch with `kind` and audit logs enabled.
 # This job mirrors ci-kubernetes-e2e-gci-gce test coverage but runs on KIND with audit logging.
 # Uses the standard kind e2e-k8s.sh script with audit logging injected via wrapper.
+#
+# Serial tests are included (not skipped) because Ginkgo v2 handles them automatically:
+# parallel specs run first, then Serial specs run on process #1 after all others complete.
+# This provides better API coverage for audit analysis.
+# See: https://onsi.github.io/ginkgo/#serial-specs
 - interval: 3h
   name: ci-kubernetes-e2e-kind-audit
   cluster: k8s-infra-prow-build
@@ -129,7 +134,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 300m  # Increased to accommodate Serial tests running after parallel tests
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -219,13 +224,14 @@ periodics:
       env:
       - name: BUILD_TYPE
         value: docker
-      # Match ci-kubernetes-e2e-gci-gce test coverage exactly
       # FOCUS="" overrides the default [Conformance] focus to run all tests
       - name: FOCUS
         value: ""
-      # Skip: Driver:gcepd (GCE-specific), Slow, Serial, Disruptive, Flaky, Feature tests
+      # Skip: Driver:gcepd (GCE-specific), Slow, Disruptive, Flaky, Feature tests
+      # Note: Serial tests are NOT skipped - Ginkgo v2 runs them automatically
+      # after parallel tests complete, providing better API coverage for auditing.
       - name: SKIP
-        value: "\\[Driver:.gcepd\\]|\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
+        value: "\\[Driver:.gcepd\\]|\\[Slow\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
       - name: PARALLEL
         value: "true"
       # we need privileged mode in order to do docker in docker
@@ -243,4 +249,4 @@ periodics:
     testgrid-tab-name: kind-e2e-audit
     testgrid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
     testgrid-num-failures-to-alert: '3'
-    description: 'Mirrors ci-kubernetes-e2e-gci-gce test coverage on KIND with audit logging for API coverage analysis'
+    description: 'Runs E2E tests on KIND with audit logging for API coverage analysis. Includes Serial tests for comprehensive endpoint coverage.'
