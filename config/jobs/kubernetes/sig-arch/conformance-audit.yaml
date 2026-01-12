@@ -119,7 +119,6 @@ periodics:
 
 # E2E tests against kubernetes master branch with `kind` and audit logs enabled.
 # This job mirrors ci-kubernetes-e2e-gci-gce test coverage but runs on KIND with audit logging.
-# Uses the standard kind e2e-k8s.sh script with audit logging injected via wrapper.
 #
 # Serial tests are included (not skipped) because Ginkgo v2 handles them automatically:
 # parallel specs run first, then Serial specs run on process #1 after all others complete.
@@ -159,66 +158,21 @@ periodics:
             # Install kind
             curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
 
-            # Create audit policy for capturing API calls
-            mkdir -p "${ARTIFACTS}/audit"
-            cat > "${ARTIFACTS}/audit/policy.yaml" << 'AUDIT_POLICY'
-            apiVersion: audit.k8s.io/v1
-            kind: Policy
-            rules:
-              - level: Metadata
-                stages:
-                  - ResponseComplete
-            AUDIT_POLICY
-
-            # Download standard kind e2e script
-            curl -sSLo e2e-k8s.sh https://raw.githubusercontent.com/kubernetes-sigs/kind/main/hack/ci/e2e-k8s.sh
-
-            # Patch the script to inject audit logging into the kind config
-            # This adds audit policy and log path to the API server configuration
-            sed -i '/kubeadmConfigPatches:/a\
-            - |\
-              kind: ClusterConfiguration\
-              apiServer:\
-                extraArgs:\
-                  audit-policy-file: /etc/kubernetes/audit/policy.yaml\
-                  audit-log-path: /var/log/kubernetes/audit.log\
-                  audit-log-maxage: "0"\
-                  audit-log-maxbackup: "0"\
-                  audit-log-maxsize: "2000000000"\
-                extraVolumes:\
-                - name: audit-policy\
-                  hostPath: /audit/policy.yaml\
-                  mountPath: /etc/kubernetes/audit/policy.yaml\
-                  readOnly: true\
-                - name: audit-logs\
-                  hostPath: /audit\
-                  mountPath: /var/log/kubernetes\
-                  readOnly: false' e2e-k8s.sh
-
-            # Add extraMounts to the existing control-plane node to mount audit policy
-            sed -i '/- role: control-plane$/a\
-              extraMounts:\
-              - hostPath: '"${ARTIFACTS}"'/audit\
-                containerPath: /audit' e2e-k8s.sh
-
-            # Run the e2e tests
-            chmod +x e2e-k8s.sh
-            ./e2e-k8s.sh
-
-            # Copy audit logs from kind node to artifacts
-            docker cp kind-control-plane:/var/log/kubernetes/audit.log "${ARTIFACTS}/audit/" || true
+            # Run the audit e2e script
+            cd ./../../k8s.io/kubernetes
+            $GOPATH/src/k8s.io/test-infra/experiment/kind-audit-e2e.sh
 
             # Parse audit logs
             apt-get update && apt-get install -y --no-install-recommends python3-pip
             pip3 install --no-cache-dir --break-system-packages pyyaml
-            python3 ./../test-infra/experiment/audit/audit_log_parser.py \
+            python3 $GOPATH/src/k8s.io/test-infra/experiment/audit/audit_log_parser.py \
               --audit-logs "${ARTIFACTS}/audit/audit.log" \
               --output "${ARTIFACTS}/audit/audit-endpoints.txt" \
               --audit-operations-json "${ARTIFACTS}/audit/audit-operations.json" \
               --swagger-url "file://$PWD/api/openapi-spec/swagger.json" \
               --ineligible-endpoints-url "file://$PWD/test/conformance/testdata/ineligible_endpoints.yaml" \
               --pending-eligible-endpoints-url "file://$PWD/test/conformance/testdata/pending_eligible_endpoints.yaml"
-            python3 ./../test-infra/experiment/audit/kubernetes_api_analysis.py \
+            python3 $GOPATH/src/k8s.io/test-infra/experiment/audit/kubernetes_api_analysis.py \
               --pull-audit-endpoints "${ARTIFACTS}/audit/audit-endpoints.txt" \
               --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
       env:
