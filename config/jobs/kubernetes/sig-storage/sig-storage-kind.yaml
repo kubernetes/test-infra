@@ -197,7 +197,7 @@ presubmits:
         - name: FOCUS
           value: \[Feature:VolumeAttributesClass\]
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]
+          value: \[Serial\]|\[Slow\]|\[Disruptive\]|\[Flaky\]
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -241,7 +241,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true", "storage.k8s.io/v1beta1":"true"}'
         - name: LABEL_FILTER
-          value: "FeatureGate:VolumeAttributesClass && Slow"
+          value: "FeatureGate:VolumeAttributesClass && Slow && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -337,7 +337,7 @@ periodics:
         - name: FOCUS
           value: \[Feature:VolumeAttributesClass\]
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]
+          value: \[Serial\]|\[Slow\]|\[Disruptive\]|\[Flaky\]
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker

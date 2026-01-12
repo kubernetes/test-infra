@@ -32,7 +32,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: Alpha|Beta|Disruptive|Flaky|Networking-IPv6|LoadBalancer|SCTPConnectivity
+          value: \[Serial\]|Alpha|Beta|Disruptive|Flaky|Networking-IPv6|LoadBalancer|SCTPConnectivity
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -145,7 +145,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|SCTPConnectivity
+          value: \[Serial\]|Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|SCTPConnectivity
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -197,7 +197,7 @@ presubmits:
               value: \[sig-network\]|\[Conformance\]
             # FIXME: AdmissionWebhooks flakes https://issues.k8s.io/128230
             - name: SKIP
-              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity
+              value: \[Serial\]|Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -394,7 +394,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|SCTPConnectivity
+        value: \[Serial\]|Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|SCTPConnectivity
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -443,7 +443,7 @@ periodics:
         value: \[sig-network\]|\[Conformance\]
       # FIXME: AdmissionWebhooks flakes https://issues.k8s.io/128230
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity
+        value: \[Serial\]|Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -491,7 +491,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
+        value: \[Serial\]|Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -544,7 +544,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity
+        value: \[Serial\]|Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -598,7 +598,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
+        value: \[Serial\]|Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -639,7 +639,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
+        value: \[Serial\]|Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
       command:
         - wrapper.sh
         - bash
@@ -690,7 +690,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity
+        value: \[Serial\]|Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity
       command:
         - wrapper.sh
         - bash
@@ -948,7 +948,7 @@ periodics:
       - name: RUNTIME_CONFIG
         value: '{"api/all":"true"}'
       - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky && !Serial"
       - name: SKIP
         value: SCTPConnectivity
       - name: PARALLEL

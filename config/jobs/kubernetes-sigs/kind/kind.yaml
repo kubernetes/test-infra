@@ -142,6 +142,8 @@ periodics:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
         value: "true"
+      - name: "SKIP"
+        value: \[Serial\]
       command:
         - wrapper.sh
         - bash
@@ -190,6 +192,8 @@ periodics:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
         value: "true"
+      - name: "SKIP"
+        value: \[Serial\]
       command:
         - wrapper.sh
         - bash

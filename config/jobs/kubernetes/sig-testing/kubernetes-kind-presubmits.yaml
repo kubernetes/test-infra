@@ -23,7 +23,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -70,7 +70,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -112,7 +112,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -162,7 +162,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -257,6 +257,8 @@ presubmits:
           value: '{"api/alpha":"false", "api/beta":"false"}'
         - name: PARALLEL
           value: "true"
+        - name: SKIP
+          value: \[Serial\]
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -306,7 +308,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/beta":"true", "api/ga":"true"}'
         - name: LABEL_FILTER
-          value: "Feature: isSubsetOf OffByDefault && !Alpha && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isSubsetOf OffByDefault && !Alpha && !Deprecated && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -356,7 +358,7 @@ presubmits:
         - name: SKIP
           value: ""
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -406,7 +408,7 @@ presubmits:
         - name: SKIP
           value: ""
         - name: LABEL_FILTER
-          value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -453,7 +455,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
         - name: LABEL_FILTER
-          value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -504,7 +506,7 @@ presubmits:
         - name: SKIP
           value: ""
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -555,7 +557,7 @@ presubmits:
         - name: SKIP
           value: ""
         - name: LABEL_FILTER
-          value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -656,7 +658,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/alpha":"true", "api/ga":"true"}'
         - name: LABEL_FILTER
-          value: "Feature: isSubsetOf EventedPLEG && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isSubsetOf EventedPLEG && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
