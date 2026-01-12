@@ -163,13 +163,12 @@ upgrade_versions_list = [
     ((kops34, "v1.32.11"), ("latest", "v1.33.7")),
     ((kops34, "v1.33.7"), ("latest", "v1.34.3")),
     # we should have an upgrade test for every supported K8s version
-    (("latest", "v1.32.0"), ("latest", "latest")),
+    (("latest", "v1.34.0"), ("latest", "latest")),
+    (("latest", "v1.33.0"), ("latest", "v1.34.0")),
+    (("latest", "v1.32.0"), ("latest", "v1.33.0")),
     (("latest", "v1.31.0"), ("latest", "v1.32.0")),
     (("latest", "v1.30.0"), ("latest", "v1.31.0")),
     (("latest", "v1.29.0"), ("latest", "v1.30.0")),
-    (("latest", "v1.28.0"), ("latest", "v1.29.0")),
-    (("latest", "v1.27.0"), ("latest", "v1.28.0")),
-    (("latest", "v1.26.0"), ("latest", "v1.27.0")),
     # kOps latest should always be able to upgrade from stable to latest and stable to ci
     (("latest", "stable"), ("latest", "latest")),
     (("latest", "stable"), ("latest", "ci")),
