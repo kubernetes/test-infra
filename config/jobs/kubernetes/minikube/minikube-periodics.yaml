@@ -32,3 +32,346 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+# name convention: integration-<driver>-<container-runtime>-<OS>-<arch>
+- name: kvm-docker-linux-x86
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  decorate: true
+  path_alias: "k8s.io/minikube"
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - integration-prow-kvm-docker-linux-x86
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: 20Gi
+          cpu: 7
+        limits:
+          memory: 20Gi
+          cpu: 7
+- name: docker-docker-linux-arm
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  decorate: true
+  path_alias: "k8s.io/minikube"
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
+  spec:
+    nodeSelector:
+      kubernetes.io/arch: arm64
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - integration-prow-docker-docker-linux-arm
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: 20Gi
+          cpu: 7
+        limits:
+          memory: 20Gi
+          cpu: 7
+- name: docker-containerd-linux-arm
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  decorate: true
+  path_alias: "k8s.io/minikube"
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
+  spec:
+    nodeSelector:
+      kubernetes.io/arch: arm64
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - integration-prow-docker-containerd-arm
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: 20Gi
+          cpu: 7
+        limits:
+          memory: 20Gi
+          cpu: 7
+- name: kvm-containerd-linux-x86
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  decorate: true
+  path_alias: "k8s.io/minikube"
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - integration-prow-kvm-containerd-linux-x86
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: 20Gi
+          cpu: 7
+        limits:
+          memory: 20Gi
+          cpu: 7
+- name: kvm-crio-linux-x86
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  decorate: true
+  path_alias: "k8s.io/minikube"
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - integration-prow-kvm-crio-linux-x86
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: 20Gi
+          cpu: 7
+        limits:
+          memory: 20Gi
+          cpu: 7
+- name: docker-docker-linux-x86
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  decorate: true
+  path_alias: "k8s.io/minikube"
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - integration-prow-docker-docker-linux-x86
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: 20Gi
+          cpu: 7
+        limits:
+          memory: 20Gi
+          cpu: 7
+- name: docker-containerd-linux-x86
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  decorate: true
+  path_alias: "k8s.io/minikube"
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - integration-prow-docker-containerd-linux-x86
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: 20Gi
+          cpu: 7
+        limits:
+          memory: 20Gi
+          cpu: 7
+- name: docker-crio-linux-x86
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  decorate: true
+  path_alias: "k8s.io/minikube"
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - integration-prow-docker-crio-linux-x86
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: 20Gi
+          cpu: 7
+        limits:
+          memory: 20Gi
+          cpu: 7
+- name: none-containerd-linux-x86
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  decorate: true
+  path_alias: "k8s.io/minikube"
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - integration-prow-none-containerd-linux-x86
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: 20Gi
+          cpu: 7
+        limits:
+          memory: 20Gi
+          cpu: 7
+- name: none-docker-linux-x86
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  decorate: true
+  path_alias: "k8s.io/minikube"
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - integration-prow-none-docker-linux-x86
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: 20Gi
+          cpu: 7
+        limits:
+          memory: 20Gi
+          cpu: 7
