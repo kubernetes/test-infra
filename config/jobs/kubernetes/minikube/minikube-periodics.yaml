@@ -42,8 +42,12 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-  annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -71,8 +75,12 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-  annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
   spec:
     nodeSelector:
       kubernetes.io/arch: arm64
@@ -101,8 +109,12 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-  annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
   spec:
     nodeSelector:
       kubernetes.io/arch: arm64
@@ -131,8 +143,12 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-  annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -160,8 +176,12 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-  annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -189,8 +209,12 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-  annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -218,8 +242,12 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-  annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -247,8 +275,12 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-  annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -276,8 +308,12 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-  annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -305,8 +341,12 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-  annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
