@@ -42,6 +42,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
   - org: kubernetes
@@ -75,6 +76,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
   - org: kubernetes
@@ -109,6 +111,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
   - org: kubernetes
@@ -143,6 +146,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
   - org: kubernetes
@@ -176,6 +180,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
   - org: kubernetes
@@ -209,6 +214,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
   - org: kubernetes
@@ -242,6 +248,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
   - org: kubernetes
@@ -275,6 +282,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
   - org: kubernetes
@@ -308,6 +316,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
   - org: kubernetes
@@ -341,6 +350,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
   - org: kubernetes
