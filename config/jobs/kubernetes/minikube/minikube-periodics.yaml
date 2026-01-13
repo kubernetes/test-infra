@@ -33,7 +33,7 @@ periodics:
       securityContext:
         privileged: true
 # name convention: integration-<driver>-<container-runtime>-<OS>-<arch>
-- name: integration-kvm-docker-linux-x86
+- name: kvm-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -62,7 +62,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: integration-docker-docker-linux-arm
+- name: docker-docker-linux-arm
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -92,7 +92,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: integration-docker-containerd-linux-arm
+- name: docker-containerd-linux-arm
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -122,7 +122,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: integration-kvm-containerd-linux-x86
+- name: kvm-containerd-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -151,7 +151,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: integration-kvm-crio-linux-x86
+- name: kvm-crio-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -180,7 +180,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: integration-docker-docker-linux-x86
+- name: docker-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -209,7 +209,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: integration-docker-containerd-linux-x86
+- name: docker-containerd-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -238,7 +238,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: integration-docker-crio-linux-x86
+- name: docker-crio-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -267,7 +267,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: integration-none-containerd-linux-x86
+- name: none-containerd-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -296,7 +296,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: integration-none-docker-linux-x86
+- name: none-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
