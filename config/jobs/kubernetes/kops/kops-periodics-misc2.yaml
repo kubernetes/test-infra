@@ -1356,14 +1356,15 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-apiserver-nodes
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--instance-manager=karpenter --master-size=c6g.xlarge", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-karpenter
+  cluster: k8s-infra-kops-prow-build
   cron: '14 16-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
-  cluster: k8s-infra-kops-prow-build
+  max_concurrency: 1
   decorate: true
   decoration_config:
     timeout: 90m
@@ -1374,33 +1375,27 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
       args:
-      - bash
-      - -c
-      - |
-        make test-e2e-install
-        kubetest2 kops \
-          -v 2 \
-          --up --down \
-          --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --instance-manager=karpenter --master-size=c6g.xlarge" \
-          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-          --test=kops \
-          -- \
-          --test-args="-test.timeout=60m" \
-          --test-package-marker=stable.txt \
-          --focus-regex="\[Conformance\]|\[NodeConformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes" \
-          --parallel=25
+      - ./tests/e2e/scenarios/karpenter/run-test.sh
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-8b031a24de-4b12b.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
       imagePullPolicy: Always
       resources:
@@ -1410,10 +1405,11 @@ periodics:
         requests:
           cpu: "4"
           memory: 6Gi
+      securityContext:
+        privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --instance-manager=karpenter --master-size=c6g.xlarge
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -1422,14 +1418,15 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-karpenter
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-ipv6-karpenter
+  cluster: k8s-infra-kops-prow-build
   cron: '55 7-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
-  cluster: k8s-infra-kops-prow-build
+  max_concurrency: 1
   decorate: true
   decoration_config:
     timeout: 90m
@@ -1440,33 +1437,29 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
       args:
-      - bash
-      - -c
-      - |
-        make test-e2e-install
-        kubetest2 kops \
-          -v 2 \
-          --up --down \
-          --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge" \
-          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
-          --test=kops \
-          -- \
-          --test-args="-test.timeout=60m" \
-          --test-package-marker=stable.txt \
-          --focus-regex="\[Conformance\]|\[NodeConformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes" \
-          --parallel=25
+      - ./tests/e2e/scenarios/karpenter/run-test.sh
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
+      - name: OVERRIDES
+        value: "--ipv6 --topology=private --bastion"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-6e00e57ddb-8c03f.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
       imagePullPolicy: Always
       resources:
@@ -1476,10 +1469,11 @@ periodics:
         requests:
           cpu: "4"
           memory: 6Gi
+      securityContext:
+        privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
