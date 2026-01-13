@@ -839,7 +839,7 @@ def generate_misc():
         # is the only way how to get Kubernetes on a Linux with SELinux in enforcing mode in CI.
         # Test the latest kops and CI build of Kubernetes (=almost master).
         build_test(name_override="kops-aws-selinux",
-                   # RHEL8 VM image is enforcing SELinux by default.
+                   # RHEL9 VM image is enforcing SELinux by default.
                    cloud="aws",
                    distro="rhel9",
                    networking="cilium",
