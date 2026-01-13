@@ -35,6 +35,7 @@ periodics:
 # name convention: integration-<driver>-<container-runtime>-<OS>-<arch>
 - name: integration-kvm-docker-linux-x86
   cluster: k8s-infra-prow-build
+  interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
   always_run: true
@@ -43,7 +44,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-periodics
+    testgrid-dashboards: minikube-presubmits
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -64,6 +65,7 @@ periodics:
           cpu: 7
 - name: integration-docker-docker-linux-arm
   cluster: k8s-infra-prow-build
+  interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
   always_run: true
@@ -72,7 +74,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-periodics
+    testgrid-dashboards: minikube-presubmits
   spec:
     nodeSelector:
       kubernetes.io/arch: arm64
@@ -94,6 +96,7 @@ periodics:
           cpu: 7
 - name: integration-docker-containerd-linux-arm
   cluster: k8s-infra-prow-build
+  interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
   always_run: true
@@ -103,7 +106,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-periodics
+    testgrid-dashboards: minikube-presubmits
   spec:
     nodeSelector:
       kubernetes.io/arch: arm64
@@ -125,6 +128,7 @@ periodics:
           cpu: 7
 - name: integration-kvm-containerd-linux-x86
   cluster: k8s-infra-prow-build
+  interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
   always_run: true
@@ -133,7 +137,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-periodics
+    testgrid-dashboards: minikube-presubmits
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -154,6 +158,7 @@ periodics:
           cpu: 7
 - name: integration-kvm-crio-linux-x86
   cluster: k8s-infra-prow-build
+  interval: 4h
   optional: true
   decorate: true
   path_alias: "k8s.io/minikube"
@@ -163,7 +168,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-periodics
+    testgrid-dashboards: minikube-presubmits
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -184,6 +189,7 @@ periodics:
           cpu: 7
 - name: integration-docker-docker-linux-x86
   cluster: k8s-infra-prow-build
+  interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
   always_run: true
@@ -192,7 +198,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-periodics
+    testgrid-dashboards: minikube-presubmits
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -213,6 +219,7 @@ periodics:
           cpu: 7
 - name: integration-docker-containerd-linux-x86
   cluster: k8s-infra-prow-build
+  interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
   always_run: true
@@ -221,7 +228,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-periodics
+    testgrid-dashboards: minikube-presubmits
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -242,6 +249,7 @@ periodics:
           cpu: 7
 - name: integration-docker-crio-linux-x86
   cluster: k8s-infra-prow-build
+  interval: 4h
   optional: true
   decorate: true
   path_alias: "k8s.io/minikube"
@@ -251,7 +259,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-periodics
+    testgrid-dashboards: minikube-presubmits
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -272,6 +280,7 @@ periodics:
           cpu: 7
 - name: integration-none-containerd-linux-x86
   cluster: k8s-infra-prow-build
+  interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
   always_run: true
@@ -281,7 +290,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-periodics
+    testgrid-dashboards: minikube-presubmits
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -302,6 +311,7 @@ periodics:
           cpu: 7
 - name: integration-none-docker-linux-x86
   cluster: k8s-infra-prow-build
+  interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
   always_run: true
@@ -310,7 +320,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-periodics
+    testgrid-dashboards: minikube-presubmits
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
