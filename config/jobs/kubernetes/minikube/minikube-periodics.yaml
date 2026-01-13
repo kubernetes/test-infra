@@ -43,7 +43,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -72,7 +72,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
   spec:
     nodeSelector:
       kubernetes.io/arch: arm64
@@ -103,7 +103,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
   spec:
     nodeSelector:
       kubernetes.io/arch: arm64
@@ -133,7 +133,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -163,7 +163,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -192,7 +192,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -221,7 +221,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -251,7 +251,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -281,7 +281,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
@@ -310,7 +310,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   annotations:
-    testgrid-dashboards: minikube-presubmits
+    testgrid-dashboards: minikube-periodics
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
