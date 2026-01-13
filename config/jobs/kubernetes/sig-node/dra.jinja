@@ -87,8 +87,8 @@ presubmits:
       base_ref: release/2.1
     {%- endif %}
     {%- endif %}
-    spec:
-      containers:
+  spec:
+    containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
         command:
           - runner.sh
