@@ -805,13 +805,8 @@ def generate_misc():
                    networking="cilium",
                    kops_channel="alpha",
                    runs_per_day=1,
-                   extra_flags=[
-                       "--instance-manager=karpenter",
-                       "--master-size=c6g.xlarge",
-                   ],
-                   extra_dashboards=["kops-misc"],
-                   focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes'),
+                   scenario="karpenter",
+                   extra_dashboards=["kops-misc"]),
 
         build_test(name_override="kops-aws-ipv6-karpenter",
                    cloud="aws",
@@ -820,16 +815,11 @@ def generate_misc():
                    networking="cilium",
                    kops_channel="alpha",
                    runs_per_day=1,
-                   extra_flags=[
-                       "--instance-manager=karpenter",
-                       '--ipv6',
-                       '--topology=private',
-                       '--bastion',
-                       "--master-size=c6g.xlarge",
-                   ],
-                   extra_dashboards=["kops-misc", "kops-ipv6"],
-                   focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes'),
+                   scenario="karpenter",
+                   env = {
+                    "OVERRIDES": "--ipv6 --topology=private --bastion",
+                   },
+                   extra_dashboards=["kops-misc", "kops-ipv6"]),
 
         # A job to isolate a test failure reported in
         # https://github.com/kubernetes/kubernetes/issues/121018
@@ -2335,12 +2325,7 @@ def generate_presubmits_e2e():
             # run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             networking="cilium",
             kops_channel="alpha",
-            extra_flags=[
-                "--instance-manager=karpenter",
-                "--master-size=c6g.xlarge",
-            ],
-            focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes',
+            scenario="karpenter",
         ),
         presubmit_test(
             distro='u2404arm64',
@@ -2348,15 +2333,10 @@ def generate_presubmits_e2e():
             #run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             networking="cilium",
             kops_channel="alpha",
-            extra_flags=[
-                "--instance-manager=karpenter",
-                '--ipv6',
-                '--topology=private',
-                '--bastion',
-                "--master-size=c6g.xlarge",
-            ],
-            focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes',
+            scenario="karpenter",
+            env = {
+                "OVERRIDES": "--ipv6 --topology=private --bastion",
+            },
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-upgrade-k133-ko133-to-kstable-kolatest-many-addons",
