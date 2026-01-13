@@ -104,7 +104,7 @@ def create_args(kops_channel, networking, extra_flags, kops_image, distro):
     args = f"--channel={kops_channel} --networking=" + networking
 
 
-    if distro in ('amzn2', 'deb11', 'deb12', 'deb12arm64', 'rhel8'):
+    if distro in ('amzn2', 'deb11'):
         args += " --set=cluster.spec.containerd.version=1.7.29" + \
         " --set=cluster.spec.containerd.runc.version=1.3.0"
 
