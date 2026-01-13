@@ -285,11 +285,14 @@ run_tests() {
   fi
 
   # ginkgo regexes and label filter
+  # Note: We check if FOCUS is unset (not just empty) to allow
+  # explicit FOCUS="" to mean "run all tests" (no focus filter)
   SKIP="${SKIP:-}"
-  FOCUS="${FOCUS:-}"
   LABEL_FILTER="${LABEL_FILTER:-}"
-  if [ -z "${FOCUS}" ] && [ -z "${LABEL_FILTER}" ]; then
+  if [ -z "${FOCUS+x}" ] && [ -z "${LABEL_FILTER}" ]; then
     FOCUS="\\[Conformance\\]"
+  else
+    FOCUS="${FOCUS:-}"
   fi
   # if we set PARALLEL=true, enable parallel testing
   # NOTE: Unlike other e2e scripts, we do NOT skip Serial tests here.
