@@ -38,7 +38,6 @@ periodics:
   interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
-  always_run: true
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -68,7 +67,6 @@ periodics:
   interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
-  always_run: true
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -99,7 +97,6 @@ periodics:
   interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
-  always_run: true
   optional: true
   labels:
     preset-dind-enabled: "true"
@@ -131,7 +128,6 @@ periodics:
   interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
-  always_run: true
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -162,7 +158,6 @@ periodics:
   optional: true
   decorate: true
   path_alias: "k8s.io/minikube"
-  always_run: true
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -192,7 +187,6 @@ periodics:
   interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
-  always_run: true
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -222,7 +216,6 @@ periodics:
   interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
-  always_run: true
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -253,7 +246,6 @@ periodics:
   optional: true
   decorate: true
   path_alias: "k8s.io/minikube"
-  always_run: true
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -283,7 +275,6 @@ periodics:
   interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
-  always_run: true
   optional: true
   labels:
     preset-dind-enabled: "true"
@@ -314,7 +305,6 @@ periodics:
   interval: 4h
   decorate: true
   path_alias: "k8s.io/minikube"
-  always_run: true
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
