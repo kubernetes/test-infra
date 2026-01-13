@@ -99,7 +99,7 @@ def generate_one(path: pathlib.Path, verify: bool) -> typing.List[str]:
                         )
                     )
                     header = ""
-
+                tmp.write("\n")
             out = template_path.parent / f"{template_path.stem}-{name}.yaml"
             if not os.path.exists(out):
                 if verify:
