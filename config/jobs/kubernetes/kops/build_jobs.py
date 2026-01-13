@@ -487,6 +487,10 @@ def generate_grid():
     for networking in network_plugins_periodics['supports_aws']:
         for distro, kops_versions in aws_distro_options.items():
             for k8s_version in [v for v in k8s_versions if v != 'master']:
+                # Skip AL2 for 1.35+ because AL2 doesn't support cgroups v2:
+                # https://docs.aws.amazon.com/linux/al2023/ug/cgroupv2.html
+                if distro == 'amazonlinux2' and k8s_version in ['1.35', '1.36', '1.37']:
+                    continue
                 for kops_version in kops_versions:
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
                     distro_short = distro_shortener(distro)
@@ -1340,10 +1344,13 @@ def generate_distros():
                 "--node-size=m6g.large",
                 "--master-size=m6g.large"
             ])
+        # Pin AL2 to 1.34 because AL2 doesn't support cgroups v2:
+        # https://docs.aws.amazon.com/linux/al2023/ug/cgroupv2.html
+        k8s_version = '1.34' if distro_short == 'amzn2' else 'stable'
         results.append(
             build_test(distro=distro_short,
                        networking='cilium',
-                       k8s_version='stable',
+                       k8s_version=k8s_version,
                        kops_channel='alpha',
                        name_override=f"kops-aws-distro-{distro_short}",
                        extra_dashboards=['kops-distros'],
