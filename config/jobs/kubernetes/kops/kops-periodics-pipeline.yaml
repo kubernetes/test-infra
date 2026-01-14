@@ -32,7 +32,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251212' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
           --publish-version-marker=gs://k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
@@ -100,7 +100,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251212' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci.txt \
           --publish-version-marker=gs://k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
@@ -168,7 +168,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251212' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci.txt \
           --publish-version-marker=gs://k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
@@ -236,7 +236,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251212' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.32/latest-ci.txt \
           --publish-version-marker=gs://k8s-staging-kops/kops/releases/markers/release-1.32/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.32.txt \
