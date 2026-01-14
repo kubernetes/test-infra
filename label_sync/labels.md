@@ -594,6 +594,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/workload-api/deployment" href="#area/workload-api/deployment">`area/workload-api/deployment`</a> | | label | |
 | <a id="area/workload-api/job" href="#area/workload-api/job">`area/workload-api/job`</a> | | label | |
 | <a id="area/workload-api/replicaset" href="#area/workload-api/replicaset">`area/workload-api/replicaset`</a> | | label | |
+| <a id="kind/dependency" href="#kind/dependency">`kind/dependency`</a> | Categorizes issue or PR as related to a dependency update.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="kind/design" href="#kind/design">`kind/design`</a> | Categorizes issue or PR as related to design.| humans | |
 | <a id="milestone/incomplete-labels" href="#milestone/incomplete-labels">`milestone/incomplete-labels`</a> | | humans | |
 | <a id="milestone/needs-approval" href="#milestone/needs-approval">`milestone/needs-approval`</a> | | humans | |
