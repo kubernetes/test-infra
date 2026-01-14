@@ -47,7 +47,7 @@
         "path": "/etc/crio/crio.conf.d/20-crio.conf",
         "contents": {
           "compression": "gzip",
-          "source": "data:;base64,H4sIAAAAAAAC/7RQPU/zQAze8yusvPOb7Ejd2LuwoSq6XJzEcLEj21daIf47uqawoCIYmE5nP19+HqOSNLSECQ+V0cTBs2K3SqJ4hh3ULXpsC6jdZs2TCddVtRE1s9OChyrJ1CU8YiqcAfs81dWgsnbEo4YuusIOxpAMqwHHkJN3V24hRM1fND9ea8r2UF2/3Rp8vgTLpm2iHk94DbipLMLkot/hhJdywz942N/v72AOR+IJfEYoEmC5j5NKXqFXDM8GPpNBlJQwOgmD4iJH3MYvMzL4HBzIYKQTDp8HBmbxUBgGO3iFWjM3EqmxszkuQ2O5v/jUJWcNbzcb0MzxJw0U3G8auOXnaP5/Djwk1L/wfQ8AAP//ee9iEHYCAAA="
+          "source": "data:;base64,H4sIAAAAAAAC/7SQMY/UQAyF+/kVVq6+bI+0BYKG6pCA6hRFk4mTmJvYke3ZuxXiv6PZLCBAh6C4KorH33vP7z4pSUtrnLELRjNHL4r9JpnSGY7QHNDToS4d9ln72YSbEHZQCzut2IUsc5/xhLkyIw5lbsKosvXEk8Y+ucIRppgNw4hTLNn7K1uBpOUPze9fa+trF66//RZ9uQQrpodMAz7hNeCusgqTi/5tT3itN9zAx7u3d69giSfiGXxBqBJgZUizStlgUIwPBr6QQZKcMTkJg+IqJ9zHjwsy+BIdyGCiJxx/HBiZxWMlDI7wBRot3Eqi1s7muI6tleHi09ScDXwNN/A6Z3mET0wT4fhmT/FTByZReP/hHay4ip5hUzQriuBobiFWGMffjO8bkvahDKiMfqmTbqX9xaLpni1fC6d/Kb/u/U/5z/nVS26XyGNGfQnfbwEAAP//k9RVKvECAAA="
         },
         "mode": 420
       },
