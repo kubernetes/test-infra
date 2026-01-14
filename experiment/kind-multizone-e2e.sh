@@ -116,9 +116,6 @@ create_cluster() {
   cat <<EOF > "${ARTIFACTS}/kind-config.yaml"
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
-featureGates:
-  TopologyAwareHints: true
-  ServiceTrafficDistribution: true
 nodes:
 - role: control-plane
 - role: worker
