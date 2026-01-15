@@ -262,14 +262,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-ovn-serial-aws-arm64
+    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-ovn-remote-s2s-libvirt-ppc64le
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-ovn-serial-aws-arm64
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-ovn-remote-s2s-libvirt-ppc64le
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -289,14 +289,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-remote-libvirt-ppc64le
+    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-ovn-serial-aws-arm64
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-remote-libvirt-ppc64le
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-ovn-serial-aws-arm64
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -397,14 +397,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-ppc64le
+    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-s390x
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-ppc64le
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-s390x
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -424,14 +424,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-s390x
+    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-s2s-libvirt-ppc64le
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-s390x
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-s2s-libvirt-ppc64le
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -505,14 +505,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-ppc64le
+    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-s390x
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-ppc64le
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-s390x
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -532,14 +532,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-s390x
+    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-s2s-libvirt-ppc64le
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-s390x
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-s2s-libvirt-ppc64le
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -3908,28 +3908,28 @@ test_groups:
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-upi-arm64
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-compact-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-compact-remote-libvirt-s390x
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-ovn-remote-s2s-libvirt-ppc64le
+  name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-ovn-remote-s2s-libvirt-ppc64le
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-ovn-serial-aws-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-ovn-serial-aws-arm64
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-remote-libvirt-ppc64le
-  name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-remote-libvirt-ppc64le
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-remote-libvirt-s390x
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-arm64
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-heterogeneous
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-heterogeneous
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-ppc64le
-  name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-ppc64le
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-s390x
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-s2s-libvirt-ppc64le
+  name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-s2s-libvirt-ppc64le
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-upgrade-aws-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-upgrade-aws-arm64
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-aws-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-aws-arm64
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-ppc64le
-  name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-ppc64le
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-s390x
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-s2s-libvirt-ppc64le
+  name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-s2s-libvirt-ppc64le
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-installer-e2e-aws-ovn-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-installer-e2e-aws-ovn-arm64
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-jenkins-e2e-aws-arm64
