@@ -7,7 +7,7 @@ presubmits:
     - release-1.33
     decorate: true
     extra_refs:
-    - base_ref: release-1.21
+    - base_ref: main
       org: kubernetes-sigs
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       repo: cluster-api-provider-azure
