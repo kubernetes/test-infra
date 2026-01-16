@@ -844,7 +844,7 @@ periodics:
     testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
     testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
     testgrid-num-failures-to-alert: "2"
-    testgrid-tab-name: ci-kubernetes-integration-1.33-ppc64le
+    testgrid-tab-name: ci-kubernetes-integration-ppc64le-1.33
   cluster: k8s-infra-ppc64le-prow-build
   decorate: true
   extra_refs:
@@ -853,7 +853,7 @@ periodics:
     path_alias: k8s.io/kubernetes
     repo: kubernetes
   cron: 0 2 * * *
-  name: ci-kubernetes-integration-master-ppc64le-1-33
+  name: ci-kubernetes-integration-ppc64le-1-33
   spec:
     containers:
     - args:
