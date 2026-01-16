@@ -498,10 +498,18 @@ def generate_grid():
                     if 'arm64' in distro:
                         extra_flags.extend([
                             "--zones=eu-west-1a",
-                            "--node-size=m6g.large",
-                            "--master-size=m6g.large"
                         ])
-                    if networking == 'cilium-eni':
+                        if networking in ['cilium-eni', 'amazon-vpc']:
+                            extra_flags.extend([
+                                "--node-size=t4g.large",
+                                "--master-size=t4g.large",
+                            ])
+                        else:
+                            extra_flags.extend([
+                                "--node-size=m6g.large",
+                                "--master-size=m6g.large",
+                            ])
+                    elif networking in ['cilium-eni', 'amazon-vpc']:
                         extra_flags = ['--node-size=t3.large']
                     if networking == 'kubenet':
                         extra_flags.extend([
