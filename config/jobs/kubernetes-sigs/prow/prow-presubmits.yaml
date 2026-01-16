@@ -149,3 +149,25 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-testing-prow-repo
       testgrid-tab-name: verify-test
+  - name: pull-prow-verify-codegen
+    cluster: eks-prow-build-cluster
+    skip_if_only_changed: '^site/'
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify-codegen
+        resources:
+          requests:
+            cpu: "7"
+            memory: "8Gi"
+          limits:
+            cpu: "7"
+            memory: "8Gi"
+    annotations:
+      testgrid-dashboards: sig-testing-prow-repo
+      testgrid-tab-name: verify-codegen
