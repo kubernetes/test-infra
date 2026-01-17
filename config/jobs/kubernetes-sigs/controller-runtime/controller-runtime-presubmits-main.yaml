@@ -19,9 +19,6 @@ presubmits:
           limits:
             cpu: 7
             memory: 14Gi
-    annotations:
-      testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: controller-runtime-main
   - name: pull-controller-runtime-apidiff
     cluster: eks-prow-build-cluster
     decorate: true
@@ -42,6 +39,3 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: controller-runtime-main-apidiff
