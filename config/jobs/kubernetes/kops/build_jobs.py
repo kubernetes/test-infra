@@ -1574,16 +1574,6 @@ def generate_upgrades():
 def generate_presubmits_scale():
     results = [
         presubmit_test(
-            name='presubmit-kops-aws-scale-amazonvpc',
-            scenario='scalability',
-            # only helps with setting the right anotation test.kops.k8s.io/networking
-            networking='amazonvpc',
-            always_run=False,
-            env={
-                'CNI_PLUGIN': "amazonvpc",
-            }
-        ),
-        presubmit_test(
             name='presubmit-kops-aws-scale-amazonvpc-using-cl2',
             scenario='scalability',
             build_cluster='eks-prow-build-cluster',
