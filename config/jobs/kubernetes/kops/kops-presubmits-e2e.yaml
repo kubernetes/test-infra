@@ -368,7 +368,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20251209' --channel=alpha --networking=kindnet --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20260114' --channel=alpha --networking=kindnet --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -434,7 +434,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='debian-cloud/debian-13-trixie-v20251209' --channel=alpha --networking=kindnet --gce-service-account=default" \
+            --create-args="--image='debian-cloud/debian-13-trixie-v20260114' --channel=alpha --networking=kindnet --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -500,7 +500,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=cilium --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260117' --channel=alpha --networking=cilium --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -566,7 +566,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=kindnet --zones=us-east1-b --node-size=c4-standard-4 --master-size=c4-standard-2 --set spec.cloudProvider.gce.pdCSIDriver.defaultStorageClassName=balanced-storage --set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000 --set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000 --set spec.etcdClusters[*].etcdMembers[*].volumeSize=60 --set spec.etcdClusters[*].etcdMembers[*].volumeType=hyperdisk-balanced --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260117' --channel=alpha --networking=kindnet --zones=us-east1-b --node-size=c4-standard-4 --master-size=c4-standard-2 --set spec.cloudProvider.gce.pdCSIDriver.defaultStorageClassName=balanced-storage --set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000 --set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000 --set spec.etcdClusters[*].etcdMembers[*].volumeSize=60 --set spec.etcdClusters[*].etcdMembers[*].volumeType=hyperdisk-balanced --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --control-plane-instance-group-overrides=spec.rootVolume.type=hyperdisk-balanced \
@@ -642,7 +642,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=cilium-etcd --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260117' --channel=alpha --networking=cilium-etcd --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -708,7 +708,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=gce --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260117' --channel=alpha --networking=gce --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -774,7 +774,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=cilium --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260117' --channel=alpha --networking=cilium --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -840,7 +840,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=cilium --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260117' --channel=alpha --networking=cilium --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -908,7 +908,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=calico --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260117' --channel=alpha --networking=calico --gce-service-account=default" \
             --env=KOPS_FEATURE_FLAGS=GoogleCloudBucketACL \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
@@ -1619,7 +1619,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=calico --dns=none --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260117' --channel=alpha --networking=calico --dns=none --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2532,7 +2532,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --node-volume-size=100 --gce-service-account=default" \
+            --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --node-volume-size=100 --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2602,7 +2602,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kubenet --node-volume-size=100 --gce-service-account=default" \
+            --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kubenet --node-volume-size=100 --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2671,7 +2671,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kubenet --set=spec.networking.networkID=default --gce-service-account=default" \
+            --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kubenet --set=spec.networking.networkID=default --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \

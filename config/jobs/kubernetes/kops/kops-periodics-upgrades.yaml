@@ -36,12 +36,8 @@ periodics:
         value: "1.33"
       - name: K8S_VERSION_B
         value: "v1.33.7"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -112,12 +108,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -182,12 +174,8 @@ periodics:
         value: "1.34"
       - name: K8S_VERSION_B
         value: "v1.34.3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -258,12 +246,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -328,12 +312,8 @@ periodics:
         value: "1.34"
       - name: K8S_VERSION_B
         value: "v1.34.3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -404,12 +384,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -474,12 +450,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.29.15"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -550,12 +522,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -620,12 +588,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.30.14"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -696,12 +660,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -766,12 +726,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.31.14"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -842,12 +798,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -912,12 +864,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.32.11"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -988,12 +936,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1058,12 +1002,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.30.14"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1134,12 +1074,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1204,12 +1140,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.31.14"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1280,12 +1212,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1350,12 +1278,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.32.11"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1426,12 +1350,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1496,12 +1416,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.33.7"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1572,12 +1488,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1642,12 +1554,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.31.14"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1718,12 +1626,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1788,12 +1692,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.32.11"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1864,12 +1764,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1934,12 +1830,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.33.7"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2010,12 +1902,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2080,12 +1968,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.34.3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2156,12 +2040,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2226,12 +2106,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "latest"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2302,12 +2178,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2372,12 +2244,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.34.0"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2448,12 +2316,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2518,12 +2382,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.33.0"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2594,12 +2454,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2664,12 +2520,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.32.0"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2740,12 +2592,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2810,12 +2658,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.31.0"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2886,12 +2730,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -2956,12 +2796,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.30.0"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -3032,12 +2868,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -3102,12 +2934,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "latest"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -3178,12 +3006,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -3248,12 +3072,8 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "ci"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -3324,12 +3144,8 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
