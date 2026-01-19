@@ -1,0 +1,13 @@
+presubmits:
+  kubernetes-sigs/node-readiness-controller:
+  - name: pull-org-verify-all
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image:
+        command:
+         - make
+        args:
+         - verify
+
