@@ -195,9 +195,7 @@ def build_test(cloud='aws',
         tmpl_file = "periodic-scenario.yaml.jinja"
         name_hash = hashlib.md5(job_name.encode()).hexdigest()
         if build_cluster == "k8s-infra-kops-prow-build":
-            env['KOPS_STATE_STORE'] = "s3://k8s-kops-ci-prow-state-store"
             env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
-            env['DISCOVERY_STORE'] = "s3://k8s-kops-ci-prow"
         env['CLOUD_PROVIDER'] = cloud
         if not cluster_name:
             cluster_name = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.tests-kops-aws.k8s.io"
