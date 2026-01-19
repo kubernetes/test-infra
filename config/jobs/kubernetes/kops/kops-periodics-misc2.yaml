@@ -38,12 +38,8 @@ periodics:
         value: "1"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -170,7 +166,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=cilium --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260117' --channel=alpha --networking=cilium --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -876,12 +872,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/aws-lb-controller/run-test.sh
       env:
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -940,12 +932,8 @@ periodics:
       env:
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1002,12 +990,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/metrics-server/run-test.sh
       env:
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1064,12 +1048,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/podidentitywebhook/run-test.sh
       env:
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1126,12 +1106,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/addon-resource-tracking/run-test.sh
       env:
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1382,12 +1358,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/karpenter/run-test.sh
       env:
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1446,12 +1418,8 @@ periodics:
       env:
       - name: OVERRIDES
         value: "--ipv6 --topology=private --bastion"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1723,7 +1691,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --set=spec.nodeProblemDetector.enabled=true --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --set=spec.nodeProblemDetector.enabled=true --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -1924,7 +1892,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --set=spec.networking.networkID=default --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --set=spec.networking.networkID=default --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -2060,7 +2028,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -2401,7 +2369,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --node-count=3 --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --node-count=3 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -2469,7 +2437,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=gce --node-count=3 --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=gce --node-count=3 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -2606,7 +2574,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --set=cluster.spec.cloudConfig.manageStorageClasses=false --node-volume-size=100 --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --set=cluster.spec.cloudConfig.manageStorageClasses=false --node-volume-size=100 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -2811,7 +2779,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true --gce-service-account=default" \
           --kubernetes-feature-gates=AllAlpha,AllBeta,-EventedPLEG \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
