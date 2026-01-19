@@ -20,16 +20,9 @@ readonly IMAGES=(
     agnhost
     apparmor-loader
     busybox
-    cuda-vector-add
-    cuda-vector-add-old
-    echoserver
-    glusterdynamic-provisioner
-    httpd
-    httpd-new
     ipc-utils
     jessie-dnsutils
     kitten
-    metadata-concealment
     nautilus
     nginx
     nginx-new
@@ -39,18 +32,14 @@ readonly IMAGES=(
     nonewprivs
     nonroot
     perl
-    pets/redis-installer
     pets/peer-finder
     pets/zookeeper-installer
-    redis
     regression-issue-74839
     resource-consumer
     sample-apiserver
     sample-device-plugin
     volume/iscsi
-    volume/rbd
     volume/nfs
-    volume/gluster
     windows-servercore-cache
 )
 
