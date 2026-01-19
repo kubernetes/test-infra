@@ -30,7 +30,7 @@ substitutions:
   _GIT_TAG: '12345'
   _GO_VERSION: 1.13.5
   _K8S_RELEASE: stable
-  _KIND_VERSION: '0.30.0'
+  _KIND_VERSION: '0.31.0'
   _KUBETEST2_VERSION: 'master'
   _YQ_VERSION: v4.47.2
   _DOCKER_VERSION: 5:29.*
