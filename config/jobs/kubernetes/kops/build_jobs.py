@@ -491,6 +491,9 @@ def generate_grid():
                 # https://docs.aws.amazon.com/linux/al2023/ug/cgroupv2.html
                 if distro == 'amazonlinux2' and k8s_version in ['1.35', '1.36', '1.37']:
                     continue
+                # kopeio/networking-agent doesn't have multi-arch builds yet
+                if 'arm64' in distro and networking == 'kopeio':
+                    continue
                 for kops_version in kops_versions:
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
                     distro_short = distro_shortener(distro)
