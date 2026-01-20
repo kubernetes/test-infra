@@ -193,6 +193,75 @@ class TestBigquery(unittest.TestCase):
         valid_jobs = bigquery.collect_valid_jobs('/nonexistent/path')
         self.assertEqual(valid_jobs, set())
 
+    def test_collect_valid_jobs_real_config(self):
+        """collect_valid_jobs works against real config/jobs directory.
+
+        This integration test ensures the code handles all edge cases present
+        in actual job configuration files, including explicit null values,
+        empty files, and various YAML structures.
+        """
+        # Find the real config/jobs directory relative to this test file
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        jobs_dir = os.path.join(repo_root, 'config', 'jobs')
+
+        if not os.path.isdir(jobs_dir):
+            self.skipTest('config/jobs directory not found - skipping integration test')
+
+        # This should not raise any exceptions
+        valid_jobs = bigquery.collect_valid_jobs(jobs_dir)
+
+        # Sanity check: we should find a reasonable number of jobs
+        self.assertGreater(len(valid_jobs), 100,
+            'Expected to find more than 100 jobs in config/jobs')
+
+        # Verify some jobs have the pr: prefix (presubmits)
+        pr_jobs = [j for j in valid_jobs if j.startswith('pr:')]
+        self.assertGreater(len(pr_jobs), 0,
+            'Expected to find presubmit jobs with pr: prefix')
+
+    def test_collect_valid_jobs_null_values(self):
+        """collect_valid_jobs handles YAML files with explicit null values."""
+        # Create a temporary directory with test job configs
+        jobs_dir = os.path.join(self.tmpdir, 'jobs')
+        os.makedirs(jobs_dir)
+
+        # Create a config with explicit null values (common in real configs)
+        # This tests the case where config.get('postsubmits') returns None
+        null_config = {
+            'presubmits': None,
+            'postsubmits': None,
+            'periodics': [
+                {'name': 'ci-valid-periodic'},
+            ]
+        }
+        with open(os.path.join(jobs_dir, 'null_values.yaml'), 'w') as f:
+            yaml.dump(null_config, f)
+
+        # Create a config with only some fields present
+        partial_config = {
+            'presubmits': {
+                'org/repo': [
+                    {'name': 'pull-test'},
+                ]
+            }
+            # postsubmits and periodics are missing entirely
+        }
+        with open(os.path.join(jobs_dir, 'partial.yaml'), 'w') as f:
+            yaml.dump(partial_config, f)
+
+        # Create an empty config (yaml.safe_load returns None)
+        with open(os.path.join(jobs_dir, 'empty.yaml'), 'w') as f:
+            f.write('')
+
+        valid_jobs = bigquery.collect_valid_jobs(jobs_dir)
+
+        # Check jobs from null_values.yaml
+        self.assertIn('ci-valid-periodic', valid_jobs)
+
+        # Check jobs from partial.yaml
+        self.assertIn('pull-test', valid_jobs)
+        self.assertIn('pr:pull-test', valid_jobs)
+
     def test_filter_json_by_jobs_object_format(self):
         """filter_json_by_jobs filters object-keyed JSON (failures/flakes format)."""
         # Create test JSON with object format
