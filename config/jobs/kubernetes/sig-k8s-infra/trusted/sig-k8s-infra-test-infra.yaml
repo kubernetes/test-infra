@@ -116,6 +116,8 @@ periodics:
       - --bucket=gs://k8s-metrics
       - --project=k8s-infra-prow-build-trusted
       - --jq=/usr/bin/jq
+      - --jobs-dir=config/jobs
+      - --filter-stale-jobs
 
 - name: ci-test-infra-triage
   interval: 3h
