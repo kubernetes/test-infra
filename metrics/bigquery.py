@@ -104,15 +104,16 @@ def _extract_jobs_from_config(config):
         return jobs
 
     # Extract presubmit job names (with 'pr:' prefix for metrics)
-    for repo_jobs in config.get('presubmits', {}).values():
+    # Use 'or' to handle explicit null values in YAML (e.g., "presubmits: null")
+    for repo_jobs in (config.get('presubmits') or {}).values():
         jobs.update(_extract_job_names(repo_jobs, prefix='pr:'))
 
     # Extract postsubmit job names
-    for repo_jobs in config.get('postsubmits', {}).values():
+    for repo_jobs in (config.get('postsubmits') or {}).values():
         jobs.update(_extract_job_names(repo_jobs))
 
     # Extract periodic job names
-    jobs.update(_extract_job_names(config.get('periodics', [])))
+    jobs.update(_extract_job_names(config.get('periodics') or []))
 
     return jobs
 
@@ -135,21 +136,23 @@ def collect_valid_jobs(jobs_dir):
         return valid_jobs
 
     # Walk all YAML files in the jobs directory
+    file_count = 0
     for root, _, files in os.walk(jobs_dir):
         for filename in files:
             if not filename.endswith('.yaml') and not filename.endswith('.yml'):
                 continue
 
             filepath = os.path.join(root, filename)
+            file_count += 1
             try:
                 with open(filepath) as f:
                     config = yaml.safe_load(f)
                 valid_jobs.update(_extract_jobs_from_config(config))
-            except (yaml.YAMLError, IOError) as e:
-                print('Warning: failed to parse %s: %s' % (filepath, e), file=sys.stderr)
+            except (yaml.YAMLError, OSError, TypeError, AttributeError) as e:
+                print('Warning: failed to process %s: %s' % (filepath, e), file=sys.stderr)
 
-    print('Collected %d valid job names from %s' % (len(valid_jobs), jobs_dir),
-          file=sys.stderr)
+    print('Collected %d valid job names from %d files in %s' % (
+        len(valid_jobs), file_count, jobs_dir), file=sys.stderr)
     return valid_jobs
 
 
