@@ -68,6 +68,55 @@ def do_jq(jq_filter, data_filename, out_filename, jq_bin=DEFAULT_JQ_BIN):
         check([jq_bin, jq_filter, data_filename], stdout=out_file)
 
 
+def _extract_job_names(job_list, prefix=None):
+    """Extracts job names from a list of job configs.
+
+    Args:
+        job_list: List of job config dicts with 'name' field
+        prefix: Optional prefix to add (creates additional entry with prefix)
+
+    Returns:
+        Set of job names
+    """
+    names = set()
+    if not isinstance(job_list, list):
+        return names
+    for job in job_list:
+        if isinstance(job, dict) and 'name' in job:
+            name = job['name']
+            names.add(name)
+            if prefix:
+                names.add(prefix + name)
+    return names
+
+
+def _extract_jobs_from_config(config):
+    """Extracts all job names from a Prow config dict.
+
+    Args:
+        config: Parsed YAML config dict
+
+    Returns:
+        Set of job names
+    """
+    jobs = set()
+    if not config:
+        return jobs
+
+    # Extract presubmit job names (with 'pr:' prefix for metrics)
+    for repo_jobs in config.get('presubmits', {}).values():
+        jobs.update(_extract_job_names(repo_jobs, prefix='pr:'))
+
+    # Extract postsubmit job names
+    for repo_jobs in config.get('postsubmits', {}).values():
+        jobs.update(_extract_job_names(repo_jobs))
+
+    # Extract periodic job names
+    jobs.update(_extract_job_names(config.get('periodics', [])))
+
+    return jobs
+
+
 def collect_valid_jobs(jobs_dir):
     """Collects all valid job names from Prow job config YAML files.
 
@@ -95,40 +144,9 @@ def collect_valid_jobs(jobs_dir):
             try:
                 with open(filepath) as f:
                     config = yaml.safe_load(f)
-
-                if not config:
-                    continue
-
-                # Extract presubmit job names
-                # Format: presubmits: { "org/repo": [{"name": "job-name"}, ...] }
-                for repo_jobs in config.get('presubmits', {}).values():
-                    if not isinstance(repo_jobs, list):
-                        continue
-                    for job in repo_jobs:
-                        if isinstance(job, dict) and 'name' in job:
-                            name = job['name']
-                            valid_jobs.add(name)
-                            # Presubmits appear with 'pr:' prefix in metrics
-                            valid_jobs.add('pr:' + name)
-
-                # Extract postsubmit job names
-                # Format: postsubmits: { "org/repo": [{"name": "job-name"}, ...] }
-                for repo_jobs in config.get('postsubmits', {}).values():
-                    if not isinstance(repo_jobs, list):
-                        continue
-                    for job in repo_jobs:
-                        if isinstance(job, dict) and 'name' in job:
-                            valid_jobs.add(job['name'])
-
-                # Extract periodic job names
-                # Format: periodics: [{"name": "job-name"}, ...]
-                for job in config.get('periodics', []):
-                    if isinstance(job, dict) and 'name' in job:
-                        valid_jobs.add(job['name'])
-
+                valid_jobs.update(_extract_jobs_from_config(config))
             except (yaml.YAMLError, IOError) as e:
                 print('Warning: failed to parse %s: %s' % (filepath, e), file=sys.stderr)
-                continue
 
     print('Collected %d valid job names from %s' % (len(valid_jobs), jobs_dir),
           file=sys.stderr)
