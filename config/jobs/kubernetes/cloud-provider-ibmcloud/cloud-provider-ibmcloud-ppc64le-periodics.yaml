@@ -21,7 +21,7 @@ periodics:
         runAsGroup: 2010
         runAsUser: 2001
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
           command:
             - make
             - test
@@ -60,7 +60,7 @@ periodics:
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
         command:
         - runner.sh
         args:
@@ -101,7 +101,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
           securityContext:
             privileged: true
           env:
@@ -170,7 +170,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -243,7 +243,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
           securityContext:
             privileged: true
           env:
@@ -312,7 +312,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -378,7 +378,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
           securityContext:
             privileged: true
           env:
@@ -443,7 +443,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
