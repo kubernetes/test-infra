@@ -179,7 +179,7 @@ periodics:
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
-    testgrid-tab-name: capz-windows-master-containerd2
+    testgrid-tab-name: capz-windows-master-containerd17
 - name: ci-kubernetes-e2e-capz-master-windows-serial-slow
   cluster: eks-prow-build-cluster
   interval: 24h
