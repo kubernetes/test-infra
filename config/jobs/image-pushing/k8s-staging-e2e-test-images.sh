@@ -20,8 +20,8 @@ readonly IMAGES=(
     agnhost
     apparmor-loader
     busybox
+    glibc-dns-testing
     ipc-utils
-    jessie-dnsutils
     kitten
     nautilus
     nginx
