@@ -32,10 +32,13 @@ substitutions:
   _K8S_RELEASE: stable
   _KIND_VERSION: '0.31.0'
   _KUBETEST2_VERSION: 'master'
-  _YQ_VERSION: v4.47.2
+  _YQ_VERSION: v4.49.2
   _DOCKER_VERSION: 5:29.*
 timeout: 3600s
 options:
   substitution_option: ALLOW_LOOSE
   # this is a large and critical CI image, builds are slow on the default 1 core
   machineType: E2_HIGHCPU_32
+tags:
+  - kubekins-e2e-v2
+  - $_CONFIG

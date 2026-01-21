@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:bookworm-20251208
+FROM debian:bookworm-20260112
 ARG TARGETARCH
 
 WORKDIR /workspace
@@ -59,7 +59,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     graphviz \
     bc \
     && rm -rf /var/lib/apt/lists/* \
-    && python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip setuptools wheel
+    && python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip uv setuptools wheel
 
 # Install gcloud
 ARG GCLOUD_SDK_URL=https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
@@ -71,9 +71,9 @@ RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     --disable-installation-options \
     --bash-completion=false \
     --path-update=false \
-    --usage-reporting=false; \
+    --usage-reporting=false \
+    --additional-components alpha beta gke-gcloud-auth-plugin; \
     fi && \
-    gcloud components install alpha beta && \
     gcloud info | tee /workspace/gcloud-info.txt
 
 
