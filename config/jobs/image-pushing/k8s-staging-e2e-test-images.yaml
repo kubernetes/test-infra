@@ -380,7 +380,7 @@ postsubmits:
               # We override that with the nginx-new image.
               - name: WHAT
                 value: "nginx-new"
-    - name: post-kubernetes-push-e2e-node-perf-tf-wide-deep-test-images
+    - name: post-kubernetes-push-e2e-node-perf-pytorch-wide-deep-test-images
       rerun_auth_config:
         github_team_slugs:
           - org: kubernetes
@@ -397,7 +397,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/node-perf\/tf-wide-deep\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/node-perf\/pytorch-wide-deep\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -419,9 +419,9 @@ postsubmits:
               - test/images
             env:
               # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the node-perf/tf-wide-deep image.
+              # We override that with the node-perf/pytorch-wide-deep image.
               - name: WHAT
-                value: "node-perf/tf-wide-deep"
+                value: "node-perf/pytorch-wide-deep"
     - name: post-kubernetes-push-e2e-node-perf-npb-ep-test-images
       rerun_auth_config:
         github_team_slugs:

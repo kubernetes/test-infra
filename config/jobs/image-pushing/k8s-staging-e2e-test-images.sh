@@ -26,9 +26,9 @@ readonly IMAGES=(
     nautilus
     nginx
     nginx-new
-    node-perf/tf-wide-deep
     node-perf/npb-ep
     node-perf/npb-is
+    node-perf/pytorch-wide-deep
     nonewprivs
     nonroot
     perl
