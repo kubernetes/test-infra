@@ -61,8 +61,6 @@ periodics:
         # CAPZ variables
         - name: TEST_K8S
           value: "true"
-        - name: WINDOWS
-          value: "false"
         - name: CLUSTER_TEMPLATE
           value: "templates/test/dev/cluster-template-custom-builds-load.yaml"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
@@ -73,8 +71,6 @@ periodics:
           value: "Standard_D8s_v3"
         - name: NODE_MACHINE_TYPE
           value: "Standard_D8s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
         - name: "CONTROL_PLANE_MACHINE_COUNT"
           value: "5"
         - name: WINDOWS_WORKER_MACHINE_COUNT
