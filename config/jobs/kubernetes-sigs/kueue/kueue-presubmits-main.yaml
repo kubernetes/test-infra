@@ -592,6 +592,7 @@ presubmits:
         - runner.sh
         args:
           - make
+          - -j8
           - verify
         env:
         - name: GOMAXPROCS
