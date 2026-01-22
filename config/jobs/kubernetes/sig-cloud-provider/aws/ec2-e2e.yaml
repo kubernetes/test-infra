@@ -924,6 +924,7 @@ periodics:
         - --ttl=6h
         - --path=s3://provider-aws-test-infra/objs.json
         - --region=us-east-1
+        - --sweep-count=2
         image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
         resources:
           requests:
