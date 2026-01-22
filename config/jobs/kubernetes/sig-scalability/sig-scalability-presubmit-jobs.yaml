@@ -915,6 +915,8 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "gp2"
         - name: CLOUD_PROVIDER
@@ -1004,6 +1006,8 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "gp2"
         - name: CLOUD_PROVIDER
@@ -1024,9 +1028,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     run_if_changed: ^clusterloader2/.*$
     labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential-boskos-scale-001-kops: "true"
+      preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     decorate: true
     decoration_config:
@@ -1094,6 +1096,8 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "ssd-csi"
         - name: CLOUD_PROVIDER
