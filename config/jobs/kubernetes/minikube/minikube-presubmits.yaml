@@ -330,7 +330,7 @@ presubmits:
     optional: true # macos machine is precious, so only run when matainers explicitly trigger with /test <job_name>
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
