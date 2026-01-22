@@ -19,6 +19,7 @@ periodics:
       args:
       - --ttl=12h
       - --path=s3://k8s-infra-kops-scale-tests/objs.json
+      - --sweep-count=2
       image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
       resources:
         requests:
@@ -178,7 +179,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -210,7 +211,7 @@ periodics:
       - name: CONTROL_PLANE_COUNT
         value: "3"
       - name: CONTROL_PLANE_SIZE
-        value: "c5.4xlarge"
+        value: "c5.9xlarge"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-infra-kops-scale-tests"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
