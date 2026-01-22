@@ -1255,6 +1255,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
+      preset-azure-aks-mgmt-identity: "true"
     branches:
     - ^main$
     spec:
