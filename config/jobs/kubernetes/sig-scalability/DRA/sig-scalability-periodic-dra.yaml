@@ -409,7 +409,6 @@ periodics:
     interval: 4h
     labels:
       preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
     decorate: true
     decoration_config:
       timeout: 480m
@@ -445,8 +444,6 @@ periodics:
         - runner.sh
         args:
         - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
         env:
         - name: KUBE_SSH_KEY_PATH
           value: /etc/ssh-key-secret/ssh-private
@@ -479,11 +476,13 @@ periodics:
         - name: CONTROL_PLANE_COUNT
           value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "c4-standard-96"
+          value: "c4-standard-48"
         - name: KUBE_PROXY_MODE
           value: "nftables"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_SCRAPE_KUBELETS
           value: "true"
         - name: PROMETHEUS_PVC_STORAGE_CLASS

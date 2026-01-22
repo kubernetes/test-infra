@@ -74,6 +74,8 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "gp2"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
@@ -182,6 +184,8 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "gp2"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
@@ -284,6 +288,8 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "ssd-csi"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
@@ -391,6 +397,8 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "ssd-csi"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
@@ -493,6 +501,8 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "ssd-csi"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
