@@ -579,9 +579,9 @@ milestone_applier:
     release-2.6: v2.6
     release-2.5: v2.5
   kubernetes-sigs/cluster-api-provider-azure:
-    main: v1.22
+    main: v1.23
+    release-1.22: v1.22
     release-1.21: v1.21
-    release-1.20: v1.20
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v1.1.0
     release-1.0: v1.0.0
