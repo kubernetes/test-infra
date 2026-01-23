@@ -1,54 +1,5 @@
 periodics:
 
-- name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-30-1-31-main
-  cluster: eks-prow-build-cluster
-  minimum_interval: 24h
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-azure
-    base_ref: main
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    serviceAccountName: azure
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
-      args:
-        - runner.sh
-        - "./scripts/ci-e2e.sh"
-      env:
-        - name: KUBERNETES_VERSION_UPGRADE_FROM
-          value: "stable-1.30"
-        - name: KUBERNETES_VERSION_UPGRADE_TO
-          value: "stable-1.31"
-        - name: GINKGO_FOCUS
-          value: "\\[K8s-Upgrade\\]"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capi-periodic-upgrade-main-1-30-1-31
-    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: "Runs Kubernetes upgrade tests from v1.30 to v1.31 on CAPZ main branch"
-
 - name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-31-1-32-main
   cluster: eks-prow-build-cluster
   minimum_interval: 24h
@@ -146,3 +97,101 @@ periodics:
     testgrid-tab-name: capi-periodic-upgrade-main-1-32-1-33
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
     description: "Runs Kubernetes upgrade tests from v1.32 to v1.33 on CAPZ main branch"
+
+- name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-33-1-34-main
+  cluster: eks-prow-build-cluster
+  minimum_interval: 24h
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-community: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    serviceAccountName: azure
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+      args:
+        - runner.sh
+        - "./scripts/ci-e2e.sh"
+      env:
+        - name: KUBERNETES_VERSION_UPGRADE_FROM
+          value: "stable-1.33"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "stable-1.34"
+        - name: GINKGO_FOCUS
+          value: "\\[K8s-Upgrade\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: capi-periodic-upgrade-main-1-33-1-34
+    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+    description: "Runs Kubernetes upgrade tests from v1.33 to v1.34 on CAPZ main branch"
+
+- name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-34-1-35-main
+  cluster: eks-prow-build-cluster
+  minimum_interval: 24h
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-community: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    serviceAccountName: azure
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+      args:
+        - runner.sh
+        - "./scripts/ci-e2e.sh"
+      env:
+        - name: KUBERNETES_VERSION_UPGRADE_FROM
+          value: "stable-1.34"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "stable-1.35"
+        - name: GINKGO_FOCUS
+          value: "\\[K8s-Upgrade\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: capi-periodic-upgrade-main-1-34-1-35
+    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+    description: "Runs Kubernetes upgrade tests from v1.34 to v1.35 on CAPZ main branch"
