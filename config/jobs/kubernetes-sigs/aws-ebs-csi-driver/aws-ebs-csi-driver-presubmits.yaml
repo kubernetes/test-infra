@@ -24,10 +24,10 @@ presubmits:
         resources:
           limits:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
           requests:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: test-e2e-external-eks-windows
@@ -57,10 +57,10 @@ presubmits:
         resources:
           limits:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
           requests:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: test-e2e-external-eks-windows-fips
@@ -90,10 +90,10 @@ presubmits:
         resources:
           limits:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
           requests:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: test-helm-chart
@@ -180,10 +180,10 @@ presubmits:
         resources:
           limits:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
           requests:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-e2e-test-single-az
@@ -213,10 +213,10 @@ presubmits:
         resources:
           limits:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
           requests:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-e2e-test-multi-az
@@ -247,10 +247,10 @@ presubmits:
         resources:
           limits:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
           requests:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-e2e-test-disruptive
@@ -280,10 +280,10 @@ presubmits:
           resources:
             limits:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
             requests:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-external-test
@@ -313,10 +313,10 @@ presubmits:
           resources:
             limits:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
             requests:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-external-test-fips
@@ -342,10 +342,10 @@ presubmits:
           resources:
             limits:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
             requests:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-security
@@ -375,10 +375,10 @@ presubmits:
           resources:
             limits:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
             requests:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-ebs-external-test-eks-bottlerocket
@@ -408,10 +408,10 @@ presubmits:
           resources:
             limits:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
             requests:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-ebs-external-test-eks
@@ -441,10 +441,10 @@ presubmits:
           resources:
             limits:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
             requests:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-external-test-kustomize
@@ -474,10 +474,10 @@ presubmits:
           resources:
             limits:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
             requests:
               cpu: "2"
-              memory: "4Gi"
+              memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-external-test-arm64
@@ -507,10 +507,10 @@ presubmits:
         resources:
           requests:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
           limits:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-ebs-image-test
