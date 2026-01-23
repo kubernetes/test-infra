@@ -22,10 +22,10 @@ periodics:
       resources:
         limits:
           cpu: "2"
-          memory: "4Gi"
+          memory: "8Gi"
         requests:
           cpu: "2"
-          memory: "4Gi"
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-periodics
     testgrid-tab-name: ci-unit-test
@@ -58,10 +58,10 @@ periodics:
       resources:
         limits:
           cpu: "2"
-          memory: "4Gi"
+          memory: "8Gi"
         requests:
           cpu: "2"
-          memory: "4Gi"
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-periodics
     testgrid-tab-name: ci-e2e-test-single-az
@@ -94,10 +94,10 @@ periodics:
       resources:
         limits:
           cpu: "2"
-          memory: "4Gi"
+          memory: "8Gi"
         requests:
           cpu: "2"
-          memory: "4Gi"
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-periodics
     testgrid-tab-name: ci-e2e-test-multi-az
@@ -130,10 +130,10 @@ periodics:
       resources:
         limits:
           cpu: "2"
-          memory: "4Gi"
+          memory: "8Gi"
         requests:
           cpu: "2"
-          memory: "4Gi"
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-periodics
     testgrid-tab-name: ci-external-test
