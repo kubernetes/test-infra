@@ -59,7 +59,7 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
-          value: "c5.18xlarge"
+          value: "c8a.24xlarge"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-infra-kops-scale-tests"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
@@ -77,7 +77,7 @@ presubmits:
         - name: TEAR_DOWN_PROMETHEUS_SERVER
           value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
+          value: "io2"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
           value: "0.5s"
         - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
@@ -161,7 +161,7 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
-          value: "c5.4xlarge"
+          value: "c8a.8xlarge"
         - name: CL2_LOAD_TEST_THROUGHPUT
           value: "50"
         - name: CL2_DELETE_TEST_THROUGHPUT
@@ -187,7 +187,7 @@ presubmits:
         - name: TEAR_DOWN_PROMETHEUS_SERVER
           value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
+          value: "io2"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
           value: "0.5s"
         - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
