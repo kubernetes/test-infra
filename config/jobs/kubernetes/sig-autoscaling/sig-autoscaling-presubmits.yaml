@@ -148,54 +148,6 @@ presubmits:
             cpu: 2
             memory: 6Gi
 
-  - name: pull-kubernetes-e2e-autoscaling-hpa-cm
-    cluster: k8s-infra-prow-build
-    annotations:
-      testgrid-dashboards: sig-autoscaling-hpa
-      testgrid-tab-name: gci-gce-autoscaling-hpa-cm-pull
-    # TODO: set `optional: false` once tests not flaky
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 310m
-    run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/custom_metrics_stackdriver_autoscaling.go$)'
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: release
-      base_ref: master
-      path_alias: k8s.io/release
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --build=quick
-        - --cluster=hpa
-        - --check-leaked-resources
-        - --gcp-node-image=gci
-        - --gcp-zone=us-central1-b
-        - --provider=gce
-        # Enable HPAScaleToZero. Required for scale to zero tests.
-        - --env=KUBE_FEATURE_GATES=HPAScaleToZero=true
-        - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
-        - --timeout=300m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 2
-            memory: 6Gi
-          requests:
-            cpu: 2
-            memory: 6Gi
-
   kubernetes/autoscaler:
   - name: pull-autoscaling-e2e-vpa-full
     cluster: k8s-infra-prow-build
