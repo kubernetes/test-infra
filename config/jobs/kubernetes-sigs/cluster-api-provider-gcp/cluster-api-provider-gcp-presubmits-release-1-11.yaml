@@ -15,11 +15,11 @@ presubmits:
         - "./scripts/ci-test.sh"
         resources:
           limits:
-            cpu: 4
-            memory: 4Gi
+            cpu: 7
+            memory: 16Gi
           requests:
-            cpu: 4
-            memory: 4Gi
+            cpu: 7
+            memory: 16Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-test-release-1-11
@@ -38,11 +38,11 @@ presubmits:
         - "./scripts/ci-build.sh"
         resources:
           limits:
-            cpu: 4
-            memory: 4Gi
+            cpu: 7
+            memory: 16Gi
           requests:
-            cpu: 4
-            memory: 4Gi
+            cpu: 7
+            memory: 16Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-build-release-1-11
