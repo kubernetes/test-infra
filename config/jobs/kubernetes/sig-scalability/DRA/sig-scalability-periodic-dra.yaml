@@ -236,86 +236,6 @@ periodics:
       testgrid-dashboards: sig-scalability-dra
       testgrid-tab-name: azure-dra-with-workload-master-scalability-100
 
-  - name: ci-kubernetes-e2e-gce-100-node-dra-with-workload
-    cluster: k8s-infra-prow-build
-    tags:
-      - "perfDashPrefix: gce-dra-100Nodes-with-workload"
-      - "perfDashBuildsCount: 270"
-      - "perfDashJobType: performance"
-    interval: 4h
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-periodics: "true"
-      preset-e2e-scalability-periodics-master: "true"
-    annotations:
-      testgrid-dashboards: sig-scalability-dra
-      testgrid-tab-name: gce-dra-with-workload-master-scalability-100
-    decorate: true
-    decoration_config:
-      timeout: 3h
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
-      - org: kubernetes
-        repo: perf-tests
-        base_ref: master
-        path_alias: k8s.io/perf-tests
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-          command:
-            - runner.sh
-            - /workspace/scenarios/kubernetes_e2e.py
-          args:
-            - --check-leaked-resources
-            - --cluster=
-            - --extract=ci/latest
-            - --gcp-node-size=e2-standard-4
-            - --gcp-node-image=gci
-            - --gcp-project-type=scalability-project
-            - --gcp-nodes=100
-            - --provider=gce
-            - --env=KUBE_FEATURE_GATES=DynamicResourceAllocation=true
-            - --runtime-config=api/all=true
-            - --test=false
-            - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-            - --test-cmd-args=cluster-loader2
-            - --test-cmd-args=--nodes=100
-            - --test-cmd-args=--provider=gce
-            - --test-cmd-args=--enable-prometheus-server=true
-            - --test-cmd-args=--prometheus-scrape-node-exporter
-            - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-            - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
-            - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
-            - --test-cmd-args=--testconfig=testing/dra/config.yaml
-            - --test-cmd-args=--report-dir=$(ARTIFACTS)
-            - --test-cmd-name=ClusterLoaderV2
-            - --use-logexporter
-          resources:
-            requests:
-              cpu: 6
-              memory: "16Gi"
-            limits:
-              cpu: 6
-              memory: "16Gi"
-          env:
-            - name: CL2_MODE
-              value: "Indexed"
-            - name: CL2_NODES_PER_NAMESPACE
-              value: "10"
-            - name: CL2_JOB_RUNNING_TIME
-              value: "3s"
-            - name: CL2_LONG_JOB_RUNNING_TIME
-              value: "45m"
-            - name: PROMETHEUS_SCRAPE_KUBELETS
-              value: "true"
-            - name: NODE_PRELOAD_IMAGES
-              value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-
   - name: ci-kubernetes-e2e-gce-100-node-dra-extended-resources-with-workload
     cluster: k8s-infra-prow-build
     tags:
@@ -402,11 +322,11 @@ periodics:
 
   - name: ci-kubernetes-e2e-kops-gce-100-node-dra-with-workload-ipalias-using-cl2
     tags:
-    - "perfDashPrefix: gce-dra-100Nodes-with-workload-dev"
+    - "perfDashPrefix: gce-dra-100Nodes-with-workload"
     - "perfDashBuildsCount: 270"
     - "perfDashJobType: performance"
     cluster: k8s-infra-prow-build
-    interval: 4h
+    interval: 24h
     labels:
       preset-k8s-ssh: "true"
     decorate: true
@@ -433,7 +353,7 @@ periodics:
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: ipalias
       testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-gce, sig-scalability-dra
-      testgrid-tab-name: gce-dra-with-workload-master-scalability-100-canary
+      testgrid-tab-name: gce-dra-with-workload-master-scalability-100
       description: "Uses kops to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster with DRA enabled"
     spec:
       serviceAccountName: prow-build
@@ -509,7 +429,7 @@ periodics:
     - "perfDashBuildsCount: 270"
     - "perfDashJobType: performance"
     cluster: k8s-infra-prow-build
-    cron: '0 3 * * *' # Run once a day at 03:00 UTC
+    cron: "0 0 30 2 *" # Temporarily disabled, this jobs needs to be merge with gce-master-scale-performance-5000
     labels:
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
