@@ -1,6 +1,6 @@
 postsubmits:
   kubernetes/minikube:
-    - name: post-kubernetes-bootcamp-image
+    - name: post-minikube-kubernetes-bootcamp-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
@@ -46,7 +46,7 @@ postsubmits:
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
-    - name: post-kubernetes-registry-proxy-image
+    - name: post-minikube-kubernetes-registry-proxy-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: minikube-images, sig-k8s-infra-gcb

@@ -33,7 +33,7 @@ periodics:
       securityContext:
         privileged: true
 # name convention: integration-<driver>-<container-runtime>-<OS>-<arch>
-- name: kvm-docker-linux-x86
+- name: ci-minikube-kvm-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -67,7 +67,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: docker-docker-linux-arm
+- name: ci-minikube-docker-docker-linux-arm
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -102,7 +102,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: docker-containerd-linux-arm
+- name: ci-minikube-docker-containerd-linux-arm
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -137,7 +137,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: kvm-containerd-linux-x86
+- name: ci-minikube-kvm-containerd-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -171,7 +171,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: kvm-crio-linux-x86
+- name: ci-minikube-kvm-crio-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -205,7 +205,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: docker-docker-linux-x86
+- name: ci-minikube-docker-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -239,7 +239,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: docker-containerd-linux-x86
+- name: ci-minikube-docker-containerd-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -273,7 +273,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: docker-crio-linux-x86
+- name: ci-minikube-docker-crio-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -307,7 +307,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: none-containerd-linux-x86
+- name: ci-minikube-none-containerd-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -341,7 +341,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: none-docker-linux-x86
+- name: ci-minikube-none-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
