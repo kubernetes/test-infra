@@ -105,7 +105,7 @@ periodics:
       - name: CONTROL_PLANE_COUNT
         value: "3"
       - name: CONTROL_PLANE_SIZE
-        value: "c5.18xlarge"
+        value: "c8a.24xlarge"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-infra-kops-scale-tests"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
@@ -121,7 +121,7 @@ periodics:
       - name: ENABLE_PROMETHEUS_SERVER
         value: "true"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
-        value: "gp2"
+        value: "io2"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -211,7 +211,7 @@ periodics:
       - name: CONTROL_PLANE_COUNT
         value: "3"
       - name: CONTROL_PLANE_SIZE
-        value: "c5.9xlarge"
+        value: "c8a.8xlarge"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-infra-kops-scale-tests"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
@@ -227,7 +227,7 @@ periodics:
       - name: ENABLE_PROMETHEUS_SERVER
         value: "true"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
-        value: "gp2"
+        value: "io2"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
