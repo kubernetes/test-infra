@@ -579,6 +579,7 @@ presubmits:
       always_run: false
       optional: true
       skip_report: false
+      run_if_changed: '^test/e2e_node/'
       skip_branches:
         - release-\d+\.\d+ # per-release image
       annotations:
