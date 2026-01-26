@@ -523,7 +523,8 @@ milestone_applier:
     main: v0.2
     release-0.1: v0.1
   kubernetes-sigs/kueue:
-    main: v0.16
+    main: v0.17
+    release-0.16: v0.16
     release-0.15: v0.15
     release-0.14: v0.14
     release-0.13: v0.13
