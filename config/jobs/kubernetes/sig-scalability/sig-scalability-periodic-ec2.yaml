@@ -19,7 +19,6 @@ periodics:
       args:
       - --ttl=12h
       - --path=s3://k8s-infra-kops-scale-tests/objs.json
-      - --sweep-count=2
       image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
       resources:
         requests:
@@ -88,8 +87,6 @@ periodics:
         value: ubuntu
       - name: GOPATH
         value: /home/prow/go
-      - name: ARTIFACTS
-        value: $(ARTIFACTS)
       - name: CNI_PLUGIN
         value: "amazonvpc"
       - name: KUBE_NODE_COUNT
@@ -106,8 +103,6 @@ periodics:
         value: "3"
       - name: CONTROL_PLANE_SIZE
         value: "c8a.24xlarge"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-infra-kops-scale-tests"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
         value: "true"
       - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -120,12 +115,12 @@ periodics:
         value: "1"
       - name: ENABLE_PROMETHEUS_SERVER
         value: "true"
+      - name: TEAR_DOWN_PROMETHEUS_SERVER
+        value: "false"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
         value: "io2"
       - name: CLOUD_PROVIDER
         value: "aws"
-      - name: CLUSTER_NAME
-        value: "scale-5000.periodic.test-cncf-aws.k8s.io"
       - name: KOPS_IRSA
         value: "true"
       resources:
@@ -194,8 +189,6 @@ periodics:
         value: ubuntu
       - name: GOPATH
         value: /home/prow/go
-      - name: ARTIFACTS
-        value: $(ARTIFACTS)
       - name: CNI_PLUGIN
         value: "amazonvpc"
       - name: KUBE_NODE_COUNT
@@ -212,8 +205,6 @@ periodics:
         value: "3"
       - name: CONTROL_PLANE_SIZE
         value: "c8a.8xlarge"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-infra-kops-scale-tests"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
         value: "true"
       - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -226,12 +217,12 @@ periodics:
         value: "1"
       - name: ENABLE_PROMETHEUS_SERVER
         value: "true"
+      - name: TEAR_DOWN_PROMETHEUS_SERVER
+        value: "false"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
         value: "io2"
       - name: CLOUD_PROVIDER
         value: "aws"
-      - name: CLUSTER_NAME
-        value: "scale-100.periodic.test-cncf-aws.k8s.io"
       - name: KOPS_IRSA
         value: "true"
       resources:

@@ -1049,10 +1049,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-93386f3fd4-07e7d.tests-kops-aws.k8s.io"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -1108,10 +1104,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-12ade267b4-0e701.tests-kops-aws.k8s.io"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -1167,10 +1159,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-8851f75f16-e46fe.tests-kops-aws.k8s.io"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -2158,10 +2146,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-d3f5571021-549a1.tests-kops-aws.k8s.io"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -2217,10 +2201,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-48dc55eb73-6d49e.tests-kops-aws.k8s.io"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -2278,10 +2258,6 @@ presubmits:
           value: "--ipv6 --topology=private --bastion"
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-e39f237b8c-e17ad.tests-kops-aws.k8s.io"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -2352,10 +2328,6 @@ presubmits:
           value: "3"
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-1727ac1946-2023e.tests-kops-aws.k8s.io"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -2410,10 +2382,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-fc5e1ab149-22fa7.tests-kops-aws.k8s.io"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:

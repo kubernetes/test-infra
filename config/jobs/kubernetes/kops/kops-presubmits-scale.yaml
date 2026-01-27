@@ -42,8 +42,6 @@ presubmits:
           value: ubuntu
         - name: GOPATH
           value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
         - name: CNI_PLUGIN
           value: "amazonvpc"
         - name: KUBE_NODE_COUNT
@@ -60,8 +58,6 @@ presubmits:
           value: "3"
         - name: CONTROL_PLANE_SIZE
           value: "c8a.24xlarge"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-infra-kops-scale-tests"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -90,8 +86,6 @@ presubmits:
           value: "false"
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-ff02749ef8-a423a.tests-kops-aws.k8s.io"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -150,8 +144,6 @@ presubmits:
           value: ubuntu
         - name: GOPATH
           value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
         - name: CNI_PLUGIN
           value: "amazonvpc"
         - name: KUBE_NODE_COUNT
@@ -170,8 +162,6 @@ presubmits:
           value: "false"
         - name: NODE_MODE
           value: "master"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-infra-kops-scale-tests"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -196,8 +186,6 @@ presubmits:
           value: "20s"
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-fa029a0ba8-a2033.tests-kops-aws.k8s.io"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -256,8 +244,6 @@ presubmits:
           value: prow
         - name: GOPATH
           value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
         - name: CNI_PLUGIN
           value: "gce"
         - name: KUBE_NODE_COUNT
@@ -363,8 +349,6 @@ presubmits:
           value: prow
         - name: GOPATH
           value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
         - name: CNI_PLUGIN
           value: "gce"
         - name: KUBE_NODE_COUNT
@@ -467,8 +451,6 @@ presubmits:
           value: prow
         - name: GOPATH
           value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
         - name: CNI_PLUGIN
           value: "kindnet"
         - name: KUBE_PROXY_MODE

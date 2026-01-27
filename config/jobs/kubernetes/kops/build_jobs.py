@@ -385,12 +385,7 @@ def presubmit_test(branch='master',
     tmpl_file = "presubmit.yaml.jinja"
     if scenario is not None:
         tmpl_file = "presubmit-scenario.yaml.jinja"
-        name_hash = hashlib.md5(name.encode()).hexdigest()
         env['CLOUD_PROVIDER'] = cloud
-        if cloud == "aws":
-            env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.tests-kops-aws.k8s.io"
-        if 'KOPS_STATE_STORE' not in env and cloud == "aws":
-            env['KOPS_STATE_STORE'] = 's3://k8s-kops-ci-prow-state-store'
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
         if irsa and cloud == "aws":
@@ -1582,7 +1577,6 @@ def generate_presubmits_scale():
             networking='amazonvpc',
             always_run=False,
             optional=True,
-            artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={
@@ -1594,7 +1588,6 @@ def generate_presubmits_scale():
                 'NODE_MODE': "master",
                 'CONTROL_PLANE_COUNT': "3",
                 'CONTROL_PLANE_SIZE': "c8a.24xlarge",
-                'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests",
                 'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
                 'CL2_ENABLE_DNS_PROGRAMMING': "true",
                 'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
@@ -1617,7 +1610,6 @@ def generate_presubmits_scale():
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
-            artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={
@@ -1630,7 +1622,6 @@ def generate_presubmits_scale():
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
                 'NODE_MODE': "master",
-                'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests",
                 'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
                 'CL2_ENABLE_DNS_PROGRAMMING': "true",
                 'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
@@ -1651,7 +1642,6 @@ def generate_presubmits_scale():
             networking='gce',
             cloud="gce",
             always_run=False,
-            artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             env={
                 'CNI_PLUGIN': "gce",
@@ -1687,7 +1677,6 @@ def generate_presubmits_scale():
             cloud="gce",
             always_run=False,
             run_if_changed=r'^tests\/e2e\/scenarios\/scalability\/run-test.sh',
-            artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             env={
                 'CNI_PLUGIN': "gce",
@@ -1721,7 +1710,6 @@ def generate_presubmits_scale():
             networking='gce',
             cloud="gce",
             always_run=False,
-            artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             env={
                 'CNI_PLUGIN': "kindnet",
