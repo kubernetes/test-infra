@@ -11,7 +11,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -42,7 +42,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -73,7 +73,7 @@ presubmits:
       nodeSelector:
         kubernetes.io/arch: arm64
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -104,7 +104,7 @@ presubmits:
       nodeSelector:
         kubernetes.io/arch: arm64
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -132,7 +132,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -162,7 +162,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -191,7 +191,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -220,7 +220,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -250,7 +250,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -280,7 +280,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -309,7 +309,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -339,7 +339,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
