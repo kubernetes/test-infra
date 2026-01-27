@@ -21,7 +21,6 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.35
       - --timeout=180m
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
@@ -237,7 +236,6 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.34
       - --timeout=180m
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
@@ -441,7 +439,6 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.33
       - --timeout=180m
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
@@ -645,7 +642,6 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
       - --timeout=180m
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
@@ -849,7 +845,6 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
       - --timeout=180m
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
