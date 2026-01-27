@@ -27,7 +27,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
       command:
       - wrapper.sh
       - bash
@@ -84,7 +84,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
       command:
       - wrapper.sh
       - bash
@@ -141,7 +141,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
       command:
       - wrapper.sh
       - bash
@@ -199,7 +199,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - bash
@@ -253,7 +253,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - bash
@@ -308,7 +308,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
       command:
       - wrapper.sh
       - bash
@@ -365,7 +365,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always  # pull latest image for canary testing
       command:
       - runner.sh
@@ -423,7 +423,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always  # pull latest image for canary testing
       command:
       - runner.sh
