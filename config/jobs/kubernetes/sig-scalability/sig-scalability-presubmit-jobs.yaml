@@ -43,8 +43,8 @@ presubmits:
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
-        - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.0.5
-        - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.2.1
+        - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.1.5
+        - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.3.4
         - --flush-mem-after-build=true
         - --gcp-node-image=gci
         - --gcp-nodes=100
