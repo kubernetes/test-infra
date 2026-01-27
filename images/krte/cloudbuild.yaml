@@ -30,3 +30,6 @@ options:
 images:
   - 'gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG'
   - 'gcr.io/$PROJECT_ID/krte:latest-$_CONFIG'
+tags:
+  - krte
+  - $_CONFIG

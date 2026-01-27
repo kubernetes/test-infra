@@ -36,3 +36,5 @@ substitutions:
   _GIT_TAG: '12345'
   _DOCKER_VERSION: '28' # Docker v29+ doesn't work in GCP Cloud Build because its stuck on 20.10.x
   _GO_VERSION: '1.25.5'
+tags:
+  - gcb-docker-gcloud
