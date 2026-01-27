@@ -234,7 +234,7 @@ presubmits:
         - --build=quick
         - --env=ALLOW_PRIVILEGED=true
         - --env=KUBE_PROXY_MODE=nftables
-        - --env=KUBE_GCE_NODE_IMAGE=cos-113-18244-236-88
+        - --env=KUBE_GCE_NODE_IMAGE=cos-125-19216-104-117
         - --gcp-nodes=4
         - --gcp-zone=us-central1-b
         - --provider=gce
@@ -868,7 +868,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --env=KUBE_PROXY_MODE=nftables
-      - --env=KUBE_GCE_NODE_IMAGE=cos-113-18244-236-88
+      - --env=KUBE_GCE_NODE_IMAGE=cos-125-19216-104-117
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
