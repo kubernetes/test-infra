@@ -254,7 +254,6 @@ testSuites:
   alphafeatures:
     args:
     - --timeout=180m
-    - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true
     # Panic if anything mutates a shared informer cache
@@ -267,7 +266,6 @@ testSuites:
   alphafeatures-eventedpleg:
     args:
     - --timeout=180m
-    - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
     # Panic if anything mutates a shared informer cache
@@ -280,7 +278,6 @@ testSuites:
   alphafeatures-no-ccm:
     args:
     - --timeout=180m
-    - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
     # Panic if anything mutates a shared informer cache

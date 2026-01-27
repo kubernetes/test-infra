@@ -116,7 +116,6 @@ periodics:
       - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.2.1
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/fast/latest-fast
       - --gcp-node-image=gci
@@ -160,7 +159,6 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/fast/latest-fast
       - --gcp-node-image=gci
@@ -1141,7 +1139,6 @@ presubmits:
         - --build=quick
         - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --env=KUBE_PROXY_DAEMONSET=true
         - --env=ENABLE_POD_PRIORITY=true
         - --env=ENABLE_APISERVER_TRACING=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
@@ -1442,7 +1439,6 @@ presubmits:
         - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.2.1
         - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --env=KUBE_PROXY_DAEMONSET=true
         - --env=ENABLE_POD_PRIORITY=true
         - --gcp-node-image=gci
         - --gcp-region=us-central1
