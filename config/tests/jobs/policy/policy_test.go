@@ -64,11 +64,6 @@ func TestKubernetesPresubmitJobs(t *testing.T) {
 	var expected presubmitJobs
 
 	for _, job := range jobs {
-		if !job.AlwaysRun && job.RunIfChanged == "" {
-			// Manually triggered, no additional review needed.
-			continue
-		}
-
 		// Mirror those attributes of the job which must trigger additional reviews
 		// or are needed to identify the job.
 		j := presubmitJob{
@@ -83,15 +78,18 @@ func TestKubernetesPresubmitJobs(t *testing.T) {
 
 		// This uses separate top-level fields instead of job attributes to
 		// make it more obvious when run_if_changed is used.
-		if job.AlwaysRun {
+		switch {
+		case job.AlwaysRun:
 			expected.AlwaysRun = append(expected.AlwaysRun, j)
-		} else {
-			expected.RunIfChanged = append(expected.RunIfChanged, j)
-
-			if !job.Optional {
-				// Absolute path is more user-friendly than ../../config/...
-				t.Errorf("Policy violation: %s in %s should use `optional: true` or `alwaysRun: true`.", job.Name, maybeAbsPath(job.SourcePath))
-			}
+		case job.RunIfChanged == "":
+			// Manually triggered, no additional review needed.
+			continue
+		case job.Optional:
+			// Don't encode `optional: true`, it's always true for these jobs.
+			j.Optional = false
+			expected.OptionallyRunIfChanged = append(expected.OptionallyRunIfChanged, j)
+		default:
+			t.Errorf("ERROR: A job with `always_run: false` and `run_if_changed` must have `optional: true`.\nSee https://github.com/kubernetes/community/blob/master/contributors/devel/sig-testing/testing-strategy.md#presubmit-jobs.\n\n%#v", j)
 		}
 	}
 	expected.Normalize()
@@ -109,6 +107,14 @@ func TestKubernetesPresubmitJobs(t *testing.T) {
 	if err := encoder.Encode(expected); err != nil {
 		t.Fatalf("unexpected error encoding %s: %v", presubmitsFile, err)
 	}
+	expectedDataString := expectedData.String()
+
+	// Inject some additional comments.
+	expectedDataString = strings.ReplaceAll(expectedDataString, "optional_and_run_if_changed:", `
+# Non-blocking and automatically triggered presubmits must be stable and
+# (like all presubmits) must have a corresponding periodic.
+# See https://github.com/kubernetes/community/blob/master/contributors/devel/sig-testing/testing-strategy.md#presubmit-jobs
+optional_and_run_if_changed:`)
 
 	// Compare. This proceeds on read or decoding errors because
 	// the file might get re-generated below.
@@ -125,14 +131,14 @@ func TestKubernetesPresubmitJobs(t *testing.T) {
 	diff := cmp.Diff(actual, expected)
 	if diff == "" {
 		// Next check the encoded data. This should only be different on test updates.
-		diff = cmp.Diff(string(actualData), expectedData.String(), cmpopts.AcyclicTransformer("SplitLines", func(s string) []string {
+		diff = cmp.Diff(string(actualData), expectedDataString, cmpopts.AcyclicTransformer("SplitLines", func(s string) []string {
 			return strings.Split(s, "\n")
 		}))
 	}
 
 	if diff != "" {
 		if value, _ := os.LookupEnv("UPDATE_FIXTURE_DATA"); value == "true" {
-			if err := os.WriteFile(presubmitsFile, expectedData.Bytes(), 0644); err != nil {
+			if err := os.WriteFile(presubmitsFile, []byte(expectedDataString), 0644); err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			t.Logf(`
@@ -163,8 +169,8 @@ file. The following command can be used:
 const presubmitsFile = "presubmit-jobs.yaml"
 
 type presubmitJobs struct {
-	AlwaysRun    []presubmitJob `yaml:"always_run"`
-	RunIfChanged []presubmitJob `yaml:"run_if_changed"`
+	AlwaysRun              []presubmitJob `yaml:"always_run"`
+	OptionallyRunIfChanged []presubmitJob `yaml:"optional_and_run_if_changed"`
 }
 type presubmitJob struct {
 	Name              string   `yaml:"name"`
@@ -177,7 +183,7 @@ type presubmitJob struct {
 
 func (p *presubmitJobs) Normalize() {
 	sortJobs(&p.AlwaysRun)
-	sortJobs(&p.RunIfChanged)
+	sortJobs(&p.OptionallyRunIfChanged)
 }
 
 func sortJobs(jobs *[]presubmitJob) {
