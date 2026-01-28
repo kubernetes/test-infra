@@ -1085,6 +1085,11 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: metrics-server
+      base_ref: main
+      path_alias: sigs.k8s.io/metrics-server
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master

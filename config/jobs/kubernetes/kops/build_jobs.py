@@ -96,7 +96,8 @@ def build_test(cloud='aws',
                template_path=None,
                storage_e2e_cred=False,
                alert_email=None,
-               alert_num_failures=None):
+               alert_num_failures=None,
+               extra_refs=None):
     # pylint: disable=too-many-statements,too-many-arguments
     if kops_version is None:
         kops_deploy_url = marker_updown_green(None)
@@ -240,6 +241,7 @@ def build_test(cloud='aws',
         cluster_name=cluster_name,
         storage_e2e_cred=storage_e2e_cred,
         instance_groups_overrides=instance_groups_overrides,
+        extra_refs=extra_refs,
     )
 
     spec = {
@@ -327,7 +329,8 @@ def presubmit_test(branch='master',
                    use_preset_for_account_creds=None,
                    alert_email=None,
                    alert_num_failures=None,
-                   instance_groups_overrides=None):
+                   instance_groups_overrides=None,
+                   extra_refs=None):
     # pylint: disable=too-many-statements,too-many-arguments
     kops_image = None
     kops_ssh_user = None
@@ -425,6 +428,7 @@ def presubmit_test(branch='master',
         test_args=test_args,
         cluster_name=cluster_name,
         instance_groups_overrides=instance_groups_overrides,
+        extra_refs=extra_refs,
     )
 
     spec = {
@@ -749,7 +753,16 @@ def generate_misc():
                    k8s_version="stable",
                    runs_per_day=3,
                    scenario="metrics-server",
-                   extra_dashboards=['kops-misc']),
+                   extra_refs=[
+                        {
+                            'org': 'kubernetes-sigs',
+                            'repo': 'metrics-server',
+                            'base_ref': 'main',
+                            'path_alias': 'sigs.k8s.io/metrics-server',
+                        }
+                   ],
+                   extra_dashboards=['kops-misc'],
+                   ),
 
         build_test(name_override="kops-aws-pod-identity-webhook",
                    cloud="aws",
@@ -2169,6 +2182,14 @@ def generate_presubmits_e2e():
             networking="calico",
             scenario="metrics-server",
             tab_name="pull-kops-e2e-aws-metrics-server",
+            extra_refs=[
+                {
+                    'org': 'kubernetes-sigs',
+                    'repo': 'metrics-server',
+                    'base_ref': 'main',
+                    'path_alias': 'sigs.k8s.io/metrics-server',
+                }
+            ],
         ),
 
         presubmit_test(

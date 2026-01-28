@@ -982,6 +982,10 @@ periodics:
     base_ref: master
     workdir: true
     path_alias: k8s.io/kops
+  - org: kubernetes-sigs
+    repo: metrics-server
+    base_ref: main
+    path_alias: sigs.k8s.io/metrics-server
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
