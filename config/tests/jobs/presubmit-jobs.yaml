@@ -84,6 +84,8 @@ optional_and_run_if_changed:
       run_if_changed: ^(test/e2e/network/|pkg/apis/networking)
     - name: pull-kubernetes-e2e-gce-network-proxy-grpc
       run_if_changed: ^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)
+    - name: pull-kubernetes-e2e-gce-network-proxy-http-connect
+      run_if_changed: ^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)
     - name: pull-kubernetes-e2e-gce-storage-slow
       run_if_changed: ^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)
     - name: pull-kubernetes-e2e-gce-storage-snapshot
