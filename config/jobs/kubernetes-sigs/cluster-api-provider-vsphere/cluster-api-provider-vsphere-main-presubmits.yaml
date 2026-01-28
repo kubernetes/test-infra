@@ -188,6 +188,7 @@ presubmits:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-govmomi-main
       description: Runs all e2e tests
+
   - name: pull-cluster-api-provider-vsphere-e2e-vcsim-govmomi-main
     cluster: eks-prow-build-cluster
     branches:
@@ -466,6 +467,107 @@ presubmits:
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-supervisor-main
+      description: Runs all e2e tests
+
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-v1-8-6-v1alpha2-main
+    cluster: k8s-infra-prow-build
+    branches:
+    - ^main$
+    labels:
+      preset-dind-enabled: "true"
+      preset-gcve-e2e-config: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 180m
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.35
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        # running only PR blocking jobs because this gives enough signal for VM operator versions
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\] \\[PR-Blocking\\]"
+        - name: VM_OPERATOR_VERSION
+          value: "v1.8.6-0-gde75746a"
+        - name: VM_OPERATOR_API_VERSION
+          value: "v1alpha2"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+          limits:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: cluster-api-provider-vsphere-main
+      testgrid-tab-name: pr-e2e-supervisor-v1-8-6-v1alpha2-main
+      description: Runs all e2e tests
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-v1-9-0-v1alpha2-main
+    cluster: k8s-infra-prow-build
+    branches:
+    - ^main$
+    labels:
+      preset-dind-enabled: "true"
+      preset-gcve-e2e-config: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 180m
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.35
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        # running only PR blocking jobs because this gives enough signal for VM operator versions
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\] \\[PR-Blocking\\]"
+        - name: VM_OPERATOR_VERSION
+          value: "v1.9.0-567-g93918c59"
+        - name: VM_OPERATOR_API_VERSION
+          value: "v1alpha2"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+          limits:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: cluster-api-provider-vsphere-main
+      testgrid-tab-name: pr-e2e-supervisor-v1-9-0-v1alpha2-main
       description: Runs all e2e tests
   - name: pull-cluster-api-provider-vsphere-e2e-vcsim-supervisor-main
     cluster: eks-prow-build-cluster
