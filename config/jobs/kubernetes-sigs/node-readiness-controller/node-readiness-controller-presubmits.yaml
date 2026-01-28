@@ -1,14 +1,12 @@
 presubmits:
   kubernetes-sigs/node-readiness-controller:
-  - name: pull-org-verify-all
+  - name: pull-node-readiness-controller-verify-all
     cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
-    labels:
-      preset-service-account: "true"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22.4
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - make
         args:
@@ -23,4 +21,3 @@ presubmits:
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
-
