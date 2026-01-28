@@ -112,8 +112,8 @@ periodics:
     containers:
     - args:
       - --check-leaked-resources
-      - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.0.0
-      - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.2.1
+      - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.1.5
+      - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.3.4
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --env=ENABLE_POD_PRIORITY=true
@@ -1435,8 +1435,8 @@ presubmits:
       - args:
         - --build=quick
         - --check-leaked-resources
-        - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.0.0
-        - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.2.1
+        - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.1.5
+        - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.3.4
         - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --env=ENABLE_POD_PRIORITY=true
