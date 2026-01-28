@@ -38,12 +38,8 @@ periodics:
         value: "1"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -52,7 +48,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -119,7 +115,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -170,7 +166,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251217' --channel=alpha --networking=cilium --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260117' --channel=alpha --networking=cilium --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -185,7 +181,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -249,7 +245,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -313,7 +309,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -377,7 +373,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -442,7 +438,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: core
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -507,7 +503,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: core
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -571,7 +567,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -635,7 +631,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -700,7 +696,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -765,7 +761,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -829,7 +825,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -876,12 +872,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/aws-lb-controller/run-test.sh
       env:
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -890,7 +882,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -940,12 +932,8 @@ periodics:
       env:
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -954,7 +942,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -994,6 +982,10 @@ periodics:
     base_ref: master
     workdir: true
     path_alias: k8s.io/kops
+  - org: kubernetes-sigs
+    repo: metrics-server
+    base_ref: main
+    path_alias: sigs.k8s.io/metrics-server
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
@@ -1002,12 +994,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/metrics-server/run-test.sh
       env:
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1016,7 +1004,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1064,12 +1052,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/podidentitywebhook/run-test.sh
       env:
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1078,7 +1062,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1126,12 +1110,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/addon-resource-tracking/run-test.sh
       env:
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1140,7 +1120,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1205,7 +1185,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1269,7 +1249,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1335,7 +1315,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1382,12 +1362,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/karpenter/run-test.sh
       env:
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1396,7 +1372,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1446,12 +1422,8 @@ periodics:
       env:
       - name: OVERRIDES
         value: "--ipv6 --topology=private --bastion"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -1460,7 +1432,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1528,7 +1500,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1596,7 +1568,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1669,7 +1641,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1723,7 +1695,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --set=spec.nodeProblemDetector.enabled=true --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --set=spec.nodeProblemDetector.enabled=true --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -1739,7 +1711,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1806,7 +1778,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1873,7 +1845,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1924,7 +1896,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --set=spec.networking.networkID=default --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --set=spec.networking.networkID=default --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -1941,7 +1913,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2009,7 +1981,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2060,7 +2032,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -2077,7 +2049,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2145,7 +2117,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2212,7 +2184,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2281,7 +2253,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2350,7 +2322,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2401,7 +2373,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --node-count=3 --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --node-count=3 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -2418,7 +2390,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2469,7 +2441,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=gce --node-count=3 --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=gce --node-count=3 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -2486,7 +2458,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2554,7 +2526,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2606,7 +2578,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --set=cluster.spec.cloudConfig.manageStorageClasses=false --node-volume-size=100 --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --set=cluster.spec.cloudConfig.manageStorageClasses=false --node-volume-size=100 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -2623,7 +2595,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2691,7 +2663,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2760,7 +2732,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2811,7 +2783,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-104-89' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-95' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true --gce-service-account=default" \
           --kubernetes-feature-gates=AllAlpha,AllBeta,-EventedPLEG \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
@@ -2829,7 +2801,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       resources:
         limits:

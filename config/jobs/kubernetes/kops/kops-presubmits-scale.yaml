@@ -27,7 +27,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -42,8 +42,6 @@ presubmits:
           value: ubuntu
         - name: GOPATH
           value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
         - name: CNI_PLUGIN
           value: "amazonvpc"
         - name: KUBE_NODE_COUNT
@@ -59,9 +57,7 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
-          value: "c5.18xlarge"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-infra-kops-scale-tests"
+          value: "c8a.24xlarge"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -74,8 +70,10 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
+          value: "io2"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
           value: "0.5s"
         - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
@@ -88,8 +86,6 @@ presubmits:
           value: "false"
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-ff02749ef8-a423a.tests-kops-aws.k8s.io"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -133,7 +129,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -148,8 +144,6 @@ presubmits:
           value: ubuntu
         - name: GOPATH
           value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
         - name: CNI_PLUGIN
           value: "amazonvpc"
         - name: KUBE_NODE_COUNT
@@ -159,7 +153,7 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
-          value: "c5.4xlarge"
+          value: "c8a.8xlarge"
         - name: CL2_LOAD_TEST_THROUGHPUT
           value: "50"
         - name: CL2_DELETE_TEST_THROUGHPUT
@@ -168,8 +162,6 @@ presubmits:
           value: "false"
         - name: NODE_MODE
           value: "master"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-infra-kops-scale-tests"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -182,8 +174,10 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
+          value: "io2"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
           value: "0.5s"
         - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
@@ -192,8 +186,6 @@ presubmits:
           value: "20s"
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: CLUSTER_NAME
-          value: "e2e-fa029a0ba8-a2033.tests-kops-aws.k8s.io"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -237,7 +229,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-kops-test
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -252,8 +244,6 @@ presubmits:
           value: prow
         - name: GOPATH
           value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
         - name: CNI_PLUGIN
           value: "gce"
         - name: KUBE_NODE_COUNT
@@ -284,6 +274,8 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "ssd-csi"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
@@ -342,7 +334,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-kops-test
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -357,8 +349,6 @@ presubmits:
           value: prow
         - name: GOPATH
           value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
         - name: CNI_PLUGIN
           value: "gce"
         - name: KUBE_NODE_COUNT
@@ -391,6 +381,8 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "ssd-csi"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
@@ -444,7 +436,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-kops-test
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -459,8 +451,6 @@ presubmits:
           value: prow
         - name: GOPATH
           value: /home/prow/go
-        - name: ARTIFACTS
-          value: $(ARTIFACTS)
         - name: CNI_PLUGIN
           value: "kindnet"
         - name: KUBE_PROXY_MODE
@@ -493,6 +483,8 @@ presubmits:
           value: "1"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "ssd-csi"
         - name: CL2_NETWORK_LATENCY_THRESHOLD

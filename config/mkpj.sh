@@ -24,9 +24,6 @@
 # NOTE: kubectl should be pointed at the prow services cluster you intend
 # to create the prowjob in!
 #
-# You can also use bazel run //prow/cmd/mkpj instead.
-# TODO: this won't be true if we move prow to it's own repo...
-# https://github.com/kubernetes/test-infra/issues/11782
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 config="${root}/config/prow/config.yaml"

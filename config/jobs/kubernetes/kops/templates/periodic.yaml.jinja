@@ -27,6 +27,16 @@
     base_ref: master
     workdir: true
     path_alias: k8s.io/kops
+  {%- if extra_refs %}
+  {%- for ref in extra_refs %}
+  - org: {{ ref.org }}
+    repo: {{ ref.repo }}
+    base_ref: {{ ref.base_ref }}
+    {%- if ref.path_alias %}
+    path_alias: {{ ref.path_alias }}
+    {%- endif %}
+  {%- endfor %}
+  {%- endif %}
   spec:
     {%- if cloud == "gce" %}
     serviceAccountName: k8s-kops-test

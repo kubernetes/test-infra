@@ -29,7 +29,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         args:
@@ -73,7 +73,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -117,7 +117,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -183,7 +183,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -229,7 +229,7 @@ presubmits:
       description: Run storage long running tests for alpha/beta features in a KIND cluster.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -277,7 +277,7 @@ periodics:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         args:
@@ -323,7 +323,7 @@ periodics:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -371,7 +371,7 @@ periodics:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash

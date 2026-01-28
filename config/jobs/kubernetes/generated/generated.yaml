@@ -21,14 +21,13 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.35
       - --timeout=180m
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -71,7 +70,7 @@ periodics:
       - --ginkgo-parallel=30
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources: &id001
         requests:
           cpu: 2000m
@@ -112,7 +111,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -154,7 +153,7 @@ periodics:
       - --ginkgo-parallel=1
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -197,7 +196,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources: &id002
         requests:
           cpu: 1000m
@@ -237,14 +236,13 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.34
       - --timeout=180m
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -287,7 +285,7 @@ periodics:
       - --ginkgo-parallel=30
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources: *id001
   cluster: k8s-infra-prow-build
   extra_refs:
@@ -322,7 +320,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -364,7 +362,7 @@ periodics:
       - --ginkgo-parallel=1
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -407,7 +405,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources: *id002
   cluster: k8s-infra-prow-build
   extra_refs:
@@ -441,14 +439,13 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.33
       - --timeout=180m
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -491,7 +488,7 @@ periodics:
       - --ginkgo-parallel=30
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources: *id001
   cluster: k8s-infra-prow-build
   extra_refs:
@@ -526,7 +523,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -568,7 +565,7 @@ periodics:
       - --ginkgo-parallel=1
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -611,7 +608,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources: *id002
   cluster: k8s-infra-prow-build
   extra_refs:
@@ -645,14 +642,13 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
       - --timeout=180m
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -695,7 +691,7 @@ periodics:
       - --ginkgo-parallel=30
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources: *id001
   cluster: k8s-infra-prow-build
   extra_refs:
@@ -730,7 +726,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -772,7 +768,7 @@ periodics:
       - --ginkgo-parallel=1
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -815,7 +811,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources: *id002
   cluster: k8s-infra-prow-build
   extra_refs:
@@ -849,14 +845,13 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
       - --timeout=180m
-      - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -899,7 +894,7 @@ periodics:
       - --ginkgo-parallel=30
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources: *id001
   cluster: k8s-infra-prow-build
   extra_refs:
@@ -935,7 +930,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -977,7 +972,7 @@ periodics:
       - --ginkgo-parallel=1
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         requests:
           cpu: 1000m
@@ -1020,7 +1015,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources: *id002
   cluster: k8s-infra-prow-build
   extra_refs:

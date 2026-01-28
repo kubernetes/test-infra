@@ -9,7 +9,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.24
+      - image: public.ecr.aws/docker/library/golang:1.25
         command:
         - ./hack/ci-check-everything.sh
         resources:
@@ -32,7 +32,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.24
+      - image: public.ecr.aws/docker/library/golang:1.25
         command:
         - ./hack/apidiff.sh
         resources:

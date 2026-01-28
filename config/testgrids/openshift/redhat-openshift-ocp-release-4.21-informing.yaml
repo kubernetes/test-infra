@@ -7903,33 +7903,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-degraded-techpreview
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -8011,14 +7984,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-etcd-certrotation
+    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-etcd-certrotation-techpreview
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-etcd-certrotation
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-etcd-certrotation-techpreview
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -8038,14 +8011,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-extended
+    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-extended-techpreview
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-extended
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-extended-techpreview
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -8119,14 +8092,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-serial
+    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-serial-techpreview
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-serial
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-serial-techpreview
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -8146,14 +8119,41 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-upgrade
+    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-techpreview
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-upgrade
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-techpreview
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-upgrade-techpreview
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-upgrade-techpreview
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -8235,6 +8235,33 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-osd-ccs-gcp
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-rosa-sts-ovn
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-rosa-sts-ovn
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -10592,26 +10619,26 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-arbiter-upgrade-workers
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-arbiter-workload-partitioning
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-arbiter-workload-partitioning
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing
-  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-degraded-techpreview
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-degraded-techpreview
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-degraded-tn-suite-techpreview
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-degraded-tn-suite-techpreview
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-dualstack-techpreview
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-dualstack-techpreview
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-etcd-certrotation
-  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-etcd-certrotation
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-extended
-  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-extended
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-etcd-certrotation-techpreview
+  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-etcd-certrotation-techpreview
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-extended-techpreview
+  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-extended-techpreview
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-ipv6-techpreview
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-ipv6-techpreview
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-recovery-techpreview
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-recovery-techpreview
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-serial
-  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-serial
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-upgrade
-  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-serial-techpreview
+  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-serial-techpreview
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-techpreview
+  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-techpreview
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-upgrade-techpreview
+  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-upgrade-techpreview
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-validation-techpreview
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-metal-ovn-two-node-fencing-validation-techpreview
 - days_of_results: 60
@@ -10619,6 +10646,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-nutanix-ovn
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-osd-ccs-gcp
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-osd-ccs-gcp
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-rosa-sts-ovn
+  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-rosa-sts-ovn
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-short-cert-rotation
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-short-cert-rotation
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-short-cert-rotation-azure

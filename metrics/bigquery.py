@@ -18,6 +18,7 @@
 
 import argparse
 import glob
+import json
 import os
 import shlex
 import re
@@ -31,6 +32,9 @@ import ruamel.yaml as yaml
 
 BACKFILL_DAYS = 30
 DEFAULT_JQ_BIN = '/usr/bin/jq'
+
+# Global variables for job filtering
+VALID_JOBS = None  # Set of valid job names, populated if --filter-stale-jobs is used
 
 def check(cmd, **kwargs):
     """Logs and runs the command, raising on errors."""
@@ -64,6 +68,139 @@ def do_jq(jq_filter, data_filename, out_filename, jq_bin=DEFAULT_JQ_BIN):
         check([jq_bin, jq_filter, data_filename], stdout=out_file)
 
 
+def _extract_job_names(job_list, prefix=None):
+    """Extracts job names from a list of job configs.
+
+    Args:
+        job_list: List of job config dicts with 'name' field
+        prefix: Optional prefix to add (creates additional entry with prefix)
+
+    Returns:
+        Set of job names
+    """
+    names = set()
+    if not isinstance(job_list, list):
+        return names
+    for job in job_list:
+        if isinstance(job, dict) and 'name' in job:
+            name = job['name']
+            names.add(name)
+            if prefix:
+                names.add(prefix + name)
+    return names
+
+
+def _extract_jobs_from_config(config):
+    """Extracts all job names from a Prow config dict.
+
+    Args:
+        config: Parsed YAML config dict
+
+    Returns:
+        Set of job names
+    """
+    jobs = set()
+    if not config:
+        return jobs
+
+    # Extract presubmit job names (with 'pr:' prefix for metrics)
+    # Use 'or' to handle explicit null values in YAML (e.g., "presubmits: null")
+    for repo_jobs in (config.get('presubmits') or {}).values():
+        jobs.update(_extract_job_names(repo_jobs, prefix='pr:'))
+
+    # Extract postsubmit job names
+    for repo_jobs in (config.get('postsubmits') or {}).values():
+        jobs.update(_extract_job_names(repo_jobs))
+
+    # Extract periodic job names
+    jobs.update(_extract_job_names(config.get('periodics') or []))
+
+    return jobs
+
+
+def collect_valid_jobs(jobs_dir):
+    """Collects all valid job names from Prow job config YAML files.
+
+    Args:
+        jobs_dir: Path to the directory containing job configuration files
+                  (e.g., config/jobs)
+
+    Returns:
+        A set of valid job names. Presubmit jobs are included both with and
+        without the 'pr:' prefix to match how they appear in metrics.
+    """
+    valid_jobs = set()
+
+    if not os.path.isdir(jobs_dir):
+        print('Warning: jobs directory does not exist: %s' % jobs_dir, file=sys.stderr)
+        return valid_jobs
+
+    # Walk all YAML files in the jobs directory
+    file_count = 0
+    for root, _, files in os.walk(jobs_dir):
+        for filename in files:
+            if not filename.endswith('.yaml') and not filename.endswith('.yml'):
+                continue
+
+            filepath = os.path.join(root, filename)
+            file_count += 1
+            try:
+                with open(filepath) as f:
+                    config = yaml.safe_load(f)
+                valid_jobs.update(_extract_jobs_from_config(config))
+            except (yaml.YAMLError, OSError, TypeError, AttributeError) as e:
+                print('Warning: failed to process %s: %s' % (filepath, e), file=sys.stderr)
+
+    print('Collected %d valid job names from %d files in %s' % (
+        len(valid_jobs), file_count, jobs_dir), file=sys.stderr)
+    return valid_jobs
+
+
+def filter_json_by_jobs(filepath, valid_jobs):
+    """Filters a JSON file to only include jobs that exist in valid_jobs.
+
+    Handles two JSON formats:
+    1. Object with job names as keys: {"job-name": {...}, ...}
+       Used by: failures, flakes, flakes-daily
+    2. Array with "job" field: [{"job": "name", ...}, ...]
+       Used by: job-health, presubmit-health
+
+    Args:
+        filepath: Path to the JSON file to filter
+        valid_jobs: Set of valid job names
+
+    Returns:
+        Tuple of (original_count, filtered_count) for logging
+    """
+    with open(filepath) as f:
+        data = json.load(f)
+
+    original_count = 0
+    filtered_count = 0
+
+    if isinstance(data, dict):
+        # Object format: filter by keys
+        original_count = len(data)
+        filtered_data = {k: v for k, v in data.items() if k in valid_jobs}
+        filtered_count = len(filtered_data)
+    elif isinstance(data, list):
+        # Array format: filter by "job" field
+        original_count = len(data)
+        filtered_data = [item for item in data
+                         if isinstance(item, dict) and item.get('job') in valid_jobs]
+        filtered_count = len(filtered_data)
+    else:
+        # Unknown format, don't filter
+        print('Warning: unknown JSON format in %s, skipping filter' % filepath,
+              file=sys.stderr)
+        return (0, 0)
+
+    with open(filepath, 'w') as f:
+        json.dump(filtered_data, f)
+
+    return (original_count, filtered_count)
+
+
 class BigQuerier:
     def __init__(self, project, bucket_path):
         if not project:
@@ -90,6 +227,13 @@ class BigQuerier:
         filtered = 'daily-%s.json' % time.strftime('%Y-%m-%d')
         latest = '%s-latest.json' % config['metric']
         do_jq(config['jqfilter'], data_filename, filtered)
+
+        # Optionally filter out stale jobs that no longer exist in config
+        if VALID_JOBS is not None:
+            original, remaining = filter_json_by_jobs(filtered, VALID_JOBS)
+            removed = original - remaining
+            print('Filtered %s: %d -> %d jobs (%d stale jobs removed)' % (
+                config['metric'], original, remaining, removed), file=sys.stderr)
 
         self.copy(filtered, os.path.join(config['metric'], filtered))
         self.copy(filtered, latest)
@@ -200,8 +344,28 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--jq',
         help='path to jq binary')
+    PARSER.add_argument(
+        '--jobs-dir',
+        help='Path to Prow job config directory (e.g., config/jobs). '
+             'Used with --filter-stale-jobs to determine valid job names.')
+    PARSER.add_argument(
+        '--filter-stale-jobs',
+        action='store_true',
+        help='Filter out jobs that no longer exist in the job configs. '
+             'Requires --jobs-dir to be specified.')
 
     ARGS = PARSER.parse_args()
     if ARGS.jq:
         DEFAULT_JQ_BIN = ARGS.jq
+
+    # Initialize job filtering if requested
+    if ARGS.filter_stale_jobs:
+        if not ARGS.jobs_dir:
+            print('Error: --filter-stale-jobs requires --jobs-dir', file=sys.stderr)
+            sys.exit(1)
+        VALID_JOBS = collect_valid_jobs(ARGS.jobs_dir)
+        if not VALID_JOBS:
+            print('Warning: no valid jobs found, filtering will remove all jobs',
+                  file=sys.stderr)
+
     main(ARGS.config, ARGS.project, ARGS.bucket)

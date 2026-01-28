@@ -96,7 +96,8 @@ def build_test(cloud='aws',
                template_path=None,
                storage_e2e_cred=False,
                alert_email=None,
-               alert_num_failures=None):
+               alert_num_failures=None,
+               extra_refs=None):
     # pylint: disable=too-many-statements,too-many-arguments
     if kops_version is None:
         kops_deploy_url = marker_updown_green(None)
@@ -195,9 +196,7 @@ def build_test(cloud='aws',
         tmpl_file = "periodic-scenario.yaml.jinja"
         name_hash = hashlib.md5(job_name.encode()).hexdigest()
         if build_cluster == "k8s-infra-kops-prow-build":
-            env['KOPS_STATE_STORE'] = "s3://k8s-kops-ci-prow-state-store"
             env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
-            env['DISCOVERY_STORE'] = "s3://k8s-kops-ci-prow"
         env['CLOUD_PROVIDER'] = cloud
         if not cluster_name:
             cluster_name = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.tests-kops-aws.k8s.io"
@@ -242,6 +241,7 @@ def build_test(cloud='aws',
         cluster_name=cluster_name,
         storage_e2e_cred=storage_e2e_cred,
         instance_groups_overrides=instance_groups_overrides,
+        extra_refs=extra_refs,
     )
 
     spec = {
@@ -329,7 +329,8 @@ def presubmit_test(branch='master',
                    use_preset_for_account_creds=None,
                    alert_email=None,
                    alert_num_failures=None,
-                   instance_groups_overrides=None):
+                   instance_groups_overrides=None,
+                   extra_refs=None):
     # pylint: disable=too-many-statements,too-many-arguments
     kops_image = None
     kops_ssh_user = None
@@ -387,12 +388,7 @@ def presubmit_test(branch='master',
     tmpl_file = "presubmit.yaml.jinja"
     if scenario is not None:
         tmpl_file = "presubmit-scenario.yaml.jinja"
-        name_hash = hashlib.md5(name.encode()).hexdigest()
         env['CLOUD_PROVIDER'] = cloud
-        if cloud == "aws":
-            env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.tests-kops-aws.k8s.io"
-        if 'KOPS_STATE_STORE' not in env and cloud == "aws":
-            env['KOPS_STATE_STORE'] = 's3://k8s-kops-ci-prow-state-store'
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
         if irsa and cloud == "aws":
@@ -432,6 +428,7 @@ def presubmit_test(branch='master',
         test_args=test_args,
         cluster_name=cluster_name,
         instance_groups_overrides=instance_groups_overrides,
+        extra_refs=extra_refs,
     )
 
     spec = {
@@ -490,6 +487,9 @@ def generate_grid():
                 # Skip AL2 for 1.35+ because AL2 doesn't support cgroups v2:
                 # https://docs.aws.amazon.com/linux/al2023/ug/cgroupv2.html
                 if distro == 'amazonlinux2' and k8s_version in ['1.35', '1.36', '1.37']:
+                    continue
+                # kopeio/networking-agent doesn't have multi-arch builds yet
+                if 'arm64' in distro and networking == 'kopeio':
                     continue
                 for kops_version in kops_versions:
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
@@ -753,7 +753,16 @@ def generate_misc():
                    k8s_version="stable",
                    runs_per_day=3,
                    scenario="metrics-server",
-                   extra_dashboards=['kops-misc']),
+                   extra_refs=[
+                        {
+                            'org': 'kubernetes-sigs',
+                            'repo': 'metrics-server',
+                            'base_ref': 'main',
+                            'path_alias': 'sigs.k8s.io/metrics-server',
+                        }
+                   ],
+                   extra_dashboards=['kops-misc'],
+                   ),
 
         build_test(name_override="kops-aws-pod-identity-webhook",
                    cloud="aws",
@@ -1581,7 +1590,6 @@ def generate_presubmits_scale():
             networking='amazonvpc',
             always_run=False,
             optional=True,
-            artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={
@@ -1592,15 +1600,15 @@ def generate_presubmits_scale():
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
                 'NODE_MODE': "master",
                 'CONTROL_PLANE_COUNT': "3",
-                'CONTROL_PLANE_SIZE': "c5.18xlarge",
-                'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests",
+                'CONTROL_PLANE_SIZE': "c8a.24xlarge",
                 'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
                 'CL2_ENABLE_DNS_PROGRAMMING': "true",
                 'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
                 'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
                 'CL2_ALLOWED_SLOW_API_CALLS': "1",
                 'ENABLE_PROMETHEUS_SERVER': "true",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "gp2",
+                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
+                'PROMETHEUS_PVC_STORAGE_CLASS': "io2",
                 'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
                 'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
                 'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
@@ -1615,7 +1623,6 @@ def generate_presubmits_scale():
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
-            artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={
@@ -1623,19 +1630,19 @@ def generate_presubmits_scale():
                 'KUBE_NODE_COUNT': "500",
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
                 'CONTROL_PLANE_COUNT': "3",
-                'CONTROL_PLANE_SIZE': "c5.4xlarge",
+                'CONTROL_PLANE_SIZE': "c8a.8xlarge",
                 'CL2_LOAD_TEST_THROUGHPUT': "50",
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
                 'NODE_MODE': "master",
-                'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests",
                 'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
                 'CL2_ENABLE_DNS_PROGRAMMING': "true",
                 'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
                 'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
                 'CL2_ALLOWED_SLOW_API_CALLS': "1",
                 'ENABLE_PROMETHEUS_SERVER': "true",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "gp2",
+                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
+                'PROMETHEUS_PVC_STORAGE_CLASS': "io2",
                 'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
                 'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
                 'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
@@ -1648,7 +1655,6 @@ def generate_presubmits_scale():
             networking='gce',
             cloud="gce",
             always_run=False,
-            artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             env={
                 'CNI_PLUGIN': "gce",
@@ -1666,6 +1672,7 @@ def generate_presubmits_scale():
                 'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
                 'CL2_ALLOWED_SLOW_API_CALLS': "1",
                 'ENABLE_PROMETHEUS_SERVER': "true",
+                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
                 'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
                 'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
                 'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
@@ -1683,7 +1690,6 @@ def generate_presubmits_scale():
             cloud="gce",
             always_run=False,
             run_if_changed=r'^tests\/e2e\/scenarios\/scalability\/run-test.sh',
-            artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             env={
                 'CNI_PLUGIN': "gce",
@@ -1702,6 +1708,7 @@ def generate_presubmits_scale():
                 'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
                 'CL2_ALLOWED_SLOW_API_CALLS': "1",
                 'ENABLE_PROMETHEUS_SERVER': "true",
+                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
                 'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
                 'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
                 'BOSKOS_RESOURCE_TYPE': "scalability-scale-project",
@@ -1716,7 +1723,6 @@ def generate_presubmits_scale():
             networking='gce',
             cloud="gce",
             always_run=False,
-            artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             env={
                 'CNI_PLUGIN': "kindnet",
@@ -1735,6 +1741,7 @@ def generate_presubmits_scale():
                 'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
                 'CL2_ALLOWED_SLOW_API_CALLS': "1",
                 'ENABLE_PROMETHEUS_SERVER': "true",
+                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
                 'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
                 'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
                 'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
@@ -2175,6 +2182,14 @@ def generate_presubmits_e2e():
             networking="calico",
             scenario="metrics-server",
             tab_name="pull-kops-e2e-aws-metrics-server",
+            extra_refs=[
+                {
+                    'org': 'kubernetes-sigs',
+                    'repo': 'metrics-server',
+                    'base_ref': 'main',
+                    'path_alias': 'sigs.k8s.io/metrics-server',
+                }
+            ],
         ),
 
         presubmit_test(

@@ -128,7 +128,7 @@ postsubmits:
               # We override that with the busybox image.
               - name: WHAT
                 value: "busybox"
-    - name: post-kubernetes-push-e2e-cuda-vector-add-test-images
+    - name: post-kubernetes-push-e2e-glibc-dns-testing-test-images
       rerun_auth_config:
         github_team_slugs:
           - org: kubernetes
@@ -145,7 +145,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/cuda-vector-add\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/glibc-dns-testing\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -167,219 +167,9 @@ postsubmits:
               - test/images
             env:
               # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the cuda-vector-add image.
+              # We override that with the glibc-dns-testing image.
               - name: WHAT
-                value: "cuda-vector-add"
-    - name: post-kubernetes-push-e2e-cuda-vector-add-old-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/cuda-vector-add-old\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the cuda-vector-add-old image.
-              - name: WHAT
-                value: "cuda-vector-add-old"
-    - name: post-kubernetes-push-e2e-echoserver-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/echoserver\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the echoserver image.
-              - name: WHAT
-                value: "echoserver"
-    - name: post-kubernetes-push-e2e-glusterdynamic-provisioner-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/glusterdynamic-provisioner\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the glusterdynamic-provisioner image.
-              - name: WHAT
-                value: "glusterdynamic-provisioner"
-    - name: post-kubernetes-push-e2e-httpd-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/httpd\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the httpd image.
-              - name: WHAT
-                value: "httpd"
-    - name: post-kubernetes-push-e2e-httpd-new-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/httpd-new\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the httpd-new image.
-              - name: WHAT
-                value: "httpd-new"
+                value: "glibc-dns-testing"
     - name: post-kubernetes-push-e2e-ipc-utils-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -422,48 +212,6 @@ postsubmits:
               # We override that with the ipc-utils image.
               - name: WHAT
                 value: "ipc-utils"
-    - name: post-kubernetes-push-e2e-jessie-dnsutils-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/jessie-dnsutils\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the jessie-dnsutils image.
-              - name: WHAT
-                value: "jessie-dnsutils"
     - name: post-kubernetes-push-e2e-kitten-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -506,48 +254,6 @@ postsubmits:
               # We override that with the kitten image.
               - name: WHAT
                 value: "kitten"
-    - name: post-kubernetes-push-e2e-metadata-concealment-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/metadata-concealment\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the metadata-concealment image.
-              - name: WHAT
-                value: "metadata-concealment"
     - name: post-kubernetes-push-e2e-nautilus-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -674,7 +380,7 @@ postsubmits:
               # We override that with the nginx-new image.
               - name: WHAT
                 value: "nginx-new"
-    - name: post-kubernetes-push-e2e-node-perf-tf-wide-deep-test-images
+    - name: post-kubernetes-push-e2e-node-perf-pytorch-wide-deep-test-images
       rerun_auth_config:
         github_team_slugs:
           - org: kubernetes
@@ -691,7 +397,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/node-perf\/tf-wide-deep\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/node-perf\/pytorch-wide-deep\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -713,9 +419,9 @@ postsubmits:
               - test/images
             env:
               # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the node-perf/tf-wide-deep image.
+              # We override that with the node-perf/pytorch-wide-deep image.
               - name: WHAT
-                value: "node-perf/tf-wide-deep"
+                value: "node-perf/pytorch-wide-deep"
     - name: post-kubernetes-push-e2e-node-perf-npb-ep-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -926,48 +632,6 @@ postsubmits:
               # We override that with the perl image.
               - name: WHAT
                 value: "perl"
-    - name: post-kubernetes-push-e2e-pets-redis-installer-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/pets\/redis-installer\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the pets/redis-installer image.
-              - name: WHAT
-                value: "pets/redis-installer"
     - name: post-kubernetes-push-e2e-pets-peer-finder-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -1052,48 +716,6 @@ postsubmits:
               # We override that with the pets/zookeeper-installer image.
               - name: WHAT
                 value: "pets/zookeeper-installer"
-    - name: post-kubernetes-push-e2e-redis-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/redis\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the redis image.
-              - name: WHAT
-                value: "redis"
     - name: post-kubernetes-push-e2e-regression-issue-74839-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -1304,48 +926,6 @@ postsubmits:
               # We override that with the volume/iscsi image.
               - name: WHAT
                 value: "volume/iscsi"
-    - name: post-kubernetes-push-e2e-volume-rbd-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/volume\/rbd\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the volume/rbd image.
-              - name: WHAT
-                value: "volume/rbd"
     - name: post-kubernetes-push-e2e-volume-nfs-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -1388,48 +968,6 @@ postsubmits:
               # We override that with the volume/nfs image.
               - name: WHAT
                 value: "volume/nfs"
-    - name: post-kubernetes-push-e2e-volume-gluster-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/volume\/gluster\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the volume/gluster image.
-              - name: WHAT
-                value: "volume/gluster"
     - name: post-kubernetes-push-e2e-windows-servercore-cache-test-images
       rerun_auth_config:
         github_team_slugs:

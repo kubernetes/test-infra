@@ -16,7 +16,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:
@@ -33,7 +33,7 @@ periodics:
       securityContext:
         privileged: true
 # name convention: integration-<driver>-<container-runtime>-<OS>-<arch>
-- name: kvm-docker-linux-x86
+- name: ci-minikube-kvm-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -51,7 +51,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:
@@ -67,7 +67,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: docker-docker-linux-arm
+- name: ci-minikube-docker-docker-linux-arm
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -87,7 +87,7 @@ periodics:
     nodeSelector:
       kubernetes.io/arch: arm64
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:
@@ -102,7 +102,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: docker-containerd-linux-arm
+- name: ci-minikube-docker-containerd-linux-arm
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -122,7 +122,7 @@ periodics:
     nodeSelector:
       kubernetes.io/arch: arm64
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:
@@ -137,7 +137,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: kvm-containerd-linux-x86
+- name: ci-minikube-kvm-containerd-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -155,7 +155,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:
@@ -171,7 +171,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: kvm-crio-linux-x86
+- name: ci-minikube-kvm-crio-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -189,7 +189,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:
@@ -205,7 +205,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: docker-docker-linux-x86
+- name: ci-minikube-docker-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -223,7 +223,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:
@@ -239,7 +239,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: docker-containerd-linux-x86
+- name: ci-minikube-docker-containerd-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -257,7 +257,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:
@@ -273,7 +273,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: docker-crio-linux-x86
+- name: ci-minikube-docker-crio-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -291,7 +291,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:
@@ -307,7 +307,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: none-containerd-linux-x86
+- name: ci-minikube-none-containerd-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -325,7 +325,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:
@@ -341,7 +341,7 @@ periodics:
         limits:
           memory: 20Gi
           cpu: 7
-- name: none-docker-linux-x86
+- name: ci-minikube-none-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
@@ -359,7 +359,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:

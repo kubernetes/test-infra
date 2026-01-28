@@ -19,7 +19,7 @@ periodics:
       args:
       - --ttl=12h
       - --path=s3://k8s-infra-kops-scale-tests/objs.json
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20251218-e3340a3
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
       resources:
         requests:
           cpu: 1
@@ -72,7 +72,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com, release-team@kubernetes.io
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -87,8 +87,6 @@ periodics:
         value: ubuntu
       - name: GOPATH
         value: /home/prow/go
-      - name: ARTIFACTS
-        value: $(ARTIFACTS)
       - name: CNI_PLUGIN
         value: "amazonvpc"
       - name: KUBE_NODE_COUNT
@@ -104,9 +102,7 @@ periodics:
       - name: CONTROL_PLANE_COUNT
         value: "3"
       - name: CONTROL_PLANE_SIZE
-        value: "c5.18xlarge"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-infra-kops-scale-tests"
+        value: "c8a.24xlarge"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
         value: "true"
       - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -119,12 +115,12 @@ periodics:
         value: "1"
       - name: ENABLE_PROMETHEUS_SERVER
         value: "true"
+      - name: TEAR_DOWN_PROMETHEUS_SERVER
+        value: "false"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
-        value: "gp2"
+        value: "io2"
       - name: CLOUD_PROVIDER
         value: "aws"
-      - name: CLUSTER_NAME
-        value: "scale-5000.periodic.test-cncf-aws.k8s.io"
       - name: KOPS_IRSA
         value: "true"
       resources:
@@ -142,7 +138,8 @@ periodics:
   - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: eks-prow-build-cluster
-  cron: '1 19 * * *' # Run every day at 3:01 PM EDT/12:01 PM PDT (19:01 UTC)
+  cron: '1 0,6,12,18 * * *' # Run every day at 12:01 AM, 6:01 AM, 12:01 PM, and 6:01 PM UTC (4 times a day)
+  # Equivalent local times: 7:01 PM, 1:01 AM, 7:01 AM, 1:01 PM PDT / 8:01 PM, 2:01 AM, 8:01 AM, 2:01 PM PST / 8:01 PM, 2:01 AM, 8:01 AM, 2:01 PM EDT (during daylight saving)
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -177,7 +174,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -192,8 +189,6 @@ periodics:
         value: ubuntu
       - name: GOPATH
         value: /home/prow/go
-      - name: ARTIFACTS
-        value: $(ARTIFACTS)
       - name: CNI_PLUGIN
         value: "amazonvpc"
       - name: KUBE_NODE_COUNT
@@ -209,9 +204,7 @@ periodics:
       - name: CONTROL_PLANE_COUNT
         value: "3"
       - name: CONTROL_PLANE_SIZE
-        value: "c5.4xlarge"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-infra-kops-scale-tests"
+        value: "c8a.8xlarge"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
         value: "true"
       - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -224,12 +217,12 @@ periodics:
         value: "1"
       - name: ENABLE_PROMETHEUS_SERVER
         value: "true"
+      - name: TEAR_DOWN_PROMETHEUS_SERVER
+        value: "false"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
-        value: "gp2"
+        value: "io2"
       - name: CLOUD_PROVIDER
         value: "aws"
-      - name: CLUSTER_NAME
-        value: "scale-100.periodic.test-cncf-aws.k8s.io"
       - name: KOPS_IRSA
         value: "true"
       resources:

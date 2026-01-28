@@ -17,7 +17,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -65,7 +65,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -110,7 +110,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -155,7 +155,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -200,7 +200,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -245,7 +245,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -297,7 +297,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -347,7 +347,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -397,7 +397,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -447,7 +447,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -488,6 +488,12 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 450m
+  extra_refs:
+  - org: kubernetes
+    repo: autoscaler
+    base_ref: master
+    path_alias: k8s.io/autoscaler
+    workdir: true
   spec:
     containers:
     - command:
@@ -509,9 +515,10 @@ periodics:
       - --gcp-zone=us-central1-b
       - --provider=gce
       - --runtime-config=scheduling.k8s.io/v1alpha1=true
-      - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+      - --test=false
+      - --test-cmd=../cluster-autoscaler/hack/run-e2e.sh
       - --timeout=400m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         limits:
           cpu: 2
@@ -522,76 +529,6 @@ periodics:
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
     testgrid-tab-name: gci-gce-autoscaling
-- interval: 24h
-  name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa-cm
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 350m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=hpa
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --provider=gce
-      # Enable HPAScaleToZero. Required for scale to zero tests.
-      - --env=KUBE_FEATURE_GATES=HPAScaleToZero=true
-      - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
-      - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      resources:
-        limits:
-          cpu: 2
-          memory: 6Gi
-        requests:
-          cpu: 2
-          memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-autoscaling-hpa
-    testgrid-tab-name: gci-gce-autoscaling-hpa-cm
-- interval: 24h
-  name: ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 350m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=hpa
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --provider=gce
-      # Enable HPAScaleToZero. Required for scale to zero tests.
-      - --env=KUBE_FEATURE_GATES=HPAScaleToZero=true
-      - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
-      - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      resources:
-        limits:
-          cpu: 2
-          memory: 6Gi
-        requests:
-          cpu: 2
-          memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-autoscaling-hpa
-    testgrid-tab-name: gci-gce-autoscaling-migs-hpa
 - interval: 24h
   name: ci-kubernetes-e2e-autoscaling-hpa-cpu
   cluster: k8s-infra-prow-build
@@ -622,7 +559,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Alpha\]|\[Beta\]
         --minStartupPods=8
       - --ginkgo-parallel=10
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         limits:
           cpu: 2
@@ -658,13 +595,14 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-central1-b
       - --gcp-node-image=gci
+      - --gcp-node-size=e2-highcpu-8
       - --extract=ci/latest
       - --timeout=240m
       - --env=KUBE_FEATURE_GATES=HPAConfigurableTolerance=true
       - --test_args=--ginkgo.focus=\[Feature:HPAConfigurableTolerance\]
         --minStartupPods=8
-      - --ginkgo-parallel=1
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+      - --ginkgo-parallel=10
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       resources:
         limits:
           cpu: 2

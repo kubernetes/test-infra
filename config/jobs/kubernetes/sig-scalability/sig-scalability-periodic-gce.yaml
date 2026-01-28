@@ -38,7 +38,7 @@ periodics:
   spec:
     serviceAccountName: prow-build
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -85,6 +85,8 @@ periodics:
         value: "1"
       - name: ENABLE_PROMETHEUS_SERVER
         value: "true"
+      - name: TEAR_DOWN_PROMETHEUS_SERVER
+        value: "false"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
         value: "ssd-csi"
       - name: CLOUD_PROVIDER
@@ -139,7 +141,7 @@ periodics:
   spec:
     serviceAccountName: prow-build
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -186,6 +188,8 @@ periodics:
         value: "1"
       - name: ENABLE_PROMETHEUS_SERVER
         value: "true"
+      - name: TEAR_DOWN_PROMETHEUS_SERVER
+        value: "false"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
         value: "ssd-csi"
       - name: CLOUD_PROVIDER
