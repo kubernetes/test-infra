@@ -195,6 +195,7 @@ periodics:
         -repo:kubernetes/kubectl
         -repo:kubernetes/steering
         -repo:kubernetes-sigs/ingate
+        -repo:kubernetes/dashboard
         -label:lifecycle/frozen
         -label:"help wanted"
         -label:"good first issue"
@@ -339,6 +340,7 @@ periodics:
         -repo:kubernetes/ingress-nginx
         -repo:kubernetes/steering
         -repo:kubernetes-sigs/ingate
+        -repo:kubernetes/dashboard
         -label:lifecycle/frozen
         -label:lifecycle/rotten
         -label:"help wanted"
