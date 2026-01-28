@@ -1160,6 +1160,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
+      - --env=CL2_ENABLE_INFORMER_LATENCY_TEST=true
       # Override MASTER_SIZE to get additional memory to fit larger resource size.
       - --env=MASTER_SIZE=n2-standard-64 # 64 vCPUs, 256GB memory
       - --env=ETCD_QUOTA_BACKEND_BYTES=21474836480 # 20GB
