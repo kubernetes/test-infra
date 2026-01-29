@@ -1,0 +1,382 @@
+dashboards:
+- dashboard_tab:
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aro-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aro-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aro-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aro-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aws-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aws-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aws-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aws-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-kata
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-kata
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aro-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aro-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aro-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aro-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aws-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aws-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aws-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aws-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-kata
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-kata
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aro-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aro-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aro-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aro-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aws-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aws-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aws-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aws-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-kata
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-kata
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aro-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aro-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aro-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aro-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aws-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aws-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aws-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aws-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-kata
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-kata
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aro-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aro-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aro-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aro-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aws-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aws-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aws-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aws-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-kata
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-kata
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aro-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aro-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aro-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aro-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aws-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aws-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aws-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aws-ipi-peerpods
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-coco
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-coco
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-kata
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-kata
+  - base_options: width=10
+    name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-peerpods
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-peerpods
+  name: redhat-openshift-sandboxed-containers
+test_groups:
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aro-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aro-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aro-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aro-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aws-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aws-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aws-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-aws-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-kata
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-kata
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate-azure-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aro-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aro-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aro-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aro-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aws-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aws-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aws-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-aws-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-kata
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-kata
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate417-azure-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aro-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aro-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aro-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aro-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aws-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aws-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aws-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-aws-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-kata
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-kata
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate418-azure-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aro-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aro-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aro-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aro-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aws-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aws-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aws-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-aws-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-kata
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-kata
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate419-azure-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aro-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aro-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aro-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aro-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aws-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aws-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aws-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-aws-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-kata
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-kata
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-candidate420-azure-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aro-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aro-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aro-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aro-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aws-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aws-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aws-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-aws-ipi-peerpods
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-coco
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-coco
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-kata
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-kata
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-peerpods
+  name: periodic-ci-openshift-sandboxed-containers-operator-devel-downstream-release-azure-ipi-peerpods
