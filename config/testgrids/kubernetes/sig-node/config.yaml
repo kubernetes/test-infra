@@ -17,6 +17,7 @@ dashboard_groups:
     - sig-node-node-problem-detector
     - sig-node-security-profiles-operator
     - sig-node-image-pushes
+    - sig-node-node-readiness-controller
 
 dashboards:
 - name: sig-node-release-blocking # Tabs included in this group are defined in the jobs that are included.
@@ -130,3 +131,7 @@ dashboards:
 - name: sig-node-presubmits
 - name: sig-node-gpu
 - name: sig-node-image-pushes
+- name: sig-node-node-readiness-controller
+  dashboard_tab:
+  - name: verify
+    test_group_name: pull-node-readiness-controller-verify-all

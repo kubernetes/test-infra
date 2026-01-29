@@ -19,5 +19,6 @@ presubmits:
             cpu: 2
             memory: 4Gi
     annotations:
+      testgrid-dashboards: sig-node-node-readiness-controller
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
