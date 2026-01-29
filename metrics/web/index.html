@@ -166,9 +166,16 @@
                 </div>
             </a>
             <a href="job-health-latest.html" class="card">
-                <div class="card-title">Job Health</div>
+                <div class="card-title">Job Health (Daily)</div>
                 <div class="card-desc">
                     Daily snapshot of all CI jobs showing run counts, failure rates,
+                    test counts, and duration percentiles (p50, p75, p99).
+                </div>
+            </a>
+            <a href="job-health-weekly-latest.html" class="card">
+                <div class="card-title">Job Health (7 Days)</div>
+                <div class="card-desc">
+                    Rolling 7-day view of all CI jobs showing run counts, failure rates,
                     test counts, and duration percentiles (p50, p75, p99).
                 </div>
             </a>
@@ -199,6 +206,10 @@
                 <li>
                     <a href="job-health-latest.json">job-health-latest.json</a>
                     <span class="json-desc">— Daily job health with failure rates and durations</span>
+                </li>
+                <li>
+                    <a href="job-health-weekly-latest.json">job-health-weekly-latest.json</a>
+                    <span class="json-desc">— 7-day job health with failure rates and durations</span>
                 </li>
                 <li>
                     <a href="presubmit-health-latest.json">presubmit-health-latest.json</a>

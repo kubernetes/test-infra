@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kubernetes CI Job Health Dashboard</title>
+    <title>Kubernetes CI Job Health (Last 7 Days)</title>
     <style>
         :root {
             --critical: #dc2626;
@@ -173,11 +173,11 @@
 <body>
     <div class="container">
         <header>
-            <h1>Kubernetes CI Job Health Dashboard</h1>
-            <p class="subtitle">Data from <a href="job-health-latest.json">job-health-latest.json</a></p>
+            <h1>Kubernetes CI Job Health (Last 7 Days)</h1>
+            <p class="subtitle">Data from <a href="job-health-weekly-latest.json">job-health-weekly-latest.json</a></p>
             <div class="nav-links">
                 <a href="index.html">Index</a>
-                <a href="job-health-weekly-latest.html">Weekly Health</a>
+                <a href="job-health-latest.html">Daily Health</a>
                 <a href="failures-latest.html">Failures</a>
                 <a href="flakes-latest.html">Flakes</a>
                 <a href="presubmit-health-latest.html">Presubmit Health</a>
@@ -281,7 +281,7 @@
 
             document.getElementById('stats-grid').innerHTML = `
                 <div class="stat-card"><div class="stat-value">${stats.total.toLocaleString()}</div><div class="stat-label">Total Jobs</div></div>
-                <div class="stat-card"><div class="stat-value">${stats.totalRuns.toLocaleString()}</div><div class="stat-label">Total Runs</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.totalRuns.toLocaleString()}</div><div class="stat-label">Total Runs (7d)</div></div>
                 <div class="stat-card"><div class="stat-value" style="color: var(--critical)">${stats.critical}</div><div class="stat-label">Critical (&gt;50%)</div></div>
                 <div class="stat-card"><div class="stat-value" style="color: var(--severe)">${stats.severe}</div><div class="stat-label">Severe (26-50%)</div></div>
                 <div class="stat-card"><div class="stat-value" style="color: var(--warning)">${stats.warning}</div><div class="stat-label">Warning (11-25%)</div></div>
@@ -413,7 +413,7 @@
 
         async function init() {
             try {
-                const response = await fetch('job-health-latest.json');
+                const response = await fetch('job-health-weekly-latest.json');
                 if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 const data = await response.json();
 
@@ -431,7 +431,7 @@
                 loadFromUrl();
                 render();
             } catch (err) {
-                showError(`Failed to load data: ${err.message}<br><small>Make sure job-health-latest.json is in the same directory</small>`);
+                showError(`Failed to load data: ${err.message}<br><small>Make sure job-health-weekly-latest.json is in the same directory</small>`);
             }
         }
 

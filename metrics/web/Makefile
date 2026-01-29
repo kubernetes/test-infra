@@ -17,6 +17,7 @@ STATIC_FILES = index.html \
 	flakes-latest.html \
 	flakes-daily-latest.html \
 	job-health-latest.html \
+	job-health-weekly-latest.html \
 	presubmit-health-latest.html
 
 .PHONY: push-static
