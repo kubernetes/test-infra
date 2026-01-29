@@ -673,8 +673,8 @@ presubmits:
         - --gcp-node-image=ubuntu
         - --gcp-region=us-central1
         - --ginkgo-parallel=30
-        - --image-family=pipeline-1-34-amd64
-        - --image-project=ubuntu-os-gke-cloud
+        - --image-family=ubuntu-2404-lts-amd64
+        - --image-project=ubuntu-os-cloud
         - --provider=gce
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
