@@ -383,6 +383,8 @@ blockades:
 blunderbuss:
   max_request_count: 2
   use_status_availability: true
+  ignore_repos:
+  - kubernetes-sigs/headlamp
 
 cat:
   key_path: /etc/cat-api/api-key
