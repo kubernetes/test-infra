@@ -36,6 +36,8 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --worker-pool=projects/k8s-staging-e2e-test-images/locations/us-central1/workerPools/c3-highcpu-22
+              - --region=us-central1
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -78,6 +80,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -120,6 +123,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -162,6 +166,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -204,6 +209,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -246,6 +252,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -288,6 +295,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -330,6 +338,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -372,6 +381,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -380,48 +390,6 @@ postsubmits:
               # We override that with the nginx-new image.
               - name: WHAT
                 value: "nginx-new"
-    - name: post-kubernetes-push-e2e-node-perf-pytorch-wide-deep-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/node-perf\/pytorch-wide-deep\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the node-perf/pytorch-wide-deep image.
-              - name: WHAT
-                value: "node-perf/pytorch-wide-deep"
     - name: post-kubernetes-push-e2e-node-perf-npb-ep-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -456,6 +424,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -498,6 +467,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -506,7 +476,7 @@ postsubmits:
               # We override that with the node-perf/npb-is image.
               - name: WHAT
                 value: "node-perf/npb-is"
-    - name: post-kubernetes-push-e2e-nonewprivs-test-images
+    - name: post-kubernetes-push-e2e-node-perf-pytorch-wide-deep-test-images
       rerun_auth_config:
         github_team_slugs:
           - org: kubernetes
@@ -523,7 +493,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/nonewprivs\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/node-perf\/pytorch-wide-deep\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -540,14 +510,15 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
               # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the nonewprivs image.
+              # We override that with the node-perf/pytorch-wide-deep image.
               - name: WHAT
-                value: "nonewprivs"
+                value: "node-perf/pytorch-wide-deep"
     - name: post-kubernetes-push-e2e-nonroot-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -582,6 +553,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -590,48 +562,6 @@ postsubmits:
               # We override that with the nonroot image.
               - name: WHAT
                 value: "nonroot"
-    - name: post-kubernetes-push-e2e-perl-test-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-        github_users:
-          - aojea
-          - chewong
-          - claudiubelu
-          - mkumatag
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
-      decorate: true
-      # we only need to run if the test images have been changed.
-      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/perl\/'
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-e2e-test-images
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
-              - --build-dir=.
-              - test/images
-            env:
-              # By default, the E2E test image's WHAT is all-conformance.
-              # We override that with the perl image.
-              - name: WHAT
-                value: "perl"
     - name: post-kubernetes-push-e2e-pets-peer-finder-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -666,6 +596,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -708,6 +639,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -750,6 +682,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -792,6 +725,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -834,6 +768,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -876,6 +811,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -918,6 +854,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -960,6 +897,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -1002,6 +940,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -1052,6 +991,7 @@ periodics:
           args:
             - --project=k8s-staging-e2e-test-images
             - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+            - --machine-type=E2_HIGHCPU_8
             - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
             - --build-dir=.
             - test/images
