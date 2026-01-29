@@ -14,7 +14,7 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       timeout: 240m
@@ -59,7 +59,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 240m
