@@ -1088,7 +1088,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: metrics-server
-      base_ref: main
+      base_ref: master
       path_alias: sigs.k8s.io/metrics-server
     spec:
       containers:

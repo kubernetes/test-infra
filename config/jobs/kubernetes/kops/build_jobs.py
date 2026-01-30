@@ -757,7 +757,7 @@ def generate_misc():
                         {
                             'org': 'kubernetes-sigs',
                             'repo': 'metrics-server',
-                            'base_ref': 'main',
+                            'base_ref': 'master',
                             'path_alias': 'sigs.k8s.io/metrics-server',
                         }
                    ],
@@ -1757,6 +1757,8 @@ def generate_presubmits_scale():
 def generate_nftables():
     results = []
     for distro, _ in aws_distro_options.items():
+        if distro in ('amazonlinux2', 'debian'):
+            continue  # nftables not supported on these distros
         distro_short = distro_shortener(distro)
         extra_flags = ["--set=cluster.spec.kubeProxy.proxyMode=nftables"]
         if 'arm64' in distro:
@@ -2186,7 +2188,7 @@ def generate_presubmits_e2e():
                 {
                     'org': 'kubernetes-sigs',
                     'repo': 'metrics-server',
-                    'base_ref': 'main',
+                    'base_ref': 'master',
                     'path_alias': 'sigs.k8s.io/metrics-server',
                 }
             ],
