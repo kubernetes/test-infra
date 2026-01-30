@@ -1167,11 +1167,11 @@ periodics:
       # Ensure exec-service is not scheduled on normal node of size e2-medium (2vCPUs, 4GB memory)
       - --env=CL2_EXECSERVICE_CPU_REQUESTS=2
       - --env=CL2_EXECSERVICE_MEMORY_REQUESTS=4Gi
-      # Override for pod large resource size
-      - --env=CL2_DAEMONSET_POD_PAYLOAD_SIZE=15360 # 15KB
-      - --env=CL2_DEPLOYMENT_POD_PAYLOAD_SIZE=15360 # 15KB
-      - --env=CL2_STATEFULSET_POD_PAYLOAD_SIZE=15360 # 15KB
-      - --env=CL2_JOB_POD_PAYLOAD_SIZE=15360 # 15KB
+      # Override for 1.93GB pod resource size
+      - --env=CL2_DAEMONSET_POD_PAYLOAD_SIZE=8000
+      - --env=CL2_DEPLOYMENT_POD_PAYLOAD_SIZE=8000
+      - --env=CL2_STATEFULSET_POD_PAYLOAD_SIZE=8000
+      - --env=CL2_JOB_POD_PAYLOAD_SIZE=8000
       #  Remaining parameters should match ci-kubernetes-e2e-gce-scale-performance
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
