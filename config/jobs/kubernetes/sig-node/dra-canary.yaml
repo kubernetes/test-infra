@@ -176,12 +176,13 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          # With DATA RACE detection enabled, more memory is needed.
           limits:
             cpu: 2
-            memory: 6Gi
+            memory: 12Gi
           requests:
             cpu: 2
-            memory: 6Gi
+            memory: 12Gi
 
   - name: pull-kubernetes-kind-dra-all-slow-canary
     cluster: eks-prow-build-cluster
@@ -271,12 +272,13 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          # With DATA RACE detection enabled, more memory is needed.
           limits:
             cpu: 2
-            memory: 6Gi
+            memory: 12Gi
           requests:
             cpu: 2
-            memory: 6Gi
+            memory: 12Gi
 
   - name: pull-kubernetes-kind-dra-n-1-canary
     cluster: eks-prow-build-cluster
