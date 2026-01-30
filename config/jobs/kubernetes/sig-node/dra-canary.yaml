@@ -128,7 +128,7 @@ presubmits:
           e2e_test=_output/bin/e2e.test
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          kind build node-image --image=dra/node:latest "${kind_node_source}"
+          KUBE_RACE=-race kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
@@ -215,7 +215,7 @@ presubmits:
           e2e_test=_output/bin/e2e.test
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          kind build node-image --image=dra/node:latest "${kind_node_source}"
+          KUBE_RACE=-race kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT

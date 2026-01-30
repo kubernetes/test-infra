@@ -168,7 +168,7 @@ presubmits:
           {%- endif %}
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          kind build node-image --image=dra/node:latest "${kind_node_source}"
+          {%+ if all_features and canary %}KUBE_RACE=-race {% endif %}kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
@@ -259,7 +259,7 @@ presubmits:
           kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
           {%- endif %}
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit {%- if all_features %}{% if canary %} -logcheck-data-races{%endif%}{%endif%} &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit {%- if all_features and canary %} -logcheck-data-races{%endif%} &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         {%- endif %}
