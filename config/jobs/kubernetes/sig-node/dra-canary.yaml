@@ -128,7 +128,7 @@ presubmits:
           e2e_test=_output/bin/e2e.test
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          KUBE_RACE=-race kind build node-image --image=dra/node:latest "${kind_node_source}"
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
@@ -164,6 +164,14 @@ presubmits:
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit -logcheck-data-races &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
+        env:
+        # -race gets injected into the build of dynamically linked binaries during "kind build node-image" and "make e2e.test".
+        - name: KUBE_RACE
+          value: -race
+        # Normally control plane components are linked statically, which does not work with -race (needs CGO).
+        # We need to override the default for components of interest.
+        - name: KUBE_CGO_OVERRIDES
+          value: kube-apiserver kube-controller-manager kube-scheduler
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -215,7 +223,7 @@ presubmits:
           e2e_test=_output/bin/e2e.test
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          KUBE_RACE=-race kind build node-image --image=dra/node:latest "${kind_node_source}"
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
@@ -251,6 +259,14 @@ presubmits:
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit -logcheck-data-races &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
+        env:
+        # -race gets injected into the build of dynamically linked binaries during "kind build node-image" and "make e2e.test".
+        - name: KUBE_RACE
+          value: -race
+        # Normally control plane components are linked statically, which does not work with -race (needs CGO).
+        # We need to override the default for components of interest.
+        - name: KUBE_CGO_OVERRIDES
+          value: kube-apiserver kube-controller-manager kube-scheduler
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
