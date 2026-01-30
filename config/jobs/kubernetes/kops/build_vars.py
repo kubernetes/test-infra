@@ -17,7 +17,7 @@
 # pylint: disable=line-too-long
 skip_jobs = []
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master"
+image = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master"
 
 k8s_versions = [
     "master",
@@ -49,7 +49,6 @@ aws_distro_options = {
     "ubuntu2404arm64": kops_versions,
     "ubuntu2510": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
     "ubuntu2510arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
-    "amazonlinux2": kops_versions,
     "al2023": kops_versions,
     "al2023arm64": kops_versions,
     "rhel9": kops_versions,
