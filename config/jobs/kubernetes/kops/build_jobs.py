@@ -16,7 +16,6 @@
 import argparse
 import difflib
 import filecmp
-import hashlib
 import json
 import math
 import os
@@ -194,13 +193,9 @@ def build_test(cloud='aws',
     tmpl_file = "periodic.yaml.jinja"
     if scenario is not None:
         tmpl_file = "periodic-scenario.yaml.jinja"
-        name_hash = hashlib.md5(job_name.encode()).hexdigest()
         if build_cluster == "k8s-infra-kops-prow-build":
             env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
         env['CLOUD_PROVIDER'] = cloud
-        if not cluster_name:
-            cluster_name = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.tests-kops-aws.k8s.io"
-        env['CLUSTER_NAME'] = cluster_name
         env['KUBE_SSH_USER'] = kops_ssh_user
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
@@ -484,10 +479,6 @@ def generate_grid():
     for networking in network_plugins_periodics['supports_aws']:
         for distro, kops_versions in aws_distro_options.items():
             for k8s_version in [v for v in k8s_versions if v != 'master']:
-                # Skip AL2 for 1.35+ because AL2 doesn't support cgroups v2:
-                # https://docs.aws.amazon.com/linux/al2023/ug/cgroupv2.html
-                if distro == 'amazonlinux2' and k8s_version in ['1.35', '1.36', '1.37']:
-                    continue
                 # kopeio/networking-agent doesn't have multi-arch builds yet
                 if 'arm64' in distro and networking == 'kopeio':
                     continue
@@ -1361,13 +1352,10 @@ def generate_distros():
                 "--node-size=m6g.large",
                 "--master-size=m6g.large"
             ])
-        # Pin AL2 to 1.34 because AL2 doesn't support cgroups v2:
-        # https://docs.aws.amazon.com/linux/al2023/ug/cgroupv2.html
-        k8s_version = '1.34' if distro_short == 'amzn2' else 'stable'
         results.append(
             build_test(distro=distro_short,
                        networking='cilium',
-                       k8s_version=k8s_version,
+                       k8s_version='stable',
                        kops_channel='alpha',
                        name_override=f"kops-aws-distro-{distro_short}",
                        extra_dashboards=['kops-distros'],
@@ -1757,7 +1745,7 @@ def generate_presubmits_scale():
 def generate_nftables():
     results = []
     for distro, _ in aws_distro_options.items():
-        if distro in ('amazonlinux2', 'debian'):
+        if distro in ('debian'):
             continue  # nftables not supported on these distros
         distro_short = distro_shortener(distro)
         extra_flags = ["--set=cluster.spec.kubeProxy.proxyMode=nftables"]
