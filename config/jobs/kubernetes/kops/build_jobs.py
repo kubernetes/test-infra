@@ -483,6 +483,9 @@ def generate_grid():
                 if 'arm64' in distro and networking == 'kopeio':
                     continue
                 for kops_version in kops_versions:
+                    # kindnet pre-1.0 requires GLIBC_2.32
+                    if distro == 'debian11' and networking == 'kindnet' and kops_version in ('1.33', '1.32'):
+                        continue
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
                     distro_short = distro_shortener(distro)
                     extra_flags = []
