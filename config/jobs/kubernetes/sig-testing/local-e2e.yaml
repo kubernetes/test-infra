@@ -33,7 +33,7 @@ presubmits:
         args:
         - --build=quick
         - --deployment=local
-        - --ginkgo-parallel=1
+        - --ginkgo-parallel=25
         - --provider=local
         - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
         - --timeout=180m
@@ -42,11 +42,14 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 4
-            memory: 6Gi
+            memory: 9Gi
+            cpu: 7
           requests:
-            cpu: 4
-            memory: 6Gi
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: 9Gi
+            # during the tests more like 3-20m is used
+            cpu: 7
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-misc
@@ -83,7 +86,7 @@ periodics:
       - --deployment=local
       - --extract=ci/latest
       - --extract-source
-      - --ginkgo-parallel=1
+      - --ginkgo-parallel=25
       - --provider=local
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
       - --timeout=180m
@@ -92,11 +95,14 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 4
-          memory: 6Gi
+          memory: 9Gi
+          cpu: 7
         requests:
-          cpu: 4
-          memory: 6Gi
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: 9Gi
+          # during the tests more like 3-20m is used
+          cpu: 7
   annotations:
     testgrid-dashboards: conformance-all, conformance-hack-local-up-cluster, sig-testing-misc
     testgrid-tab-name: local-up-cluster, master (dev)
