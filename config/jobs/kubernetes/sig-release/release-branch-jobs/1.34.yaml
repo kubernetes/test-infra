@@ -3598,10 +3598,10 @@ presubmits:
         resources:
           limits:
             cpu: "5"
-            memory: 12Gi
+            memory: 19Gi
           requests:
             cpu: "5"
-            memory: 12Gi
+            memory: 19Gi
   - always_run: false
     branches:
     - release-1.34
