@@ -61,9 +61,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip uv setuptools wheel
 
-# Install gcloud
-ARG GCLOUD_SDK_URL=https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
-RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
+# Install gcloud and awscli
+RUN wget -O google-cloud-sdk.tar.gz -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
     rm google-cloud-sdk.tar.gz && \
     if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ]; then \
@@ -74,8 +73,12 @@ RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     --usage-reporting=false \
     --additional-components alpha beta gke-gcloud-auth-plugin; \
     fi && \
-    gcloud info | tee /workspace/gcloud-info.txt
-
+    gcloud info | tee /workspace/gcloud-info.txt && \
+    if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ]; then \
+    cd /tmp && curl "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m | sed 's/arm64/aarch64/g').zip" -o "awscliv2.zip"; \
+    unzip -q awscliv2.zip; \
+    ./aws/install; \
+    fi && aws --version
 
 #
 # BEGIN: DOCKER IN DOCKER SETUP
