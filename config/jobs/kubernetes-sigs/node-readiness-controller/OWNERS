@@ -1,0 +1,17 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+  - ajaysundark
+  - dchen1107
+  - haircommander
+  - mrunalp
+  - SergeyKanzhelev
+  - tallclair
+
+reviewers:
+  - ajaysundark
+  - dchen1107
+  - haircommander
+  - mrunalp
+  - SergeyKanzhelev
+  - tallclair
