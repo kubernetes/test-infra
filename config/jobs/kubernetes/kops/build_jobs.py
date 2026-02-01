@@ -1479,8 +1479,6 @@ def generate_network_plugins():
             extra_flags = ['--node-size=t3.large']
             if plugin in ['kuberouter']:
                 k8s_version = 'ci'
-            if plugin in ['cilium-eni']:
-                distro = 'u2204' # pinned to 22.04 because of network issues with 24.04 and these CNIs
             if plugin in ['amazon-vpc']:
                 extra_flags += [
                     "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
