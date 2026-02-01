@@ -43,7 +43,7 @@ after they have been reviewed. All job configs are located in [`config/jobs`]
 - [`ghproxy`](https://github.com/kubernetes-sigs/prow/tree/main/cmd/ghproxy) is a GitHub-aware reverse proxy cache to help keep our GitHub API token usage within rate limits
 - [`gopherage`](/gopherage) is a tool for manipulating Go coverage files
 - [`label_sync`](/label_sync) creates, updates and migrates GitHub labels across orgs and repos based on `labels.yaml` file
-- [`kettle`](/kettle) extracts test results from GCS and puts them into bigquery
+- [`kettle`](/kettle) extracts test results from GCS and puts them into BigQuery
 - [`kubetest2`](https://github.com/kubernetes-sigs/kubetest2) is how our CI creates and e2e tests kubernetes clusters
 - [`metrics`](/metrics) runs queries against bigquery to generate metrics based on test results
 - [`robots/commenter`](/robots/commenter) is used by some of our jobs to comment on GitHub issues
