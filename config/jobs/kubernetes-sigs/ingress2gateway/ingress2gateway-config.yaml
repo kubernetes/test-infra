@@ -62,3 +62,34 @@ presubmits:
             requests:
               cpu: 1
               memory: 4Gi
+  - name: pull-ingress2gateway-e2e
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-network-ingress2gateway
+      testgrid-tab-name: e2e
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/ingress2gateway
+    always_run: false
+    skip_report: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - e2e
+          # docker-in-docker needs privileged mode.
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 1
+              memory: 4Gi
+            requests:
+              cpu: 1
+              memory: 4Gi
