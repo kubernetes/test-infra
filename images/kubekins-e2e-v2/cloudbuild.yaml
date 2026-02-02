@@ -3,8 +3,9 @@ steps:
     entrypoint: /buildx-entrypoint
     args:
     - build
-    - --tag=us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - --build-arg=IMAGE_ARG=us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:$_GIT_TAG-$_CONFIG
+    - --tag=$_REGISTRY/kubekins-e2e:$_GIT_TAG-$_CONFIG
+    - --tag=$_REGISTRY/kubekins-e2e:latest-$_CONFIG
+    - --build-arg=IMAGE_ARG=$_REGISTRY/kubekins-e2e:$_GIT_TAG-$_CONFIG
     - --platform=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
     - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
     - --build-arg=GO_VERSION=$_GO_VERSION
@@ -16,14 +17,6 @@ steps:
     - --push
     - .
     dir: .
-  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud
-    entrypoint: gcloud
-    args:
-    - container
-    - images
-    - add-tag
-    - us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:latest-$_CONFIG
 substitutions:
   _CFSSL_VERSION: 1.6.5
   _CONFIG: master
@@ -34,6 +27,7 @@ substitutions:
   _KUBETEST2_VERSION: 'master'
   _YQ_VERSION: v4.49.2
   _DOCKER_VERSION: 5:29.*
+  _REGISTRY: us-central1-docker.pkg.dev/k8s-staging-test-infra/images
 timeout: 3600s
 options:
   substitution_option: ALLOW_LOOSE

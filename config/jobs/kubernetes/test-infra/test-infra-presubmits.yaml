@@ -187,3 +187,33 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-cri-o
+
+  - name: pull-test-infra-kubekins-e2e-v2-image-build
+    cluster: k8s-infra-prow-build
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+    decorate: true
+    run_if_changed: '^images/kubekins-e2e-v2/'
+    spec:
+      serviceAccountName: prow-build
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:latest
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-infra-e2e-boskos-101
+            - --env-passthrough=REGISTRY
+            - --variant=master
+            - images/kubekins-e2e-v2/
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: gcr.io/k8s-infra-e2e-boskos-101
+          resources:
+            requests:
+              cpu: "1"
+              memory: 2Gi
+            limits:
+              cpu: "1"
+              memory: 2Gi
