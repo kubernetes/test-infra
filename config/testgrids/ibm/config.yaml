@@ -12,6 +12,7 @@ dashboard_groups:
     - ibm-s390x-presubmits
     - ibm-s390x-k8s
     - ibm-s390x-etcd
+    - ibm-s390x-node-e2e
     - ibm-k8s-e2e
 
 dashboards:
@@ -26,4 +27,5 @@ dashboards:
 - name: ibm-s390x-presubmits
 - name: ibm-s390x-k8s
 - name: ibm-s390x-etcd
+- name: ibm-s390x-node-e2e
 - name: ibm-k8s-e2e
