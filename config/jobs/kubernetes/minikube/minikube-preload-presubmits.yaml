@@ -6,7 +6,7 @@ presubmits:
     path_alias: "k8s.io/minikube"
     always_run: true
     annotations:
-      testgrid-dashboards: minikube-presubmits
+      testgrid-dashboards: minikube-preloads-presubmits
     spec:
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
