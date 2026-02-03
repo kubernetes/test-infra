@@ -509,6 +509,11 @@ def generate_grid():
                         extra_flags.extend([
                             "--topology=public",
                         ])
+                    if 'rhel10' in distro:
+                        # https://github.com/kubernetes/kops/issues/17915
+                        extra_flags.extend([
+                            "--set=cluster.spec.kubeProxy.proxyMode=nftables",
+                        ])
                     results.append(
                         build_test(cloud="aws",
                                    distro=distro_short,
