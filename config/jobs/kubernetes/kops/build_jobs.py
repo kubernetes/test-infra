@@ -514,6 +514,10 @@ def generate_grid():
                         extra_flags.extend([
                             "--set=cluster.spec.kubeProxy.proxyMode=nftables",
                         ])
+                        if networking == 'amazon-vpc':
+                            extra_flags.extend([
+                                "--set=cluster.spec.networking.amazonVPC.env=ENABLE_NFTABLES=true",
+                            ])
                     results.append(
                         build_test(cloud="aws",
                                    distro=distro_short,
