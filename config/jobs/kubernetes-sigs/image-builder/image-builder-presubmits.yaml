@@ -7,7 +7,7 @@ presubmits:
     decorate: true
     run_if_changed: 'images/capi/(Makefile|ansible\.cfg)|images/capi/ansible/.*|images/capi/scripts/ci-azure-e2e\.sh|images/capi/packer/(config|goss|azure)/.*|images/capi/hack/ensure-(ansible|packer|jq|azure-cli|goss).*'
     decoration_config:
-      timeout: 1h
+      timeout: 90m
     max_concurrency: 5
     path_alias: sigs.k8s.io/image-builder
     spec:
