@@ -62,23 +62,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip uv setuptools wheel
 
 # Install gcloud and awscli
-RUN wget -O google-cloud-sdk.tar.gz -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
+RUN if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ]; then \
+    wget -O google-cloud-sdk.tar.gz -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
     rm google-cloud-sdk.tar.gz && \
-    if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ]; then \
     /google-cloud-sdk/install.sh \
     --disable-installation-options \
     --bash-completion=false \
     --path-update=false \
     --usage-reporting=false \
-    --additional-components alpha beta gke-gcloud-auth-plugin; \
-    fi && \
+    --additional-components alpha beta gke-gcloud-auth-plugin && \
     gcloud info | tee /workspace/gcloud-info.txt && \
-    if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ]; then \
-    cd /tmp && curl "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m | sed 's/arm64/aarch64/g').zip" -o "awscliv2.zip"; \
-    unzip -q awscliv2.zip; \
-    ./aws/install; \
-    fi && aws --version
+    wget -O "awscliv2.zip" -q "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m | sed 's/arm64/aarch64/g').zip" && \
+    unzip -q awscliv2.zip && \
+    ./aws/install && \
+    aws --version && \
+    rm -rf awscliv2.zip aws; \
+    fi
 
 #
 # BEGIN: DOCKER IN DOCKER SETUP
@@ -100,7 +100,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
     && chmod a+r /etc/apt/keyrings/docker.gpg \
     && echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-    "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+    "$(. /etc/os-release; echo "$VERSION_CODENAME")" stable" | \
     tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 # Install Docker
@@ -145,13 +145,12 @@ RUN if [ "${TARGETARCH}" != "ppc64le" ]; then \
 # replace kubectl with one from K8S_RELEASE
 ARG K8S_RELEASE=latest
 RUN rm -f $(which kubectl) && \
-    export KUBECTL_VERSION=$(curl -L https://dl.k8s.io/release/${K8S_RELEASE}.txt) && \
-    wget https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl -O /usr/local/bin/kubectl && \
+    export KUBECTL_VERSION=$(curl --retry 6 --retry-connrefused -fsSL https://dl.k8s.io/release/${K8S_RELEASE}.txt) && \
+    wget -q https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl -O /usr/local/bin/kubectl && \
     chmod +x /usr/local/bin/kubectl
-
 # install go
 ARG GO_VERSION
-ENV GO_TARBALL "go${GO_VERSION}.linux-${TARGETARCH}.tar.gz"
+ARG GO_TARBALL="go${GO_VERSION}.linux-${TARGETARCH}.tar.gz"
 RUN wget -q "https://go.dev/dl/${GO_TARBALL}" && \
     tar xzf "${GO_TARBALL}" -C /usr/local && \
     mkdir -p "${GOPATH}/bin" && \
