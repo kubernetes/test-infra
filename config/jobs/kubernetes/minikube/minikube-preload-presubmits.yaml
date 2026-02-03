@@ -1,5 +1,5 @@
 presubmits:
-  kubernetes/minikube-preloads:
+  kubernetes-sigs/minikube-preloads:
   - name: pull-minikube-preloads-lint
     cluster: k8s-infra-prow-build
     decorate: true
