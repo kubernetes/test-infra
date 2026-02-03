@@ -1437,6 +1437,18 @@ def generate_presubmits_distros():
                 always_run=False,
             )
         )
+        results.append(
+            presubmit_test(
+                distro=distro_short,
+                networking='kindnet',
+                k8s_version='stable',
+                kops_channel='alpha',
+                name=f"pull-kops-aws-kindnet-{distro}",
+                tab_name=f"pull-kops-aws-kindnet-{distro}",
+                extra_flags=extra_flags,
+                always_run=False,
+            )
+        )
     for distro, _ in gce_distro_options.items():
         distro_short = distro_shortener(distro)
         extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
@@ -1461,6 +1473,19 @@ def generate_presubmits_distros():
                 kops_channel='alpha',
                 name=f"pull-kops-gce-distro-{distro}",
                 tab_name=f"e2e-gce-{distro}",
+                extra_flags=extra_flags,
+                always_run=False,
+            )
+        )
+        results.append(
+            presubmit_test(
+                cloud="gce",
+                distro=distro_short,
+                networking='gce',
+                k8s_version='stable',
+                kops_channel='alpha',
+                name=f"pull-kops-gce-ipalias-{distro}",
+                tab_name=f"pull-kops-gce-ipalias-{distro}",
                 extra_flags=extra_flags,
                 always_run=False,
             )
