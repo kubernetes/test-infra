@@ -1,0 +1,25 @@
+presubmits:
+  kubernetes/minikube-preloads:
+  - name: pull-minikube-preloads-lint
+    cluster: k8s-infra-prow-build
+    decorate: true
+    path_alias: "k8s.io/minikube"
+    always_run: true
+    annotations:
+      testgrid-dashboards: minikube-presubmits
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - lint
+        resources:
+          requests:
+            memory: "2000Mi"
+            cpu: 2
+          limits:
+            memory: "2000Mi"
+            cpu: 2
+  
