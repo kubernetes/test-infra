@@ -124,6 +124,9 @@ dashboards:
   - name: pull-kubernetes-e2e-kind-alpha-beta-enabled-conformance
     test_group_name: pull-kubernetes-e2e-kind-alpha-beta-enabled-conformance
     base_options: width=10
+  - name: pull-kubernetes-e2e-kind-alpha-beta-features-audit
+    test_group_name: pull-kubernetes-e2e-kind-alpha-beta-features-audit
+    base_options: width=10
   - name: pull-kubernetes-e2e-kind-alpha-beta-features-race
     test_group_name: pull-kubernetes-e2e-kind-alpha-beta-features-race
     base_options: width=10
