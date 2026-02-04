@@ -259,10 +259,10 @@ presubmits:
           kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
           {%- endif %}
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit {%- if all_features and canary %} -logcheck-data-races{%endif%} &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit {%- if all_features %} -logcheck-data-races{%endif%} &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
-        {%- if all_features and canary %}
+        {%- if all_features %}
         env:
         # -race gets injected into the build of dynamically linked binaries during "kind build node-image" and "make e2e.test".
         - name: KUBE_RACE
@@ -279,7 +279,7 @@ presubmits:
           privileged: true
         {%- endif %}
         resources:
-          {%- if job_type == "e2e" and all_features and canary %}
+          {%- if job_type == "e2e" and all_features %}
           # With DATA RACE detection enabled, more memory is needed.
           limits:
             cpu: 2
