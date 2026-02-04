@@ -583,7 +583,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
     decoration_config:
-      timeout: 60m
+      timeout: 2h
       grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
