@@ -353,6 +353,70 @@ periodics:
           memory: 9Gi
           cpu: 7
 
+- interval: 6h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-e2e-kind-alpha-beta-features-race
+  annotations:
+    testgrid-dashboards: sig-testing-kind
+    testgrid-tab-name: kind-master-alpha-beta-features-race
+    description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled and cluster components are built with race detection.
+    testgrid-alert-email: patrick.ohly@intel.com
+    testgrid-num-columns-recent: '6'
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      # The modified e2e-k8s.sh enables the log query feature in the kubelet config (off by default for security reasons).
+      - >
+        curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" &&
+        curl -sSL https://github.com/kubernetes/test-infra/raw/master/experiment/kind-race-e2e-k8s.sh >/tmp/kind-race-e2e-k8s.sh &&
+        chmod u+x /tmp/kind-race-e2e-k8s.sh &&
+        /tmp/kind-race-e2e-k8s.sh
+      env:
+      # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+      - name: FEATURE_GATES
+        value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
+      - name: RUNTIME_CONFIG
+        value: '{"api/all":"true"}'
+      - name: LABEL_FILTER
+        value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
+      - name: PARALLEL
+        value: "true"
+      - name: KUBE_E2E_TEST_ARGS
+        value: "-logcheck-data-races"
+      # -race gets injected into the build of dynamically linked binaries during "kind build node-image".
+      - name: KUBE_RACE
+        value: -race
+      # Normally control plane components are linked statically, which does not work with -race (needs CGO).
+      # We need to override the default for components of interest.
+      - name: KUBE_CGO_OVERRIDES
+        value: kube-apiserver kube-controller-manager kube-scheduler
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          memory: 9Gi
+          cpu: 7
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: 9Gi
+          cpu: 7
+
 - interval: 2h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-beta-enabled
