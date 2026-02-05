@@ -45,6 +45,7 @@ periodics:
     preset-aws-credential-boskos-scale-001-kops: "true"
     preset-dind-enabled: "true"
   decorate: true
+  job_queue_name: '5k-aws-scale-test'
   decoration_config:
     timeout: 480m
   extra_refs:
@@ -100,9 +101,9 @@ periodics:
       - name: NODE_MODE
         value: "master"
       - name: CONTROL_PLANE_COUNT
-        value: "3"
+        value: "1"
       - name: CONTROL_PLANE_SIZE
-        value: "c8a.24xlarge"
+        value: "c8i.24xlarge"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
         value: "true"
       - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -202,7 +203,7 @@ periodics:
       - name: NODE_MODE
         value: "master"
       - name: CONTROL_PLANE_COUNT
-        value: "3"
+        value: "1"
       - name: CONTROL_PLANE_SIZE
         value: "c8a.8xlarge"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY

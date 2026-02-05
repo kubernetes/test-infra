@@ -4,10 +4,11 @@ presubmits:
   kubernetes/kops:
 
   # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
-  - name: presubmit-kops-aws-scale-amazonvpc-using-cl2
+  - name: pull-kops-ec2-master-scale-performance-5000
     cluster: eks-prow-build-cluster
     branches:
     - master
+    job_queue_name: '5k-aws-scale-test'
     always_run: false
     optional: true
     skip_report: false
@@ -55,9 +56,9 @@ presubmits:
         - name: NODE_MODE
           value: "master"
         - name: CONTROL_PLANE_COUNT
-          value: "3"
+          value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "c8a.24xlarge"
+          value: "c8i.24xlarge"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -103,10 +104,10 @@ presubmits:
       test.kops.k8s.io/networking: amazonvpc
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-aws-scale-amazonvpc-using-cl2
+      testgrid-tab-name: pull-kops-ec2-master-scale-performance-5000
 
   # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
-  - name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
+  - name: pull-kops-ec2-master-scale-performance-100
     cluster: eks-prow-build-cluster
     branches:
     - master
@@ -147,13 +148,13 @@ presubmits:
         - name: CNI_PLUGIN
           value: "amazonvpc"
         - name: KUBE_NODE_COUNT
-          value: "500"
+          value: "100"
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
           value: "20"
         - name: CONTROL_PLANE_COUNT
-          value: "3"
+          value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "c8a.8xlarge"
+          value: "c8i.8xlarge"
         - name: CL2_LOAD_TEST_THROUGHPUT
           value: "50"
         - name: CL2_DELETE_TEST_THROUGHPUT
@@ -203,14 +204,14 @@ presubmits:
       test.kops.k8s.io/networking: amazonvpc
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
+      testgrid-tab-name: pull-kops-ec2-master-scale-performance-100
 
   # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
-  - name: presubmit-kops-gce-scale-ipalias-using-cl2
+  - name: pull-kops-gce-master-scale-performance-5000
     cluster: k8s-infra-prow-build
     branches:
     - master
-    job_queue_name: "5k-gce-scale-test"
+    job_queue_name: '5k-gce-scale-test'
     always_run: false
     optional: false
     skip_report: false
@@ -307,15 +308,14 @@ presubmits:
       test.kops.k8s.io/networking: gce
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-gce-scale-ipalias-using-cl2
+      testgrid-tab-name: pull-kops-gce-master-scale-performance-5000
 
   # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
-  - name: presubmit-kops-gce-small-scale-ipalias-using-cl2
+  - name: pull-kops-gce-master-scale-performance-100
     cluster: k8s-infra-prow-build
     branches:
     - master
     run_if_changed: '^tests\/e2e\/scenarios\/scalability\/run-test.sh'
-    job_queue_name: "5k-gce-scale-test"
     always_run: false
     optional: false
     skip_report: false
@@ -352,7 +352,7 @@ presubmits:
         - name: CNI_PLUGIN
           value: "gce"
         - name: KUBE_NODE_COUNT
-          value: "500"
+          value: "100"
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
           value: "20"
         - name: CONTROL_PLANE_COUNT
@@ -360,7 +360,7 @@ presubmits:
         - name: KUBE_PROXY_MODE
           value: "nftables"
         - name: CONTROL_PLANE_SIZE
-          value: "c4-standard-48"
+          value: "c4-standard-32"
         - name: CL2_LOAD_TEST_THROUGHPUT
           value: "50"
         - name: CL2_DELETE_TEST_THROUGHPUT
@@ -410,14 +410,13 @@ presubmits:
       test.kops.k8s.io/networking: gce
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-gce-small-scale-ipalias-using-cl2
+      testgrid-tab-name: pull-kops-gce-master-scale-performance-100
 
   # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
-  - name: presubmit-kops-gce-small-scale-kindnet-using-cl2
+  - name: pull-kops-gce-master-scale-kindnet-performance-100
     cluster: k8s-infra-prow-build
     branches:
     - master
-    job_queue_name: "5k-gce-scale-test"
     always_run: false
     optional: false
     skip_report: false
@@ -510,4 +509,4 @@ presubmits:
       test.kops.k8s.io/networking: gce
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-gce-small-scale-kindnet-using-cl2
+      testgrid-tab-name: pull-kops-gce-master-scale-kindnet-performance-100

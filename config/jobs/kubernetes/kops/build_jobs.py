@@ -96,6 +96,7 @@ def build_test(cloud='aws',
                storage_e2e_cred=False,
                alert_email=None,
                alert_num_failures=None,
+               job_queue_name=None,
                extra_refs=None):
     # pylint: disable=too-many-statements,too-many-arguments
     if kops_version is None:
@@ -237,6 +238,7 @@ def build_test(cloud='aws',
         storage_e2e_cred=storage_e2e_cred,
         instance_groups_overrides=instance_groups_overrides,
         extra_refs=extra_refs,
+        job_queue_name=job_queue_name,
     )
 
     spec = {
@@ -325,6 +327,7 @@ def presubmit_test(branch='master',
                    alert_email=None,
                    alert_num_failures=None,
                    instance_groups_overrides=None,
+                   job_queue_name=None,
                    extra_refs=None):
     # pylint: disable=too-many-statements,too-many-arguments
     kops_image = None
@@ -424,6 +427,7 @@ def presubmit_test(branch='master',
         cluster_name=cluster_name,
         instance_groups_overrides=instance_groups_overrides,
         extra_refs=extra_refs,
+        job_queue_name=job_queue_name,
     )
 
     spec = {
@@ -1644,7 +1648,7 @@ def generate_upgrades():
 def generate_presubmits_scale():
     results = [
         presubmit_test(
-            name='presubmit-kops-aws-scale-amazonvpc-using-cl2',
+            name='pull-kops-ec2-master-scale-performance-5000',
             scenario='scalability',
             build_cluster='eks-prow-build-cluster',
             # only helps with setting the right anotation test.kops.k8s.io/networking
@@ -1652,6 +1656,7 @@ def generate_presubmits_scale():
             always_run=False,
             optional=True,
             test_timeout_minutes=450,
+            job_queue_name="5k-aws-scale-test",
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={
                 'CNI_PLUGIN': "amazonvpc",
@@ -1660,8 +1665,8 @@ def generate_presubmits_scale():
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
                 'NODE_MODE': "master",
-                'CONTROL_PLANE_COUNT': "3",
-                'CONTROL_PLANE_SIZE': "c8a.24xlarge",
+                'CONTROL_PLANE_COUNT': "1",
+                'CONTROL_PLANE_SIZE': "c8i.24xlarge",
                 'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
                 'CL2_ENABLE_DNS_PROGRAMMING': "true",
                 'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
@@ -1678,7 +1683,7 @@ def generate_presubmits_scale():
             }
         ),
         presubmit_test(
-            name='presubmit-kops-aws-small-scale-amazonvpc-using-cl2',
+            name='pull-kops-ec2-master-scale-performance-100',
             scenario='scalability',
             build_cluster="eks-prow-build-cluster",
             # only helps with setting the right anotation test.kops.k8s.io/networking
@@ -1688,10 +1693,10 @@ def generate_presubmits_scale():
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={
                 'CNI_PLUGIN': "amazonvpc",
-                'KUBE_NODE_COUNT': "500",
+                'KUBE_NODE_COUNT': "100",
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
-                'CONTROL_PLANE_COUNT': "3",
-                'CONTROL_PLANE_SIZE': "c8a.8xlarge",
+                'CONTROL_PLANE_COUNT': "1",
+                'CONTROL_PLANE_SIZE': "c8i.8xlarge",
                 'CL2_LOAD_TEST_THROUGHPUT': "50",
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
@@ -1710,12 +1715,13 @@ def generate_presubmits_scale():
             }
         ),
         presubmit_test(
-            name='presubmit-kops-gce-scale-ipalias-using-cl2',
+            name='pull-kops-gce-master-scale-performance-5000',
             scenario='scalability',
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='gce',
             cloud="gce",
             always_run=False,
+            job_queue_name="5k-gce-scale-test",
             test_timeout_minutes=450,
             env={
                 'CNI_PLUGIN': "gce",
@@ -1744,7 +1750,7 @@ def generate_presubmits_scale():
             }
         ),
         presubmit_test(
-            name='presubmit-kops-gce-small-scale-ipalias-using-cl2',
+            name='pull-kops-gce-master-scale-performance-100',
             scenario='scalability',
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='gce',
@@ -1754,11 +1760,11 @@ def generate_presubmits_scale():
             test_timeout_minutes=450,
             env={
                 'CNI_PLUGIN': "gce",
-                'KUBE_NODE_COUNT': "500",
+                'KUBE_NODE_COUNT': "100",
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
                 'CONTROL_PLANE_COUNT': "1",
                 'KUBE_PROXY_MODE': 'nftables',
-                'CONTROL_PLANE_SIZE': "c4-standard-48",
+                'CONTROL_PLANE_SIZE': "c4-standard-32",
                 'CL2_LOAD_TEST_THROUGHPUT': "50",
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
@@ -1778,7 +1784,7 @@ def generate_presubmits_scale():
             }
         ),
         presubmit_test(
-            name='presubmit-kops-gce-small-scale-kindnet-using-cl2',
+            name='pull-kops-gce-master-scale-kindnet-performance-100',
             scenario='scalability',
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='gce',

@@ -246,7 +246,7 @@ periodics:
       - name: CONTROL_PLANE_COUNT
         value: "1"
       - name: CONTROL_PLANE_SIZE
-        value: "c4-standard-48"
+        value: "c4-standard-32"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
         value: "true"
       - name: CL2_ENABLE_DNS_PROGRAMMING
