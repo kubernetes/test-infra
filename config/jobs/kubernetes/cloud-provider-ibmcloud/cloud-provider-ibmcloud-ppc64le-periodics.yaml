@@ -488,3 +488,78 @@ periodics:
 
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
               [ $rc != 0 ] && echo "ERROR: E2e Serial tests exited with code: $rc"; exit $rc
+  - name: ci-kubernetes-powervs-csi-driver-e2e
+    cron: "30 9-17/8 * * *" # every 8h starting at 09:30 UTC
+    cluster: k8s-infra-ppc64le-prow-build
+    labels:
+      preset-ibmcloud-cred: "true"
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    extra_refs:
+      - base_ref: main
+        org: kubernetes-sigs
+        repo: provider-ibmcloud-test-infra
+        workdir: true
+    annotations:
+      description: Runs E2E csi driver tests against kubernetes ci latest on IBM powervs
+      testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, ibm-k8s-e2e
+      testgrid-tab-name: ci-kubernetes-powervs-csi-driver-e2e
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: "USER"
+              value: "ci-kubernetes-powervs-csi-driver-e2e"
+          resources:
+            requests:
+              cpu: 4
+              memory: "14Gi"
+            limits:
+              cpu: 4
+              memory: "14Gi"
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              set -o xtrace
+              #Call to boskos to checkout resource
+              source "./hack/boskos.sh"
+
+              #Setup of kubetest2 tf deployer and ginkgo tester
+              make install-deployer-tf
+              go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
+
+              set +o errexit
+              set -o xtrace
+              rc=0
+              CLUSTER_NAME="e2e-csi-$(date +%s)"
+              kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
+                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE}  \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
+                --ssh-private-key /etc/secret-volume/ssh-privatekey \
+                --workers-count 2 --cluster-name $CLUSTER_NAME \
+                --up --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors \
+                --break-kubetest-on-upfail true --fetch-instance-data=true \
+                --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt)
+
+              export KUBECONFIG="$(pwd)/$CLUSTER_NAME/kubeconfig"
+              export INSTANCE_LIST_JSON="$(pwd)/$CLUSTER_NAME/instance_list.json"
+
+              ./hack/csi-driver.sh || rc=$?
+
+              kubetest2 tf --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
+                --ignore-cluster-dir false \
+                --cluster-name $CLUSTER_NAME\
+                --down --auto-approve --ignore-destroy-errors
+
+
+              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
+              [ $rc != 0 ] && echo "ERROR: E2e Serial tests exited with code: $rc"; exit $rc
