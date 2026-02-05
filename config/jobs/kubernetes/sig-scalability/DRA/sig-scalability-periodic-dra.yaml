@@ -396,7 +396,7 @@ periodics:
         - name: CONTROL_PLANE_COUNT
           value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "c4-standard-48"
+          value: "c4-standard-32"
         - name: KUBE_PROXY_MODE
           value: "nftables"
         - name: ENABLE_PROMETHEUS_SERVER

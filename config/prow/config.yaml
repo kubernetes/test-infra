@@ -13,6 +13,8 @@ plank:
     'test-infra-staging-image-push': 1
     # limits concurrency for 5k GCE jobs
     '5k-gce-scale-test': 4
+    # limits concurrency for 5k AWS jobs
+    '5k-aws-scale-test': 1
   default_decoration_config_entries:
   - config:
       timeout: 2h

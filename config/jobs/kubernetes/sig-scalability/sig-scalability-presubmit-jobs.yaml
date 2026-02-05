@@ -149,7 +149,7 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "c4-standard-48"
+          value: "c4-standard-32"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -881,9 +881,9 @@ presubmits:
         - name: NODE_MODE
           value: "master"
         - name: CONTROL_PLANE_COUNT
-          value: "3"
+          value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "c5.9xlarge"
+          value: "c8i.8xlarge"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -964,9 +964,9 @@ presubmits:
         - name: NODE_MODE
           value: "master"
         - name: CONTROL_PLANE_COUNT
-          value: "3"
+          value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "c8a.12xlarge"
+          value: "c8i.12xlarge"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -1048,7 +1048,7 @@ presubmits:
         - name: NODE_MODE
           value: "master"
         - name: CONTROL_PLANE_COUNT
-          value: "3"
+          value: "1"
         - name: CONTROL_PLANE_SIZE
           value: "c8a.24xlarge"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
@@ -1136,7 +1136,7 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "c4-standard-48"
+          value: "c4-standard-32"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
