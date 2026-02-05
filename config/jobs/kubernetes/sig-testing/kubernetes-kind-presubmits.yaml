@@ -622,7 +622,7 @@ presubmits:
 
   - name: pull-kubernetes-e2e-kind-alpha-beta-features-race
     annotations:
-      description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled and control plane components are built with race detection.
+      description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled and cluster components are built with race detection.
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
@@ -657,7 +657,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
         - name: LABEL_FILTER
-          value: "Feature: isSubsetOf { OffByDefault, DataRace } && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         - name: KUBE_E2E_TEST_ARGS
