@@ -523,6 +523,9 @@ periodics:
         requests:
           cpu: 2
           memory: 6Gi
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
     testgrid-tab-name: gci-gce-autoscaling
