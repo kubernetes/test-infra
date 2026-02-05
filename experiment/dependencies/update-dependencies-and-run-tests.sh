@@ -48,9 +48,10 @@ fi
 # install kind
 curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
 
-# install depstat and mdttohtml
+# install depstat, mdtohtml, and graphviz
 export WORKDIR=${ARTIFACTS:-$TMPDIR}
 export PATH=$PATH:$GOPATH/bin
+export GOWORK=off
 mkdir -p "${WORKDIR}"
 pushd "$WORKDIR"
 export GOCACHE="${GOCACHE:-"$(mktemp -d)/cache"}"
@@ -58,13 +59,20 @@ go install github.com/kubernetes-sigs/depstat@latest
 go install github.com/sgaunet/mdtohtml@latest
 popd
 
+# install graphviz for dependency visualization
+apt-get update -qq && apt-get install -y -qq graphviz > /dev/null 2>&1 || true
+
 # needed by gomod_staleness.py
 if ! command -v jq &> /dev/null; then
   apt update && apt -y install jq
 fi
 
+# Record the current commit for diff comparison
+BEFORE_SHA=$(git rev-parse HEAD)
+MAIN_MODULES="k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')"
+
 # grab the stats before we start
-depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" -v > "${WORKDIR}/stats-before.txt"
+depstat stats -m "${MAIN_MODULES}" -v > "${WORKDIR}/stats-before.txt"
 
 # get the list of packages to skip from unwanted-dependencies.json
 SKIP_PACKAGES=$(jq -r '.spec.pinnedModules | to_entries[] | .key' hack/unwanted-dependencies.json)
@@ -80,8 +88,27 @@ mdtohtml "${WORKDIR}"/differences.md "${WORKDIR}"/differences.html
 hack/update-vendor.sh
 
 # gather stats for comparison after running update-vendor
-depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" -v > "${WORKDIR}/stats-after.txt"
-diff -s -u --ignore-all-space "${WORKDIR}"/stats-before.txt "${WORKDIR}"/stats-after.txt || true
+depstat stats -m "${MAIN_MODULES}" -v > "${WORKDIR}/stats-after.txt"
+
+# Generate dependency diff with visualization
+echo ""
+echo "=== Dependency Changes ==="
+depstat diff "${BEFORE_SHA}" HEAD -m "${MAIN_MODULES}" -v | tee "${WORKDIR}/diff.txt"
+depstat diff "${BEFORE_SHA}" HEAD -m "${MAIN_MODULES}" --json > "${WORKDIR}/diff.json"
+depstat diff "${BEFORE_SHA}" HEAD -m "${MAIN_MODULES}" --dot > "${WORKDIR}/diff.dot"
+dot -Tsvg "${WORKDIR}/diff.dot" -o "${WORKDIR}/diff.svg" || echo "Could not generate SVG"
+
+# Show why each new dependency was added
+ADDED_DEPS=$(jq -r '.added[]?' "${WORKDIR}/diff.json" 2>/dev/null || true)
+if [ -n "${ADDED_DEPS}" ]; then
+  echo ""
+  echo "=== Why new dependencies are included ==="
+  for dep in ${ADDED_DEPS}; do
+    echo ""
+    echo "--- ${dep} ---"
+    depstat why "${dep}" -m "${MAIN_MODULES}" 2>/dev/null || echo "  (could not trace dependency path)"
+  done | tee "${WORKDIR}/why-added.txt"
+fi
 
 # Do not worry if this fails, it is bound to fail
 hack/lint-dependencies.sh || true

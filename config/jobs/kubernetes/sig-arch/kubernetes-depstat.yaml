@@ -4,7 +4,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 5m
+      timeout: 10m
     path_alias: k8s.io/kubernetes
     always_run: false
     optional: true
@@ -21,17 +21,48 @@ presubmits:
 
           export WORKDIR=${ARTIFACTS:-$TMPDIR}
           export PATH=$PATH:$GOPATH/bin
+          export GOWORK=off
 
           mkdir -p "${WORKDIR}"
           pushd "$WORKDIR"
           go install github.com/kubernetes-sigs/depstat@latest
           popd
 
-          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" -v > "${WORKDIR}/stats.txt"
-          git reset --hard HEAD
-          git checkout -b base "${PULL_BASE_SHA}"
-          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" -v > "${WORKDIR}/stats-base.txt"
-          diff -s -u --ignore-all-space "${WORKDIR}"/stats-base.txt "${WORKDIR}"/stats.txt || true
+          # Install graphviz and jq
+          apt-get update -qq && apt-get install -y -qq graphviz jq > /dev/null 2>&1
+
+          MAIN_MODULES="k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')"
+
+          echo "=== Dependency Diff: ${PULL_BASE_SHA}..HEAD ==="
+          echo ""
+
+          # Generate dependency diff (text output)
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" -v | tee "${WORKDIR}/diff.txt"
+
+          # Generate JSON for programmatic consumption
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --json > "${WORKDIR}/diff.json"
+
+          # Generate DOT and SVG visualization of changes
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --dot > "${WORKDIR}/diff.dot"
+          dot -Tsvg "${WORKDIR}/diff.dot" -o "${WORKDIR}/diff.svg"
+
+          # Show why each new dependency was added
+          ADDED_DEPS=$(jq -r '.added[]?' "${WORKDIR}/diff.json" 2>/dev/null || true)
+          if [ -n "${ADDED_DEPS}" ]; then
+            echo ""
+            echo "=== Why new dependencies are included ==="
+            for dep in ${ADDED_DEPS}; do
+              echo ""
+              echo "--- ${dep} ---"
+              depstat why "${dep}" -m "${MAIN_MODULES}" 2>/dev/null || echo "  (could not trace dependency path)"
+            done | tee "${WORKDIR}/why-added.txt"
+          fi
+
+          echo ""
+          echo "Artifacts saved to: ${WORKDIR}"
+          echo "  - diff.txt: Human-readable diff"
+          echo "  - diff.json: Machine-readable diff"
+          echo "  - diff.svg: Visual dependency change graph"
         resources:
           requests:
             memory: 4Gi
@@ -42,4 +73,4 @@ presubmits:
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-arch-code-organization
-      description: Generates dependency statistics by running depstat for base and current PR
+      description: Generates dependency diff with visualization showing added/removed dependencies

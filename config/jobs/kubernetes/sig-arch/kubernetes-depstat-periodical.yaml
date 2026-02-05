@@ -4,7 +4,7 @@ periodics:
     cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
-      timeout: 5m
+      timeout: 10m
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -22,13 +22,35 @@ periodics:
 
           export WORKDIR=${ARTIFACTS:-$TMPDIR}
           export PATH=$PATH:$GOPATH/bin
+          export GOWORK=off
 
           mkdir -p "${WORKDIR}"
           pushd "$WORKDIR"
           go install github.com/kubernetes-sigs/depstat@latest
           popd
 
-          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" --json | tee "${WORKDIR}/stats-base.json";
+          # Install graphviz and jq
+          apt-get update -qq && apt-get install -y -qq graphviz jq > /dev/null 2>&1
+
+          MAIN_MODULES="k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')"
+
+          # Generate stats in multiple formats
+          depstat stats -m "${MAIN_MODULES}" -v | tee "${WORKDIR}/stats.txt"
+          depstat stats -m "${MAIN_MODULES}" --json > "${WORKDIR}/stats.json"
+          depstat stats -m "${MAIN_MODULES}" --csv > "${WORKDIR}/stats.csv"
+
+          # Generate full dependency graph with edge types
+          depstat graph -m "${MAIN_MODULES}" --show-edge-types
+          mv graph.dot "${WORKDIR}/graph.dot"
+          dot -Tsvg "${WORKDIR}/graph.dot" -o "${WORKDIR}/graph.svg" || echo "Graph too large for SVG"
+
+          # Check for dependency cycles
+          echo ""
+          echo "=== Dependency Cycles ==="
+          depstat cycles -m "${MAIN_MODULES}" | tee "${WORKDIR}/cycles.txt"
+
+          echo ""
+          echo "Artifacts saved to: ${WORKDIR}"
         resources:
           limits:
             cpu: 2
@@ -39,4 +61,4 @@ periodics:
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-arch-code-organization
-      description: Generates dependency statistics by running depstat for base periodically
+      description: Generates comprehensive dependency statistics and graph for kubernetes master
