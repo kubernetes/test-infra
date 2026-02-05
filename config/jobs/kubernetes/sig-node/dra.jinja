@@ -87,7 +87,7 @@ presubmits:
     {%- endif %}
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
         - runner.sh
 
@@ -259,9 +259,19 @@ presubmits:
           kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
           {%- endif %}
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit {%- if all_features %} -logcheck-data-races{%endif%} &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
+        {%- if all_features %}
+        env:
+        # -race gets injected into the build of dynamically linked binaries during "kind build node-image" and "make e2e.test".
+        - name: KUBE_RACE
+          value: -race
+        # Normally control plane components are linked statically, which does not work with -race (needs CGO).
+        # We need to override the default for components of interest.
+        - name: KUBE_CGO_OVERRIDES
+          value: kube-apiserver kube-controller-manager kube-scheduler
+        {%- endif %}
         {%- endif %}
         {%- if use_dind %}
         # docker-in-docker needs privileged mode
@@ -269,10 +279,20 @@ presubmits:
           privileged: true
         {%- endif %}
         resources:
+          {%- if job_type == "e2e" and all_features %}
+          # With DATA RACE detection enabled, more memory is needed.
+          limits:
+            cpu: 2
+            memory: 12Gi
+          requests:
+            cpu: 2
+            memory: 12Gi
+          {%- else %}
           limits:
             cpu: 2
             memory: 6Gi
           requests:
             cpu: 2
             memory: 6Gi
+          {%- endif %}
 

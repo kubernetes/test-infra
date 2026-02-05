@@ -39,6 +39,13 @@ periodics:
               value: /var/run/secrets/aws-iam-token/serviceaccount/token
             - name: AWS_REGION
               value: us-east-2
+          resources:
+            limits:
+              cpu: 4
+              memory: 4Gi
+            requests:
+              cpu: 4
+              memory: 4Gi
           volumeMounts:
             - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
               name: aws-iam-token

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes CI Presubmit Health Dashboard</title>
+    <style>
+        :root {
+            --critical: #dc2626;
+            --severe: #ea580c;
+            --warning: #d97706;
+            --moderate: #ca8a04;
+            --low: #65a30d;
+            --bg-dark: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container { max-width: 1800px; margin: 0 auto; }
+
+        header {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 { font-size: 1.4rem; font-weight: 600; margin: 0; }
+
+        .subtitle { color: var(--text-secondary); font-size: 0.8rem; }
+        .subtitle a { color: var(--text-secondary); }
+
+        .nav-links { margin-left: auto; display: flex; gap: 16px; }
+        .nav-links a { color: #60a5fa; text-decoration: none; font-size: 0.85rem; }
+        .nav-links a:hover { text-decoration: underline; }
+
+        .stats-grid { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-value { font-size: 1.2rem; font-weight: 700; }
+        .stat-label { color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; }
+
+        .controls { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+
+        .search-box { flex: 1; min-width: 200px; max-width: 350px; }
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+        .search-box input::placeholder { color: var(--text-secondary); }
+        .search-box input:focus { outline: none; border-color: #3b82f6; }
+
+        .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-btn {
+            padding: 5px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover { background: var(--border); }
+        .filter-btn.active { background: #3b82f6; border-color: #3b82f6; }
+
+        .table-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px 12px; text-align: left; }
+
+        th {
+            background: rgba(0,0,0,0.2);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            user-select: none;
+            position: sticky;
+            top: 0;
+        }
+        th:hover { background: rgba(0,0,0,0.3); }
+        th .sort-icon { margin-left: 8px; opacity: 0.5; }
+        th.sorted .sort-icon { opacity: 1; }
+
+        tr { border-bottom: 1px solid var(--border); }
+        tr:last-child { border-bottom: none; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+
+        .job-name { font-family: 'SF Mono', Monaco, 'Courier New', monospace; font-size: 0.85rem; word-break: break-all; }
+        .job-link { color: #60a5fa; text-decoration: none; }
+        .job-link:hover { text-decoration: underline; }
+        .code-link { margin-left: 6px; text-decoration: none; opacity: 0.5; font-size: 0.85em; }
+        .code-link:hover { opacity: 1; }
+
+        .num-cell { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+
+        .rate-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .rate-good { background: var(--low); }
+        .rate-moderate { background: var(--moderate); }
+        .rate-warning { background: var(--warning); }
+        .rate-severe { background: var(--severe); }
+        .rate-critical { background: var(--critical); }
+
+        .time-cell { font-size: 0.8rem; color: var(--text-secondary); }
+
+        .count-display { text-align: center; padding: 20px; color: var(--text-secondary); }
+
+        .legend { display: flex; gap: 12px; justify-content: flex-start; margin-bottom: 12px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 4px; font-size: 0.7rem; color: var(--text-secondary); }
+        .legend-color { width: 10px; height: 10px; border-radius: 2px; }
+
+        .loading { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+        .loading-spinner {
+            display: inline-block;
+            width: 24px; height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error { text-align: center; padding: 40px 20px; color: var(--critical); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kubernetes CI Presubmit Health Dashboard</h1>
+            <p class="subtitle">Data from <a href="presubmit-health-latest.json">presubmit-health-latest.json</a></p>
+            <div class="nav-links">
+                <a href="index.html">Index</a>
+                <a href="failures-latest.html">Failures</a>
+                <a href="flakes-latest.html">Flakes</a>
+                <a href="job-health-latest.html">Job Health</a>
+            </div>
+        </header>
+
+        <div class="stats-grid" id="stats-grid"></div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-color" style="background: var(--low)"></div>Good (0%)</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--moderate)"></div>Moderate (1-25%)</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--warning)"></div>Warning (26-50%)</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--severe)"></div>Severe (51-75%)</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--critical)"></div>Critical (&gt;75%)</div>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="include" placeholder="Include regex (e.g., kubernetes|e2e)">
+            </div>
+            <div class="search-box">
+                <input type="text" id="exclude" placeholder="Exclude regex (e.g., azure|aws)">
+            </div>
+            <div class="filter-group">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="critical">Critical</button>
+                <button class="filter-btn" data-filter="severe">Severe</button>
+                <button class="filter-btn" data-filter="warning">Warning</button>
+                <button class="filter-btn" data-filter="moderate">Moderate</button>
+                <button class="filter-btn" data-filter="good">Good</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th data-sort="name">Job Name <span class="sort-icon">↕</span></th>
+                        <th data-sort="pr_failure_perc" class="sorted">PR Fail % <span class="sort-icon">↓</span></th>
+                        <th data-sort="prs">PRs <span class="sort-icon">↕</span></th>
+                        <th data-sort="prs_failed">Failed <span class="sort-icon">↕</span></th>
+                        <th data-sort="total_runs">Runs <span class="sort-icon">↕</span></th>
+                        <th data-sort="avg_run_time_minutes">Avg Time <span class="sort-icon">↕</span></th>
+                        <th data-sort="avg_pass_time_minutes">Pass Time <span class="sort-icon">↕</span></th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr><td colspan="8"><div class="loading"><div class="loading-spinner"></div><div>Loading presubmit health data...</div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="count-display" id="count-display"></div>
+    </div>
+
+    <script>
+        let jobs = [];
+
+        function getHealthLevel(rate) {
+            if (rate === 0) return 'good';
+            if (rate <= 25) return 'moderate';
+            if (rate <= 50) return 'warning';
+            if (rate <= 75) return 'severe';
+            return 'critical';
+        }
+
+        function formatTime(minutes) {
+            if (!minutes || minutes === 0) return '—';
+            if (minutes < 1) return `${(minutes * 60).toFixed(0)}s`;
+            if (minutes < 60) return `${minutes.toFixed(1)}m`;
+            return `${(minutes / 60).toFixed(1)}h`;
+        }
+
+        function getJobUrl(name) {
+            const jobName = name.startsWith('pr:') ? name.substring(3) : name;
+            return `https://prow.k8s.io/?job=${encodeURIComponent(jobName)}`;
+        }
+
+        function getCodeSearchUrl(name) {
+            const jobName = name.startsWith('pr:') ? name.substring(3) : name;
+            return `https://cs.k8s.io/?q=${encodeURIComponent(jobName)}&i=nope&literal=nope&files=&excludeFiles=&repos=kubernetes/test-infra`;
+        }
+
+        function updateStats(filteredJobs) {
+            const stats = {
+                total: filteredJobs.length,
+                totalPRs: filteredJobs.reduce((s, j) => s + j.prs, 0),
+                totalRuns: filteredJobs.reduce((s, j) => s + j.total_runs, 0),
+                critical: filteredJobs.filter(j => j.pr_failure_perc > 75).length,
+                severe: filteredJobs.filter(j => j.pr_failure_perc > 50 && j.pr_failure_perc <= 75).length,
+                warning: filteredJobs.filter(j => j.pr_failure_perc > 25 && j.pr_failure_perc <= 50).length,
+                good: filteredJobs.filter(j => j.pr_failure_perc === 0).length
+            };
+
+            document.getElementById('stats-grid').innerHTML = `
+                <div class="stat-card"><div class="stat-value">${stats.total.toLocaleString()}</div><div class="stat-label">Total Jobs</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.totalPRs.toLocaleString()}</div><div class="stat-label">Total PRs</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.totalRuns.toLocaleString()}</div><div class="stat-label">Total Runs</div></div>
+                <div class="stat-card"><div class="stat-value" style="color: var(--critical)">${stats.critical}</div><div class="stat-label">Critical (&gt;75%)</div></div>
+                <div class="stat-card"><div class="stat-value" style="color: var(--severe)">${stats.severe}</div><div class="stat-label">Severe (51-75%)</div></div>
+                <div class="stat-card"><div class="stat-value" style="color: var(--low)">${stats.good}</div><div class="stat-label">Good (0%)</div></div>
+            `;
+        }
+
+        let currentSort = { field: 'pr_failure_perc', asc: false };
+        let currentFilter = 'all';
+        let includePattern = '';
+        let excludePattern = '';
+
+        function updateUrl() {
+            const params = new URLSearchParams();
+            if (includePattern) params.set('include', includePattern);
+            if (excludePattern) params.set('exclude', excludePattern);
+            if (currentFilter !== 'all') params.set('filter', currentFilter);
+            params.set('sort', currentSort.field);
+            params.set('asc', currentSort.asc ? '1' : '0');
+            window.history.replaceState({}, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
+        }
+
+        function loadFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            includePattern = params.get('include') || '';
+            excludePattern = params.get('exclude') || '';
+            currentFilter = params.get('filter') || 'all';
+            currentSort.field = params.get('sort') || 'pr_failure_perc';
+            currentSort.asc = params.get('asc') === '1';
+
+            document.getElementById('include').value = includePattern;
+            document.getElementById('exclude').value = excludePattern;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
+            document.querySelectorAll('th[data-sort]').forEach(th => {
+                const isActive = th.dataset.sort === currentSort.field;
+                th.classList.toggle('sorted', isActive);
+                th.querySelector('.sort-icon').textContent = isActive ? (currentSort.asc ? '↑' : '↓') : '↕';
+            });
+        }
+
+        function tryRegex(pattern, text) {
+            if (!pattern) return null;
+            try { return new RegExp(pattern, 'i').test(text); } catch (e) { return null; }
+        }
+
+        function filterAndSort() {
+            let filtered = [...jobs];
+
+            if (includePattern) {
+                filtered = filtered.filter(j => { const r = tryRegex(includePattern, j.name); return r === null ? true : r; });
+            }
+            if (excludePattern) {
+                filtered = filtered.filter(j => { const r = tryRegex(excludePattern, j.name); return r === null ? true : !r; });
+            }
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(j => getHealthLevel(j.pr_failure_perc) === currentFilter);
+            }
+
+            filtered.sort((a, b) => {
+                let cmp;
+                if (currentSort.field === 'name') cmp = a.name.localeCompare(b.name);
+                else cmp = a[currentSort.field] - b[currentSort.field];
+                return currentSort.asc ? cmp : -cmp;
+            });
+
+            return filtered;
+        }
+
+        function render() {
+            const filtered = filterAndSort();
+            updateStats(filtered);
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = filtered.map((job, idx) => `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td class="job-name">
+                        <a href="${getJobUrl(job.name)}" target="_blank" class="job-link">${job.name.replace('pr:', '')}</a>
+                        <a href="${getCodeSearchUrl(job.name)}" target="_blank" class="code-link" title="Search in test-infra">&#128269;</a>
+                    </td>
+                    <td class="num-cell">
+                        <span class="rate-badge rate-${getHealthLevel(job.pr_failure_perc)}">${job.pr_failure_perc.toFixed(0)}%</span>
+                    </td>
+                    <td class="num-cell">${job.prs}</td>
+                    <td class="num-cell">${job.prs_failed}</td>
+                    <td class="num-cell">${job.total_runs}</td>
+                    <td class="time-cell">${formatTime(job.avg_run_time_minutes)}</td>
+                    <td class="time-cell">${formatTime(job.avg_pass_time_minutes)}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('count-display').textContent = `Showing ${filtered.length} of ${jobs.length} jobs`;
+        }
+
+        function showError(message) {
+            document.getElementById('table-body').innerHTML = `<tr><td colspan="8"><div class="error">${message}</div></td></tr>`;
+        }
+
+        document.getElementById('include').addEventListener('input', (e) => { includePattern = e.target.value; updateUrl(); render(); });
+        document.getElementById('exclude').addEventListener('input', (e) => { excludePattern = e.target.value; updateUrl(); render(); });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                updateUrl();
+                render();
+            });
+        });
+
+        document.querySelectorAll('th[data-sort]').forEach(th => {
+            th.addEventListener('click', () => {
+                const field = th.dataset.sort;
+                if (currentSort.field === field) currentSort.asc = !currentSort.asc;
+                else { currentSort.field = field; currentSort.asc = field === 'name'; }
+
+                document.querySelectorAll('th[data-sort]').forEach(t => {
+                    t.classList.remove('sorted');
+                    t.querySelector('.sort-icon').textContent = '↕';
+                });
+                th.classList.add('sorted');
+                th.querySelector('.sort-icon').textContent = currentSort.asc ? '↑' : '↓';
+                updateUrl();
+                render();
+            });
+        });
+
+        async function init() {
+            try {
+                const response = await fetch('presubmit-health-latest.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const data = await response.json();
+
+                jobs = data.map(j => ({
+                    name: j.job,
+                    pr_failure_perc: j.pr_failure_perc,
+                    prs: j.prs,
+                    prs_failed: j.prs_failed,
+                    total_runs: j.total_runs,
+                    avg_run_time_minutes: j.avg_run_time_minutes,
+                    avg_pass_time_minutes: j.avg_pass_time_minutes
+                }));
+
+                loadFromUrl();
+                render();
+            } catch (err) {
+                showError(`Failed to load data: ${err.message}<br><small>Make sure presubmit-health-latest.json is in the same directory</small>`);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -12,16 +12,18 @@ plank:
     # limits concurrency for k8s-test-infra-staging project
     'test-infra-staging-image-push': 1
     # limits concurrency for 5k GCE jobs
-    '5k-gce-scale-test': 1
+    '5k-gce-scale-test': 4
+    # limits concurrency for 5k AWS jobs
+    '5k-aws-scale-test': 1
   default_decoration_config_entries:
   - config:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20251218-6bd26c8c5"
-        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20251218-6bd26c8c5"
-        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20251218-6bd26c8c5"
-        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20251218-6bd26c8c5"
+        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20260201-a50f011ce"
+        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20260201-a50f011ce"
+        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20260201-a50f011ce"
+        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20260201-a50f011ce"
       gcs_configuration:
         bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
@@ -42,14 +44,9 @@ plank:
           requests:
             cpu: 100m
       blobless_fetch: true
-  - cluster: gke_rules-k8s_us-central1-f_testing
+  - cluster: k8s-infra-aks-prow-build
     config:
       gcs_credentials_secret: ""
-      default_service_account_name: "prowjob-default-sa"
-  - cluster: test-infra-trusted
-    config:
-      gcs_credentials_secret: ""
-      default_service_account_name: "prowjob-default-sa"
 
 sinker:
   resync_period: 1m
@@ -862,6 +859,7 @@ tide:
     kubernetes/dashboard: squash
     kubernetes/ingress-nginx: squash
     kubernetes-sigs/ingress2gateway: squash
+    kubernetes-sigs/node-readiness-controller: squash
   pr_status_base_urls:
     '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker

@@ -83,5 +83,12 @@ for app in "${APPS[@]}"; do
         - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
           command:
           - ./apps/${app}/deploy.sh
+          resources:
+            limits:
+              cpu: 100m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 512Mi
 EOF
 done

@@ -17,7 +17,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
         command:
           - runner.sh
         args:
@@ -61,7 +61,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
         command:
           - runner.sh
         args:
@@ -108,7 +108,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
         command:
           - runner.sh
         args:
@@ -157,7 +157,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
       command:
         - runner.sh
       args:
@@ -200,7 +200,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
         command:
           - runner.sh
         args:
@@ -240,7 +240,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
       command:
         - runner.sh
       args:
@@ -258,10 +258,10 @@ periodics:
           exit $result
       resources:
         limits:
-          cpu: 10
+          cpu: 7
           memory: "16Gi"
         requests:
-          cpu: 10
+          cpu: 7
           memory: "16Gi"
       securityContext:
         privileged: true
@@ -283,7 +283,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
       command:
         - runner.sh
       args:
@@ -326,7 +326,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
       command:
         - runner.sh
       args:
@@ -373,7 +373,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
         command:
           - runner.sh
         args:
@@ -430,7 +430,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
         command:
           - runner.sh
         args:
@@ -459,3 +459,47 @@ periodics:
     testgrid-tab-name: capz-periodic-windows-containerd-upstream-custom-k8s-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
     description: Tests Windows support with custom builds on the main branch. # expect failures in this job as it pulls latest k8s version
+- name: periodic-cluster-api-provider-azure-aks-mgmt-e2e-main
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  minimum_interval: 48h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-community: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: main
+      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+  spec:
+    serviceAccountName: azure
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
+      command:
+        - runner.sh
+      args:
+        - ./scripts/ci-e2e.sh
+      env:
+        - name: GINKGO_FOCUS
+          value: "Workload cluster creation"
+        - name: GINKGO_SKIP
+          value: \[Managed Kubernetes\]|\[WINDOWS\]
+        - name: MGMT_CLUSTER_TYPE
+          value: "aks"
+      securityContext:
+        privileged: true
+      resources:
+          requests:
+            cpu: 6
+            memory: "9Gi"
+          limits:
+            cpu: 6
+            memory: "9Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: periodic-aks-mgmt-e2e-main
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: "Runs E2E tests using AKS as the management cluster to validate the aks-as-mgmt.sh flow"

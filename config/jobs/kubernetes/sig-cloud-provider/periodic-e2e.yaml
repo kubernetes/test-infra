@@ -24,7 +24,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
           - runner.sh
         args:
@@ -33,7 +33,7 @@ periodics:
           - |
             GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
             AMI_ID=$(aws ssm get-parameters --names \
-                     /aws/service/eks/optimized-ami/1.30/amazon-linux-2-gpu/recommended/image_id \
+                     /aws/service/eks/optimized-ami/1.34/amazon-linux-2023/x86_64/nvidia/recommended/image_id \
                      --query 'Parameters[0].[Value]' --output text)
             VERSION=$(curl -Ls https://dl.k8s.io/ci/fast/latest-fast.txt)
             kubetest2 ec2 \
@@ -42,7 +42,7 @@ periodics:
              --worker-instance-type=g4dn.12xlarge \
              --device-plugin-nvidia true \
              --worker-image="$AMI_ID" \
-             --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2.sh \
+             --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
              --up \
              --down \
              --test=ginkgo \
@@ -61,10 +61,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
 - interval: 6h
   cluster: eks-prow-build-cluster
@@ -91,7 +91,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
           - runner.sh
         args:
@@ -126,10 +126,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
 - interval: 6h
   cluster: eks-prow-build-cluster
@@ -157,7 +157,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
           - runner.sh
         args:
@@ -192,8 +192,8 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 10Gi

@@ -28,7 +28,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -56,10 +56,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-arm64
     skip_branches:
@@ -88,7 +88,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -117,10 +117,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-conformance
     skip_branches:
@@ -149,7 +149,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -177,10 +177,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-conformance-arm64
     skip_branches:
@@ -209,7 +209,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -237,10 +237,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-device-plugin-gpu
     skip_branches:
@@ -269,7 +269,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -278,7 +278,7 @@ presubmits:
             - |
               GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
               AMI_ID=$(aws ssm get-parameters --names \
-                     /aws/service/eks/optimized-ami/1.30/amazon-linux-2-gpu/recommended/image_id \
+                     /aws/service/eks/optimized-ami/1.34/amazon-linux-2023/x86_64/nvidia/recommended/image_id \
                      --query 'Parameters[0].[Value]' --output text)
               kubetest2 ec2 \
                --build \
@@ -288,7 +288,7 @@ presubmits:
                --region us-east-1 \
                --target-build-arch linux/amd64 \
                --stage provider-aws-test-infra \
-               --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2.sh \
+               --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
                --up \
                --down \
                --test=ginkgo \
@@ -305,10 +305,78 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
+              memory: 10Gi
+  - name: pull-kubernetes-e2e-ec2-dra-gpu
+    skip_branches:
+      - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: presubmits-ec2
+      description: Runs DRA GPU tests using kubetest2-ec2 against kubernetes master on EC2 with NVIDIA T4 GPUs
+    labels:
+      preset-e2e-containerd-ec2: "true"
+      preset-dind-enabled: "true"
+    path_alias: k8s.io/kubernetes
+    always_run: false
+    optional: true
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: provider-aws-test-infra
+        base_ref: main
+        path_alias: sigs.k8s.io/provider-aws-test-infra
+    spec:
+      serviceAccountName: node-e2e-tests
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+              AMI_ID=$(aws ssm get-parameters --names \
+                     /aws/service/eks/optimized-ami/1.34/amazon-linux-2023/x86_64/nvidia/recommended/image_id \
+                     --query 'Parameters[0].[Value]' --output text)
+              kubetest2 ec2 \
+               --build \
+               --worker-instance-type=g4dn.12xlarge \
+               --dra-nvidia true \
+               --worker-image="$AMI_ID" \
+               --region us-east-1 \
+               --target-build-arch linux/amd64 \
+               --stage provider-aws-test-infra \
+               --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
+               --up \
+               --down \
+               --test=ginkgo \
+               -- \
+               --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
+               --focus-regex="\[Feature:DynamicResourceAllocation\].*GPU" \
+               --use-built-binaries true \
+               --parallel=1
+          env:
+            - name: USE_DOCKERIZED_BUILD
+              value: "true"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 7
+              memory: 10Gi
+            requests:
+              cpu: 7
               memory: 10Gi
   kubernetes-sigs/provider-aws-test-infra:
   - name: pull-kubernetes-e2e-ec2-quick
@@ -332,7 +400,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -361,10 +429,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-cloud-provider-quick
     skip_branches:
@@ -387,7 +455,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -417,10 +485,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-canary
     skip_branches:
@@ -448,7 +516,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -476,10 +544,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-cloud-provider-canary
     skip_branches:
@@ -507,7 +575,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -536,10 +604,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-conformance-canary
     skip_branches:
@@ -567,7 +635,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -595,10 +663,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-eks-conformance-canary
     skip_branches:
@@ -626,7 +694,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -635,7 +703,7 @@ presubmits:
             - |
               cd kubetest2-ec2 && GOPROXY=direct go install .
               AMI_ID=$(aws ssm get-parameters --names \
-                       /aws/service/eks/optimized-ami/1.28/amazon-linux-2/recommended/image_id \
+                       /aws/service/eks/optimized-ami/1.34/amazon-linux-2023/x86_64/standard/recommended/image_id \
                        --query 'Parameters[0].[Value]' --output text)
               kubetest2 ec2 \
                --build \
@@ -643,7 +711,7 @@ presubmits:
                --region us-east-1 \
                --target-build-arch linux/amd64 \
                --worker-image "$AMI_ID" \
-               --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2.sh \
+               --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
                --stage provider-aws-test-infra \
                --up \
                --down \
@@ -659,10 +727,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
 periodics:
 - interval: 6h
@@ -692,7 +760,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
           - runner.sh
         args:
@@ -718,10 +786,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
 - interval: 6h
   cluster: eks-prow-build-cluster
@@ -750,7 +818,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
           - runner.sh
         args:
@@ -776,10 +844,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
 - interval: 6h
   cluster: eks-prow-build-cluster
@@ -807,7 +875,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
           - runner.sh
         args:
@@ -834,10 +902,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
 - interval: 6h
   cluster: eks-prow-build-cluster
@@ -865,7 +933,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
           - runner.sh
         args:
@@ -893,10 +961,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
 - interval: 1h
   cluster: eks-prow-build-cluster
@@ -908,6 +976,11 @@ periodics:
   labels:
     preset-e2e-containerd-ec2: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   decoration_config:
     timeout: 4h
   spec:
@@ -919,7 +992,7 @@ periodics:
         - --ttl=6h
         - --path=s3://provider-aws-test-infra/objs.json
         - --region=us-east-1
-        image: gcr.io/k8s-staging-boskos/aws-janitor:v20240801-1221bfe
+        image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
         resources:
           requests:
             cpu: 1

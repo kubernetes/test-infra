@@ -31,7 +31,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         resources:
           requests:
             cpu: 4
@@ -78,7 +78,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         resources:
           requests:
             cpu: 4
@@ -160,10 +160,10 @@ presubmits:
         resources:
           requests:
             memory: "4Gi"
-            cpu: "12"
+            cpu: 7
           limits:
             memory: "4Gi"
-            cpu: "12"
+            cpu: 7
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-integration-test
@@ -185,10 +185,10 @@ presubmits:
         resources:
           limits:
             memory: 4Gi
-            cpu: 8500m
+            cpu: 7
           requests:
             memory: 4Gi
-            cpu: 8500m
+            cpu: 7
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-verify
@@ -205,7 +205,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
           command:
             - /run.sh
           args:
@@ -221,10 +221,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -243,7 +243,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
           command:
             - /run.sh
           args:
@@ -259,10 +259,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -278,7 +278,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
           command:
             - /run.sh
           args:
@@ -313,7 +313,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
           command:
             - /run.sh
           args:
@@ -329,10 +329,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -348,7 +348,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
           command:
             - /run.sh
           args:
@@ -364,10 +364,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -383,7 +383,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
           command:
             - /run.sh
           args:
@@ -398,10 +398,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -417,7 +417,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
           command:
             - /run.sh
           args:
@@ -433,10 +433,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -452,7 +452,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
           command:
             - /run.sh
           args:
@@ -468,10 +468,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits

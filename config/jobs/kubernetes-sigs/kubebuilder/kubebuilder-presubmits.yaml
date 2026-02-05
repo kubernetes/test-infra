@@ -36,7 +36,7 @@ presubmits:
       - ^master$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
             - ./test_e2e.sh
@@ -60,7 +60,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-32-0
+  - name: pull-kubebuilder-e2e-k8s-1-35-0
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
@@ -72,13 +72,13 @@ presubmits:
       - ^master$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
             - ./test_e2e.sh
           env:
             - name: KIND_K8S_VERSION
-              value: "v1.32.0"
+              value: "v1.35.0"
             - name: KIND_E2E
               value: "true"
           resources:
@@ -92,7 +92,7 @@ presubmits:
             privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-32-0
+      testgrid-tab-name: kubebuilder-e2e-1-35-0
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -108,7 +108,7 @@ presubmits:
       - ^master$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
             - ./test_e2e.sh

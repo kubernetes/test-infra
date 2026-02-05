@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG GO_VERSION=1.25.5
-FROM multiarch/qemu-user-static:7.2.0-1 AS qemu-image
+ARG GO_VERSION
 # Includes bash, docker, and gcloud
 FROM golang:${GO_VERSION}-alpine3.22
 # upstream go image sets GOTOOLCHAIN=local
@@ -53,14 +52,9 @@ RUN echo ${IMAGE_ARG} > /workspace/image-reference.txt
 # Default home for cloudbuild jobs is /builder/home
 RUN mkdir -p /builder/home
 
-# Copy qemu static binaries.
-COPY --from=qemu-image /usr/bin /qemu-bin
-RUN cp /qemu-bin/qemu-* /usr/bin/ && \
-    rm -rf /qemu-bin
-COPY --from=qemu-image /qemu-binfmt-conf.sh /qemu-binfmt-conf.sh
-COPY --from=qemu-image /register /register
 ADD ./buildx-entrypoint.sh /buildx-entrypoint
 
-RUN apk add qemu
+COPY ["runner.sh", \
+    "/usr/local/bin/"]
 
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/usr/local/bin/runner.sh"]

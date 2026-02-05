@@ -13,7 +13,6 @@ dashboard_groups:
   - kops-gce
   - kops-grid
   - kops-distro-al2023
-  - kops-distro-amzn2
   - kops-distro-deb11
   - kops-distro-deb12
   - kops-distro-deb13
@@ -55,7 +54,6 @@ dashboards:
 - name: kops-gce
 - name: kops-grid
 - name: kops-distro-al2023
-- name: kops-distro-amzn2
 - name: kops-distro-deb11
 - name: kops-distro-deb12
 - name: kops-distro-deb13

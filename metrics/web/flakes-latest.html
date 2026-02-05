@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes CI Weekly Flakes Dashboard</title>
+    <style>
+        :root {
+            --critical: #dc2626;
+            --severe: #ea580c;
+            --warning: #d97706;
+            --moderate: #ca8a04;
+            --low: #65a30d;
+            --bg-dark: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .subtitle a {
+            color: var(--text-secondary);
+        }
+
+        .nav-links {
+            margin-left: auto;
+            display: flex;
+            gap: 16px;
+        }
+
+        .nav-links a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        .stats-grid {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 8px 16px;
+            text-align: center;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            max-width: 350px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 5px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: var(--border);
+        }
+
+        .filter-btn.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .table-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(0,0,0,0.2);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            user-select: none;
+            position: sticky;
+            top: 0;
+        }
+
+        th:hover {
+            background: rgba(0,0,0,0.3);
+        }
+
+        th .sort-icon {
+            margin-left: 8px;
+            opacity: 0.5;
+        }
+
+        th.sorted .sort-icon {
+            opacity: 1;
+        }
+
+        tr {
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .job-name {
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .job-link {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .job-link:hover {
+            text-decoration: underline;
+        }
+
+        .code-link {
+            margin-left: 6px;
+            text-decoration: none;
+            opacity: 0.5;
+            font-size: 0.85em;
+        }
+
+        .code-link:hover {
+            opacity: 1;
+        }
+
+        .num-cell {
+            text-align: right;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .consistency-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .consistency-critical { background: var(--critical); }
+        .consistency-severe { background: var(--severe); }
+        .consistency-warning { background: var(--warning); }
+        .consistency-moderate { background: var(--moderate); }
+        .consistency-good { background: var(--low); }
+
+        .bar-cell {
+            width: 150px;
+        }
+
+        .bar-container {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .test-flakes {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            max-width: 400px;
+        }
+
+        .test-flakes-toggle {
+            cursor: pointer;
+            color: #60a5fa;
+            font-size: 0.75rem;
+        }
+
+        .test-flakes-list {
+            display: none;
+            margin-top: 4px;
+            padding-left: 12px;
+            border-left: 2px solid var(--border);
+        }
+
+        .test-flakes-list.expanded {
+            display: block;
+        }
+
+        .test-flake-item {
+            margin: 2px 0;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.7rem;
+        }
+
+        .count-display {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+
+        .legend {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-start;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--critical);
+        }
+
+        @media (max-width: 768px) {
+            .bar-cell, .test-flakes {
+                display: none;
+            }
+
+            th, td {
+                padding: 10px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kubernetes CI Weekly Flakes Dashboard</h1>
+            <p class="subtitle">Data from <a href="flakes-latest.json">flakes-latest.json</a></p>
+            <div class="nav-links">
+                <a href="index.html">Index</a>
+                <a href="failures-latest.html">Failures</a>
+                <a href="flakes-daily-latest.html">Flakes (Daily)</a>
+            </div>
+        </header>
+
+        <div class="stats-grid" id="stats-grid"></div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-color" style="background: var(--critical)"></div>Critical (&lt;50%)</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--severe)"></div>Severe (50-69%)</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--warning)"></div>Warning (70-84%)</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--moderate)"></div>Moderate (85-94%)</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--low)"></div>Good (95%+)</div>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="include" placeholder="Include regex (e.g., pull-kubernetes|ci-)">
+            </div>
+            <div class="search-box">
+                <input type="text" id="exclude" placeholder="Exclude regex (e.g., azure|aws)">
+            </div>
+            <div class="filter-group">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="critical">Critical</button>
+                <button class="filter-btn" data-filter="severe">Severe</button>
+                <button class="filter-btn" data-filter="warning">Warning</button>
+                <button class="filter-btn" data-filter="moderate">Moderate</button>
+                <button class="filter-btn" data-filter="good">Good</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th data-sort="name">Job Name <span class="sort-icon">↕</span></th>
+                        <th data-sort="consistency">Consistency <span class="sort-icon">↕</span></th>
+                        <th data-sort="flakes" class="sorted">Flakes <span class="sort-icon">↓</span></th>
+                        <th class="bar-cell">Consistency</th>
+                        <th>Test Flakes</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr>
+                        <td colspan="6">
+                            <div class="loading">
+                                <div class="loading-spinner"></div>
+                                <div>Loading flakes data...</div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="count-display" id="count-display"></div>
+    </div>
+
+    <script>
+        let jobs = [];
+        let maxFlakes = 0;
+
+        function getConsistencyLevel(consistency) {
+            if (consistency < 0.5) return 'critical';
+            if (consistency < 0.7) return 'severe';
+            if (consistency < 0.85) return 'warning';
+            if (consistency < 0.95) return 'moderate';
+            return 'good';
+        }
+
+        function getConsistencyLabel(consistency) {
+            if (consistency < 0.5) return 'Critical';
+            if (consistency < 0.7) return 'Severe';
+            if (consistency < 0.85) return 'Warning';
+            if (consistency < 0.95) return 'Moderate';
+            return 'Good';
+        }
+
+        function getConsistencyRank(consistency) {
+            if (consistency < 0.5) return 5;
+            if (consistency < 0.7) return 4;
+            if (consistency < 0.85) return 3;
+            if (consistency < 0.95) return 2;
+            return 1;
+        }
+
+        function getBarColor(consistency) {
+            if (consistency < 0.5) return 'var(--critical)';
+            if (consistency < 0.7) return 'var(--severe)';
+            if (consistency < 0.85) return 'var(--warning)';
+            if (consistency < 0.95) return 'var(--moderate)';
+            return 'var(--low)';
+        }
+
+        function getJobUrl(name) {
+            if (name.startsWith('pr:')) {
+                return `https://prow.k8s.io/?job=${encodeURIComponent(name.substring(3))}`;
+            }
+            return `https://prow.k8s.io/?job=${encodeURIComponent(name)}`;
+        }
+
+        function getCodeSearchUrl(name) {
+            const jobName = name.startsWith('pr:') ? name.substring(3) : name;
+            return `https://cs.k8s.io/?q=${encodeURIComponent(jobName)}&i=nope&literal=nope&files=&excludeFiles=&repos=kubernetes/test-infra`;
+        }
+
+        function updateStats(filteredJobs) {
+            const stats = {
+                total: filteredJobs.length,
+                critical: filteredJobs.filter(j => j.consistency < 0.5).length,
+                severe: filteredJobs.filter(j => j.consistency >= 0.5 && j.consistency < 0.7).length,
+                warning: filteredJobs.filter(j => j.consistency >= 0.7 && j.consistency < 0.85).length,
+                moderate: filteredJobs.filter(j => j.consistency >= 0.85 && j.consistency < 0.95).length,
+                good: filteredJobs.filter(j => j.consistency >= 0.95).length,
+                totalFlakes: filteredJobs.reduce((s, j) => s + j.flakes, 0)
+            };
+
+            document.getElementById('stats-grid').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${stats.total.toLocaleString()}</div>
+                    <div class="stat-label">Total Jobs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.totalFlakes.toLocaleString()}</div>
+                    <div class="stat-label">Total Flakes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--critical)">${stats.critical}</div>
+                    <div class="stat-label">Critical (&lt;50%)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--severe)">${stats.severe}</div>
+                    <div class="stat-label">Severe (50-69%)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--warning)">${stats.warning}</div>
+                    <div class="stat-label">Warning (70-84%)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--low)">${stats.good}</div>
+                    <div class="stat-label">Good (95%+)</div>
+                </div>
+            `;
+        }
+
+        let currentSort = { field: 'flakes', asc: false };
+        let currentFilter = 'all';
+        let includePattern = '';
+        let excludePattern = '';
+
+        function updateUrl() {
+            const params = new URLSearchParams();
+            if (includePattern) params.set('include', includePattern);
+            if (excludePattern) params.set('exclude', excludePattern);
+            if (currentFilter !== 'all') params.set('filter', currentFilter);
+            params.set('sort', currentSort.field);
+            params.set('asc', currentSort.asc ? '1' : '0');
+            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            window.history.replaceState({}, '', newUrl);
+        }
+
+        function loadFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            includePattern = params.get('include') || '';
+            excludePattern = params.get('exclude') || '';
+            currentFilter = params.get('filter') || 'all';
+            currentSort.field = params.get('sort') || 'flakes';
+            currentSort.asc = params.get('asc') === '1';
+
+            document.getElementById('include').value = includePattern;
+            document.getElementById('exclude').value = excludePattern;
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.filter === currentFilter);
+            });
+            document.querySelectorAll('th[data-sort]').forEach(th => {
+                const isActive = th.dataset.sort === currentSort.field;
+                th.classList.toggle('sorted', isActive);
+                th.querySelector('.sort-icon').textContent = isActive ? (currentSort.asc ? '↑' : '↓') : '↕';
+            });
+        }
+
+        function tryRegex(pattern, text) {
+            if (!pattern) return null;
+            try {
+                return new RegExp(pattern, 'i').test(text);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function filterAndSort() {
+            let filtered = [...jobs];
+
+            if (includePattern) {
+                filtered = filtered.filter(j => {
+                    const result = tryRegex(includePattern, j.name);
+                    return result === null ? true : result;
+                });
+            }
+
+            if (excludePattern) {
+                filtered = filtered.filter(j => {
+                    const result = tryRegex(excludePattern, j.name);
+                    return result === null ? true : !result;
+                });
+            }
+
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(j => getConsistencyLevel(j.consistency) === currentFilter);
+            }
+
+            filtered.sort((a, b) => {
+                let cmp;
+                if (currentSort.field === 'name') {
+                    cmp = a.name.localeCompare(b.name);
+                } else if (currentSort.field === 'consistency') {
+                    cmp = a.consistency - b.consistency;
+                } else {
+                    cmp = a.flakes - b.flakes;
+                }
+                return currentSort.asc ? cmp : -cmp;
+            });
+
+            return filtered;
+        }
+
+        function renderTestFlakes(testFlakes, idx) {
+            if (!testFlakes || Object.keys(testFlakes).length === 0) {
+                return '<span style="color: var(--text-secondary)">—</span>';
+            }
+            const entries = Object.entries(testFlakes).sort((a, b) => b[1] - a[1]);
+            const count = entries.length;
+            const listItems = entries.map(([test, cnt]) =>
+                `<div class="test-flake-item">${cnt}× ${test}</div>`
+            ).join('');
+
+            return `
+                <span class="test-flakes-toggle" onclick="toggleTestFlakes(${idx})">${count} test${count > 1 ? 's' : ''} ▼</span>
+                <div class="test-flakes-list" id="test-flakes-${idx}">${listItems}</div>
+            `;
+        }
+
+        window.toggleTestFlakes = function(idx) {
+            const list = document.getElementById(`test-flakes-${idx}`);
+            list.classList.toggle('expanded');
+        };
+
+        function render() {
+            const filtered = filterAndSort();
+            updateStats(filtered);
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = filtered.map((job, idx) => `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td class="job-name">
+                        <a href="${getJobUrl(job.name)}" target="_blank" class="job-link">${job.name}</a>
+                        <a href="${getCodeSearchUrl(job.name)}" target="_blank" class="code-link" title="Search in test-infra">&#128269;</a>
+                    </td>
+                    <td class="num-cell">
+                        <span class="consistency-badge consistency-${getConsistencyLevel(job.consistency)}">
+                            ${(job.consistency * 100).toFixed(1)}%
+                        </span>
+                    </td>
+                    <td class="num-cell">${job.flakes}</td>
+                    <td class="bar-cell">
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: ${(job.consistency * 100).toFixed(1)}%; background: ${getBarColor(job.consistency)}"></div>
+                        </div>
+                    </td>
+                    <td class="test-flakes">${renderTestFlakes(job.testFlakes, idx)}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('count-display').textContent =
+                `Showing ${filtered.length} of ${jobs.length} jobs`;
+        }
+
+        function showError(message) {
+            document.getElementById('table-body').innerHTML = `
+                <tr><td colspan="6"><div class="error">${message}</div></td></tr>
+            `;
+        }
+
+        document.getElementById('include').addEventListener('input', (e) => {
+            includePattern = e.target.value;
+            updateUrl();
+            render();
+        });
+
+        document.getElementById('exclude').addEventListener('input', (e) => {
+            excludePattern = e.target.value;
+            updateUrl();
+            render();
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                updateUrl();
+                render();
+            });
+        });
+
+        document.querySelectorAll('th[data-sort]').forEach(th => {
+            th.addEventListener('click', () => {
+                const field = th.dataset.sort;
+                if (currentSort.field === field) {
+                    currentSort.asc = !currentSort.asc;
+                } else {
+                    currentSort.field = field;
+                    currentSort.asc = field === 'name';
+                }
+
+                document.querySelectorAll('th[data-sort]').forEach(t => {
+                    t.classList.remove('sorted');
+                    t.querySelector('.sort-icon').textContent = '↕';
+                });
+                th.classList.add('sorted');
+                th.querySelector('.sort-icon').textContent = currentSort.asc ? '↑' : '↓';
+
+                updateUrl();
+                render();
+            });
+        });
+
+        async function init() {
+            try {
+                const response = await fetch('flakes-latest.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const data = await response.json();
+
+                jobs = Object.entries(data).map(([name, info]) => ({
+                    name,
+                    consistency: info.consistency,
+                    flakes: info.flakes,
+                    testFlakes: info.test_flakes
+                }));
+
+                maxFlakes = Math.max(...jobs.map(j => j.flakes));
+
+                loadFromUrl();
+                render();
+            } catch (err) {
+                showError(`Failed to load data: ${err.message}<br><small>Make sure flakes-latest.json is in the same directory</small>`);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

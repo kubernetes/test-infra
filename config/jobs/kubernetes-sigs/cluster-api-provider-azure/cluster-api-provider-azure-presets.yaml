@@ -68,3 +68,12 @@ presets:
   - mountPath: /var/run/secrets/azure-token/serviceaccount
     name: azure-token
     readOnly: true
+- labels:
+    preset-azure-aks-mgmt-identity: "true"
+  env: # below env values are not secrets - user-assigned managed identity for AKS management cluster
+  - name: AZURE_CLIENT_ID_USER_ASSIGNED_IDENTITY
+    value: "f48f8966-f6f5-433a-aa38-b59d05ba74f2"
+  - name: AZURE_OBJECT_ID_USER_ASSIGNED_IDENTITY
+    value: "1e51dbc0-ff00-4e95-9aee-2db4f011c3fa"
+  - name: AZURE_USER_ASSIGNED_IDENTITY_RESOURCE_ID
+    value: "/subscriptions/46678f10-4bbb-447e-98e8-d2829589f2d8/resourcegroups/capz-ci-aks/providers/Microsoft.ManagedIdentity/userAssignedIdentities/capz-ci-aks-identity"

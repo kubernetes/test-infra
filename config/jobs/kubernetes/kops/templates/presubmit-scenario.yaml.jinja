@@ -6,8 +6,8 @@
     {%- if run_if_changed %}
     run_if_changed: '{{run_if_changed}}'
     {%- endif %}
-    {%- if cloud == "gce" and scenario == "scalability" %}
-    job_queue_name: "5k-gce-scale-test"
+    {%- if job_queue_name %}
+    job_queue_name: '{{job_queue_name}}'
     {%- endif %}
     always_run: {{always_run}}
     optional: {{optional}}
@@ -35,6 +35,17 @@
       repo: perf-tests
       base_ref: master
       path_alias: k8s.io/perf-tests
+    {%- endif %}
+    {%- if extra_refs %}
+    extra_refs:
+    {%- for ref in extra_refs %}
+    - org: {{ ref.org }}
+      repo: {{ ref.repo }}
+      base_ref: {{ ref.base_ref }}
+      {%- if ref.path_alias %}
+      path_alias: {{ ref.path_alias }}
+      {%- endif %}
+    {%- endfor %}
     {%- endif %}
     spec:
       {%- if cloud == "gce" %}

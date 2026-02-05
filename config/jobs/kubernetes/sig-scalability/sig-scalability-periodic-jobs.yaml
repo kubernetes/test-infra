@@ -28,7 +28,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -89,7 +89,7 @@ periodics:
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -154,7 +154,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -233,7 +233,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -310,7 +310,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -392,7 +392,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -474,7 +474,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -562,7 +562,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -639,7 +639,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -705,7 +705,7 @@ periodics:
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       args:
@@ -740,7 +740,7 @@ periodics:
     timeout: 3h55m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -807,7 +807,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -862,7 +862,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -891,64 +891,6 @@ periodics:
           cpu: 2
           memory: "4Gi"
 
-- name: ci-kubernetes-e2e-gce-network-metric-measurement
-  cluster: k8s-infra-prow-build
-  tags:
-    - "perfDashPrefix: network-performance"
-    - "perfDashJobType: performance"
-  interval: 24h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
-  annotations:
-    testgrid-dashboards: sig-scalability-network
-    testgrid-tab-name: metric-measurement
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: perf-tests
-    base_ref: master
-    path_alias: k8s.io/perf-tests
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --cluster=
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-nodes=102
-      - --provider=gce
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--nodes=100
-      - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testsuite=testing/network/suite.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=40m
-      - --use-logexporter
-      resources:
-        requests:
-          cpu: 1
-          memory: "2Gi"
-        limits:
-          cpu: 1
-          memory: "2Gi"
-
 - interval: 12h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-gci-gce-benchmark-requests-1
@@ -975,7 +917,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-requests-1
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -1049,7 +991,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-list
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -1122,7 +1064,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-list-proto
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -1204,7 +1146,7 @@ periodics:
       secret:
         secretName: scale-pull-cache-token
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
       volumeMounts:
       - name: cache-secret
         readOnly: true
@@ -1218,17 +1160,18 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
+      - --env=CL2_ENABLE_INFORMER_LATENCY_TEST=true
       # Override MASTER_SIZE to get additional memory to fit larger resource size.
       - --env=MASTER_SIZE=n2-standard-64 # 64 vCPUs, 256GB memory
       - --env=ETCD_QUOTA_BACKEND_BYTES=21474836480 # 20GB
       # Ensure exec-service is not scheduled on normal node of size e2-medium (2vCPUs, 4GB memory)
       - --env=CL2_EXECSERVICE_CPU_REQUESTS=2
       - --env=CL2_EXECSERVICE_MEMORY_REQUESTS=4Gi
-      # Override for pod large resource size
-      - --env=CL2_DAEMONSET_POD_PAYLOAD_SIZE=15360 # 15KB
-      - --env=CL2_DEPLOYMENT_POD_PAYLOAD_SIZE=15360 # 15KB
-      - --env=CL2_STATEFULSET_POD_PAYLOAD_SIZE=15360 # 15KB
-      - --env=CL2_JOB_POD_PAYLOAD_SIZE=15360 # 15KB
+      # Override for 1.93GB pod resource size
+      - --env=CL2_DAEMONSET_POD_PAYLOAD_SIZE=8000
+      - --env=CL2_DEPLOYMENT_POD_PAYLOAD_SIZE=8000
+      - --env=CL2_STATEFULSET_POD_PAYLOAD_SIZE=8000
+      - --env=CL2_JOB_POD_PAYLOAD_SIZE=8000
       #  Remaining parameters should match ci-kubernetes-e2e-gce-scale-performance
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32

@@ -15,7 +15,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -104,7 +104,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -201,7 +201,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -243,7 +243,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -294,7 +294,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -340,7 +340,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -390,7 +390,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -440,7 +440,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -487,7 +487,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -538,7 +538,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
@@ -556,6 +556,57 @@ presubmits:
           value: ""
         - name: LABEL_FILTER
           value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
+        - name: PARALLEL
+          value: "true"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7
+            memory: 9000Mi
+          requests:
+            cpu: 7
+            memory: 9000Mi
+
+  - name: pull-kubernetes-e2e-kind-alpha-beta-features-audit
+    annotations:
+      description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled together with audit logging.
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+    cluster: k8s-infra-prow-build
+    optional: true
+    decorate: true
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    labels:
+      preset-dind-enabled: "true"
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        # kind-audit-e2e.sh enables audit logging.
+        - >
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" &&
+          curl -sSL https://github.com/kubernetes/test-infra/raw/master/experiment/kind-audit-e2e.sh >/tmp/kind-audit-e2e.sh &&
+          chmod u+x /tmp/kind-audit-e2e.sh &&
+          /tmp/kind-audit-e2e.sh
+        env:
+        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+        - name: FEATURE_GATES
+          value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
+        - name: RUNTIME_CONFIG
+          value: '{"api/all":"true"}'
+        - name: LABEL_FILTER
+          value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -588,12 +639,17 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash
+        # The modified e2e-k8s.sh enables the log query feature in the kubelet config (off by default for security reasons).
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - >
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" &&
+          curl -sSL https://github.com/kubernetes/test-infra/raw/master/experiment/kind-race-e2e-k8s.sh >/tmp/kind-race-e2e-k8s.sh &&
+          chmod u+x /tmp/kind-race-e2e-k8s.sh &&
+          /tmp/kind-race-e2e-k8s.sh
         env:
         # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
         - name: FEATURE_GATES
@@ -639,7 +695,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
         command:
         - wrapper.sh
         - bash

@@ -5,10 +5,15 @@ periodics:
   labels:
     app: label-sync
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-staging-test-infra/label_sync:v20251031-d6af3d3e19
+      image: gcr.io/k8s-staging-test-infra/label_sync:v20251212-3f863f26d7
       command:
       - label_sync
       args:
@@ -26,6 +31,13 @@ periodics:
       - name: config
         mountPath: /etc/config
         readOnly: true
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: github
       secret:

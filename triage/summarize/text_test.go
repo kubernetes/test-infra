@@ -85,6 +85,117 @@ func TestMakeNgramCountsDigest(t *testing.T) {
 	}
 }
 
+// TestPodFailureClusteringSameID verifies that similar pod failure messages
+// with different node names, pod names, timestamps, and line numbers
+// all produce the same cluster ID.
+func TestPodFailureClusteringSameID(t *testing.T) {
+	// These are real examples of the same type of failure that should cluster together
+	failureMessages := []string{
+		`[FAILED] 1 errors:
+pod pod-terminate-status-2-7 on node nodes-us-west1-a-w0fq container unexpected exit code 2: start=2025-12-10 13:51:30 +0000 UTC end=2025-12-10 13:51:30 +0000 UTC reason=Error message=
+In [It] at: k8s.io/kubernetes/test/e2e/node/pods.go:1022 @ 12/10/25 13:52:29.244`,
+
+		`[FAILED] 1 errors:
+pod pod-terminate-status-2-14 on node i-0d1f2dfeb37c586ad container unexpected exit code 2: start=2025-12-10 22:30:45 +0000 UTC end=2025-12-10 22:30:45 +0000 UTC reason=Error message=
+In [It] at: k8s.io/kubernetes/test/e2e/node/pods.go:548 @ 12/10/25 22:30:49.099`,
+
+		`[FAILED] 1 errors:
+pod pod-terminate-status-1-0 on node nodes-us-central1-c-1tpf container unexpected exit code 2: start=2025-12-23 14:17:13 +0000 UTC end=2025-12-23 14:17:14 +0000 UTC reason=Error message=
+In [It] at: k8s.io/kubernetes/test/e2e/node/pods.go:849 @ 12/23/25 14:18:50.228`,
+
+		`[FAILED] 1 errors:
+pod pod-terminate-status-2-0 on node nodes-uksouth-2000002 container unexpected exit code 2: start=2025-12-22 01:53:07 +0000 UTC end=2025-12-22 01:53:07 +0000 UTC reason=Error message=
+In [It] at: k8s.io/kubernetes/test/e2e/node/pods.go:1381 @ 12/22/25 01:54:33.96`,
+
+		`[FAILED] 1 errors:
+pod pod-terminate-status-2-5 on node kind-worker2 container unexpected exit code 2: start=2025-12-11 08:41:37 +0000 UTC end=2025-12-11 08:41:37 +0000 UTC reason=Error message=
+In [It] at: k8s.io/kubernetes/test/e2e/node/pods.go:1381 @ 12/11/25 08:42:14.146`,
+	}
+
+	// Normalize all messages and compute their cluster IDs
+	var clusterIDs []string
+	for _, msg := range failureMessages {
+		normalized := normalize(msg, defaultMaxClusterTextLength)
+		clusterID := makeNgramCountsDigest(normalized)
+		clusterIDs = append(clusterIDs, clusterID)
+	}
+
+	// All cluster IDs should be the same
+	firstID := clusterIDs[0]
+	for i, id := range clusterIDs {
+		if id != firstID {
+			t.Errorf("Failure message %d produced different cluster ID:\n  got:  %s\n  want: %s\n\nNormalized[0]: %s\nNormalized[%d]: %s",
+				i, id, firstID,
+				normalize(failureMessages[0], defaultMaxClusterTextLength),
+				i, normalize(failureMessages[i], defaultMaxClusterTextLength))
+		}
+	}
+}
+
+// TestNormalizeNodeNames verifies that various node name formats are normalized
+func TestNormalizeNodeNames(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			"GKE style node name",
+			"node nodes-us-west1-a-w0fq failed",
+			"node UNIQ1 failed",
+		},
+		{
+			"AWS style node name",
+			"node i-0d1f2dfeb37c586ad failed",
+			"node UNIQ1 failed",
+		},
+		{
+			"kind cluster node name",
+			"node kind-worker2 failed",
+			"node UNIQ1 failed",
+		},
+		{
+			"Pod name with numeric suffix",
+			"pod pod-terminate-status-2-7 failed",
+			"pod UNIQ1 failed",
+		},
+		{
+			"Go file line number",
+			"at: file.go:1234 error",
+			"at: fileUNIQ1 error",
+		},
+		{
+			"MM/DD/YY timestamp",
+			"error @ 12/10/25 13:52:29.244",
+			"error @ TIME",
+		},
+		{
+			"Kubernetes random suffix with quote",
+			`pod "test-7mhp" failed`,
+			`pod "testUNIQ1 failed`, // suffix + quote consumed
+		},
+		{
+			"Kubernetes random suffix with space",
+			"container dynamicpv-bdf5 failed",
+			"container dynamicpvUNIQ1failed", // suffix + space consumed
+		},
+		{
+			"Kubernetes random suffix with slash",
+			"namespaces/test-5405/pods",
+			"namespaces/testUNIQ1pods", // suffix + slash consumed
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := normalize(tc.input, defaultMaxClusterTextLength)
+			if got != tc.expected {
+				t.Errorf("normalize(%q) = %q, want %q", tc.input, got, tc.expected)
+			}
+		})
+	}
+}
+
 func TestCommonSpans(t *testing.T) {
 	testCases := []struct {
 		name     string

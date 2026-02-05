@@ -27,7 +27,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -59,11 +59,11 @@ presubmits:
           limits:
             cpu: 4
             memory: "9Gi"
-  - name: pull-cluster-autoscaler-e2e-azure-1-32
+  - name: pull-cluster-autoscaler-e2e-azure-1-35
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-autoscaling-cluster-autoscaler
-      testgrid-tab-name: cloudprovider-azure-1.32
+      testgrid-tab-name: cloudprovider-azure-1.35
     always_run: false
     optional: true
     run_if_changed: 'cluster-autoscaler\/cloudprovider\/azure'
@@ -76,7 +76,7 @@ presubmits:
       timeout: 5h
     path_alias: k8s.io/autoscaler
     branches:
-      - cluster-autoscaler-release-1.32
+      - cluster-autoscaler-release-1.35
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -86,7 +86,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.31
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.35
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -101,7 +101,7 @@ presubmits:
           - name: ADDITIONAL_ASO_CRDS
             value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
           - name: KUBERNETES_VERSION
-            value: "1.32"
+            value: "1.34" # TODO set to 1.35 when available on AKS
           - name: AKS_TIER
             value: "Premium" # required for LTS
           - name: AKS_SUPPORT_PLAN
@@ -145,7 +145,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -204,7 +204,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.31
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.33
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -220,6 +220,65 @@ presubmits:
             value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
           - name: KUBERNETES_VERSION
             value: "1.33"
+          - name: AKS_TIER
+            value: "Premium" # required for LTS
+          - name: AKS_SUPPORT_PLAN
+            value: "AKSLongTermSupport" # Use LTS
+          - name: CLUSTER_TEMPLATE
+            value: ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test/templates/cluster-template-prow-aks-aso-cluster-autoscaler.yaml
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
+            memory: "9Gi"
+          limits:
+            cpu: 4
+            memory: "9Gi"
+  - name: pull-cluster-autoscaler-e2e-azure-1-32
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+      testgrid-tab-name: cloudprovider-azure-1.32
+    always_run: false
+    optional: true
+    run_if_changed: 'cluster-autoscaler\/cloudprovider\/azure'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    decorate: true
+    decoration_config:
+      timeout: 5h
+    path_alias: k8s.io/autoscaler
+    branches:
+      - cluster-autoscaler-release-1.32
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.21
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    spec:
+      serviceAccountName: azure
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
+        command:
+          - runner.sh
+          - ./scripts/ci-entrypoint.sh
+        args:
+          - bash
+          - -c
+          - |
+            cd ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test
+            make test-e2e TAG=$(git rev-parse --short HEAD)
+        env:
+          # CAPZ config
+          - name: ADDITIONAL_ASO_CRDS
+            value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
+          - name: KUBERNETES_VERSION
+            value: "1.32"
           - name: AKS_TIER
             value: "Premium" # required for LTS
           - name: AKS_SUPPORT_PLAN

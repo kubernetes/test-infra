@@ -14,10 +14,10 @@ presubmits:
         - hack/pull-security-profiles-operator-build
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 4Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 4Gi
 
   - name: pull-security-profiles-operator-verify
@@ -34,10 +34,10 @@ presubmits:
         - hack/pull-security-profiles-operator-verify
         resources:
           limits:
-            cpu: 12
+            cpu: 7
             memory: 8Gi
           requests:
-            cpu: 12
+            cpu: 7
             memory: 8Gi
 
   - name: pull-security-profiles-operator-test-unit
@@ -54,10 +54,10 @@ presubmits:
         - hack/pull-security-profiles-operator-test-unit
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 4Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 4Gi
 
   - name: pull-security-profiles-operator-build-image
@@ -73,7 +73,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         securityContext:
           privileged: true  # for dind
         resources:
@@ -103,7 +103,7 @@ presubmits:
       hostNetwork: true
       hostPID: true
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         securityContext:
           privileged: true  # for dind
         resources:

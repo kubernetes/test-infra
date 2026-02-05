@@ -1,13 +1,13 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-capz-windows-1-31
+  - name: pull-kubernetes-e2e-capz-windows-1-35
     cluster: eks-prow-build-cluster
     always_run: false
     branches:
-    - release-1.31
+    - release-1.35
     decorate: true
     extra_refs:
-    - base_ref: release-1.21
+    - base_ref: main
       org: kubernetes-sigs
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       repo: cluster-api-provider-azure
@@ -36,8 +36,9 @@ presubmits:
       - command:
         - "runner.sh"
         - "env"
+        - KUBERNETES_VERSION=latest-1.35
         - "./capz/run-capz-e2e.sh"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.31
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.35
         name: ""
         resources:
           requests:
@@ -50,5 +51,5 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-capz-windows-1-31
+      testgrid-tab-name: pull-kubernetes-e2e-capz-windows-1-35
       testgrid-num-columns-recent: '30'

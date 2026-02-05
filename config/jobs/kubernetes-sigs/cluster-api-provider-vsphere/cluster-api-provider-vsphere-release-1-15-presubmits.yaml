@@ -15,7 +15,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -28,7 +28,7 @@ presubmits:
             cpu: 2
             memory: 3Gi
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-apidiff-release-1-15
       description: Checks for API changes in the PR
 
@@ -45,7 +45,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -62,7 +62,7 @@ presubmits:
             cpu: 2
             memory: 3Gi
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-verify-release-1-15
 
   - name: pull-cluster-api-provider-vsphere-test-release-1-15
@@ -78,7 +78,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         resources:
           limits:
             cpu: 2
@@ -92,7 +92,7 @@ presubmits:
         - make
         - test-junit
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-test-release-1-15
       description: Runs unit tests
 
@@ -119,7 +119,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -140,7 +140,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-govmomi-blocking-release-1-15
       description: Runs only PR Blocking e2e tests
   - name: pull-cluster-api-provider-vsphere-e2e-govmomi-release-1-15
@@ -164,7 +164,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -185,9 +185,10 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-govmomi-release-1-15
       description: Runs all e2e tests
+
   - name: pull-cluster-api-provider-vsphere-e2e-vcsim-govmomi-release-1-15
     cluster: eks-prow-build-cluster
     branches:
@@ -210,7 +211,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -231,7 +232,7 @@ presubmits:
             cpu: "4000m"
             memory: "3Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-vcsim-govmomi-release-1-15
       description: Runs e2e tests with vcsim / govmomi mode
   - name: pull-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-34-1-35-release-1-15
@@ -255,7 +256,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -280,7 +281,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-govmomi-release-1-15-1-34-1-35
   - name: pull-cluster-api-provider-vsphere-e2e-govmomi-conformance-release-1-15
     cluster: k8s-infra-prow-build
@@ -303,7 +304,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -324,7 +325,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-govmomi-conformance-release-1-15
       description: Runs conformance tests for CAPV
   - name: pull-cluster-api-provider-vsphere-e2e-govmomi-conformance-ci-latest-release-1-15
@@ -348,7 +349,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -369,7 +370,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-govmomi-conformance-ci-latest-release-1-15
       description: Runs conformance tests with K8S ci latest for CAPV
 
@@ -396,7 +397,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -417,7 +418,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-supervisor-blocking-release-1-15
       description: Runs only PR Blocking e2e tests
   - name: pull-cluster-api-provider-vsphere-e2e-supervisor-release-1-15
@@ -441,7 +442,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -464,9 +465,10 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-supervisor-release-1-15
       description: Runs all e2e tests
+
   - name: pull-cluster-api-provider-vsphere-e2e-vcsim-supervisor-release-1-15
     cluster: eks-prow-build-cluster
     branches:
@@ -489,7 +491,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -510,7 +512,7 @@ presubmits:
             cpu: "4000m"
             memory: "3Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-vcsim-supervisor-release-1-15
       description: Runs e2e tests with vcsim / govmomi mode
   - name: pull-cluster-api-provider-vsphere-e2e-supervisor-upgrade-1-34-1-35-release-1-15
@@ -534,7 +536,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -559,7 +561,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-supervisor-release-1-15-1-34-1-35
   - name: pull-cluster-api-provider-vsphere-e2e-supervisor-conformance-release-1-15
     cluster: k8s-infra-prow-build
@@ -582,7 +584,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -603,7 +605,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-supervisor-conformance-release-1-15
       description: Runs conformance tests for CAPV
   - name: pull-cluster-api-provider-vsphere-e2e-supervisor-conformance-ci-latest-release-1-15
@@ -627,7 +629,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.34
         command:
         - runner.sh
         args:
@@ -648,6 +650,6 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-supervisor-conformance-ci-latest-release-1-15
       description: Runs conformance tests with K8S ci latest for CAPV

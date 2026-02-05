@@ -36,51 +36,13 @@ using `$_GIT_TAG` to tag your images.
 for logic in your build process (like deciding whether to update `latest`) if
 desired.
 
-### Simple build example
 
-If your build just involves `go build` and `docker build`, you can use a
-`cloudbuild.yaml` that looks something like this (assuming you use go modules):
-
-```yaml
-# See https://cloud.google.com/cloud-build/docs/build-config
-
-# this must be specified in seconds. If omitted, defaults to 600s (10 mins)
-timeout: 1200s
-steps:
-  - name: golang:1.13
-    args: ['go', 'build', '-o', 'somebin', '.']
-    env:
-    - CGO_ENABLED=0
-    - GOOS=linux
-    - GOARCH=amd64
-  - name: gcr.io/cloud-builders/docker
-    args:
-    - build
-    - --tag=gcr.io/$PROJECT_ID/some-image:$_GIT_TAG
-    - --tag=gcr.io/$PROJECT_ID/some-image:latest
-    - .
-    # default cloudbuild has HOME=/builder/home and docker buildx is in /root/.docker/cli-plugins/docker-buildx
-    # set the home to /root explicitly to if using docker buildx
-    # - HOME=/root
-substitutions:
-  _GIT_TAG: '12345'
-  _PULL_BASE_REF: 'master'
-# this prevents errors if you don't use both _GIT_TAG and _PULL_BASE_REF,
-# or any new substitutions added in the future.
-options:
-  substitution_option: ALLOW_LOOSE
-# this will push these images, or cause the build to fail if they weren't built.
-images:
-  - 'gcr.io/$PROJECT_ID/some-image:$_GIT_TAG'
-  - 'gcr.io/$PROJECT_ID/some-image:latest'
-```
-
-### Makefile build example
+### Build example
 
 If your build process is driven by a Makefile or similar, you can use GCB to
 invoke that. We provide the [`gcr.io/k8s-staging-test-infra/gcb-docker-gcloud` image][gcb-docker-gcloud],
-which contains components that are likely to be useful for your builds. A sample
-`cloudbuild.yaml` using `make` to build and push might look like this:
+which contains components that are likely to be useful for your builds. This image supports multiarch docker builds without additional commands.
+A sample `cloudbuild.yaml` using `make` to build and push might look like this:
 
 ```yaml
 # See https://cloud.google.com/cloud-build/docs/build-config
@@ -92,22 +54,23 @@ timeout: 1200s
 options:
   substitution_option: ALLOW_LOOSE
 steps:
-  - name: 'gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20190906-745fed4'
-    entrypoint: make
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:latest
     env:
-    - DOCKER_CLI_EXPERIMENTAL=enabled
     - TAG=$_GIT_TAG
     - BASE_REF=$_PULL_BASE_REF
     args:
-    - release-staging
+    - make
+    - build
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
   # can be used as a substitution
   _GIT_TAG: '12345'
   # _PULL_BASE_REF will contain the ref that was pushed to to trigger this build -
   # a branch like 'master' or 'release-0.2', or a tag like 'v0.2'.
-  _PULL_BASE_REF: 'master'
+  _PULL_BASE_REF: 'main'
 ```
+
+Don't override the entrypoint as it does some important bootstrapping such as docker buildx multiarch support.
 
 ## Prow config template
 
@@ -134,7 +97,7 @@ postsubmits:
         # If this is the first one for your sig, you may need to create one
         testgrid-dashboards: sig-something-image-pushes
       decorate: true
-      # this causes the job to only run on the master branch. Remove it if your
+      # this causes the job to only run on the main branch. Remove it if your
       # job makes sense on every branch (unless it's setting a `latest` tag it
       # probably does).
       # if you remove it you must instead use the following:
@@ -143,19 +106,20 @@ postsubmits:
       #  # only merged code should trigger these jobs
       #  - '^dependabot'
       branches:
-        - ^master$
+        - ^main$
+        # Build release-* branches
+        - ^release-
+        # Build semver tags, too
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210913-fc7c4e84f6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
             command:
               - /run.sh
             args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-cluster-api
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-cluster-api-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
 ```

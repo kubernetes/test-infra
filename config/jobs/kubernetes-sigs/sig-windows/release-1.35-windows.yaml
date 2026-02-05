@@ -1,15 +1,15 @@
 periodics:
-- name: ci-kubernetes-e2e-capz-master-windows-1-31
+- name: ci-kubernetes-e2e-capz-master-windows-1-35
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    testgrid-dashboards: sig-release-1.31-informing, sig-windows-signal, sig-windows-1.31-release
-    testgrid-tab-name: capz-windows-1.31
+    testgrid-dashboards: sig-release-1.35-informing, sig-windows-1.35-release, sig-windows-signal
+    testgrid-tab-name: capz-windows-1.35
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h0m0s
   extra_refs:
-  - base_ref: release-1.21
+  - base_ref: main
     org: kubernetes-sigs
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     repo: cluster-api-provider-azure
@@ -36,9 +36,9 @@ periodics:
     - command:
       - runner.sh
       - env
-      - KUBERNETES_VERSION=latest-1.31
+      - KUBERNETES_VERSION=latest-1.35
       - ./capz/run-capz-e2e.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.31
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.35
       name: ""
       resources:
         limits:
@@ -49,7 +49,7 @@ periodics:
           memory: 9Gi
       securityContext:
         privileged: true
-- name: ci-kubernetes-e2e-capz-1-31-windows-serial-slow
+- name: ci-kubernetes-e2e-capz-1-35-windows-serial-slow
   cluster: eks-prow-build-cluster
   interval: 48h
   decorate: true
@@ -65,7 +65,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.21
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: false
   - org: kubernetes-sigs
@@ -81,11 +81,11 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.31
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.35
         command:
           - "runner.sh"
           - "env"
-          - KUBERNETES_VERSION=latest-1.31
+          - KUBERNETES_VERSION=latest-1.35
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
@@ -100,8 +100,8 @@ periodics:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
           - name: GINKGO_SKIP
-            value: \[LinuxOnly\]|device.plugin.for.Windows|\[sig-autoscaling\].\[Feature:HPA\]
+            value: \[LinuxOnly\]|device.plugin.for.Windows|\[sig-autoscaling\].\[Feature:HPA\]|\[Alpha\]|\[FeatureGate:SchedulerAsyncPreemption\]|\[Beta\]|when.running.a.container.with.a.new.image
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    testgrid-dashboards: sig-windows-1.31-release, sig-windows-signal
-    testgrid-tab-name: capz-windows-1-31-serial-slow
+    testgrid-dashboards: sig-windows-1.35-release, sig-windows-signal
+    testgrid-tab-name: capz-windows-1-35-serial-slow

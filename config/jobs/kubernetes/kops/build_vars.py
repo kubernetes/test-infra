@@ -17,7 +17,7 @@
 # pylint: disable=line-too-long
 skip_jobs = []
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master"
+image = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master"
 
 k8s_versions = [
     "master",
@@ -47,15 +47,14 @@ aws_distro_options = {
     "ubuntu2204arm64": kops_versions,
     "ubuntu2404": kops_versions,
     "ubuntu2404arm64": kops_versions,
-    "ubuntu2510": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
-    "ubuntu2510arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
-    "amazonlinux2": kops_versions,
+    "ubuntu2510": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
+    "ubuntu2510arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
     "al2023": kops_versions,
     "al2023arm64": kops_versions,
     "rhel9": kops_versions,
-    "rhel10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "rhel10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
     "rocky9": kops_versions,
-    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
     "flatcar": kops_versions,
 }
 
@@ -76,9 +75,9 @@ gce_distro_options = {
     "ubuntu2404arm64": drop_unsupported_versions(kops_versions, ['1.32']),
     "ubuntuminimal2404": kops_versions,
     "ubuntuminimal2404arm64": drop_unsupported_versions(kops_versions, ['1.32']),
-    "rhel10": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
-    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
-    "rocky10": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "rhel10": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
+    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
+    "rocky10": drop_unsupported_versions(kops_versions, ['1.32', '1.33', '1.34']),
 }
 
 
@@ -134,43 +133,41 @@ network_plugins_presubmits = {
 
 
 # Upgrade test versions
-kops29 = "v1.29.2"
-kops30 = "v1.30.3"
+kops30 = "v1.30.4"
 kops31 = "v1.31.0"
-kops32 = "v1.32.0"
-kops33 = "v1.33.0"
+kops32 = "v1.32.2"
+kops33 = "v1.33.1"
 kops34 = "v1.34.0"
 
 upgrade_versions_list = [
     #  kops    k8s          kops      k8s
-    # 1.29 release branch
-    ((kops29, "v1.29.8"), ("1.29", "v1.29.9")),
-    # 1.30 release branch
-    ((kops29, "v1.29.9"), ("1.30", "v1.30.5")),
-    ((kops30, "v1.30.4"), ("1.30", "v1.30.5")),
-    # kOps 1.29 upgrade to latest
-    ((kops29, "v1.26.0"), ("latest", "v1.27.0")),
-    ((kops29, "v1.27.0"), ("latest", "v1.28.0")),
-    ((kops29, "v1.28.0"), ("latest", "v1.29.0")),
-    ((kops29, "v1.29.0"), ("latest", "v1.30.0")),
-    # kOps 1.30 upgrade to latest
-    ((kops30, "v1.26.0"), ("latest", "v1.27.0")),
-    ((kops30, "v1.27.0"), ("latest", "v1.28.0")),
-    ((kops30, "v1.28.0"), ("latest", "v1.29.0")),
-    ((kops30, "v1.29.0"), ("latest", "v1.30.0")),
-    # kOps 1.31 upgrade to latest
-    ((kops31, "v1.28.0"), ("latest", "v1.29.0")),
-    ((kops31, "v1.29.0"), ("latest", "v1.30.0")),
-    ((kops31, "v1.30.0"), ("latest", "v1.31.0")),
-    ((kops31, "v1.31.0"), ("latest", "v1.32.0")),
+    # 1.33 release branch
+    ((kops33, "v1.33.6"), ("1.33", "v1.33.7")),
+    # 1.34 release branch
+    ((kops33, "v1.33.7"), ("1.34", "v1.34.3")),
+    ((kops34, "v1.34.2"), ("1.34", "v1.34.3")),
+    # kOps 1.32 upgrade to latest
+    ((kops32, "v1.28.15"), ("latest", "v1.29.15")),
+    ((kops32, "v1.29.15"), ("latest", "v1.30.14")),
+    ((kops32, "v1.30.14"), ("latest", "v1.31.14")),
+    ((kops32, "v1.31.14"), ("latest", "v1.32.11")),
+    # kOps 1.33 upgrade to latest
+    ((kops33, "v1.29.15"), ("latest", "v1.30.14")),
+    ((kops33, "v1.30.14"), ("latest", "v1.31.14")),
+    ((kops33, "v1.31.14"), ("latest", "v1.32.11")),
+    ((kops33, "v1.32.11"), ("latest", "v1.33.7")),
+    # kOps 1.34 upgrade to latest
+    ((kops34, "v1.30.14"), ("latest", "v1.31.14")),
+    ((kops34, "v1.31.14"), ("latest", "v1.32.11")),
+    ((kops34, "v1.32.11"), ("latest", "v1.33.7")),
+    ((kops34, "v1.33.7"), ("latest", "v1.34.3")),
     # we should have an upgrade test for every supported K8s version
-    (("latest", "v1.32.0"), ("latest", "latest")),
+    (("latest", "v1.34.0"), ("latest", "latest")),
+    (("latest", "v1.33.0"), ("latest", "v1.34.0")),
+    (("latest", "v1.32.0"), ("latest", "v1.33.0")),
     (("latest", "v1.31.0"), ("latest", "v1.32.0")),
     (("latest", "v1.30.0"), ("latest", "v1.31.0")),
     (("latest", "v1.29.0"), ("latest", "v1.30.0")),
-    (("latest", "v1.28.0"), ("latest", "v1.29.0")),
-    (("latest", "v1.27.0"), ("latest", "v1.28.0")),
-    (("latest", "v1.26.0"), ("latest", "v1.27.0")),
     # kOps latest should always be able to upgrade from stable to latest and stable to ci
     (("latest", "stable"), ("latest", "latest")),
     (("latest", "stable"), ("latest", "ci")),

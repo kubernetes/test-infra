@@ -82,6 +82,9 @@ dashboards:
   - name: pull-kubernetes-e2e-ec2-conformance-arm64
     test_group_name: pull-kubernetes-e2e-ec2-conformance-arm64
     base_options: width=10
+  - name: pull-kubernetes-e2e-gci-gce
+    test_group_name: pull-kubernetes-e2e-gci-gce
+    base_options: width=10
   - name: pull-kubernetes-e2e-gce-cos
     test_group_name: pull-kubernetes-e2e-gce-cos
     base_options: width=10
@@ -120,6 +123,9 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-kind-alpha-beta-enabled-conformance
     test_group_name: pull-kubernetes-e2e-kind-alpha-beta-enabled-conformance
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-alpha-beta-features-audit
+    test_group_name: pull-kubernetes-e2e-kind-alpha-beta-features-audit
     base_options: width=10
   - name: pull-kubernetes-e2e-kind-alpha-beta-features-race
     test_group_name: pull-kubernetes-e2e-kind-alpha-beta-features-race

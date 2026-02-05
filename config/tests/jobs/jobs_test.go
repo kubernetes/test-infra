@@ -58,6 +58,22 @@ func isCritical(clusterName string) bool {
 	return clusterName == "k8s-infra-prow-build" || clusterName == "eks-prow-build-cluster"
 }
 
+func matchesAnyRegex(job string, patterns []string) (bool, error) {
+	if job == "" || len(patterns) == 0 {
+		return false, nil
+	}
+	for _, pattern := range patterns {
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			return false, fmt.Errorf("invalid regex %q: %w", pattern, err)
+		}
+		if re.MatchString(job) {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func TestMain(m *testing.M) {
 	flag.Parse()
 	if *configPath == "" {
@@ -1027,6 +1043,26 @@ func TestPreSubmitPathAlias(t *testing.T) {
 	}
 }
 
+// Prow sets additional pod labels based on the 1st extra_refs set on a Job, therefore every periodic job must specify one
+// PostSubmits and PreSubmits can omit extra_refs because they implicitly checkout the repo they are defined for
+func TestReposBeingSet(t *testing.T) {
+	patterns := []string{
+		`^ci-kubernetes-e2e-gci-gce*`,
+		`^ci-kind-dra-*`,
+		`^ci-kubernetes-e2e-gce-(new|master|latest|stable[1-4])-(new|master|latest|stable[1-4])-gci-kubectl-skew`,
+		`^ci-kubernetes-soak-gci-gce-beta|stable[1-4]$`,
+	}
+	for _, job := range c.AllPeriodics() {
+		match, err := matchesAnyRegex(job.Name, patterns)
+		if err != nil {
+			t.Error(err)
+		}
+		if job.ExtraRefs == nil && !match {
+			t.Errorf("Periodic job %s does not have extra_refs set, every prowjob must checkout a git repository", job.Name)
+		}
+	}
+}
+
 // TestValidScenarioArgs makes sure all scenario args in job configs are valid
 func TestValidScenarioArgs(t *testing.T) {
 	for _, job := range c.AllStaticPresubmits(nil) {
@@ -1160,7 +1196,7 @@ func TestClusterName(t *testing.T) {
 	jobs := allStaticJobs()
 	for _, job := range jobs {
 		// Useful for identifiying how many jobs are running a specific cluster by omitting from this list
-		validClusters := []string{"default", "test-infra-trusted", "k8s-infra-aks-admin", "k8s-infra-kops-prow-build", "k8s-infra-prow-build", "k8s-infra-prow-build-trusted", "eks-prow-build-cluster", "k8s-infra-ppc64le-prow-build", "k8s-infra-s390x-prow-build"}
+		validClusters := []string{"default", "test-infra-trusted", "k8s-infra-aks-prow-build", "k8s-infra-kops-prow-build", "k8s-infra-prow-build", "k8s-infra-prow-build-trusted", "eks-prow-build-cluster", "k8s-infra-ppc64le-prow-build", "k8s-infra-s390x-prow-build"}
 		if !slices.Contains(validClusters, job.Cluster) || job.Cluster == "" {
 			err := fmt.Errorf("must run in one of these clusters: %v, found: %v", validClusters, job.Cluster)
 			t.Errorf("%v: %v", job.Name, err)

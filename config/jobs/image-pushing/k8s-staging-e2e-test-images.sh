@@ -20,37 +20,26 @@ readonly IMAGES=(
     agnhost
     apparmor-loader
     busybox
-    cuda-vector-add
-    cuda-vector-add-old
-    echoserver
-    glusterdynamic-provisioner
-    httpd
-    httpd-new
+    glibc-dns-testing
     ipc-utils
-    jessie-dnsutils
     kitten
-    metadata-concealment
     nautilus
     nginx
     nginx-new
-    node-perf/tf-wide-deep
     node-perf/npb-ep
     node-perf/npb-is
+    node-perf/pytorch-wide-deep
     nonewprivs
     nonroot
     perl
-    pets/redis-installer
     pets/peer-finder
     pets/zookeeper-installer
-    redis
     regression-issue-74839
     resource-consumer
     sample-apiserver
     sample-device-plugin
     volume/iscsi
-    volume/rbd
     volume/nfs
-    volume/gluster
     windows-servercore-cache
 )
 
@@ -88,7 +77,7 @@ for image in "${IMAGES[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
             command:
               - /run.sh
             args:
@@ -145,7 +134,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
           command:
             - /run.sh
           args:

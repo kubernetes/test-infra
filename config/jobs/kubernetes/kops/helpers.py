@@ -100,8 +100,16 @@ def k8s_version_info(k8s_version):
         raise Exception('missing required k8s_version')
     return marker, k8s_deploy_url, test_package_url, test_package_dir
 
-def create_args(kops_channel, networking, extra_flags, kops_image):
+def create_args(kops_channel, networking, extra_flags, kops_image, distro):
     args = f"--channel={kops_channel} --networking=" + networking
+
+    if distro in ('deb11'):
+        args += " --set=cluster.spec.containerd.version=1.7.29"
+        args += " --set=cluster.spec.containerd.runc.version=1.3.0"
+
+    if distro in ('cos121', 'cos121arm64'):
+        args += " --set=cluster.spec.containerd.version=2.0.7"
+        args += " --set=cluster.spec.containerd.runc.version=1.3.3"
 
     image_overridden = False
     if extra_flags:
@@ -114,7 +122,7 @@ def create_args(kops_channel, networking, extra_flags, kops_image):
     return args.strip()
 
 def distro_shortener(distro):
-    return distro.replace('ubuntuminimal', 'umini').replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
+    return distro.replace('ubuntuminimal', 'umini').replace('ubuntu', 'u').replace('debian', 'deb') # pylint: disable=line-too-long
 
 # The pin file contains a list of key=value pairs, that holds images we want to pin.
 # This enables us to use the latest image without fetching them from AWS every time.
@@ -269,7 +277,6 @@ gce_distro_images = {
 aws_distro_images = {
     'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-x86_64'),
     'al2023arm64': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-arm64', 'arm64'),
-    'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
     'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
     'deb12': latest_aws_image('136693071363', 'debian-12-amd64-*'),
     'deb13': latest_aws_image('136693071363', 'debian-13-amd64-*'),
@@ -291,7 +298,6 @@ aws_distro_images = {
 aws_distros_ssh_user = {
     'al2023': 'ec2-user',
     'al2023arm64': 'ec2-user',
-    'amzn2': 'ec2-user',
     'deb11': 'admin',
     'deb12': 'admin',
     'deb13': 'admin',

@@ -16,26 +16,9 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
-        - /bin/bash
-        args:
-        - -c
-        - |
-          if [ -f Makefile ]; then
-            make test
-          else
-            REPO_ROOT=$(git rev-parse --show-toplevel);
-            if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
-              export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
-              echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
-            else
-              export BAZEL_VERSION="5.3.0";
-              echo "BAZEL_VERSION - Falling back to 5.3.0";
-            fi;
-            /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
-            bazel test --test_output=errors -- //... -//vendor/...
-          fi
+        - dev/ci/presubmits/cloud-provider-gcp-tests
         resources:
           limits:
             cpu: 4
@@ -57,7 +40,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:
@@ -99,7 +82,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         resources:
           limits:
             cpu: 4
@@ -148,7 +131,7 @@ presubmits:
       path_alias: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         resources:
           limits:
             cpu: 4
@@ -189,7 +172,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -245,7 +228,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
           command:
             - runner.sh
           args:

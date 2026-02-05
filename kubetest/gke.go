@@ -744,7 +744,7 @@ func (g *gkeDeployer) ensureFirewall() error {
 			"--project="+g.project,
 			"--filter=metadata.created-by ~ "+g.instanceGroups[0].path,
 			"--limit=1",
-			"--format=get(tags.items)").Output()
+			"--format=get[delimiter=','](tags.items)").Output()
 		if err != nil {
 			return fmt.Errorf("instances list failed: %s", util.ExecError(err))
 		}

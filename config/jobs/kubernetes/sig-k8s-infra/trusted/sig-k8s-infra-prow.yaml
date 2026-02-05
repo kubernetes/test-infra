@@ -1,39 +1,5 @@
 postsubmits:
   kubernetes/k8s.io:
-  - name: post-k8sio-deploy-prow-build-resources
-    cluster: k8s-infra-prow-build-trusted
-    decorate: true
-    max_concurrency: 1
-    run_if_changed: "^infra/gcp/terraform/k8s-infra-prow-build/"
-    branches:
-    - ^main$
-    annotations:
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-k8s-infra-prow
-      testgrid-tab-name: deploy-prow-build
-      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
-      testgrid-num-failures-to-alert: '1'
-    rerun_auth_config:
-      github_team_slugs:
-      - org: kubernetes
-        slug: sig-k8s-infra-leads
-      - org: kubernetes
-        slug: test-infra-admins
-    reporter_config:
-      slack:
-        channel: "prow-alerts"
-        job_states_to_report:
-        - success
-        - failure
-        - aborted
-        - error
-        report_template: 'Deploying k8s-infra-prow-build cluster: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-prow#deploy-prow-build|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
-    spec:
-      serviceAccountName: prow-deployer
-      containers:
-      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-        command:
-        - ./infra/gcp/terraform/k8s-infra-prow-build/deploy.sh
   - name: post-k8sio-deploy-prow-build-trusted-resources
     cluster: k8s-infra-prow-build-trusted
     decorate: true
@@ -59,6 +25,13 @@ postsubmits:
       - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - ./infra/gcp/terraform/k8s-infra-prow-build-trusted/deploy.sh
+      resources:
+        limits:
+          cpu: 100m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 512Mi
     reporter_config:
       slack:
         channel: "prow-alerts"
@@ -86,7 +59,7 @@ periodics:
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, k8s-infra-prow-oncall@kubernetes.io
   spec:
     containers:
-    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+    - image: alpine:latest
       command:
       - "echo"
       args:
@@ -94,10 +67,10 @@ periodics:
       resources:
         limits:
           cpu: 100m
-          memory: 512Mi
+          memory: 128Mi
         requests:
           cpu: 100m
-          memory: 512Mi
+          memory: 128Mi
 
 - name: ci-k8sio-autobump-prow
   cron: "15 14-20/5 * * 1-5"  # Run at :15 every hour between 9:15 and 6:15 PM PST Mon-Fri
@@ -121,7 +94,7 @@ periodics:
       slug: test-infra-admins
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20251218-6bd26c8c5
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260201-a50f011ce
       command:
       - generic-autobumper
       args:
@@ -130,6 +103,13 @@ periodics:
       - name: github
         mountPath: /etc/github-token
         readOnly: true
+      resources:
+        limits:
+          cpu: 100m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 512Mi
     volumes:
     - name: github
       secret:
@@ -157,7 +137,7 @@ periodics:
       slug: test-infra-admins
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20251218-6bd26c8c5
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260201-a50f011ce
       command:
       - generic-autobumper
       args:
@@ -167,6 +147,13 @@ periodics:
       - name: github
         mountPath: /etc/github-token
         readOnly: true
+      resources:
+        limits:
+          cpu: 100m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 512Mi
     volumes:
     - name: github
       secret:

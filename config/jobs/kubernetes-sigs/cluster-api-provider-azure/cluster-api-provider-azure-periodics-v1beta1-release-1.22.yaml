@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-provider-azure-conformance-v1beta1-release-1-20
+- name: periodic-cluster-api-provider-azure-conformance-v1beta1-release-1-22
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
@@ -12,12 +12,12 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.20
+      base_ref: release-1.22
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
         command:
           - runner.sh
         args:
@@ -34,10 +34,10 @@ periodics:
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-conformance-v1beta1-release-1-20
+    testgrid-tab-name: capz-periodic-conformance-v1beta1-release-1-22
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs conformance & node conformance tests on a stable k8s version with cluster-api-provider-azure release-1.20 (v1beta1)
-- name: periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts-release-1-20
+    description: Runs conformance & node conformance tests on a stable k8s version with cluster-api-provider-azure release-1.22 (v1beta1)
+- name: periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts-release-1-22
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
@@ -50,7 +50,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.20
+      base_ref: release-1.22
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -61,7 +61,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
         command:
           - runner.sh
         args:
@@ -81,10 +81,10 @@ periodics:
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-conformance-k8s-ci-v1beta1-release-1-20
+    testgrid-tab-name: capz-periodic-conformance-k8s-ci-v1beta1-release-1-22
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Runs conformance & node conformance tests on latest kubernetes main with cluster-api-provider-azure release-1.20 (v1beta1)
-- name: periodic-cluster-api-provider-azure-capi-e2e-v1beta1-release-1-20
+    description: Runs conformance & node conformance tests on latest kubernetes main with cluster-api-provider-azure release-1.22 (v1beta1)
+- name: periodic-cluster-api-provider-azure-capi-e2e-v1beta1-release-1-22
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
@@ -97,12 +97,12 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.20
+      base_ref: release-1.22
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
       command:
         - runner.sh
       args:
@@ -124,10 +124,10 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-capi-e2e-v1beta1-release-1-20
+    testgrid-tab-name: capz-periodic-capi-e2e-v1beta1-release-1-22
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs Cluster API E2E tests on cluster-api-provider-azure release-1.20 (v1beta1)
-- name: periodic-cluster-api-provider-azure-e2e-v1beta1-release-1-20
+    description: Runs Cluster API E2E tests on cluster-api-provider-azure release-1.22 (v1beta1)
+- name: periodic-cluster-api-provider-azure-e2e-v1beta1-release-1-22
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
@@ -140,12 +140,12 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.20
+      base_ref: release-1.22
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
       command:
         - runner.sh
       args:
@@ -167,10 +167,10 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-e2e-v1beta1-release-1-20
+    testgrid-tab-name: capz-periodic-e2e-v1beta1-release-1-22
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs Cluster API Provider Azure E2E tests on cluster-api-provider-azure release-1.20 (v1beta1)
-- name: periodic-cluster-api-provider-azure-e2e-aks-v1beta1-release-1-20
+    description: Runs Cluster API Provider Azure E2E tests on cluster-api-provider-azure release-1.22 (v1beta1)
+- name: periodic-cluster-api-provider-azure-e2e-aks-v1beta1-release-1-22
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
@@ -183,12 +183,12 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.20
+      base_ref: release-1.22
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.32
       command:
         - runner.sh
       args:
@@ -210,6 +210,6 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-e2e-aks-v1beta1-release-1-20
+    testgrid-tab-name: capz-periodic-e2e-aks-v1beta1-release-1-22
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs managed Kubernetes E2E tests on cluster-api-provider-azure release-1.20 (v1beta1)
+    description: Runs managed Kubernetes E2E tests on cluster-api-provider-azure release-1.22 (v1beta1)

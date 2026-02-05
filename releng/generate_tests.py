@@ -49,7 +49,7 @@ PROW_CONFIG_TEMPLATE = """
       - command:
         args:
         env:
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         resources:
           requests:
             cpu: 1000m
@@ -337,6 +337,16 @@ class E2ETest:
         job_config = self.__get_job_def(args)
         # Generates Prow config.
         prow_config = self.__get_prow_config(test_suite)
+
+        # Generate extra_refs
+        prow_config['extra_refs'] = [
+            {
+                'org': 'kubernetes',
+                'repo': 'kubernetes',
+                'base_ref': f"release-{k8s_version['version']}",
+                'path_alias': 'k8s.io/kubernetes',
+            }
+        ]
 
         tg_config = self.__get_testgrid_config()
 

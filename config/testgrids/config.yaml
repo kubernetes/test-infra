@@ -44,17 +44,11 @@ test_groups:
   gcs_prefix: kubernetes-ci-logs/logs/ci-kubernetes-e2e-gce-scale-correctness
   days_of_results: 30
   num_columns_recent: 3
-- name: ci-kubernetes-e2e-gce-scale-performance
-  gcs_prefix: kubernetes-ci-logs/logs/ci-kubernetes-e2e-gce-scale-performance
-  days_of_results: 60
-  num_columns_recent: 3
-  num_failures_to_alert: 1
 
 #
 # Start dashboards
 #
 dashboards:
-- name: vmware-cluster-api-provider-vsphere
 - name: vmware-presubmits-cloud-provider-vsphere
 - name: vmware-postsubmits-cloud-provider-vsphere
 - name: vmware-presubmits-vsphere-csi-driver
@@ -71,4 +65,3 @@ dashboard_groups:
   - vmware-postsubmits-cloud-provider-vsphere
   - vmware-presubmits-vsphere-csi-driver
   - vmware-postsubmits-vsphere-csi-driver
-  - vmware-cluster-api-provider-vsphere

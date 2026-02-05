@@ -34,7 +34,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-100-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -43,8 +43,8 @@ presubmits:
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
-        - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.0.5
-        - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.2.1
+        - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.1.5
+        - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.3.4
         - --flush-mem-after-build=true
         - --gcp-node-image=gci
         - --gcp-nodes=100
@@ -86,6 +86,97 @@ presubmits:
             memory: "14Gi"
         securityContext:
           privileged: true
+  # This job is a copy of 'ci-kubernetes-e2e-gce-scale-performance-100'.
+  - name: pull-kubernetes-e2e-gce-master-scale-performance-100
+    cluster: k8s-infra-prow-build
+    always_run: false
+    skip_report: false
+    max_concurrency: 3
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    labels:
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 120m
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-e2e-gce-master-scale-performance-100
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: /etc/ssh-key-secret/ssh-private
+        - name: KUBE_SSH_USER
+          value: prow
+        - name: GOPATH
+          value: /home/prow/go
+        - name: CNI_PLUGIN
+          value: gce
+        - name: KUBE_NODE_COUNT
+          value: "100"
+        - name: CL2_LOAD_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_DELETE_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_RATE_LIMIT_POD_CREATION
+          value: "false"
+        - name: NODE_MODE
+          value: "master"
+        - name: KUBE_PROXY_MODE
+          value: "nftables"
+        - name: CONTROL_PLANE_COUNT
+          value: "1"
+        - name: CONTROL_PLANE_SIZE
+          value: "c4-standard-32"
+        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+          value: "true"
+        - name: CL2_ENABLE_DNS_PROGRAMMING
+          value: "true"
+        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+          value: "true"
+        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+          value: "99.5"
+        - name: CL2_ALLOWED_SLOW_API_CALLS
+          value: "1"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "ssd-csi"
+        - name: CLOUD_PROVIDER
+          value: "gce"
+        - name: BOSKOS_RESOURCE_TYPE
+          value: "scalability-project"
+        resources:
+          requests:
+            cpu: 5
+            memory: 16Gi
+          limits:
+            cpu: 5
+            memory: 16Gi
 
   # This is an equivalent of the ci-kubernetes-e2e-gce-scale-correctness test
   # at 100 node scale. It's an optional presubmit to simplify testing changes
@@ -113,7 +204,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -179,7 +270,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-big
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -267,7 +358,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-scale
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -316,8 +407,8 @@ presubmits:
             memory: "16Gi"
         securityContext:
           privileged: true
-  # Fork of ci-kubernetes-e2e-gce-scale-performance
-  - name: pull-kubernetes-e2e-gce-scale-performance-manual
+  # Fork of ci-kubernetes-e2e-gce-scale-performance-5000
+  - name: pull-kubernetes-gce-master-scale-performance-5000
     cluster: k8s-infra-prow-build
     always_run: false
     max_concurrency: 1
@@ -328,103 +419,87 @@ presubmits:
     decorate: true
     path_alias: k8s.io/kubernetes
     labels:
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
-      preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-presubmits: "true"
+    job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
     decoration_config:
-      timeout: 450m
+      timeout: 480m
     extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
     - org: kubernetes
       repo: perf-tests
       base_ref: master
       path_alias: k8s.io/perf-tests
-    - org: kubernetes
-      repo: release
-      base_ref: master
-      path_alias: k8s.io/release
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
-      testgrid-tab-name: pull-kubernetes-e2e-gce-large-performance
+      testgrid-tab-name: pull-kubernetes-e2e-gce-master-scale-performance-5000
     spec:
-      volumes:
-      - name: cache-secret
-        secret:
-          secretName: scale-pull-cache-token
+      serviceAccountName: prow-build
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
-        volumeMounts:
-        - name: cache-secret
-          readOnly: true
-          mountPath: /etc/registry-auth
-        env:
-        - name: KUBERNETES_REGISTRY_PULL_THROUGH_HOST
-          value: https://us-central1-docker.pkg.dev/v2/k8s-infra-e2e-scale-5k-project/k8s-5k-scale-cache/
-        - name: KUBERNETES_REGISTRY_PULL_THROUGH_BASIC_AUTH_TOKEN_PATH
-          value: /etc/registry-auth/token
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --build=quick
-        - --cluster=gce-scale-cluster
-        - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
-        # TODO(mborsz): Adjust or remove this change once we understand coredns
-        # memory usage regression.
-        - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
-        - --gcp-node-image=gci
-        - --gcp-nodes=5000
-        - --gcp-project-type=scalability-scale-project
-        - --gcp-zone=us-east1-b
-        - --provider=gce
-        - --metadata-sources=cl2-metadata.json
-        - --env=CL2_LOAD_TEST_THROUGHPUT=50
-        - --env=CL2_DELETE_TEST_THROUGHPUT=50
-        - --env=CL2_RATE_LIMIT_POD_CREATION=false
-        - --env=KUBE_CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
-        # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
-        - --env=CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100
-        # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
-        # TODO(#1311): Clean this up after the experiment - it should allow
-        #   to hugely decrease pod-startup-latency across the whole test.
-        #   Given that individual controllers have separate QPS limits, we allow
-        #   scheduler to keep up with the load from deployment, daemonset and job
-        #   performing pod creations at once.
-        - --env=SCHEDULER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=500 --kube-api-burst=500
-        # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
-        - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
-        - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
-        - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
-        - --test=false
-        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-        - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
-        - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
-        - --test-cmd-args=--nodes=5000
-        - --test-cmd-args=--prometheus-scrape-node-exporter
-        - --test-cmd-args=--provider=gce
-        - --test-cmd-args=--report-dir=$(ARTIFACTS)
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
-        - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-        - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
-        - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
-        - --test-cmd-name=ClusterLoaderV2
-        - --timeout=420m
-        - --use-logexporter
-        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
-        resources:
-          requests:
-            cpu: 6
-            memory: "16Gi"
-          limits:
-            cpu: 6
-            memory: "16Gi"
+        - ./tests/e2e/scenarios/scalability/run-test.sh
         securityContext:
           privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: /etc/ssh-key-secret/ssh-private
+        - name: KUBE_SSH_USER
+          value: prow
+        - name: GOPATH
+          value: /home/prow/go
+        - name: CNI_PLUGIN
+          value: gce
+        - name: KUBE_NODE_COUNT
+          value: "5000"
+        - name: CL2_LOAD_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_DELETE_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_RATE_LIMIT_POD_CREATION
+          value: "false"
+        - name: NODE_MODE
+          value: "master"
+        - name: CONTROL_PLANE_COUNT
+          value: "1"
+        - name: CONTROL_PLANE_SIZE
+          value: "c4-standard-96"
+        - name: KUBE_PROXY_MODE
+          value: "nftables"
+        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+          value: "true"
+        - name: CL2_ENABLE_DNS_PROGRAMMING
+          value: "true"
+        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+          value: "true"
+        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+          value: "99.5"
+        - name: CL2_ALLOWED_SLOW_API_CALLS
+          value: "1"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "ssd-csi"
+        - name: CLOUD_PROVIDER
+          value: "gce"
+        - name: BOSKOS_RESOURCE_TYPE
+          value: "scalability-scale-project"
+        resources:
+          requests:
+            cpu: 7
+            memory: 25Gi
+          limits:
+            cpu: 7
+            memory: 25Gi
+
   kubernetes/perf-tests:
   - name: pull-perf-tests-benchmark-kube-dns
     cluster: k8s-infra-prow-build
@@ -451,7 +526,7 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -505,7 +580,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -577,7 +652,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -625,95 +700,6 @@ presubmits:
         securityContext:
           privileged: true
 
-  # Fork of kubernetes/kubernetes: pull-kubernetes-e2e-gce-scale-performance-manual
-  - name: pull-perf-tests-clusterloader2-e2e-gce-scale-performance-manual
-    cluster: k8s-infra-prow-build
-    always_run: false
-    max_concurrency: 1
-    branches:
-    - master
-    decorate: true
-    path_alias: k8s.io/perf-tests
-    decoration_config:
-      timeout: 450m
-    extra_refs:
-    - org: kubernetes
-      repo: release
-      base_ref: master
-      path_alias: k8s.io/release
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-      preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-presubmits: "true"
-    annotations:
-      testgrid-dashboards: presubmits-kubernetes-scalability
-      testgrid-tab-name: pull-perf-tests-clusterloader2-e2e-gce-scale-performance
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --cluster=
-        - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
-        # TODO(mborsz): Adjust or remove this change once we understand coredns
-        # memory usage regression.
-        - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
-        - --extract=ci/fast/latest-fast
-        - --gcp-nodes=5000
-        - --gcp-project-type=scalability-scale-project
-        - --gcp-zone=us-east1-b
-        - --provider=gce
-        - --metadata-sources=cl2-metadata.json
-        - --env=CL2_LOAD_TEST_THROUGHPUT=50
-        - --env=CL2_DELETE_TEST_THROUGHPUT=50
-        - --env=CL2_RATE_LIMIT_POD_CREATION=false
-        - --env=KUBE_CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
-        # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
-        - --env=CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100
-        # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
-        # TODO(#1311): Clean this up after the experiment - it should allow
-        #   to hugely decrease pod-startup-latency across the whole test.
-        #   Given that individual controllers have separate QPS limits, we allow
-        #   scheduler to keep up with the load from deployment, daemonset and job
-        #   performing pod creations at once.
-        - --env=SCHEDULER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=500 --kube-api-burst=500
-        # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
-        - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0 --profiling --contention-profiling
-        - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
-        - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
-        - --test=false
-        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-        - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
-        - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
-        - --test-cmd-args=--nodes=5000
-        - --test-cmd-args=--prometheus-scrape-node-exporter
-        - --test-cmd-args=--provider=gce
-        - --test-cmd-args=--report-dir=$(ARTIFACTS)
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
-        - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-        - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
-        - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
-        - --test-cmd-name=ClusterLoaderV2
-        - --timeout=420m
-        resources:
-          limits:
-            # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
-            cpu: 6
-            memory: "16Gi"
-          requests:
-            cpu: 6
-            memory: "16Gi"
-        securityContext:
-          privileged: true
-
   - name: pull-perf-tests-util-images
     cluster: k8s-infra-prow-build
     always_run: false
@@ -734,7 +720,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-master
         command:
         - runner.sh
         args:
@@ -754,8 +740,6 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
-    skip_branches:
-      - release-1.1[2-9] # Presubmit has been implemented for 1.20+ releases
     path_alias: "k8s.io/perf-tests"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
@@ -779,15 +763,13 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
-    skip_branches:
-    - release-1.19 # We use verify-all for that branch
     path_alias: "k8s.io/perf-tests"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
       testgrid-tab-name: pull-perf-tests-verify-test
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.24
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - verify/test.sh
         resources:
@@ -802,8 +784,6 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: ^clusterloader2/pkg/prometheus/manifests/dashboards/.*\.json$
-    skip_branches:
-    - release-1.1[2-8] # Presubmit has been implemented for 1.19+ releases
     path_alias: "k8s.io/perf-tests"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
@@ -827,15 +807,13 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
-    skip_branches:
-    - release-1.1[2-8] # Presubmit has been implemented for 1.19+ releases
     path_alias: "k8s.io/perf-tests"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
       testgrid-tab-name: pull-perf-tests-verify-lint
     spec:
       containers:
-      - image: golangci/golangci-lint:v1.64.7
+      - image: golangci/golangci-lint:v2.7.2
         command:
         - make
         args:
@@ -847,3 +825,429 @@ presubmits:
           limits:
             cpu: 2
             memory: "2Gi"
+
+  - name: pull-perf-tests-ec2-master-scale-performance-100
+    cluster: eks-prow-build-cluster
+    run_if_changed: ^clusterloader2/.*$
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential-boskos-scale-001-kops: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    max_concurrency: 3
+    decoration_config:
+      timeout: 100m
+    path_alias: k8s.io/perf-tests
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-100
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: /etc/aws-ssh/aws-ssh-private
+        - name: KUBE_SSH_USER
+          value: ubuntu
+        - name: GOPATH
+          value: /home/prow/go
+        - name: CNI_PLUGIN
+          value: "amazonvpc"
+        - name: KUBE_NODE_COUNT
+          value: "100"
+        - name: CL2_LOAD_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_DELETE_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_RATE_LIMIT_POD_CREATION
+          value: "false"
+        - name: NODE_MODE
+          value: "master"
+        - name: CONTROL_PLANE_COUNT
+          value: "1"
+        - name: CONTROL_PLANE_SIZE
+          value: "c8i.8xlarge"
+        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+          value: "true"
+        - name: CL2_ENABLE_DNS_PROGRAMMING
+          value: "true"
+        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+          value: "true"
+        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+          value: "99.5"
+        - name: CL2_ALLOWED_SLOW_API_CALLS
+          value: "1"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "gp2"
+        - name: CLOUD_PROVIDER
+          value: "aws"
+        - name: KOPS_IRSA
+          value: "true"
+        resources:
+          requests:
+            cpu: 5
+            memory: 16Gi
+          limits:
+            cpu: 5
+            memory: 16Gi
+
+  - name: pull-perf-tests-ec2-master-scale-performance-500
+    cluster: eks-prow-build-cluster
+    always_run: false
+    labels:
+      preset-aws-ssh: "true"
+      preset-aws-credential-boskos-scale-001-kops: "true"
+    decorate: true
+    decoration_config:
+      timeout: 100m
+    path_alias: k8s.io/perf-tests
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-500
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: /etc/aws-ssh/aws-ssh-private
+        - name: KUBE_SSH_USER
+          value: ubuntu
+        - name: GOPATH
+          value: /home/prow/go
+        - name: CNI_PLUGIN
+          value: "amazonvpc"
+        - name: KUBE_NODE_COUNT
+          value: "500"
+        - name: CL2_LOAD_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_DELETE_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_RATE_LIMIT_POD_CREATION
+          value: "false"
+        - name: NODE_MODE
+          value: "master"
+        - name: CONTROL_PLANE_COUNT
+          value: "1"
+        - name: CONTROL_PLANE_SIZE
+          value: "c8i.12xlarge"
+        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+          value: "true"
+        - name: CL2_ENABLE_DNS_PROGRAMMING
+          value: "true"
+        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+          value: "true"
+        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+          value: "99.5"
+        - name: CL2_ALLOWED_SLOW_API_CALLS
+          value: "1"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "gp2"
+        - name: CLOUD_PROVIDER
+          value: "aws"
+        - name: KOPS_IRSA
+          value: "true"
+        resources:
+          requests:
+            cpu: 5
+            memory: 16Gi
+          limits:
+            cpu: 5
+            memory: 16Gi
+
+  - name: pull-perf-tests-ec2-master-scale-performance-5000
+    cluster: eks-prow-build-cluster
+    always_run: false
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential-boskos-scale-001-kops: "true"
+    decorate: true
+    decoration_config:
+      timeout: 480m
+    path_alias: k8s.io/perf-tests
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-5000
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260120-e2c483ffe9-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: /etc/aws-ssh/aws-ssh-private
+        - name: KUBE_SSH_USER
+          value: ubuntu
+        - name: GOPATH
+          value: /home/prow/go
+        - name: CNI_PLUGIN
+          value: "amazonvpc"
+        - name: KUBE_NODE_COUNT
+          value: "5000"
+        - name: CL2_LOAD_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_DELETE_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_RATE_LIMIT_POD_CREATION
+          value: "false"
+        - name: NODE_MODE
+          value: "master"
+        - name: CONTROL_PLANE_COUNT
+          value: "1"
+        - name: CONTROL_PLANE_SIZE
+          value: "c8a.24xlarge"
+        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+          value: "true"
+        - name: CL2_ENABLE_DNS_PROGRAMMING
+          value: "true"
+        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+          value: "true"
+        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+          value: "99.5"
+        - name: CL2_ALLOWED_SLOW_API_CALLS
+          value: "1"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "gp2"
+        - name: CLOUD_PROVIDER
+          value: "aws"
+        - name: KOPS_IRSA
+          value: "true"
+        resources:
+          requests:
+            cpu: 5
+            memory: 16Gi
+          limits:
+            cpu: 5
+            memory: 16Gi
+
+  - name: pull-perf-tests-gce-master-scale-performance-100
+    cluster: k8s-infra-prow-build
+    run_if_changed: ^clusterloader2/.*$
+    labels:
+      preset-k8s-ssh: "true"
+    decorate: true
+    max_concurrency: 3
+    decoration_config:
+      timeout: 100m
+    path_alias: k8s.io/perf-tests
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-gce-master-scale-performance-100
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: /etc/ssh-key-secret/ssh-private
+        - name: KUBE_SSH_USER
+          value: prow
+        - name: GOPATH
+          value: /home/prow/go
+        - name: CNI_PLUGIN
+          value: gce
+        - name: KUBE_NODE_COUNT
+          value: "100"
+        - name: CL2_LOAD_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_DELETE_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_RATE_LIMIT_POD_CREATION
+          value: "false"
+        - name: NODE_MODE
+          value: "master"
+        - name: KUBE_PROXY_MODE
+          value: "nftables"
+        - name: CONTROL_PLANE_COUNT
+          value: "1"
+        - name: CONTROL_PLANE_SIZE
+          value: "c4-standard-32"
+        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+          value: "true"
+        - name: CL2_ENABLE_DNS_PROGRAMMING
+          value: "true"
+        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+          value: "true"
+        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+          value: "99.5"
+        - name: CL2_ALLOWED_SLOW_API_CALLS
+          value: "1"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "ssd-csi"
+        - name: CLOUD_PROVIDER
+          value: "gce"
+        - name: BOSKOS_RESOURCE_TYPE
+          value: "scalability-project"
+        resources:
+          requests:
+            cpu: 5
+            memory: 16Gi
+          limits:
+            cpu: 5
+            memory: 16Gi
+
+  - name: pull-perf-tests-gce-master-scale-performance-5000
+    cluster: k8s-infra-prow-build
+    always_run: false
+    labels:
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 480m
+    path_alias: k8s.io/perf-tests
+    job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
+    max_concurrency: 1
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-gce-master-scale-performance-5000
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: /etc/ssh-key-secret/ssh-private
+        - name: KUBE_SSH_USER
+          value: prow
+        - name: GOPATH
+          value: /home/prow/go
+        - name: CNI_PLUGIN
+          value: gce
+        - name: KUBE_NODE_COUNT
+          value: "5000"
+        - name: CL2_LOAD_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_DELETE_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_RATE_LIMIT_POD_CREATION
+          value: "false"
+        - name: NODE_MODE
+          value: "master"
+        - name: CONTROL_PLANE_COUNT
+          value: "1"
+        - name: CONTROL_PLANE_SIZE
+          value: "c4-standard-96"
+        - name: KUBE_PROXY_MODE
+          value: "nftables"
+        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+          value: "true"
+        - name: CL2_ENABLE_DNS_PROGRAMMING
+          value: "true"
+        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+          value: "true"
+        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+          value: "99.5"
+        - name: CL2_ALLOWED_SLOW_API_CALLS
+          value: "1"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "ssd-csi"
+        - name: CLOUD_PROVIDER
+          value: "gce"
+        - name: BOSKOS_RESOURCE_TYPE
+          value: "scalability-scale-project"
+        resources:
+          requests:
+            cpu: 7
+            memory: 25Gi
+          limits:
+            cpu: 7
+            memory: 25Gi

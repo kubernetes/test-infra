@@ -19,7 +19,7 @@ periodics:
         runAsGroup: 2010
         runAsUser: 2001
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
           command:
             - make
             - test
@@ -51,7 +51,7 @@ periodics:
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -85,7 +85,7 @@ periodics:
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -119,7 +119,7 @@ periodics:
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -157,7 +157,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-s390x-conformance-latest-kubetest2
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
           securityContext:
             privileged: true
           env:
@@ -214,6 +214,8 @@ periodics:
                   export BOSKOS_REGION=$(echo ${output} | jq -r '.userdata["region"]')
                   export BOSKOS_RESOURCE_GROUP=$(echo ${output} | jq -r '.userdata["resource-group-name"]')
                   export BOSKOS_ZONE=$(echo ${output} | jq -r '.userdata["zone"]')
+                  export BOSKOS_SUBNET_NAME=$(echo ${output} | jq -r '.userdata["subnet-name"]')
+                  export BOSKOS_SUBNET_ID=$(echo ${output} | jq -r '.userdata["subnet-id"]')
                   rm -rf output.json
                 else
                   echo "Failed to acquire resource due to invalid response, status code : ${status_code}"
@@ -228,11 +230,11 @@ periodics:
               go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
               CLUSTER_NAME="config1-$(date +%s)"
-              kubetest2 tf  --target-provider vpc  --vpc-node-image-name ibm-ubuntu-22-04-4-minimal-s390x-3 \
-              --vpc-region ${BOSKOS_REGION} --vpc-zone ${BOSKOS_ZONE} \
+              kubetest2 tf  --target-provider vpc  --vpc-node-image-name ibm-ubuntu-22-04-4-minimal-s390x-3 --boskos-resource-type vpc \
+              --vpc-region ${BOSKOS_REGION} --vpc-zone ${BOSKOS_ZONE} --vpc-subnet ${BOSKOS_SUBNET_NAME}\
               --vpc-name ${BOSKOS_RESOURCE_NAME} \
               --vpc-resource-group ${BOSKOS_RESOURCE_GROUP} \
-              --vpc-ssh-key k8s-s390x-ssh-key \
+              --vpc-ssh-key k8s-s390x-prow-ssh-key \
               --vpc-node-profile bz2-4x16 \
               --ssh-private-key /etc/secret-volume/ssh-privatekey \
               --extra-vars=k8s_tar_bundles:kubernetes-server-linux-s390x.tar.gz \

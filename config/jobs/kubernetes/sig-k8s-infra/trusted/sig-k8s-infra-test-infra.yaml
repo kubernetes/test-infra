@@ -37,7 +37,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-staging-test-infra/configurator:v20251031-d6af3d3e19
+      - image: gcr.io/k8s-staging-test-infra/configurator:v20251212-3f863f26d7
         command:
         - configurator
         args:
@@ -58,6 +58,32 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: Compiles and updates testgrid config on test-infra pushes
+  - name: post-test-infra-upload-metrics-dashboards
+    cluster: k8s-infra-prow-build-trusted
+    branches:
+    - ^master$
+    max_concurrency: 1
+    run_if_changed: '^metrics/web/.*\.html$'
+    decorate: true
+    spec:
+      serviceAccountName: k8s-metrics
+      containers:
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+        command:
+        - make
+        args:
+        - -C
+        - ./metrics/web/
+        - push-static
+        resources:
+          requests:
+            memory: "256Mi"
+    annotations:
+      testgrid-dashboards: sig-testing-misc, sig-k8s-infra-prow
+      testgrid-tab-name: metrics-dashboards-update
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: Updates the HTML dashboards for k8s-metrics bucket.
 
 
 periodics:
@@ -90,11 +116,18 @@ periodics:
       - --bucket=gs://k8s-metrics
       - --project=k8s-infra-prow-build-trusted
       - --jq=/usr/bin/jq
+      - --jobs-dir=config/jobs
+      - --filter-stale-jobs
 
 - name: ci-test-infra-triage
   interval: 3h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   decoration_config:
     timeout: 3h
   max_concurrency: 1
@@ -138,10 +171,10 @@ periodics:
       resources:
         requests:
           cpu: 7
-          memory: 48Gi
+          memory: 12Gi
         limits:
           cpu: 7
-          memory: 48Gi
+          memory: 12Gi
 
 - name: ci-test-infra-autobump-prowjobs
   cron: "06 14-23 * * 1-5"  # Run every hour at 7:06 - 16:06 PDT (in UTC) Mon-Fri
@@ -153,7 +186,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20251218-6bd26c8c5
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260201-a50f011ce
       command:
       - generic-autobumper
       args:
@@ -162,6 +195,13 @@ periodics:
       - name: github
         mountPath: /etc/github-token
         readOnly: true
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: github
       secret:

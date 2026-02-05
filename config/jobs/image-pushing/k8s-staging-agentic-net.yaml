@@ -1,0 +1,24 @@
+postsubmits:
+  kubernetes-sigs/kube-agentic-networking:
+  - name: post-agentic-net-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-network-kube-agentic-networking, sig-k8s-infra-gcb
+    decorate: true
+    skip_branches:
+    # do not run on dependabot branches, these exist prior to merge
+    # only merged code should trigger these jobs
+    - '^dependabot'
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+        command:
+        - /run.sh
+        args:
+        - --project=k8s-staging-images
+        - --scratch-bucket=gs://k8s-staging-images-gcb
+        - --env-passthrough=PULL_BASE_REF
+        - --build-dir=.
+        - --with-git-dir
+        - .

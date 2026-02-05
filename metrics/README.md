@@ -47,6 +47,9 @@ jqfilter: |
 * job-health - compute daily health metrics for jobs (runs, tests, failure rate for each, duration percentiles)
     - [Config](configs/job-health.yaml)
     - [job-health-latest.json](http://storage.googleapis.com/k8s-metrics/job-health-latest.json)
+* job-health-weekly - compute health metrics for jobs over the last 7 days (runs, tests, failure rate for each, duration percentiles)
+    - [Config](configs/job-health-weekly.yaml)
+    - [job-health-weekly-latest.json](http://storage.googleapis.com/k8s-metrics/job-health-weekly-latest.json)
 * job-flakes - compute consistency of all jobs
     - [Config](configs/job-flakes-config.yaml)
     - [job-flakes-latest.json](http://storage.googleapis.com/k8s-metrics/job-flakes-latest.json)
@@ -56,6 +59,39 @@ jqfilter: |
 * weekly-consistency - compute overall weekly consistency for PRs
     - [Config](configs/weekly-consistency-config.yaml)
     - [weekly-consistency-latest.json](http://storage.googleapis.com/k8s-metrics/weekly-consistency-latest.json)
+
+## Web Dashboards
+
+Interactive HTML dashboards are available in the [web/](web/) directory for visualizing metrics data:
+
+* [failures-latest.html](web/failures-latest.html) - Jobs failing for consecutive days
+* [flakes-latest.html](web/flakes-latest.html) - Weekly flake data with test-level details
+* [flakes-daily-latest.html](web/flakes-daily-latest.html) - Daily flake data
+* [job-health-latest.html](web/job-health-latest.html) - Daily job health with failure rates and durations
+* [job-health-weekly-latest.html](web/job-health-weekly-latest.html) - 7-day job health with failure rates and durations
+* [presubmit-health-latest.html](web/presubmit-health-latest.html) - Presubmit job health with PR failure rates
+* [index.html](web/index.html) - Landing page linking all dashboards
+
+### Local Testing
+
+To test the dashboards locally:
+
+```bash
+cd metrics/web
+
+# Download latest data from GCS
+gsutil cp gs://k8s-metrics/failures-latest.json .
+gsutil cp gs://k8s-metrics/flakes-latest.json .
+gsutil cp gs://k8s-metrics/flakes-daily-latest.json .
+gsutil cp gs://k8s-metrics/job-health-latest.json .
+gsutil cp gs://k8s-metrics/job-health-weekly-latest.json .
+gsutil cp gs://k8s-metrics/presubmit-health-latest.json .
+
+# Serve locally
+python3 -m http.server 8080
+
+# Open http://localhost:8080/
+```
 
 ## Adding a new metric
 

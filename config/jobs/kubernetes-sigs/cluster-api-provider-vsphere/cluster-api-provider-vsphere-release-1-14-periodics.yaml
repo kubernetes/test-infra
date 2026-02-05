@@ -17,7 +17,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.33
       resources:
         limits:
           cpu: 2
@@ -31,7 +31,7 @@ periodics:
       - make
       - test-junit
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-test-release-1-14
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -61,7 +61,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.33
       command:
       - runner.sh
       args:
@@ -82,7 +82,7 @@ periodics:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-govmomi-release-1-14
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -112,7 +112,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.33
       command:
       - runner.sh
       args:
@@ -133,7 +133,7 @@ periodics:
           cpu: "4000m"
           memory: "3Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-vcsim-govmomi-release-1-14
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -163,7 +163,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.33
       command:
       - runner.sh
       args:
@@ -184,7 +184,7 @@ periodics:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-govmomi-conformance-release-1-14
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -214,7 +214,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.33
       command:
       - runner.sh
       args:
@@ -235,7 +235,7 @@ periodics:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-govmomi-conformance-ci-latest-release-1-14
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -265,7 +265,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.33
       command:
       - runner.sh
       args:
@@ -288,7 +288,7 @@ periodics:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-supervisor-release-1-14
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -318,7 +318,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.33
       command:
       - runner.sh
       args:
@@ -339,7 +339,7 @@ periodics:
           cpu: "4000m"
           memory: "3Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-vcsim-supervisor-release-1-14
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -369,7 +369,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.33
       command:
       - runner.sh
       args:
@@ -390,7 +390,7 @@ periodics:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-supervisor-conformance-release-1-14
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -420,7 +420,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260127-f10a7ebcce-1.33
       command:
       - runner.sh
       args:
@@ -441,7 +441,7 @@ periodics:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-supervisor-conformance-ci-latest-release-1-14
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"

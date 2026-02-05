@@ -23,7 +23,7 @@ periodics:
         runAsGroup: 2010
         runAsUser: 2001
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
           command:
             - make
             - test
@@ -62,7 +62,7 @@ periodics:
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         args:
@@ -103,14 +103,9 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
           securityContext:
             privileged: true
-          env:
-            - name: "BOSKOS_HOST"
-              value: "boskos.test-pods.svc.cluster.local"
-            - name: "USER"
-              value: "ci-kubernetes-ppc64le-conformance-latest-kubetest2"
           resources:
             requests:
               cpu: 4
@@ -126,30 +121,18 @@ periodics:
             - |
               set -o xtrace
 
-              #Call to boskos to checkout resource
-              source "./hack/boskos.sh"
-
-              #Setup of kubetest2 tf deployer and ginkgo tester
+              #Setup of kubetest2 tf deployer
               make install-deployer-tf
-              go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
-              CLUSTER_NAME="config1-$(date +%s)"
-
-              set +o errexit
-              set -o xtrace
               export TF_VAR_powervs_system_type=e980
               kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
-                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
-                --workers-count 2 --cluster-name $CLUSTER_NAME \
+                --workers-count 2 --cluster-name conformance-$(date +%s) \
                 --up --down --auto-approve --retry-on-tf-failure 3 \
                 --break-kubetest-on-upfail true --ignore-destroy-errors \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
-                --test=ginkgo -- --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Conformance\]'; rc=$?
-
-              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
-              [ $rc != 0 ] && echo "ERROR: E2E Conformance Test suite exited with code:$rc"; exit $rc
+                --test=ginkgo -- --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Conformance\]'
 
   - name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
     cron: "30 3-21/6 * * *" #  every 6h starting at 03:30 UTC
@@ -172,12 +155,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
-          env:
-            - name: "BOSKOS_HOST"
-              value: "boskos.test-pods.svc.cluster.local"
-            - name: "USER"
-              value: "ci-kubernetes-ppc64le-e2e-node-latest-kubetest2"
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
           resources:
             requests:
               cpu: 2
@@ -193,16 +171,11 @@ periodics:
             - |
               set -o xtrace
 
-              source "./hack/boskos.sh"
-
               make install-deployer-tf
+              CLUSTER_NAME="e2e-node-$(date +%s)"
 
-              CLUSTER_NAME="config2-$(date +%s)"
-
-              set +o errexit
               kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
-                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --cluster-name $CLUSTER_NAME \
                 --up --set-kubeconfig=false --auto-approve --retry-on-tf-failure 3 \
@@ -215,15 +188,13 @@ periodics:
               # Skipping test related to https://github.com/kubernetes/kubernetes/issues/124791
               kubetest2 tf --test=exec -- ssh -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP \
                 "export SKIP='\[Flaky\]|\[Slow\]|\[Serial\]|should.execute.readiness.probe.while.in.preStop' && /make-test-e2e-node.sh"; \
-                rc=$?; scp -r -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP:/tmp/_artifacts $ARTIFACTS
+                scp -r -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP:/tmp/_artifacts $ARTIFACTS
 
-              kubetest2 tf --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
+              kubetest2 tf \
                 --ignore-cluster-dir true \
                 --cluster-name $CLUSTER_NAME\
                 --down --auto-approve --ignore-destroy-errors
-              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
-              [ $rc != 0 ] && echo "ERROR: E2ENode Test suite exited with code:$rc"; exit $rc
+
   - name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
     cron: "30 4-22/6 * * *" # every 6h starting at 04:30 UTC
     cluster: k8s-infra-ppc64le-prow-build
@@ -245,14 +216,9 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
           securityContext:
             privileged: true
-          env:
-            - name: "BOSKOS_HOST"
-              value: "boskos.test-pods.svc.cluster.local"
-            - name: "USER"
-              value: "ci-kubernetes-ppc64le-e2e-alpha-enabled-default"
           resources:
             requests:
               cpu: 2
@@ -268,19 +234,12 @@ periodics:
             - |
               set -o xtrace
 
-              #Call to boskos to checkout resource
-              source "./hack/boskos.sh"
-
-              #Setup of kubetest2 tf deployer and ginkgo tester
+              #Setup of kubetest2 tf deployer
               make install-deployer-tf
-              go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
-              set +o errexit
-              set -o xtrace
               export TF_VAR_controlplane_powervs_memory=32
               kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
-                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --workers-count 2 --cluster-name alpha-enabled-$(date +%s) \
                 --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors \
@@ -289,10 +248,8 @@ periodics:
                 --extra-vars=runtime_config:api/all=true \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --test=ginkgo -- --parallel 15 --test-package-dir ci --test-package-marker latest.txt \
-                --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|KubeProxy.should.update.metric"; rc=$?
+                --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|KubeProxy.should.update.metric"
 
-              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
-              [ $rc != 0 ] && echo "ERROR: alpha-enabled-default tests exited with code: $rc"; exit $rc
   - name: ci-kubernetes-e2e-ppc64le-default
     cron: "0 6-22/8 * * *" # every 8h starting at 06:00 UTC
     cluster: k8s-infra-ppc64le-prow-build
@@ -314,12 +271,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
-          env:
-            - name: "BOSKOS_HOST"
-              value: "boskos.test-pods.svc.cluster.local"
-            - name: "USER"
-              value: "ci-kubernetes-ppc64le-e2e-default"
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
           resources:
             requests:
               cpu: 2
@@ -335,30 +287,21 @@ periodics:
             - |
               set -o xtrace
 
-              #Call to boskos to checkout resource
-              source "./hack/boskos.sh"
-
-              #Setup of kubetest2 tf deployer and ginkgo tester
+              #Setup of kubetest2 tf deployer
               make install-deployer-tf
-              go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
-              set +o errexit
-              set -o xtrace
               export TF_VAR_powervs_system_type=e980
               export TF_VAR_controlplane_powervs_memory=32
               kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
-                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --workers-count 2 --cluster-name e2e-default-$(date +%s) \
                 --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors \
                 --break-kubetest-on-upfail true \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --test=ginkgo -- --parallel 15 --test-package-dir ci --test-package-marker latest.txt \
-                --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|KubeProxy.should.update.metric"; rc=$?
+                --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|KubeProxy.should.update.metric"
 
-              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
-              [ $rc != 0 ] && echo "ERROR: E2e default tests exited with code: $rc"; exit $rc
   - name: ci-kubernetes-ppc64le-e2e-slow-kubetest2
     cron: "30 7-22/3 * * *" # every 3h starting at 07:30 UTC
     cluster: k8s-infra-ppc64le-prow-build
@@ -380,14 +323,9 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
           securityContext:
             privileged: true
-          env:
-            - name: "BOSKOS_HOST"
-              value: "boskos.test-pods.svc.cluster.local"
-            - name: "USER"
-              value: "ci-kubernetes-ppc64le-e2e-slow-kubetest2"
           resources:
             requests:
               cpu: 1
@@ -403,27 +341,18 @@ periodics:
             - |
               set -o xtrace
 
-              #Call to boskos to checkout resource
-              source "./hack/boskos.sh"
-
-              #Setup of kubetest2 tf deployer and ginkgo tester
+              #Setup of kubetest2 tf deployer
               make install-deployer-tf
-              go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
-              set +o errexit
-              set -o xtrace
               kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
-                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --workers-count 2 --cluster-name e2e-slow-$(date +%s) \
                 --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors\
                 --break-kubetest-on-upfail true \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
-                --test=ginkgo -- --parallel 30 --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Slow\]' --skip-regex='\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:' ; rc=$?
+                --test=ginkgo -- --parallel 30 --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Slow\]' --skip-regex='\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:'
 
-              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
-              [ $rc != 0 ] && echo "ERROR: E2e Slow tests exited with code: $rc"; exit $rc
   - name: ci-kubernetes-e2e-ppc64le-serial-kubetest2
     cron: "30 9-17/8 * * *" # every 8h starting at 09:30 UTC
     cluster: k8s-infra-ppc64le-prow-build
@@ -445,12 +374,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
-          env:
-            - name: "BOSKOS_HOST"
-              value: "boskos.test-pods.svc.cluster.local"
-            - name: "USER"
-              value: "ci-kubernetes-e2e-ppc64le-serial-kubetest2"
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
           resources:
             requests:
               cpu: 4
@@ -466,18 +390,11 @@ periodics:
             - |
               set -o xtrace
 
-              #Call to boskos to checkout resource
-              source "./hack/boskos.sh"
-
               #Setup of kubetest2 tf deployer and ginkgo tester
               make install-deployer-tf
-              go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
-              set +o errexit
-              set -o xtrace
               kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
-                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --workers-count 2 --cluster-name e2e-serial-$(date +%s) \
                 --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors\
@@ -486,7 +403,4 @@ periodics:
                 --extra-vars="kubelet_extra_args:--max-pods 220" \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --test=ginkgo -- --parallel 1 --test-package-dir ci --test-package-marker latest.txt \
-                --focus-regex='\[Serial\]|\[Disruptive\]' --skip-regex='\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]'; rc=$?
-
-              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
-              [ $rc != 0 ] && echo "ERROR: E2e Serial tests exited with code: $rc"; exit $rc
+                --focus-regex='\[Serial\]|\[Disruptive\]' --skip-regex='\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]'

@@ -18,7 +18,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         env:
@@ -33,10 +33,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 20Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 20Gi
   - name: pull-kubernetes-cmd-canary
     cluster: eks-prow-build-cluster
@@ -56,7 +56,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         env:
@@ -71,10 +71,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 20Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 20Gi
   - name: pull-kubernetes-cmd-go-compatibility
     cluster: k8s-infra-prow-build
@@ -93,7 +93,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - runner.sh
         env:
@@ -129,7 +129,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-go-canary
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-f10a7ebcce-go-canary
         command:
         - runner.sh
         args:
@@ -166,7 +166,7 @@ periodics:
     description: "Ends up running: make test-cmd"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
       command:
       - runner.sh
       args:
