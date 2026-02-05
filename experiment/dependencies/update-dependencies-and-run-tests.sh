@@ -90,6 +90,10 @@ hack/update-vendor.sh
 # gather stats for comparison after running update-vendor
 depstat stats -m "${MAIN_MODULES}" -v > "${WORKDIR}/stats-after.txt"
 
+# Commit the dependency changes so depstat diff can checkout the base ref
+git add -A
+git commit -m "dependency updates" --allow-empty || true
+
 # Generate dependency diff with visualization
 echo ""
 echo "=== Dependency Changes ==="
