@@ -30,7 +30,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.24
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - dev/ci/presubmits/test-unit
         resources:
@@ -49,7 +49,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.24
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
         command:
         - dev/ci/presubmits/lint-go
         resources:
