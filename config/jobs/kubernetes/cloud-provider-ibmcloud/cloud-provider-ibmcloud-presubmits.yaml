@@ -14,7 +14,7 @@ presubmits:
       preset-ibmcloud-cred: "true"
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260205-38cfa9523f-master
           securityContext:
             privileged: true
           env:
@@ -89,7 +89,7 @@ presubmits:
       testgrid-tab-name: kubetest2-tf-secretmanager-build
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260205-38cfa9523f-master
           command:
             - runner.sh
           args:
