@@ -1,0 +1,51 @@
+periodics:
+- interval: 24h
+  name: check-dependency-archived-periodical
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  decoration_config:
+    timeout: 20m
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: golang
+      command:
+      - /bin/bash
+      args:
+      - -c
+      - |
+        set -euo pipefail
+        export PATH=$PATH:$GOPATH/bin
+
+        # Install jq (same pattern as other depstat jobs)
+        apt-get update -qq && apt-get install -y -qq jq > /dev/null 2>&1
+
+        ./experiment/dependencies/verify-archived-repos.sh ${GOPATH}/src/k8s.io/kubernetes
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github
+        readOnly: true
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-github-robot-github-token
+  annotations:
+    testgrid-create-test-group: "true"
+    testgrid-dashboards: sig-arch-code-organization
+    testgrid-tab-name: verify-archived-dependencies
+    testgrid-alert-email: davanum@gmail.com
+    description: Verifies that all archived Go dependencies are tracked in hack/unwanted-dependencies.json
