@@ -56,11 +56,15 @@ periodics:
       base_ref: master
       path_alias: k8s.io/kubernetes
   decoration_config:
-    timeout: 1h10m0s
-  interval: 120m
+    timeout: 1h45m0s
+  # Same as in other release-blocking jobs. If we want to save resources, then we should
+  # run some of those less often. This job is the only one which matches a blocking presubmit,
+  # so we want to know about problems as quickly as reasonably possible.
+  interval: 30m
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+  # Keep the job in sync with pull-kubernetes-e2e-gce (yes, the name is different).
   name: ci-kubernetes-e2e-ubuntu-gce-containerd
   spec:
     containers:
@@ -77,13 +81,16 @@ periodics:
       - --extract=ci/fast/latest-fast
       - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
-      - --gcp-nodes=4
+      # Default number of worker nodes, as in pull-kubernetes-e2e-gce. If that turns out
+      # to be insufficient, we want to see it in the periodic job, too, not just
+      # in occasional flakes in the presubmit.
+      # - --gcp-nodes=4
       - --gcp-region=us-central1
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
         --minStartupPods=8
-      - --timeout=50m
+      - --timeout=80m
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -803,6 +810,8 @@ presubmits:
           privileged: true
   - always_run: true
     annotations:
+      description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature)
+        against a cluster created with cluster/kube-up.sh
       fork-per-release: "true"
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
@@ -823,6 +832,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
+    # Keep the job in sync with ci-kubernetes-e2e-ubuntu-gce-containerd (yes, the name is different).
     name: pull-kubernetes-e2e-gce
     path_alias: k8s.io/kubernetes
     skip_branches:
