@@ -73,4 +73,5 @@ presubmits:
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-arch-code-organization
+      testgrid-alert-email: davanum@gmail.com
       description: Generates dependency diff with visualization showing added/removed dependencies

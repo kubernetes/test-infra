@@ -61,4 +61,5 @@ periodics:
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-arch-code-organization
+      testgrid-alert-email: davanum@gmail.com
       description: Generates comprehensive dependency statistics and graph for kubernetes master
