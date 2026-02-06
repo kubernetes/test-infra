@@ -128,6 +128,19 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
+      - --env=CL2_ENABLE_INFORMER_LATENCY_TEST=true
+      # Override MASTER_SIZE to get additional memory to fit larger resource size.
+      - --env=MASTER_SIZE=n2-standard-64 # 64 vCPUs, 256GB memory
+      - --env=ETCD_QUOTA_BACKEND_BYTES=21474836480 # 20GB
+      # Ensure exec-service is not scheduled on normal node of size e2-medium (2vCPUs, 4GB memory)
+      - --env=CL2_EXECSERVICE_CPU_REQUESTS=2
+      - --env=CL2_EXECSERVICE_MEMORY_REQUESTS=4Gi
+      # Override for 1.93GB pod resource size
+      - --env=CL2_DAEMONSET_POD_PAYLOAD_SIZE=8000
+      - --env=CL2_DEPLOYMENT_POD_PAYLOAD_SIZE=8000
+      - --env=CL2_STATEFULSET_POD_PAYLOAD_SIZE=8000
+      - --env=CL2_JOB_POD_PAYLOAD_SIZE=8000
+      #  Remaining parameters should match ci-kubernetes-e2e-gce-scale-performance
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       # TODO(mborsz): Adjust or remove this change once we understand coredns
@@ -156,10 +169,6 @@ periodics:
       - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
       - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
       - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
-      - --env=CL2_DAEMONSET_POD_PAYLOAD_SIZE=0
-      - --env=CL2_DEPLOYMENT_POD_PAYLOAD_SIZE=0
-      - --env=CL2_STATEFULSET_POD_PAYLOAD_SIZE=0
-      - --env=CL2_JOB_POD_PAYLOAD_SIZE=0
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -183,10 +192,10 @@ periodics:
       resources:
         requests:
           cpu: 6
-          memory: "16Gi"
+          memory: "32Gi"
         limits:
           cpu: 6
-          memory: "16Gi"
+          memory: "32Gi"
 
 - interval: 30m
   cluster: k8s-infra-prow-build
