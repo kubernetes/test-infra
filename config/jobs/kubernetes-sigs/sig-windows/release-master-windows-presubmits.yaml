@@ -10,7 +10,7 @@ presets:
     value: "Standard_D4s_v3"
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-capz-windows-master
+  - name: pull-kubernetes-e2e-capz-windows
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
