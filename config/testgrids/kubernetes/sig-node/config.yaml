@@ -132,6 +132,3 @@ dashboards:
 - name: sig-node-gpu
 - name: sig-node-image-pushes
 - name: sig-node-node-readiness-controller
-  dashboard_tab:
-  - name: verify
-    test_group_name: pull-node-readiness-controller-verify-all
