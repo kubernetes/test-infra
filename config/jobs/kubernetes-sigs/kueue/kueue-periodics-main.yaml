@@ -636,6 +636,7 @@ periodics:
             - runner.sh
           args:
             - make
+            - kind-image-build
             - test-e2e-k8s-main-was
           securityContext:
             privileged: true
