@@ -831,12 +831,13 @@ tide:
   # agent-sandbox: only merge if approved, LGTM, and required CI checks pass
   - repos:
     - kubernetes-sigs/agent-sandbox
-    labels:
+  labels:
     - lgtm
     - approved
-    missingLabels:
+  missingLabels:
     - do-not-merge
-    required_contexts:
+    - needs-ok-to-test
+  required_contexts:
     - ci/prow/unit
     - ci/prow/integration
   merge_method:
