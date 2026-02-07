@@ -188,12 +188,13 @@ periodics:
               # Skipping test related to https://github.com/kubernetes/kubernetes/issues/124791
               kubetest2 tf --test=exec -- ssh -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP \
                 "export SKIP='\[Flaky\]|\[Slow\]|\[Serial\]|should.execute.readiness.probe.while.in.preStop' && /make-test-e2e-node.sh"; \
-                scp -r -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP:/tmp/_artifacts $ARTIFACTS
+                rc=$?; scp -r -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP:/tmp/_artifacts $ARTIFACTS
 
               kubetest2 tf \
                 --ignore-cluster-dir true \
                 --cluster-name $CLUSTER_NAME\
                 --down --auto-approve --ignore-destroy-errors
+              [ $rc != 0 ] && echo "ERROR: E2ENode Test suite exited with code:$rc"; exit $rc
 
   - name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
     cron: "30 4-22/6 * * *" # every 6h starting at 04:30 UTC
