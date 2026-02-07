@@ -34,10 +34,10 @@ periodics:
 
           MAIN_MODULES="k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')"
 
-          # Generate stats in multiple formats
-          depstat stats -m "${MAIN_MODULES}" -v | tee "${WORKDIR}/stats.txt"
-          depstat stats -m "${MAIN_MODULES}" --json > "${WORKDIR}/stats.json"
-          depstat stats -m "${MAIN_MODULES}" --csv > "${WORKDIR}/stats.csv"
+          # Generate stats in multiple formats (with test-only split)
+          depstat stats -m "${MAIN_MODULES}" -v --split-test-only | tee "${WORKDIR}/stats.txt"
+          depstat stats -m "${MAIN_MODULES}" --split-test-only --json > "${WORKDIR}/stats.json"
+          depstat stats -m "${MAIN_MODULES}" --split-test-only --csv > "${WORKDIR}/stats.csv"
 
           # Generate full dependency graph with edge types
           depstat graph -m "${MAIN_MODULES}" --show-edge-types

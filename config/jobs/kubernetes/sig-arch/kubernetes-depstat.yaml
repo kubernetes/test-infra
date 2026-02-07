@@ -36,11 +36,11 @@ presubmits:
           echo "=== Dependency Diff: ${PULL_BASE_SHA}..HEAD ==="
           echo ""
 
-          # Generate dependency diff (text output)
-          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" -v | tee "${WORKDIR}/diff.txt"
+          # Generate dependency diff (text output with split-test-only)
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" -v --split-test-only | tee "${WORKDIR}/diff.txt"
 
-          # Generate JSON for programmatic consumption
-          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --json > "${WORKDIR}/diff.json"
+          # Generate JSON for programmatic consumption (includes split test-only/non-test sections)
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --split-test-only --json > "${WORKDIR}/diff.json"
 
           # Generate DOT and SVG visualization of changes
           depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --dot > "${WORKDIR}/diff.dot"
@@ -58,10 +58,16 @@ presubmits:
             done | tee "${WORKDIR}/why-added.txt"
           fi
 
+          # Summarize test-only vs non-test changes
+          echo ""
+          echo "=== Test-only vs Non-test dependency changes ==="
+          jq -r '"Non-test added: \(.split.nonTestOnly.added // [] | length), removed: \(.split.nonTestOnly.removed // [] | length)"' "${WORKDIR}/diff.json"
+          jq -r '"Test-only added: \(.split.testOnly.added // [] | length), removed: \(.split.testOnly.removed // [] | length)"' "${WORKDIR}/diff.json"
+
           echo ""
           echo "Artifacts saved to: ${WORKDIR}"
-          echo "  - diff.txt: Human-readable diff"
-          echo "  - diff.json: Machine-readable diff"
+          echo "  - diff.txt: Human-readable diff with test-only split"
+          echo "  - diff.json: Machine-readable diff (includes .split.testOnly and .split.nonTestOnly)"
           echo "  - diff.svg: Visual dependency change graph"
         resources:
           requests:
