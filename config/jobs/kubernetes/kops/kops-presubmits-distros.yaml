@@ -34,7 +34,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-11-amd64-20260108-2351' --channel=alpha --networking=cilium --set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.0" \
+            --create-args="--image='136693071363/debian-11-amd64-20260108-2351' --channel=alpha --networking=cilium --set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.4" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -99,7 +99,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-11-amd64-20260108-2351' --channel=alpha --networking=kindnet --set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.0" \
+            --create-args="--image='136693071363/debian-11-amd64-20260108-2351' --channel=alpha --networking=kindnet --set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.4" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2126,7 +2126,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-121-18867-294-78' --channel=alpha --networking=cilium --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.3 --gce-service-account=default" \
+            --create-args="--image='cos-cloud/cos-121-18867-294-78' --channel=alpha --networking=cilium --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.4 --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2192,7 +2192,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-121-18867-294-78' --channel=alpha --networking=gce --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.3 --gce-service-account=default" \
+            --create-args="--image='cos-cloud/cos-121-18867-294-78' --channel=alpha --networking=gce --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.4 --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2258,7 +2258,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-arm64-121-18867-294-78' --channel=alpha --networking=cilium --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.3 --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='cos-cloud/cos-arm64-121-18867-294-78' --channel=alpha --networking=cilium --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.4 --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2324,7 +2324,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-arm64-121-18867-294-78' --channel=alpha --networking=gce --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.3 --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='cos-cloud/cos-arm64-121-18867-294-78' --channel=alpha --networking=gce --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.4 --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \

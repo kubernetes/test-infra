@@ -32,7 +32,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-11-amd64-20260108-2351' --channel=alpha --networking=kindnet --set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.0 --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='136693071363/debian-11-amd64-20260108-2351' --channel=alpha --networking=kindnet --set=cluster.spec.containerd.version=1.7.29 --set=cluster.spec.containerd.runc.version=1.3.4 --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1057,7 +1057,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-121-18867-294-78' --channel=alpha --networking=kindnet --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.3 --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-121-18867-294-78' --channel=alpha --networking=kindnet --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.4 --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1121,7 +1121,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-arm64-121-18867-294-78' --channel=alpha --networking=kindnet --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.3 --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+          --create-args="--image='cos-cloud/cos-arm64-121-18867-294-78' --channel=alpha --networking=kindnet --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.4 --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
