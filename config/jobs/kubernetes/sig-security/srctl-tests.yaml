@@ -7,7 +7,7 @@ presubmits:
         testgrid-dashboards: sig-security-srctl
         testgrid-create-test-group: "true"
         description: >
-          Run unit tests and linters for srctl
+          Run unit tests for srctl
       run_if_changed: "^sig-security-tooling/srctl/"
       branches:
         - main
@@ -24,6 +24,36 @@ presubmits:
               - |
                 cd sig-security-tooling/srctl
                 go test -v -cover ./...
+            resources:
+              limits:
+                cpu: 1
+                memory: "256Mi"
+              requests:
+                cpu: 1
+                memory: "256Mi"
+
+    - name: pull-sig-security-srctl-lint
+      cluster: eks-prow-build-cluster
+      annotations:
+        testgrid-dashboards: sig-security-srctl
+        testgrid-create-test-group: "true"
+        description: >
+          Run linters for srctl
+      run_if_changed: "^sig-security-tooling/srctl/"
+      branches:
+        - main
+      decorate: true
+      spec:
+        containers:
+          - image: >
+              us-central1-docker.pkg.dev/k8s-staging-test-infra/images/
+              kubekins-e2e:v20260127-c1affcc8de-master
+            command:
+              - bash
+              - -c
+            args:
+              - |
+                cd sig-security-tooling/srctl
                 golangci-lint run
             resources:
               limits:
