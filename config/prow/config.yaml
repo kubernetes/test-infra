@@ -828,6 +828,17 @@ tide:
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
     - do-not-merge/needs-area
+  # agent-sandbox: only merge if approved, LGTM, and required CI checks pass
+  - repos:
+    - kubernetes-sigs/agent-sandbox
+    labels:
+    - lgtm
+    - approved
+    missingLabels:
+    - do-not-merge
+    required_contexts:
+    - ci/prow/unit
+    - ci/prow/integration
   merge_method:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
