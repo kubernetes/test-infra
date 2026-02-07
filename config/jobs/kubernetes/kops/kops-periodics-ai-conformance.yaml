@@ -28,8 +28,12 @@ periodics:
       args:
       - ./tests/e2e/scenarios/ai-conformance/run-test.sh
       env:
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
