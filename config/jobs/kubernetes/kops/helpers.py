@@ -105,11 +105,11 @@ def create_args(kops_channel, networking, extra_flags, kops_image, distro):
 
     if distro in ('deb11'):
         args += " --set=cluster.spec.containerd.version=1.7.29"
-        args += " --set=cluster.spec.containerd.runc.version=1.3.0"
+        args += " --set=cluster.spec.containerd.runc.version=1.3.4"
 
     if distro in ('cos121', 'cos121arm64'):
         args += " --set=cluster.spec.containerd.version=2.0.7"
-        args += " --set=cluster.spec.containerd.runc.version=1.3.3"
+        args += " --set=cluster.spec.containerd.runc.version=1.3.4"
 
     image_overridden = False
     if extra_flags:
