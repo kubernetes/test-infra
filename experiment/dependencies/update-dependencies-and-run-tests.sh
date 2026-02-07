@@ -97,8 +97,8 @@ git commit -m "dependency updates" --allow-empty || true
 # Generate dependency diff with visualization
 echo ""
 echo "=== Dependency Changes ==="
-depstat diff "${BEFORE_SHA}" HEAD -m "${MAIN_MODULES}" -v | tee "${WORKDIR}/diff.txt"
-depstat diff "${BEFORE_SHA}" HEAD -m "${MAIN_MODULES}" --json > "${WORKDIR}/diff.json"
+depstat diff "${BEFORE_SHA}" HEAD -m "${MAIN_MODULES}" -v --split-test-only --vendor --vendor-files | tee "${WORKDIR}/diff.txt"
+depstat diff "${BEFORE_SHA}" HEAD -m "${MAIN_MODULES}" --split-test-only --vendor --vendor-files --json > "${WORKDIR}/diff.json"
 depstat diff "${BEFORE_SHA}" HEAD -m "${MAIN_MODULES}" --dot > "${WORKDIR}/diff.dot"
 dot -Tsvg "${WORKDIR}/diff.dot" -o "${WORKDIR}/diff.svg" || echo "Could not generate SVG"
 
@@ -113,6 +113,28 @@ if [ -n "${ADDED_DEPS}" ]; then
     depstat why "${dep}" -m "${MAIN_MODULES}" 2>/dev/null || echo "  (could not trace dependency path)"
   done | tee "${WORKDIR}/why-added.txt"
 fi
+
+# Explain vendor-only removals (removed from vendor, still in module graph)
+VENDOR_ONLY_REMOVED=$(jq -r '.vendor.vendorOnlyRemovals[]?.path' "${WORKDIR}/diff.json" 2>/dev/null || true)
+if [ -n "${VENDOR_ONLY_REMOVED}" ]; then
+  echo ""
+  echo "=== Why vendor-only removed modules are still in module graph ==="
+  for dep in ${VENDOR_ONLY_REMOVED}; do
+    echo ""
+    echo "--- ${dep} ---"
+    depstat why "${dep}" -m "${MAIN_MODULES}" 2>/dev/null || echo "  (could not trace dependency path)"
+  done | tee "${WORKDIR}/why-vendor-only-removed.txt"
+fi
+
+echo ""
+echo "=== High-signal dependency summary ==="
+jq -r '[
+  "Module graph: added=\(.added | length), removed=\(.removed | length), versionChanges=\(.versionChanges // [] | length)",
+  "Non-test: added=\(.split.nonTestOnly.added // [] | length), removed=\(.split.nonTestOnly.removed // [] | length), versionChanges=\(.split.nonTestOnly.versionChanges // [] | length)",
+  "Test-only: added=\(.split.testOnly.added // [] | length), removed=\(.split.testOnly.removed // [] | length), versionChanges=\(.split.testOnly.versionChanges // [] | length)",
+  "Vendor: added=\(.vendor.added // [] | length), removed=\(.vendor.removed // [] | length), versionChanges=\(.vendor.versionChanges // [] | length), vendorOnlyRemovals=\(.vendor.vendorOnlyRemovals // [] | length)",
+  "Vendor files: added=\(.vendor.filesAdded // [] | length), deleted=\(.vendor.filesDeleted // [] | length)"
+] | .[]' "${WORKDIR}/diff.json"
 
 # Do not worry if this fails, it is bound to fail
 hack/lint-dependencies.sh || true

@@ -36,11 +36,11 @@ presubmits:
           echo "=== Dependency Diff: ${PULL_BASE_SHA}..HEAD ==="
           echo ""
 
-          # Generate dependency diff (text output with split-test-only)
-          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" -v --split-test-only | tee "${WORKDIR}/diff.txt"
+          # Generate dependency diff with split-test-only and vendor-level signals.
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" -v --split-test-only --vendor --vendor-files | tee "${WORKDIR}/diff.txt"
 
-          # Generate JSON for programmatic consumption (includes split test-only/non-test sections)
-          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --split-test-only --json > "${WORKDIR}/diff.json"
+          # Generate JSON for programmatic consumption (split + version + vendor sections)
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --split-test-only --vendor --vendor-files --json > "${WORKDIR}/diff.json"
 
           # Generate DOT and SVG visualization of changes
           depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --dot > "${WORKDIR}/diff.dot"
@@ -58,6 +58,18 @@ presubmits:
             done | tee "${WORKDIR}/why-added.txt"
           fi
 
+          # Explain vendor-only removals (removed from vendor, still in module graph)
+          VENDOR_ONLY_REMOVED=$(jq -r '.vendor.vendorOnlyRemovals[]?.path' "${WORKDIR}/diff.json" 2>/dev/null || true)
+          if [ -n "${VENDOR_ONLY_REMOVED}" ]; then
+            echo ""
+            echo "=== Why vendor-only removed modules are still in module graph ==="
+            for dep in ${VENDOR_ONLY_REMOVED}; do
+              echo ""
+              echo "--- ${dep} ---"
+              depstat why "${dep}" -m "${MAIN_MODULES}" 2>/dev/null || echo "  (could not trace dependency path)"
+            done | tee "${WORKDIR}/why-vendor-only-removed.txt"
+          fi
+
           # Summarize test-only vs non-test changes
           echo ""
           echo "=== Test-only vs Non-test dependency changes ==="
@@ -65,9 +77,19 @@ presubmits:
           jq -r '"Test-only added: \(.split.testOnly.added // [] | length), removed: \(.split.testOnly.removed // [] | length)"' "${WORKDIR}/diff.json"
 
           echo ""
+          echo "=== High-signal dependency summary ==="
+          jq -r '[
+            "Module graph: added=\(.added | length), removed=\(.removed | length), versionChanges=\(.versionChanges // [] | length)",
+            "Non-test: added=\(.split.nonTestOnly.added // [] | length), removed=\(.split.nonTestOnly.removed // [] | length), versionChanges=\(.split.nonTestOnly.versionChanges // [] | length)",
+            "Test-only: added=\(.split.testOnly.added // [] | length), removed=\(.split.testOnly.removed // [] | length), versionChanges=\(.split.testOnly.versionChanges // [] | length)",
+            "Vendor: added=\(.vendor.added // [] | length), removed=\(.vendor.removed // [] | length), versionChanges=\(.vendor.versionChanges // [] | length), vendorOnlyRemovals=\(.vendor.vendorOnlyRemovals // [] | length)",
+            "Vendor files: added=\(.vendor.filesAdded // [] | length), deleted=\(.vendor.filesDeleted // [] | length)"
+          ] | .[]' "${WORKDIR}/diff.json"
+
+          echo ""
           echo "Artifacts saved to: ${WORKDIR}"
-          echo "  - diff.txt: Human-readable diff with test-only split"
-          echo "  - diff.json: Machine-readable diff (includes .split.testOnly and .split.nonTestOnly)"
+          echo "  - diff.txt: Human-readable diff (summary + split + version + vendor sections)"
+          echo "  - diff.json: Machine-readable diff (includes .split.*, .versionChanges, .vendor.*)"
           echo "  - diff.svg: Visual dependency change graph"
         resources:
           requests:
