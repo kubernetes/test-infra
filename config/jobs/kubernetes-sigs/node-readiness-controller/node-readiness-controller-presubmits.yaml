@@ -1,0 +1,24 @@
+presubmits:
+  kubernetes-sigs/node-readiness-controller:
+  - name: pull-node-readiness-controller-verify-all
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+        command:
+        - make
+        args:
+        - verify
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-node-node-readiness-controller
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
