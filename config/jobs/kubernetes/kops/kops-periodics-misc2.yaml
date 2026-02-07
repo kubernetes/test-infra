@@ -38,8 +38,12 @@ periodics:
         value: "1"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
@@ -870,8 +874,12 @@ periodics:
       args:
       - ./tests/e2e/scenarios/aws-lb-controller/run-test.sh
       env:
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
@@ -928,8 +936,12 @@ periodics:
       env:
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
@@ -988,8 +1000,12 @@ periodics:
       args:
       - ./tests/e2e/scenarios/metrics-server/run-test.sh
       env:
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
@@ -1044,8 +1060,12 @@ periodics:
       args:
       - ./tests/e2e/scenarios/podidentitywebhook/run-test.sh
       env:
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
@@ -1100,8 +1120,12 @@ periodics:
       args:
       - ./tests/e2e/scenarios/addon-resource-tracking/run-test.sh
       env:
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
@@ -1350,8 +1374,12 @@ periodics:
       args:
       - ./tests/e2e/scenarios/karpenter/run-test.sh
       env:
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
@@ -1408,8 +1436,12 @@ periodics:
       env:
       - name: OVERRIDES
         value: "--ipv6 --topology=private --bastion"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
