@@ -18,7 +18,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260205-38cfa9523f-master
       env:
       - name: KUBE_PROXY_MODE
         value: "nftables"
@@ -67,7 +67,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20260127-f10a7ebcce-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260205-38cfa9523f-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"

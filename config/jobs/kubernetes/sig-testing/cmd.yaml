@@ -18,7 +18,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260205-38cfa9523f-master
         command:
         - runner.sh
         env:
@@ -56,7 +56,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260205-38cfa9523f-master
         command:
         - runner.sh
         env:
@@ -93,7 +93,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260205-38cfa9523f-master
         command:
         - runner.sh
         env:
@@ -129,7 +129,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-f10a7ebcce-go-canary
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260205-38cfa9523f-go-canary
         command:
         - runner.sh
         args:
@@ -166,7 +166,7 @@ periodics:
     description: "Ends up running: make test-cmd"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260127-c1affcc8de-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260205-38cfa9523f-master
       command:
       - runner.sh
       args:
