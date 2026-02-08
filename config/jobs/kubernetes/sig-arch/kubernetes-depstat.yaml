@@ -33,6 +33,14 @@ presubmits:
 
           MAIN_MODULES="k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')"
 
+          echo "=== Dependency Stats: ${PULL_BASE_SHA}..HEAD ==="
+          echo ""
+
+          # Show compact before/after/delta stats summary
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --stats | tee "${WORKDIR}/stats.txt"
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --stats --json > "${WORKDIR}/stats.json"
+
+          echo ""
           echo "=== Dependency Diff: ${PULL_BASE_SHA}..HEAD ==="
           echo ""
 
