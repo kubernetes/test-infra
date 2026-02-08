@@ -3,7 +3,7 @@
 presubmits:
   kubernetes/kops:
 
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--control-plane-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
   - name: pull-kops-e2e-cni-amazonvpc
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -35,7 +35,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=amazonvpc --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=amazonvpc --control-plane-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -62,7 +62,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10
+      test.kops.k8s.io/extra_flags: --control-plane-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: amazonvpc
@@ -136,7 +136,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-amazonvpc-ipv6
 
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--control-plane-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-cni-calico
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -168,7 +168,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=calico --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=calico --control-plane-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -195,7 +195,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false
+      test.kops.k8s.io/extra_flags: --control-plane-size=c6g.large --node-size=t4g.large --set=cluster.spec.networking.calico.wireguardEnabled=false
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
@@ -401,7 +401,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-calico-ipv6
 
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--control-plane-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-cni-cilium
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -433,7 +433,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=cilium --master-size=c6g.large --node-size=t4g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=cilium --control-plane-size=c6g.large --node-size=t4g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -460,7 +460,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+      test.kops.k8s.io/extra_flags: --control-plane-size=c6g.large --node-size=t4g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -666,7 +666,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-cilium-ipv6
 
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium-etcd"}
+  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--control-plane-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium-etcd"}
   - name: pull-kops-e2e-cni-cilium-etcd
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -698,7 +698,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=cilium-etcd --master-size=c6g.large --node-size=t4g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=cilium-etcd --control-plane-size=c6g.large --node-size=t4g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -725,7 +725,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+      test.kops.k8s.io/extra_flags: --control-plane-size=c6g.large --node-size=t4g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium-etcd
@@ -733,7 +733,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-cilium-etcd
 
-  # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium-eni"}
+  # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--control-plane-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium-eni"}
   - name: pull-kops-e2e-cni-cilium-eni
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -765,7 +765,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20251212' --channel=alpha --networking=cilium-eni --master-size=c6g.large --node-size=t4g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20251212' --channel=alpha --networking=cilium-eni --control-plane-size=c6g.large --node-size=t4g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -792,7 +792,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2204arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+      test.kops.k8s.io/extra_flags: --control-plane-size=c6g.large --node-size=t4g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium-eni
@@ -800,7 +800,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-cilium-eni
 
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "flannel"}
+  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--control-plane-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "flannel"}
   - name: pull-kops-e2e-cni-flannel
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -832,7 +832,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=flannel --master-size=c6g.large --node-size=t4g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=flannel --control-plane-size=c6g.large --node-size=t4g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -859,7 +859,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+      test.kops.k8s.io/extra_flags: --control-plane-size=c6g.large --node-size=t4g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: flannel
@@ -867,7 +867,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-flannel
 
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "ci", "kops_channel": "alpha", "networking": "kube-router"}
+  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--control-plane-size=c6g.large --node-size=t4g.large", "k8s_version": "ci", "kops_channel": "alpha", "networking": "kube-router"}
   - name: pull-kops-e2e-cni-kuberouter
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -899,7 +899,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=kube-router --master-size=c6g.large --node-size=t4g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=kube-router --control-plane-size=c6g.large --node-size=t4g.large" \
             --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -928,7 +928,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+      test.kops.k8s.io/extra_flags: --control-plane-size=c6g.large --node-size=t4g.large
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kube-router
@@ -936,7 +936,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-kuberouter
 
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
+  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--control-plane-size=c6g.large --node-size=t4g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
   - name: pull-kops-e2e-cni-kindnet
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -968,7 +968,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=kindnet --master-size=c6g.large --node-size=t4g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=kindnet --control-plane-size=c6g.large --node-size=t4g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -995,7 +995,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large
+      test.kops.k8s.io/extra_flags: --control-plane-size=c6g.large --node-size=t4g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kindnet
@@ -1201,7 +1201,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-kindnet-ipv6
 
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c6g.large --node-size=t4g.large --topology=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kubenet"}
+  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--control-plane-size=c6g.large --node-size=t4g.large --topology=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kubenet"}
   - name: pull-kops-e2e-cni-kubenet
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1233,7 +1233,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=kubenet --master-size=c6g.large --node-size=t4g.large --topology=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=kubenet --control-plane-size=c6g.large --node-size=t4g.large --topology=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1260,7 +1260,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --master-size=c6g.large --node-size=t4g.large --topology=public
+      test.kops.k8s.io/extra_flags: --control-plane-size=c6g.large --node-size=t4g.large --topology=public
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kubenet

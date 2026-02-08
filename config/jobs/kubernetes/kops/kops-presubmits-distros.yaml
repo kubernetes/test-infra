@@ -523,7 +523,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-aws-kindnet-ubuntu2204
 
-  # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-aws-distro-ubuntu2204arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -554,7 +554,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20251212' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20251212' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -581,7 +581,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2204arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -589,7 +589,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-aws-ubuntu2204arm64
 
-  # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
+  # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
   - name: pull-kops-aws-kindnet-ubuntu2204arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -620,7 +620,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20251212' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20251212' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -647,7 +647,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2204arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kindnet
@@ -785,7 +785,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-aws-kindnet-ubuntu2404
 
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-aws-distro-ubuntu2404arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -816,7 +816,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -843,7 +843,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -851,7 +851,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-aws-ubuntu2404arm64
 
-  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
+  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
   - name: pull-kops-aws-kindnet-ubuntu2404arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -882,7 +882,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -909,7 +909,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kindnet
@@ -1047,7 +1047,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-aws-kindnet-ubuntu2510
 
-  # {"cloud": "aws", "distro": "u2510arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "aws", "distro": "u2510arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-aws-distro-ubuntu2510arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1078,7 +1078,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-20251212' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-20251212' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1105,7 +1105,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2510arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -1113,7 +1113,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-aws-ubuntu2510arm64
 
-  # {"cloud": "aws", "distro": "u2510arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
+  # {"cloud": "aws", "distro": "u2510arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
   - name: pull-kops-aws-kindnet-ubuntu2510arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1144,7 +1144,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-20251212' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-20251212' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1171,7 +1171,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2510arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kindnet
@@ -1309,7 +1309,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-aws-kindnet-al2023
 
-  # {"cloud": "aws", "distro": "al2023arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "aws", "distro": "al2023arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-aws-distro-al2023arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1340,7 +1340,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='137112412989/al2023-ami-2023.9.20251208.0-kernel-6.12-arm64' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='137112412989/al2023-ami-2023.9.20251208.0-kernel-6.12-arm64' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1367,7 +1367,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: al2023arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -1375,7 +1375,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-aws-al2023arm64
 
-  # {"cloud": "aws", "distro": "al2023arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
+  # {"cloud": "aws", "distro": "al2023arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
   - name: pull-kops-aws-kindnet-al2023arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1406,7 +1406,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='137112412989/al2023-ami-2023.9.20251208.0-kernel-6.12-arm64' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='137112412989/al2023-ami-2023.9.20251208.0-kernel-6.12-arm64' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1433,7 +1433,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: al2023arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kindnet
@@ -1571,7 +1571,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-aws-kindnet-rhel9
 
-  # {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-aws-distro-rhel10arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1602,7 +1602,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='309956199498/RHEL-10.1.0_HVM-20260108-arm64-0-Hourly2-GP3' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='309956199498/RHEL-10.1.0_HVM-20260108-arm64-0-Hourly2-GP3' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1629,7 +1629,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: rhel10arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -1637,7 +1637,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-aws-rhel10arm64
 
-  # {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
+  # {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
   - name: pull-kops-aws-kindnet-rhel10arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1668,7 +1668,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='309956199498/RHEL-10.1.0_HVM-20260108-arm64-0-Hourly2-GP3' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='309956199498/RHEL-10.1.0_HVM-20260108-arm64-0-Hourly2-GP3' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1695,7 +1695,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: rhel10arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kindnet
@@ -1833,7 +1833,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-aws-kindnet-rocky9
 
-  # {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-aws-distro-rocky10arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1864,7 +1864,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1891,7 +1891,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: rocky10arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -1899,7 +1899,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-aws-rocky10arm64
 
-  # {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
+  # {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kindnet"}
   - name: pull-kops-aws-kindnet-rocky10arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1930,7 +1930,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large" \
+            --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1957,7 +1957,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: rocky10arm64
-      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large
+      test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kindnet
@@ -2227,7 +2227,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-gce-ipalias-cos121
 
-  # {"cloud": "gce", "distro": "cos121arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "gce", "distro": "cos121arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-gce-distro-cos121arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -2258,7 +2258,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-arm64-121-18867-294-78' --channel=alpha --networking=cilium --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.4 --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='cos-cloud/cos-arm64-121-18867-294-78' --channel=alpha --networking=cilium --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.4 --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2285,7 +2285,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: cos121arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -2293,7 +2293,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce-cos121arm64
 
-  # {"cloud": "gce", "distro": "cos121arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  # {"cloud": "gce", "distro": "cos121arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: pull-kops-gce-ipalias-cos121arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -2324,7 +2324,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-arm64-121-18867-294-78' --channel=alpha --networking=gce --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.4 --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='cos-cloud/cos-arm64-121-18867-294-78' --channel=alpha --networking=gce --set=cluster.spec.containerd.version=2.0.7 --set=cluster.spec.containerd.runc.version=1.3.4 --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2351,7 +2351,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: cos121arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: gce
@@ -2491,7 +2491,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-gce-ipalias-cos125
 
-  # {"cloud": "gce", "distro": "cos125arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "gce", "distro": "cos125arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-gce-distro-cos125arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -2522,7 +2522,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-arm64-125-19216-104-95' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='cos-cloud/cos-arm64-125-19216-104-95' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2549,7 +2549,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: cos125arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -2557,7 +2557,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce-cos125arm64
 
-  # {"cloud": "gce", "distro": "cos125arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  # {"cloud": "gce", "distro": "cos125arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: pull-kops-gce-ipalias-cos125arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -2588,7 +2588,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-arm64-125-19216-104-95' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='cos-cloud/cos-arm64-125-19216-104-95' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2615,7 +2615,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: cos125arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: gce
@@ -2755,7 +2755,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-gce-ipalias-cosdev
 
-  # {"cloud": "gce", "distro": "cosdevarm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "gce", "distro": "cosdevarm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-gce-distro-cosdevarm64
     cluster: k8s-infra-prow-build
     branches:
@@ -2786,7 +2786,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-arm64-dev-129-19437-0-0' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='cos-cloud/cos-arm64-dev-129-19437-0-0' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2813,7 +2813,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: cosdevarm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -2821,7 +2821,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce-cosdevarm64
 
-  # {"cloud": "gce", "distro": "cosdevarm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  # {"cloud": "gce", "distro": "cosdevarm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: pull-kops-gce-ipalias-cosdevarm64
     cluster: k8s-infra-prow-build
     branches:
@@ -2852,7 +2852,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='cos-cloud/cos-arm64-dev-129-19437-0-0' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='cos-cloud/cos-arm64-dev-129-19437-0-0' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2879,7 +2879,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: cosdevarm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: gce
@@ -3019,7 +3019,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-gce-ipalias-debian12
 
-  # {"cloud": "gce", "distro": "deb12arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "gce", "distro": "deb12arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-gce-distro-debian12arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -3050,7 +3050,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20260114' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+            --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20260114' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -3077,7 +3077,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: deb12arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -3085,7 +3085,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce-debian12arm64
 
-  # {"cloud": "gce", "distro": "deb12arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  # {"cloud": "gce", "distro": "deb12arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: pull-kops-gce-ipalias-debian12arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -3116,7 +3116,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20260114' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+            --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20260114' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -3143,7 +3143,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: deb12arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: gce
@@ -3283,7 +3283,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-gce-ipalias-debian13
 
-  # {"cloud": "gce", "distro": "deb13arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "gce", "distro": "deb13arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-gce-distro-debian13arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -3314,7 +3314,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='debian-cloud/debian-13-trixie-arm64-v20260114' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+            --create-args="--image='debian-cloud/debian-13-trixie-arm64-v20260114' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -3341,7 +3341,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: deb13arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -3349,7 +3349,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce-debian13arm64
 
-  # {"cloud": "gce", "distro": "deb13arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  # {"cloud": "gce", "distro": "deb13arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: pull-kops-gce-ipalias-debian13arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -3380,7 +3380,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='debian-cloud/debian-13-trixie-arm64-v20260114' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+            --create-args="--image='debian-cloud/debian-13-trixie-arm64-v20260114' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -3407,7 +3407,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: deb13arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: gce
@@ -3679,7 +3679,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-gce-ipalias-ubuntu2404
 
-  # {"cloud": "gce", "distro": "u2404arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "gce", "distro": "u2404arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-gce-distro-ubuntu2404arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -3710,7 +3710,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20260117' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20260117' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -3737,7 +3737,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -3745,7 +3745,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce-ubuntu2404arm64
 
-  # {"cloud": "gce", "distro": "u2404arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  # {"cloud": "gce", "distro": "u2404arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: pull-kops-gce-ipalias-ubuntu2404arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -3776,7 +3776,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20260117' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20260117' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -3803,7 +3803,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: u2404arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: gce
@@ -3943,7 +3943,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-gce-ipalias-ubuntuminimal2404
 
-  # {"cloud": "gce", "distro": "umini2404arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "gce", "distro": "umini2404arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-gce-distro-ubuntuminimal2404arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -3974,7 +3974,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-arm64-v20260114' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-arm64-v20260114' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -4001,7 +4001,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: umini2404arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -4009,7 +4009,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce-ubuntuminimal2404arm64
 
-  # {"cloud": "gce", "distro": "umini2404arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  # {"cloud": "gce", "distro": "umini2404arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: pull-kops-gce-ipalias-ubuntuminimal2404arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -4040,7 +4040,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-arm64-v20260114' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-arm64-v20260114' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -4067,7 +4067,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: umini2404arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: gce
@@ -4207,7 +4207,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-gce-ipalias-rhel10
 
-  # {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-gce-distro-rocky10arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -4238,7 +4238,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260115' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+            --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260115' --channel=alpha --networking=cilium --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -4265,7 +4265,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: rocky10arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -4273,7 +4273,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce-rocky10arm64
 
-  # {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  # {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: pull-kops-gce-ipalias-rocky10arm64
     cluster: k8s-infra-prow-build
     branches:
@@ -4304,7 +4304,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260115' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+            --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260115' --channel=alpha --networking=gce --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -4331,7 +4331,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: rocky10arm64
-      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
+      test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: gce

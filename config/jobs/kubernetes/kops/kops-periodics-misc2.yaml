@@ -72,7 +72,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-eks-pod-identity
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-cni-cilium-k8s-ci
   cron: '5 15-23/24 * * *'
   labels:
@@ -102,7 +102,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=cilium --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=cilium --zones=eu-central-1a --node-size=m6g.large --control-plane-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -129,7 +129,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large
+    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --control-plane-size=m6g.large
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -784,7 +784,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-scenario-ipv6-terraform
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--control-plane-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-ha-euwest1
   cron: '10 5-23/8 * * *'
   labels:
@@ -814,7 +814,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=calico --master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212' --channel=alpha --networking=calico --control-plane-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -839,7 +839,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c
+    test.kops.k8s.io/extra_flags: --control-plane-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2154,7 +2154,7 @@ periodics:
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-kops-al2023-aws-conformance-canary
 
-# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "amazonvpc"}
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=r5d.xlarge --control-plane-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "amazonvpc"}
 - name: e2e-ci-kubernetes-kops-al2023-aws-conformance-aws-cni
   cron: '16 1-23/4 * * *'
   labels:
@@ -2184,7 +2184,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251208.0-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251208.0-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --control-plane-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --cluster-name="kubernetes-e2e-al2023-aws-conformance-aws-cni.k8s.local" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -2212,7 +2212,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: al2023
-    test.kops.k8s.io/extra_flags: --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log
+    test.kops.k8s.io/extra_flags: --node-size=r5d.xlarge --control-plane-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2221,7 +2221,7 @@ periodics:
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-kops-al2023-aws-conformance-aws-cni
 
-# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "amazonvpc"}
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=r5d.xlarge --control-plane-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "amazonvpc"}
 - name: e2e-ci-kubernetes-kops-al2023-aws-conformance-aws-cni-canary
   cron: '30 2-23/4 * * *'
   labels:
@@ -2251,7 +2251,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251208.0-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251208.0-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --control-plane-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --cluster-name="kubernetes-e2e-al2023-aws-conformance-aws-cni-canary.k8s.local" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
@@ -2281,7 +2281,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: al2023
-    test.kops.k8s.io/extra_flags: --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log
+    test.kops.k8s.io/extra_flags: --node-size=r5d.xlarge --control-plane-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2495,7 +2495,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: ci-kubernetes-kops-cos-gce-reboot-canary
 
-# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "amazonvpc"}
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=r5d.xlarge --control-plane-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "amazonvpc"}
 - name: e2e-ci-kubernetes-kops-al2023-aws-disruptive-canary
   cron: '10 4-23/8 * * *'
   labels:
@@ -2525,7 +2525,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251208.0-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251208.0-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --control-plane-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -2554,7 +2554,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: al2023
-    test.kops.k8s.io/extra_flags: --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log
+    test.kops.k8s.io/extra_flags: --node-size=r5d.xlarge --control-plane-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
