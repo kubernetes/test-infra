@@ -1160,6 +1160,8 @@ periodics:
         value: "2"
       - name: CL2_EXECSERVICE_MEMORY_REQUESTS
         value: "4Gi"
+      - name: CL2_EXECSERVICE_TOLERATE_CONTROL_PLANE
+        value: "true"
       # Override for 1.93GB pod resource size
       - name: CL2_DAEMONSET_POD_PAYLOAD_SIZE
         value: "8000"
