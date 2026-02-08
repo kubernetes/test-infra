@@ -611,7 +611,7 @@ milestone_applier:
     master: v1.23
   kubernetes/website:
     dev-1.36: 1.36
-  kubernetes-sigs/node-problem-detector:
+  kubernetes/node-problem-detector:
     main: v1.36
     release-1.35: v1.35
     release-1.34: v1.34
@@ -1363,7 +1363,7 @@ plugins:
     - milestone
     - override
 
-  kubernetes-sigs/node-problem-detector:
+  kubernetes/node-problem-detector:
     plugins:
     - mergecommitblocker
     - milestone
