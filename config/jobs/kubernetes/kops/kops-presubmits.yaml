@@ -89,7 +89,7 @@ presubmits:
             --cluster-name=e2e-test-do.k8s.local \
             --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
             --env JOB_NAME=pull-kops-e2e-kubernetes-do-gossip \
-            --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=private" \
+            --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --control-plane-count=3 --dns=private" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -142,7 +142,7 @@ presubmits:
           --cluster-name=e2e-test-do.k8s.local \
           --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
           --env JOB_NAME=pull-kops-e2e-kubernetes-do-gossip \
-          --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=none" \
+          --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --control-plane-count=3 --dns=none" \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
           --test=kops \

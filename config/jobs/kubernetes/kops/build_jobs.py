@@ -502,12 +502,12 @@ def generate_grid():
                         if networking in ['cilium-eni', 'amazon-vpc']:
                             extra_flags.extend([
                                 "--node-size=t4g.large",
-                                "--master-size=t4g.large",
+                                "--control-plane-size=t4g.large",
                             ])
                         else:
                             extra_flags.extend([
                                 "--node-size=m6g.large",
-                                "--master-size=m6g.large",
+                                "--control-plane-size=m6g.large",
                             ])
                     elif networking in ['cilium-eni', 'amazon-vpc']:
                         extra_flags = ['--node-size=t3.large']
@@ -544,7 +544,7 @@ def generate_grid():
                     if 'arm64' in distro:
                         extra_flags.extend([
                             "--node-size=t2a-standard-2",
-                            "--master-size=t2a-standard-2",
+                            "--control-plane-size=t2a-standard-2",
                             "--zones=us-central1-a",
                         ])
                     # If we are not using cos or ubuntu, we need to use startup-script
@@ -596,7 +596,7 @@ def generate_misc():
                    runs_per_day=1,
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
-                                "--master-size=m6g.large"],
+                                "--control-plane-size=m6g.large"],
                    extra_dashboards=['kops-network-plugins']),
         build_test(name_override="kops-gce-cni-cilium-k8s-ci",
                    cloud="gce",
@@ -731,7 +731,7 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=[
-                       "--master-count=3",
+                       "--control-plane-count=3",
                        "--zones=eu-west-1a,eu-west-1b,eu-west-1c"
                    ],
                    extra_dashboards=["kops-misc"]),
@@ -1075,7 +1075,7 @@ def generate_misc():
                    kops_channel="alpha",
                    extra_flags=[
                        "--node-size=r5d.xlarge",
-                       "--master-size=r5d.xlarge",
+                       "--control-plane-size=r5d.xlarge",
                        "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
                        "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
                        "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
@@ -1102,7 +1102,7 @@ def generate_misc():
                    build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--node-size=r5d.xlarge",
-                       "--master-size=r5d.xlarge",
+                       "--control-plane-size=r5d.xlarge",
                        "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
                        "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
                        "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
@@ -1189,7 +1189,7 @@ def generate_misc():
                    build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--node-size=r5d.xlarge",
-                       "--master-size=r5d.xlarge",
+                       "--control-plane-size=r5d.xlarge",
                        "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
                        "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
                        "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
@@ -1347,7 +1347,7 @@ def generate_conformance():
                 distro="u2404",
                 extra_flags=["--zones=eu-central-1a",
                              "--node-size=t3.large",
-                             "--master-size=t3.large"],
+                             "--control-plane-size=t3.large"],
                 test_parallelism=1,
                 test_timeout_minutes=150,
                 extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-ec2'],
@@ -1366,7 +1366,7 @@ def generate_conformance():
                 distro="u2404arm64",
                 extra_flags=["--zones=eu-central-1a",
                              "--node-size=t4g.large",
-                             "--master-size=t4g.large"],
+                             "--control-plane-size=t4g.large"],
                 test_parallelism=1,
                 test_timeout_minutes=150,
                 extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-arm64', 'conformance-ec2'],
@@ -1406,7 +1406,7 @@ def generate_distros():
             extra_flags.extend([
                 "--zones=eu-west-1a",
                 "--node-size=m6g.large",
-                "--master-size=m6g.large"
+                "--control-plane-size=m6g.large"
             ])
         results.append(
             build_test(distro=distro_short,
@@ -1433,7 +1433,7 @@ def generate_presubmits_distros():
             extra_flags.extend([
                 "--zones=eu-west-1a",
                 "--node-size=m6g.large",
-                "--master-size=m6g.large"
+                "--control-plane-size=m6g.large"
             ])
         results.append(
             presubmit_test(
@@ -1465,7 +1465,7 @@ def generate_presubmits_distros():
         if 'arm64' in distro:
             extra_flags.extend([
                 "--node-size=t2a-standard-2",
-                "--master-size=t2a-standard-2",
+                "--control-plane-size=t2a-standard-2",
                 "--zones=us-central1-a",
             ])
         # If we are not using cos or ubuntu, we need to use startup-script
@@ -1565,7 +1565,7 @@ def generate_network_plugins():
             if 'arm64' in distro:
                 extra_flags.extend([
                     '--node-size=t2a-standard-2',
-                    '--master-size=t2a-standard-2',
+                    '--control-plane-size=t2a-standard-2',
                     '--zones=us-central1-a',
                 ])
             results.append(
@@ -1834,7 +1834,7 @@ def generate_nftables():
             extra_flags.extend([
                 "--zones=eu-west-1a",
                 "--node-size=m6g.large",
-                "--master-size=m6g.large"
+                "--control-plane-size=m6g.large"
             ])
         results.append(
             build_test(
@@ -1858,7 +1858,7 @@ def generate_nftables():
         if 'arm64' in distro:
             extra_flags.extend([
                 "--node-size=t2a-standard-2",
-                "--master-size=t2a-standard-2",
+                "--control-plane-size=t2a-standard-2",
                 "--zones=us-central1-a",
             ])
         # If we are not using cos or ubuntu, we need to use startup-script
@@ -1950,7 +1950,7 @@ def generate_presubmits_network_plugins():
                 k8s_version = 'ci'
                 optional = True
             aws_extra_flags = [
-                "--master-size=c6g.large",
+                "--control-plane-size=c6g.large",
                 "--node-size=t4g.large"
             ]
             if plugin == 'amazonvpc':
@@ -2060,7 +2060,7 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-ci-ha',
             networking='calico',
             extra_flags=[
-                "--master-count=3",
+                "--control-plane-count=3",
                 "--node-count=6",
                 "--zones=eu-central-1a,eu-central-1b,eu-central-1c"],
             tab_name='e2e-containerd-ci-ha',
@@ -2082,7 +2082,7 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-aws-amazonvpc',
             extra_flags=[
                 "--node-size=r5d.xlarge",
-                "--master-size=r5d.xlarge",
+                "--control-plane-size=r5d.xlarge",
                 "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
                 "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
                 "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
@@ -2102,7 +2102,7 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-aws-amazonvpc-u2404',
             extra_flags=[
                 "--node-size=r5d.xlarge",
-                "--master-size=r5d.xlarge",
+                "--control-plane-size=r5d.xlarge",
                 "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
                 "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
                 "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
@@ -2126,7 +2126,7 @@ def generate_presubmits_e2e():
             extra_flags=[
                 "--gce-service-account=default",
                 "--node-size=t2a-standard-2",
-                "--master-size=t2a-standard-2",
+                "--control-plane-size=t2a-standard-2",
                 "--zones=us-central1-a"
             ],
         ),
@@ -2161,7 +2161,7 @@ def generate_presubmits_e2e():
             extra_flags=[
                 "--zones=us-east1-b",
                 "--node-size=c4-standard-4",
-                "--master-size=c4-standard-2",
+                "--control-plane-size=c4-standard-2",
                 "--set spec.cloudProvider.gce.pdCSIDriver.defaultStorageClassName=balanced-storage",
                 "--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000",
                 "--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000",
@@ -2315,7 +2315,7 @@ def generate_presubmits_e2e():
             networking="calico",
             extra_flags=["--zones=eu-central-1a",
                          "--node-size=m6g.large",
-                         "--master-size=m6g.large"],
+                         "--control-plane-size=m6g.large"],
         ),
 
         presubmit_test(
@@ -2464,7 +2464,7 @@ def generate_presubmits_e2e():
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
             skip_regex=r'\[Slow\]|\[Serial\]|\[Flaky\]',
             extra_flags=[
-                "--master-size=c8g.xlarge",
+                "--control-plane-size=c8g.xlarge",
             ],
             extra_dashboards=["kops-misc"],
         ),
