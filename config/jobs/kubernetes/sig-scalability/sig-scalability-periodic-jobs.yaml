@@ -1157,9 +1157,9 @@ periodics:
       - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
         value: "21474836480"
       - name: CL2_EXECSERVICE_CPU_REQUESTS
-        value: "2"
+        value: "1"
       - name: CL2_EXECSERVICE_MEMORY_REQUESTS
-        value: "4Gi"
+        value: "2Gi"
       # Override for 1.93GB pod resource size
       - name: CL2_DAEMONSET_POD_PAYLOAD_SIZE
         value: "8000"
