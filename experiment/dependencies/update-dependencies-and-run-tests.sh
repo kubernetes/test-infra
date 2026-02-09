@@ -71,9 +71,6 @@ fi
 BEFORE_SHA=$(git rev-parse HEAD)
 MAIN_MODULES="k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')"
 
-# grab the stats before we start
-depstat stats -m "${MAIN_MODULES}" -v > "${WORKDIR}/stats-before.txt"
-
 # get the list of packages to skip from unwanted-dependencies.json
 SKIP_PACKAGES=$(jq -r '.spec.pinnedModules | to_entries[] | .key' hack/unwanted-dependencies.json)
 
@@ -87,14 +84,16 @@ mdtohtml "${WORKDIR}"/differences.md "${WORKDIR}"/differences.html
 # See if update-vendor still works
 hack/update-vendor.sh
 
-# gather stats for comparison after running update-vendor
-depstat stats -m "${MAIN_MODULES}" -v > "${WORKDIR}/stats-after.txt"
-
 # Commit the dependency changes so depstat diff can checkout the base ref
 git add -A
 git commit -m "dependency updates" --allow-empty || true
 
 # Generate dependency diff with visualization
+echo ""
+echo "=== Dependency Stats (before/after/delta) ==="
+depstat diff "${BEFORE_SHA}" HEAD -m "${MAIN_MODULES}" --stats | tee "${WORKDIR}/stats.txt"
+depstat diff "${BEFORE_SHA}" HEAD -m "${MAIN_MODULES}" --stats --json > "${WORKDIR}/stats.json"
+
 echo ""
 echo "=== Dependency Changes ==="
 depstat diff "${BEFORE_SHA}" HEAD -m "${MAIN_MODULES}" -v --split-test-only --vendor --vendor-files | tee "${WORKDIR}/diff.txt"
