@@ -675,10 +675,10 @@ presubmits:
         resources:
           limits:
             cpu: 7
-            memory: 26Gi
+            memory: 16Gi
           requests:
             cpu: 7
-            memory: 26Gi
+            memory: 16Gi
 
   - name: pull-kubernetes-e2e-kind-evented-pleg
     cluster: k8s-infra-prow-build

@@ -409,12 +409,12 @@ periodics:
         privileged: true
       resources:
         limits:
-          memory: 9Gi
+          memory: 16Gi
           cpu: 7
         requests:
           # these are both a bit below peak usage during build
           # this is mostly for building kubernetes
-          memory: 9Gi
+          memory: 16Gi
           cpu: 7
 
 - interval: 2h
