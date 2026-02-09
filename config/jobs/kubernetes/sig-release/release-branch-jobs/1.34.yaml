@@ -1141,7 +1141,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260205-38cfa9523f-1.34
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-1.34
       name: ""
       resources:
         limits:
@@ -1176,7 +1176,7 @@ periodics:
       - name: KUBE_TIMEOUT
         value: -timeout=300s
       - name: KUBE_RACE
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260205-38cfa9523f-1.34
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-1.34
       name: ""
       resources:
         limits:
