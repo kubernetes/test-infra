@@ -161,6 +161,13 @@ ARG YQ_VERSION
 RUN wget -q "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${TARGETARCH}" \
     -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
+# install helm
+ARG HELM_VERSION
+RUN wget -q "https://get.helm.sh/helm-${HELM_VERSION}-linux-${TARGETARCH}.tar.gz" -O helm.tar.gz && \
+    tar -xzf helm.tar.gz -C /tmp  && \
+    mv "/tmp/linux-${TARGETARCH}/helm" /usr/local/bin/helm && \
+    rm -rf helm.tar.gz "/tmp/linux-${TARGETARCH}"
+
 # install kind if a version is provided
 ARG KIND_VERSION
 RUN if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ] && [ -n "${KIND_VERSION}" ]; then \
