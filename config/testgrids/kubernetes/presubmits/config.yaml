@@ -53,9 +53,6 @@ dashboards:
   - name: pull-kubernetes-dependencies
     test_group_name: pull-kubernetes-dependencies
     base_options: width=10
-  - name: pull-kubernetes-e2e-gce-network-proxy-http-connect
-    test_group_name: pull-kubernetes-e2e-gce-network-proxy-http-connect
-    base_options: width=10
   - name: pull-kubernetes-conformance-kind-ga-only-parallel
     test_group_name: pull-kubernetes-conformance-kind-ga-only-parallel
     base_options: width=10
