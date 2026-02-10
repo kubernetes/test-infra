@@ -156,6 +156,11 @@ periodics:
     spec:
       containers:
         - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: "USER"
+              value: "ci-kubernetes-ppc64le-e2e-node-latest-kubetest2"
           resources:
             requests:
               cpu: 2
@@ -171,11 +176,15 @@ periodics:
             - |
               set -o xtrace
 
+              source "./hack/boskos.sh"
+
               make install-deployer-tf
               CLUSTER_NAME="e2e-node-$(date +%s)"
 
+              set +o errexit
               kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
-                --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --cluster-name $CLUSTER_NAME \
                 --up --set-kubeconfig=false --auto-approve --retry-on-tf-failure 3 \
@@ -190,10 +199,12 @@ periodics:
                 "export SKIP='\[Flaky\]|\[Slow\]|\[Serial\]|should.execute.readiness.probe.while.in.preStop' && /make-test-e2e-node.sh"; \
                 rc=$?; scp -r -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP:/tmp/_artifacts $ARTIFACTS
 
-              kubetest2 tf \
+              kubetest2 tf --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
                 --ignore-cluster-dir true \
                 --cluster-name $CLUSTER_NAME\
                 --down --auto-approve --ignore-destroy-errors
+              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
               [ $rc != 0 ] && echo "ERROR: E2ENode Test suite exited with code:$rc"; exit $rc
 
   - name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
