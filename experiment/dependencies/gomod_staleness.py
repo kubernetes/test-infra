@@ -113,7 +113,7 @@ def source(pkg, old, new):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Update Go module dependencies and report on changes.')
-    parser.add_argument('--skip', nargs='+', default=["github.com/libopenstorage/openstorage"],
+    parser.add_argument('--skip', nargs='*', default=["github.com/libopenstorage/openstorage"],
                         help='List of packages to skip updating (default: github.com/libopenstorage/openstorage)')
     parser.add_argument('--patch-output', type=str,
                         help='Path to save the output from git patch for go.mod/sum')
@@ -172,7 +172,7 @@ go get -u %s""" % pkg
         print(">>>> Running command %r" % update_command)
         os.system(update_command)
 
-    print(">>>> Ensuring Packages that will be skipped are at their previous versions" % args.skip)
+    print(">>>> Ensuring Packages that will be skipped are at their previous versions %r" % (args.skip,))
     for pkg in args.skip:
         if pkg in before.keys():
             update_command = """\
