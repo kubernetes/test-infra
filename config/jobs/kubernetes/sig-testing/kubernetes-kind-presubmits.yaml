@@ -274,6 +274,8 @@ presubmits:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-kind
 
+  # see also: https://testgrid.k8s.io/sig-release-master-blocking#kind-master-beta-features
+  # AKA ci-kubernetes-e2e-kind-beta-features
   - name: pull-kubernetes-e2e-kind-beta-features
     cluster: k8s-infra-prow-build
     annotations:
