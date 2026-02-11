@@ -224,6 +224,7 @@ presubmits:
             cpu: 4
             memory: 9Gi
     annotations:
+      fork-per-release: "true"
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
@@ -280,6 +281,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     annotations:
       description: Runs tests with no special requirements other than beta feature gates in a KinD cluster where beta feature gates and APIs are enabled.
+      fork-per-release: "true"
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
@@ -329,6 +331,7 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+      fork-per-release: "true"
     optional: true
     always_run: false
     decorate: true
@@ -379,6 +382,7 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+      fork-per-release: "true"
     optional: true
     always_run: false
     decorate: true
@@ -428,6 +432,7 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+      fork-per-release: "true"
     cluster: k8s-infra-prow-build
     optional: true
     run_if_changed: ^pkg/features/
@@ -475,6 +480,7 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+      fork-per-release: "true"
     cluster: k8s-infra-prow-build
     optional: true
     run_if_changed: ^pkg/features/
@@ -526,6 +532,7 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+      fork-per-release: "true"
     cluster: k8s-infra-prow-build
     optional: true
     run_if_changed: ^pkg/features/
@@ -628,6 +635,7 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+      fork-per-release: "true"
     cluster: k8s-infra-prow-build
     optional: true
     decorate: true
