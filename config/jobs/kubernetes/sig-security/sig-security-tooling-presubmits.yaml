@@ -1,0 +1,37 @@
+presubmits:
+  kubernetes/sig-security:
+  - name: pull-sig-security-srctl-tests
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-security-tooling
+      testgrid-create-test-group: "true"
+      description: Run unit tests and golangci-lint for the srctl tool
+    run_if_changed: "^sig-security-tooling/srctl/"
+    branches:
+    - main
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
+        command:
+        - runner.sh
+        args:
+        - /bin/bash
+        - -c
+        - |
+          set -euo pipefail
+          cd sig-security-tooling/srctl
+          echo "Starting testing..."
+          go test -v -cover ./...
+          echo "Running linter..."
+          # Usamos una forma más robusta de ejecutar el linter en entornos de CI
+          export GOBIN=$(pwd)/bin
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3
+          ./bin/golangci-lint run ./...
+        resources:
+          limits:
+            cpu: 1
+            memory: "1Gi"
+          requests:
+            cpu: 1
+            memory: "1Gi"
