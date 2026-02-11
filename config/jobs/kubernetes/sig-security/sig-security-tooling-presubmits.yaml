@@ -24,7 +24,6 @@ presubmits:
           echo "Starting testing..."
           go test -v -cover ./...
           echo "Running linter..."
-          # Usamos una forma más robusta de ejecutar el linter en entornos de CI
           export GOBIN=$(pwd)/bin
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3
           ./bin/golangci-lint run ./...
