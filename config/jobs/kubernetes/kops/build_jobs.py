@@ -489,17 +489,21 @@ def generate_grid():
                 if 'arm64' in distro and networking == 'kopeio':
                     continue
                 for kops_version in kops_versions:
-                    # kindnet pre-1.0 requires GLIBC_2.32
-                    if distro == 'debian11' and networking == 'kindnet' and kops_version in ('1.33', '1.32'):
-                        continue
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
                     distro_short = distro_shortener(distro)
-                    # Fixes for these were backported to 1.34 in https://github.com/kubernetes/kops/pull/17935
-                    # but not to any earlier kops versions.
-                    if kops_version in ('1.33', '1.32') and (
-                        (distro_short in ('al2023', 'u2204', 'u2404', 'u2510', 'u2204arm64', 'u2404arm64', 'u2510arm64') and networking == 'amazon-vpc') or
+                    if kops_version in ('1.32', '1.33'):
+                        # kindnet pre-1.0 requires GLIBC_2.32
+                        if distro == 'debian11' and networking == 'kindnet':
+                            continue
+                        # Fixes for these were backported to 1.34 in https://github.com/kubernetes/kops/pull/17935
+                        # but not to any earlier kops versions.
+                        if ((distro_short in ('al2023', 'u2204', 'u2404', 'u2510', 'u2204arm64', 'u2404arm64', 'u2510arm64') and networking == 'amazon-vpc') or
                         (distro_short in ('u2404', 'u2510', 'u2404arm64', 'u2510arm64') and networking == 'cilium-eni')):
-                        continue
+                            continue
+                        # Fixes for these were backported to 1.34 in https://github.com/kubernetes/kops/issues/17914
+                        # but not to any earlier kops versions.
+                        if networking_arg == 'kube-router' and distro_short in ('deb13', 'al2023', 'al2023arm64', 'rhel9', 'flatcar'):
+                            continue
                     extra_flags = []
                     if 'arm64' in distro:
                         extra_flags.extend([
