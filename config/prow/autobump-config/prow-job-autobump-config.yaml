@@ -22,8 +22,7 @@ extraFiles:
   - "config/jobs/kubernetes/kops/build_vars.py"
   - "config/jobs/kubernetes-csi/gen-jobs.sh"
   - "config/jobs/README.md"
-  - "releng/generate_tests.py"
-  - "releng/test_config.yaml"
+  - "releng/generate-tests/internal/config/config.go"
   - "images/kubekins-e2e/Dockerfile"
 targetVersion: "latest"
 prefixes:

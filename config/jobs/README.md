@@ -193,13 +193,12 @@ than in this central README, but here we are for now.
 
 ### image-validation jobs
 
-These test different master/node image versions against multiple k8s branches. If you
-want to change these, update [`releng/test_config.yaml`](/releng/test_config.yaml)
-and then run
+These test different master/node image versions against multiple k8s branches. To
+regenerate these, run:
 
 ```sh
 # from test-infra root
-$ ./hack/update-generated-tests.sh
+$ make -C releng generate-tests
 ```
 
 ### release-branch jobs
