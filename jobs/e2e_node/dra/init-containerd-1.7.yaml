@@ -30,7 +30,7 @@ runcmd:
 
   - echo "Download and install CNI plugins"
   - mkdir -p /tmp/containerd
-  - 'curl -sSL --fail --retry 5 --retry-delay 3 --silent --show-error -o /tmp/containerd/cni.tgz https://storage.googleapis.com/k8s-artifacts-cni/release/v1.0.1/cni-plugins-linux-amd64-v1.0.1.tgz'
+  - 'curl -sSL --fail --retry 5 --retry-delay 3 --silent --show-error -o /tmp/containerd/cni.tgz https://github.com/containernetworking/plugins/releases/download/v1.9.0/cni-plugins-linux-amd64-v1.9.0.tgz'
   - mkdir -p /opt/cni/bin
   - tar xzf /tmp/containerd/cni.tgz -C /opt/cni/bin --overwrite
 
