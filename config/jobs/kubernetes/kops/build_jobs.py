@@ -497,7 +497,7 @@ def generate_grid():
                             continue
                         # Fixes for these were backported to 1.34 in https://github.com/kubernetes/kops/pull/17935
                         # but not to any earlier kops versions.
-                        if ((distro_short in ('al2023', 'u2204', 'u2404', 'u2510', 'u2204arm64', 'u2404arm64', 'u2510arm64') and networking == 'amazon-vpc') or
+                        if ((distro_short in ('al2023', 'al2023arm64', 'u2204', 'u2404', 'u2510', 'u2204arm64', 'u2404arm64', 'u2510arm64') and networking == 'amazon-vpc') or
                         (distro_short in ('u2404', 'u2510', 'u2404arm64', 'u2510arm64') and networking == 'cilium-eni')):
                             continue
                         # Fixes for these were backported to 1.34 in https://github.com/kubernetes/kops/issues/17914
