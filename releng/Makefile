@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include ../Makefile.base.mk
-# Makefile.base.mk requires REPO_ROOT to be set
 REPO_ROOT:=${CURDIR}/..
 
 # ARGS can be overridden by calling make
 ARGS ?=
 
-prepare-release-branch: ensure-py-requirements3
+prepare-release-branch:
 	./run.sh
 
 generate-tests:
@@ -28,6 +26,9 @@ generate-tests:
 test-generate-tests:
 	cd $(REPO_ROOT) && go test ./releng/generate-tests/...
 
-test: test-generate-tests
+test-prepare-release-branch:
+	cd $(REPO_ROOT) && go test ./releng/prepare-release-branch/...
 
-.PHONY: test generate-tests test-generate-tests
+test: test-generate-tests test-prepare-release-branch
+
+.PHONY: test generate-tests test-generate-tests test-prepare-release-branch prepare-release-branch
