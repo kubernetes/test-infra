@@ -18,7 +18,7 @@ postsubmits:
               - /run.sh
             args:
               - --project=k8s-staging-headlamp
-              - --scratch-bucket=gs://k8s-staging-headlamp-gcb
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - --with-git-dir
               - .
