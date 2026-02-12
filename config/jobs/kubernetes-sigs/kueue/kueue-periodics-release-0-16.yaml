@@ -401,7 +401,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.34"
+              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -447,7 +447,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.34"
+              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -493,7 +493,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.34"
+              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -539,7 +539,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.34"
+              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -585,7 +585,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.34"
+              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -631,7 +631,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.34"
+              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
