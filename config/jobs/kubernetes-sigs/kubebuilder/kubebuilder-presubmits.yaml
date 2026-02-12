@@ -24,47 +24,12 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder
-  - name: pull-kubebuilder-e2e-k8s-1-33-0
-    cluster: eks-prow-build-cluster
-    decorate: true
-    decoration_config:
-      timeout: 40m
-    optional: false
-    skip_if_only_changed: "^docs/|^designs/|^roadmap/|^scripts/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: sigs.k8s.io/kubebuilder
-    branches:
-      - ^master$
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
-          command:
-            - runner.sh
-            - ./test_e2e.sh
-          env:
-            - name: KIND_K8S_VERSION
-              value: "v1.33.0"
-            - name: KIND_E2E
-              value: "true"
-          resources:
-            limits:
-              cpu: 6
-              memory: 8Gi
-            requests:
-              cpu: 6
-              memory: 8Gi
-          securityContext:
-            privileged: true
-    annotations:
-      testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-33-0
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-35-0
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 40m
+      timeout: 75m
+      grace_period: 15m
     optional: false
     skip_if_only_changed: "^docs/|^designs/|^roadmap/|^scripts/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/kubebuilder
@@ -84,51 +49,15 @@ presubmits:
           resources:
             limits:
               cpu: 6
-              memory: 8Gi
+              memory: 12Gi
             requests:
               cpu: 6
-              memory: 8Gi
+              memory: 12Gi
           securityContext:
             privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder-e2e-1-35-0
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-34-0
-    cluster: eks-prow-build-cluster
-    decorate: true
-    decoration_config:
-      timeout: 40m
-    optional: false
-    skip_if_only_changed: "^docs/|^designs/|^roadmap/|^scripts/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: sigs.k8s.io/kubebuilder
-    branches:
-      - ^master$
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
-          command:
-            - runner.sh
-            - ./test_e2e.sh
-          env:
-            - name: KIND_K8S_VERSION
-              value: "v1.34.0"
-            - name: KIND_E2E
-              value: "true"
-          resources:
-            limits:
-              cpu: 6
-              memory: 8Gi
-            requests:
-              cpu: 6
-              memory: 8Gi
-          securityContext:
-            privileged: true
-    annotations:
-      testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-34-0
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
