@@ -1,10 +1,10 @@
 periodics:
   - interval: 12h
-    name: periodic-kueue-build-s390x-ppc64le-release-0-14
+    name: periodic-kueue-build-s390x-ppc64le-main
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-build-s390x-ppc64le-release-0-14
+      testgrid-tab-name: periodic-kueue-build-s390x-ppc64le-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run s390x & power periodic job to build kueue image"
@@ -15,7 +15,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.14
+        base_ref: main
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
@@ -25,7 +25,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.34"
+              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
