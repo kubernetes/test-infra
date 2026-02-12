@@ -38,10 +38,9 @@ source hack/build/setup-go.sh
 BIN_DIR="_bin"
 CMD_ARGS=""
 
-for tool in config-rotator config-forker; do
+for tool in config-rotator config-forker generate-tests; do
     GOOS=${TARGET_OS} GOARCH=${TARGET_ARCH} go build -o "${BIN_DIR}/${tool}" "${REPO_ROOT}/releng/${tool}"
     CMD_ARGS+="${BIN_DIR}/${tool} "
 done
 
-CMD_ARGS+="releng/generate_tests.py"
 hack/run-in-python-container.sh releng/prepare_release_branch.py $CMD_ARGS

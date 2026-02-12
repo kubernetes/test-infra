@@ -20,14 +20,11 @@
 import os
 import sys
 import glob
-import re
 
 import sh
-import ruamel.yaml as yaml
 
 import requests
 
-TEST_CONFIG_YAML = "test_config.yaml"
 JOB_CONFIG = "../config/jobs"
 BRANCH_JOB_DIR = "../config/jobs/kubernetes/sig-release/release-branch-jobs"
 
@@ -111,34 +108,10 @@ def fork_new_file(forker_bin, branch_path, prowjob_path, current_version, go_ver
         _fg=True)
 
 
-def update_generated_config(path, latest_version):
-    print("Updating test_config.yaml...")
-    with open(path, 'r') as f:
-        config = yaml.round_trip_load(f)
-
-    v = latest_version
-    for i, s in enumerate(suffixes):
-        vs = "%d.%d" % (v[0], v[1] + 1 - i)
-        markers = config['k8sVersions'][s]
-        markers['version'] = vs
-        for j, arg in enumerate(markers['args']):
-            markers['args'][j] = re.sub(
-                r'latest(-\d+\.\d+)?', 'latest-%s' % vs, arg)
-
-        node = config['nodeK8sVersions'][s]
-        for k, arg in enumerate(node['args']):
-            node['args'][k] = re.sub(
-                r'master|release-\d+\.\d+', 'release-%s' % vs, arg)
-        node['prowImage'] = node['prowImage'].rpartition('-')[0] + '-' + vs
-
-    with open(path, 'w') as f:
-        yaml.round_trip_dump(config, f)
-
-
-def regenerate_files(generate_tests_bin, test_config):
+def regenerate_files(generate_tests_bin, branch_job_dir):
     print("Regenerating files...")
     sh.Command(generate_tests_bin)(
-        yaml_config_path=test_config,
+        release_branch_dir=os.path.abspath(branch_job_dir),
         _fg=True)
 
 def go_version_kubernetes_master():
@@ -178,9 +151,7 @@ def main():
     fork_new_file(forker_bin, branch_job_dir_abs,
                   os.path.join(cur_file_dir, JOB_CONFIG), version, go_version)
 
-    update_generated_config(os.path.join(cur_file_dir, TEST_CONFIG_YAML), version)
-
-    regenerate_files(generate_tests_bin, os.path.join(cur_file_dir, TEST_CONFIG_YAML))
+    regenerate_files(generate_tests_bin, branch_job_dir_abs)
 
 
 if __name__ == "__main__":

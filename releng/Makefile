@@ -17,17 +17,17 @@ include ../Makefile.base.mk
 REPO_ROOT:=${CURDIR}/..
 
 # ARGS can be overridden by calling make
-ARGS ?= ""
+ARGS ?=
 
 prepare-release-branch: ensure-py-requirements3
 	./run.sh
 
-generate-tests: ensure-py-requirements3
-	../hack/run-in-python-container.sh ./releng/generate_tests.py ${ARGS}
+generate-tests:
+	cd $(REPO_ROOT) && go run ./releng/generate-tests $(ARGS)
 
-test-generate-tests: ensure-py-requirements3
-	../hack/run-in-python-container.sh ./releng/generate_tests_test.py
+test-generate-tests:
+	cd $(REPO_ROOT) && go test ./releng/generate-tests/...
 
 test: test-generate-tests
 
-.PHONY: test
+.PHONY: test generate-tests test-generate-tests
