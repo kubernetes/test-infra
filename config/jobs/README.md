@@ -191,16 +191,6 @@ There are some sets of jobs that are generated and should not be edited by hand.
 These specific instructions should probably just live adjacent to the jobs rather
 than in this central README, but here we are for now.
 
-### image-validation jobs
-
-These test different master/node image versions against multiple k8s branches. To
-regenerate these, run:
-
-```sh
-# from test-infra root
-$ make -C releng generate-tests
-```
-
 ### release-branch jobs
 
 When a release branch of kubernetes is first cut, the current set of master jobs

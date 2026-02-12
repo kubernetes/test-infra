@@ -27,7 +27,6 @@ func TestParseArgs(t *testing.T) {
 		"prepare-release-branch",
 		"/bin/config-rotator",
 		"/bin/config-forker",
-		"/bin/generate-tests",
 	}
 
 	opts, err := parseArgs(args)
@@ -41,10 +40,6 @@ func TestParseArgs(t *testing.T) {
 
 	if opts.forkerBin != "/bin/config-forker" {
 		t.Errorf("forkerBin = %q, want /bin/config-forker", opts.forkerBin)
-	}
-
-	if opts.generateTestsBin != "/bin/generate-tests" {
-		t.Errorf("generateTestsBin = %q, want /bin/generate-tests", opts.generateTestsBin)
 	}
 }
 
@@ -64,7 +59,6 @@ func TestParseArgsTooMany(t *testing.T) {
 		"prepare-release-branch",
 		"/bin/rotator",
 		"/bin/forker",
-		"/bin/generate",
 		"extra",
 	}
 

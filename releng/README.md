@@ -20,12 +20,8 @@ a future date).
 
 ## Tools
 
-- [`generate-tests`](./generate-tests/): Generates Prow periodic jobs and
-  TestGrid configs for GCE COS e2e tests across all supported release branches.
-  Versions are auto-discovered from the release-branch-jobs directory
 - [`prepare-release-branch`](./prepare-release-branch/): Orchestrates
-  release branch preparation using `config-rotator`, `config-forker`, and
-  `generate-tests`
+  release branch preparation using `config-rotator` and `config-forker`
 - [`config-forker`](./config-forker/README.md): Forks presubmit, periodic, and
   postsubmit job configs with the `fork-per-release` annotation
 - [`config-rotator`](./config-rotator/README.md): Rotates forked presubmit,

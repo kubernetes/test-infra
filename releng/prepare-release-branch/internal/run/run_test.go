@@ -156,44 +156,6 @@ func TestForkNewFileError(t *testing.T) {
 	}
 }
 
-func TestRegenerateFiles(t *testing.T) {
-	t.Parallel()
-
-	mock := &mockCommander{calls: nil, err: nil}
-	branchDir := t.TempDir()
-
-	err := run.RegenerateFiles(context.Background(), mock, "/bin/generate-tests", branchDir)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if len(mock.calls) != 1 {
-		t.Fatalf("expected 1 call, got %d", len(mock.calls))
-	}
-
-	absBranchDir, _ := filepath.Abs(branchDir)
-
-	expected := []string{"/bin/generate-tests", "--release-branch-dir", absBranchDir}
-	if !slices.Equal(mock.calls[0], expected) {
-		t.Errorf("got %v, want %v", mock.calls[0], expected)
-	}
-}
-
-func TestRegenerateFilesError(t *testing.T) {
-	t.Parallel()
-
-	mock := &mockCommander{calls: nil, err: errMockCommand}
-
-	err := run.RegenerateFiles(context.Background(), mock, "/bin/generate-tests", t.TempDir())
-	if err == nil {
-		t.Fatal("expected error")
-	}
-
-	if !errors.Is(err, errMockCommand) {
-		t.Errorf("expected errMockCommand, got: %v", err)
-	}
-}
-
 func TestFetchGoVersion(t *testing.T) {
 	t.Parallel()
 
@@ -227,6 +189,25 @@ func TestFetchGoVersionNotFound(t *testing.T) {
 		t.Fatal("expected error for 404 response")
 	}
 
+	if !errors.Is(err, run.ErrBranchNotFound) {
+		t.Errorf("expected ErrBranchNotFound, got: %v", err)
+	}
+}
+
+func TestFetchGoVersionServerError(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.WriteHeader(http.StatusInternalServerError)
+	}))
+
+	defer server.Close()
+
+	_, err := run.FetchGoVersion(context.Background(), server.URL)
+	if err == nil {
+		t.Fatal("expected error for 500 response")
+	}
+
 	if !errors.Is(err, run.ErrHTTPStatus) {
 		t.Errorf("expected ErrHTTPStatus, got: %v", err)
 	}
@@ -241,5 +222,18 @@ func TestFetchGoVersionCancelled(t *testing.T) {
 	_, err := run.FetchGoVersion(ctx, "http://localhost:0")
 	if err == nil {
 		t.Fatal("expected error for cancelled context")
+	}
+}
+
+func TestGoVersionURL(t *testing.T) {
+	t.Parallel()
+
+	version := release.Version{Major: 1, Minor: 35}
+
+	got := run.GoVersionURL(version)
+	want := "https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.36/.go-version"
+
+	if got != want {
+		t.Errorf("GoVersionURL() = %q, want %q", got, want)
 	}
 }

@@ -13,22 +13,18 @@
 # limitations under the License.
 
 REPO_ROOT:=${CURDIR}/..
+BIN_DIR:=$(REPO_ROOT)/_bin
 
-# ARGS can be overridden by calling make
-ARGS ?=
+all: prepare-release-branch
 
 prepare-release-branch:
-	./run.sh
+	cd $(REPO_ROOT) && source hack/build/setup-go.sh && \
+	go build -o $(BIN_DIR)/config-rotator $(REPO_ROOT)/releng/config-rotator && \
+	go build -o $(BIN_DIR)/config-forker $(REPO_ROOT)/releng/config-forker && \
+	go build -o $(BIN_DIR)/prepare-release-branch $(REPO_ROOT)/releng/prepare-release-branch && \
+	$(BIN_DIR)/prepare-release-branch $(BIN_DIR)/config-rotator $(BIN_DIR)/config-forker
 
-generate-tests:
-	cd $(REPO_ROOT) && go run ./releng/generate-tests $(ARGS)
-
-test-generate-tests:
-	cd $(REPO_ROOT) && go test ./releng/generate-tests/...
-
-test-prepare-release-branch:
+test:
 	cd $(REPO_ROOT) && go test ./releng/prepare-release-branch/...
 
-test: test-generate-tests test-prepare-release-branch
-
-.PHONY: test generate-tests test-generate-tests test-prepare-release-branch prepare-release-branch
+.PHONY: all test prepare-release-branch
