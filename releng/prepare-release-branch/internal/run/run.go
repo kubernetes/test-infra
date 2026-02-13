@@ -31,11 +31,17 @@ import (
 	"k8s.io/test-infra/releng/prepare-release-branch/internal/release"
 )
 
-// GoVersionURL is the URL to fetch the current Go version from kubernetes/kubernetes master.
-const GoVersionURL = "https://raw.githubusercontent.com/kubernetes/kubernetes/master/.go-version"
+// goVersionURLBase is the base URL template for fetching the .go-version file
+// from a kubernetes/kubernetes release branch.
+const goVersionURLBase = "https://raw.githubusercontent.com/kubernetes/kubernetes/release-%s/.go-version"
 
-// ErrHTTPStatus is returned when the HTTP response has an unexpected status code.
-var ErrHTTPStatus = errors.New("unexpected HTTP status")
+var (
+	// ErrHTTPStatus is returned when the HTTP response has an unexpected status code.
+	ErrHTTPStatus = errors.New("unexpected HTTP status")
+
+	// ErrBranchNotFound is returned when the release branch does not exist yet.
+	ErrBranchNotFound = errors.New("release branch not found")
+)
 
 // Suffixes returns the ordered tier suffixes used for release branch rotation.
 // Each release is rotated through these tiers: beta → stable1 → … → stable4.
@@ -122,23 +128,16 @@ func ForkNewFile(
 	return nil
 }
 
-// RegenerateFiles calls generate-tests for the given branch directory.
-func RegenerateFiles(ctx context.Context, commander Commander, generateTestsBin, branchDir string) error {
-	absBranchDir, err := filepath.Abs(branchDir)
-	if err != nil {
-		return fmt.Errorf("resolving branch dir path: %w", err)
-	}
+// GoVersionURL returns the URL for fetching the .go-version file from
+// the given release branch version.
+func GoVersionURL(version release.Version) string {
+	next := release.Version{Major: version.Major, Minor: version.Minor + 1}
 
-	if err := commander.Run(ctx, generateTestsBin,
-		"--release-branch-dir", absBranchDir,
-	); err != nil {
-		return fmt.Errorf("regenerating files: %w", err)
-	}
-
-	return nil
+	return fmt.Sprintf(goVersionURLBase, next.String())
 }
 
 // FetchGoVersion fetches the Go version string from the given URL.
+// Returns ErrBranchNotFound if the release branch does not exist (HTTP 404).
 func FetchGoVersion(ctx context.Context, url string) (string, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
@@ -151,6 +150,10 @@ func FetchGoVersion(ctx context.Context, url string) (string, error) {
 	}
 
 	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return "", fmt.Errorf("%w: %s", ErrBranchNotFound, url)
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("%w: %d", ErrHTTPStatus, resp.StatusCode)

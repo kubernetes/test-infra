@@ -15,13 +15,12 @@ limitations under the License.
 */
 
 // prepare-release-branch orchestrates the creation of Kubernetes release branch
-// job configurations. It calls config-rotator, config-forker, and generate-tests
-// as subprocesses to rotate existing branch tiers, fork a new branch config,
-// and regenerate test definitions.
+// job configurations. It calls config-rotator and config-forker as subprocesses
+// to rotate existing branch tiers and fork a new branch config.
 //
-// Usage: prepare-release-branch <config-rotator> <config-forker> <generate-tests>
+// Usage: prepare-release-branch <config-rotator> <config-forker>
 //
-// The binary expects to be run from the repository root (set by run.sh).
+// The binary expects to be run from the repository root.
 package main
 
 import (
@@ -38,7 +37,7 @@ import (
 const (
 	branchJobDir = "config/jobs/kubernetes/sig-release/release-branch-jobs"
 	jobConfigDir = "config/jobs"
-	requiredArgs = 4 // program name + 3 tool binaries
+	requiredArgs = 3 // program name + 2 tool binaries
 )
 
 var (
@@ -47,9 +46,8 @@ var (
 )
 
 type options struct {
-	rotatorBin       string
-	forkerBin        string
-	generateTestsBin string
+	rotatorBin string
+	forkerBin  string
 }
 
 func parseArgs(args []string) (options, error) {
@@ -60,14 +58,13 @@ func parseArgs(args []string) (options, error) {
 		}
 
 		return options{}, fmt.Errorf(
-			"%w: usage: %s <config-rotator> <config-forker> <generate-tests>", errUsage, name,
+			"%w: usage: %s <config-rotator> <config-forker>", errUsage, name,
 		)
 	}
 
 	return options{
-		rotatorBin:       args[1],
-		forkerBin:        args[2],
-		generateTestsBin: args[3],
+		rotatorBin: args[1],
+		forkerBin:  args[2],
 	}, nil
 }
 
@@ -84,12 +81,20 @@ func execute(ctx context.Context) error {
 
 	log.Printf("Current version: %s", version.String())
 
-	goVersion, err := run.FetchGoVersion(ctx, run.GoVersionURL)
+	next := release.Version{Major: version.Major, Minor: version.Minor + 1}
+
+	goVersion, err := run.FetchGoVersion(ctx, run.GoVersionURL(version))
+	if errors.Is(err, run.ErrBranchNotFound) {
+		log.Printf("Release branch for %s does not exist yet, nothing to do", next.String())
+
+		return nil
+	}
+
 	if err != nil {
 		return fmt.Errorf("fetching Go version: %w", err)
 	}
 
-	log.Printf("Current Go version: %s", goVersion)
+	log.Printf("Next version: %s (Go %s)", next.String(), goVersion)
 
 	commander := &run.ExecCommander{Stdout: os.Stdout, Stderr: os.Stderr}
 
@@ -105,12 +110,6 @@ func execute(ctx context.Context) error {
 		ctx, commander, opts.forkerBin, branchJobDir, jobConfigDir, version, goVersion,
 	); err != nil {
 		return fmt.Errorf("forking new file: %w", err)
-	}
-
-	log.Println("Regenerating files...")
-
-	if err := run.RegenerateFiles(ctx, commander, opts.generateTestsBin, branchJobDir); err != nil {
-		return fmt.Errorf("regenerating files: %w", err)
 	}
 
 	log.Println("Done!")

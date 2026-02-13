@@ -912,6 +912,226 @@ periodics:
     securityContext:
       runAsGroup: 2010
       runAsUser: 2001
+- annotations:
+    fork-per-release-generic-suffix: "true"
+    fork-per-release-periodic-interval: 24h
+    testgrid-dashboards: sig-release-1.33-blocking
+    testgrid-tab-name: gce-cos-alphafeatures-1.33
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 3h20m0s
+  extra_refs:
+  - base_ref: release-1.33
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  interval: 6h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  name: ci-kubernetes-e2e-gce-cos-alphafeatures-stable2
+  spec:
+    containers:
+    - args:
+      - --check-leaked-resources
+      - --provider=gce
+      - --gcp-region=us-central1
+      - --gcp-node-image=gci
+      - --extract=ci/latest-1.33
+      - --timeout=180m
+      - --env=ENABLE_POD_PRIORITY=true
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
+      - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+      - --runtime-config=api/all=true
+      - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
+        --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0
+        --minStartupPods=8
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: "1"
+          memory: 3Gi
+        requests:
+          cpu: "1"
+          memory: 3Gi
+- annotations:
+    fork-per-release-generic-suffix: "true"
+    fork-per-release-periodic-interval: 24h
+    testgrid-dashboards: sig-release-1.33-blocking
+    testgrid-tab-name: gce-cos-default-1.33
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 2h20m0s
+  extra_refs:
+  - base_ref: release-1.33
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  interval: 6h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  name: ci-kubernetes-e2e-gce-cos-default-stable2
+  spec:
+    containers:
+    - args:
+      - --check-leaked-resources
+      - --provider=gce
+      - --gcp-region=us-central1
+      - --gcp-node-image=gci
+      - --extract=ci/latest-1.33
+      - --timeout=120m
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+        --minStartupPods=8
+      - --ginkgo-parallel=30
+      - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 6Gi
+        requests:
+          cpu: "2"
+          memory: 6Gi
+- annotations:
+    fork-per-release-generic-suffix: "true"
+    fork-per-release-periodic-interval: 24h
+    testgrid-dashboards: sig-release-1.33-blocking
+    testgrid-tab-name: gce-cos-reboot-1.33
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 3h20m0s
+  extra_refs:
+  - base_ref: release-1.33
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  interval: 6h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  name: ci-kubernetes-e2e-gce-cos-reboot-stable2
+  spec:
+    containers:
+    - args:
+      - --check-leaked-resources
+      - --provider=gce
+      - --gcp-region=us-central1
+      - --gcp-node-image=gci
+      - --extract=ci/latest-1.33
+      - --timeout=180m
+      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: "1"
+          memory: 3Gi
+        requests:
+          cpu: "1"
+          memory: 3Gi
+- annotations:
+    fork-per-release-generic-suffix: "true"
+    fork-per-release-periodic-interval: 24h
+    testgrid-dashboards: sig-release-1.33-informing
+    testgrid-num-failures-to-alert: "6"
+    testgrid-tab-name: gce-cos-serial-1.33
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 11h20m0s
+  extra_refs:
+  - base_ref: release-1.33
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  interval: 6h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  name: ci-kubernetes-e2e-gce-cos-serial-stable2
+  spec:
+    containers:
+    - args:
+      - --check-leaked-resources
+      - --provider=gce
+      - --gcp-region=us-central1
+      - --gcp-node-image=gci
+      - --extract=ci/latest-1.33
+      - --timeout=660m
+      - --ginkgo-parallel=1
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]
+        --minStartupPods=8
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: "1"
+          memory: 3Gi
+        requests:
+          cpu: "1"
+          memory: 3Gi
+- annotations:
+    fork-per-release-generic-suffix: "true"
+    fork-per-release-periodic-interval: 24h
+    testgrid-dashboards: sig-release-1.33-informing
+    testgrid-num-failures-to-alert: "6"
+    testgrid-tab-name: gce-cos-slow-1.33
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 2h50m0s
+  extra_refs:
+  - base_ref: release-1.33
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  interval: 6h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  name: ci-kubernetes-e2e-gce-cos-slow-stable2
+  spec:
+    containers:
+    - args:
+      - --check-leaked-resources
+      - --provider=gce
+      - --gcp-region=us-central1
+      - --gcp-node-image=gci
+      - --extract=ci/latest-1.33
+      - --timeout=150m
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]
+        --minStartupPods=8
+      - --ginkgo-parallel=30
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: "1"
+          memory: 6Gi
+        requests:
+          cpu: "1"
+          memory: 6Gi
 postsubmits: {}
 presubmits:
   kubernetes/kubernetes:
