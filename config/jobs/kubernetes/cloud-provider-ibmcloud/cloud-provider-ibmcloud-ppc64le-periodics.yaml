@@ -81,8 +81,8 @@ periodics:
             cpu: 6
             memory: 20Gi
 
-  - name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
-    cron: "0 2-23/3 * * *" # every 3h starting at 02:00 UTC
+  - name: ci-kubernetes-ppc64le-conformance-latest
+    interval: 3h
     cluster: k8s-infra-ppc64le-prow-build
     labels:
       preset-ibmcloud-cred: "true"
@@ -96,9 +96,11 @@ periodics:
         repo: provider-ibmcloud-test-infra
         workdir: true
     annotations:
+      fork-per-release: "true"
+      fork-per-release-replacements: "MARKER_VERSION=latest.txt -> MARKER_VERSION=latest-{{.Version}}.txt"
       description: Runs conformance tests using kubetest2 against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, conformance-ppc64le, ibm-k8s-e2e
-      testgrid-tab-name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
+      testgrid-tab-name: ci-kubernetes-ppc64le-conformance-latest-master
       testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '2'
     spec:
@@ -120,6 +122,7 @@ periodics:
             - -c
             - |
               set -o xtrace
+              MARKER_VERSION=latest.txt;
 
               #Setup of kubetest2 tf deployer
               make install-deployer-tf
@@ -131,8 +134,9 @@ periodics:
                 --workers-count 2 --cluster-name conformance-$(date +%s) \
                 --up --down --auto-approve --retry-on-tf-failure 3 \
                 --break-kubetest-on-upfail true --ignore-destroy-errors \
-                --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
-                --test=ginkgo -- --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Conformance\]'
+                --build-version $(curl -Ls https://dl.k8s.io/ci/$MARKER_VERSION) \
+                --release-marker $(curl -Ls https://dl.k8s.io/ci/$MARKER_VERSION) \
+                --test=ginkgo -- --test-package-dir ci --test-package-marker $MARKER_VERSION --focus-regex='\[Conformance\]'
 
   - name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
     cron: "30 3-21/6 * * *" #  every 6h starting at 03:30 UTC
