@@ -19,12 +19,10 @@ all: prepare-release-branch
 
 prepare-release-branch:
 	cd $(REPO_ROOT) && source hack/build/setup-go.sh && \
-	go build -o $(BIN_DIR)/config-rotator $(REPO_ROOT)/releng/config-rotator && \
-	go build -o $(BIN_DIR)/config-forker $(REPO_ROOT)/releng/config-forker && \
 	go build -o $(BIN_DIR)/prepare-release-branch $(REPO_ROOT)/releng/prepare-release-branch && \
-	$(BIN_DIR)/prepare-release-branch $(BIN_DIR)/config-rotator $(BIN_DIR)/config-forker
+	$(BIN_DIR)/prepare-release-branch
 
 test:
-	cd $(REPO_ROOT) && go test ./releng/prepare-release-branch/...
+	cd $(REPO_ROOT) && go test ./releng/config-forker/... ./releng/config-rotator/... ./releng/prepare-release-branch/...
 
 .PHONY: all test prepare-release-branch

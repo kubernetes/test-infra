@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2026 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package forker
 
 import (
+	"maps"
 	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	prowapi "sigs.k8s.io/prow/pkg/apis/prowjobs/v1"
@@ -30,6 +30,8 @@ import (
 )
 
 func TestCleanAnnotations(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name        string
 		annotations map[string]string
@@ -78,35 +80,43 @@ func TestCleanAnnotations(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			oldAnnotations := map[string]string{}
-			for k, v := range tc.annotations {
-				oldAnnotations[k] = v
+			maps.Copy(oldAnnotations, test.annotations)
+
+			result := cleanAnnotations(test.annotations)
+			if !reflect.DeepEqual(result, test.expected) {
+				t.Errorf("Expected result %#v', got %#v", test.expected, result)
 			}
-			result := cleanAnnotations(tc.annotations)
-			if !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Expected result %#v', got %#v", tc.expected, result)
-			}
-			if !reflect.DeepEqual(oldAnnotations, tc.annotations) {
-				t.Errorf("Input annotations map changed: used to be %#v, now %#v", oldAnnotations, tc.annotations)
+
+			if !reflect.DeepEqual(oldAnnotations, test.annotations) {
+				t.Errorf("Input annotations map changed: used to be %#v, now %#v", oldAnnotations, test.annotations)
 			}
 		})
 	}
 }
 
 func TestEvaluateTemplate(t *testing.T) {
+	t.Parallel()
+
 	const expected = "Foo Substitution! Baz"
+
 	result, err := evaluateTemplate("Foo {{.Bar}} Baz", map[string]string{"Bar": "Substitution!"})
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
+
 	if result != expected {
 		t.Errorf("Expected result %q, got %q", expected, result)
 	}
 }
 
 func TestPerformArgReplacements(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name         string
 		args         []string
@@ -164,26 +174,33 @@ func TestPerformArgReplacements(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			result, err := performReplacement(tc.args, templateVars{Version: "1.15"}, tc.replacements)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := performReplacement(test.args, templateVars{Version: "1.15"}, test.replacements)
 			if err != nil {
-				if !tc.expectErr {
+				if !test.expectErr {
 					t.Fatalf("Unexpected error: %v", err)
 				}
+
 				return
 			}
-			if tc.expectErr {
+
+			if test.expectErr {
 				t.Fatalf("Expected an error, but got %v", result)
 			}
-			if !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Expected result %v, but got %v instead", tc.expected, result)
+
+			if !reflect.DeepEqual(result, test.expected) {
+				t.Errorf("Expected result %v, but got %v instead", test.expected, result)
 			}
 		})
 	}
 }
 
 func TestPerformArgDeletions(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		args      map[string]string
@@ -222,17 +239,21 @@ func TestPerformArgDeletions(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			result := performDeletion(tc.args, tc.deletions)
-			if !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Expected result %v, but got %v instead", tc.expected, result)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			result := performDeletion(test.args, test.deletions)
+			if !reflect.DeepEqual(result, test.expected) {
+				t.Errorf("Expected result %v, but got %v instead", test.expected, result)
 			}
 		})
 	}
 }
 
 func TestFixImage(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		image    string
@@ -250,16 +271,20 @@ func TestFixImage(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			if result := fixImage(tc.image, "1.15"); result != tc.expected {
-				t.Errorf("Expected %q, but got %q", tc.expected, result)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			if result := fixImage(test.image, "1.15"); result != test.expected {
+				t.Errorf("Expected %q, but got %q", test.expected, result)
 			}
 		})
 	}
 }
 
 func TestFixBootstrapArgs(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		args     []string
@@ -302,16 +327,20 @@ func TestFixBootstrapArgs(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			if result := fixBootstrapArgs(tc.args, "1.15"); !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Expected args %v, but got %v instead", tc.expected, result)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			if result := fixBootstrapArgs(test.args, "1.15"); !reflect.DeepEqual(result, test.expected) {
+				t.Errorf("Expected args %v, but got %v instead", test.expected, result)
 			}
 		})
 	}
 }
 
 func TestFixExtraRefs(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		refs     []prowapi.Refs
@@ -338,22 +367,32 @@ func TestFixExtraRefs(t *testing.T) {
 			expected: []prowapi.Refs{{Org: "kubernetes", Repo: "kubernetes", BaseRef: "other-branch"}},
 		},
 		{
-			name:     "handles multiple refs",
-			refs:     []prowapi.Refs{{Org: "kubernetes", Repo: "test-infra", BaseRef: "master"}, {Org: "kubernetes", Repo: "kubernetes", BaseRef: "master"}},
-			expected: []prowapi.Refs{{Org: "kubernetes", Repo: "test-infra", BaseRef: "master"}, {Org: "kubernetes", Repo: "kubernetes", BaseRef: "release-1.15"}},
+			name: "handles multiple refs",
+			refs: []prowapi.Refs{
+				{Org: "kubernetes", Repo: "test-infra", BaseRef: "master"},
+				{Org: "kubernetes", Repo: "kubernetes", BaseRef: "master"},
+			},
+			expected: []prowapi.Refs{
+				{Org: "kubernetes", Repo: "test-infra", BaseRef: "master"},
+				{Org: "kubernetes", Repo: "kubernetes", BaseRef: "release-1.15"},
+			},
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			if result := fixExtraRefs(tc.refs, "1.15"); !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(tc.expected, result))
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			if result := fixExtraRefs(test.refs, "1.15"); !reflect.DeepEqual(result, test.expected) {
+				t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(test.expected, result))
 			}
 		})
 	}
 }
 
 func TestFixEnvVars(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		vars     []v1.EnvVar
@@ -375,22 +414,36 @@ func TestFixEnvVars(t *testing.T) {
 			expected: []v1.EnvVar{{Name: "branch", Value: "release-1.15"}},
 		},
 		{
-			name:     "other vars are not touched",
-			vars:     []v1.EnvVar{{Name: "foo", Value: "bar"}, {Name: "baz", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{Key: "baz-secret"}}}},
-			expected: []v1.EnvVar{{Name: "foo", Value: "bar"}, {Name: "baz", ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{Key: "baz-secret"}}}},
+			name: "other vars are not touched",
+			vars: []v1.EnvVar{
+				{Name: "foo", Value: "bar"},
+				{Name: "baz", ValueFrom: &v1.EnvVarSource{
+					SecretKeyRef: &v1.SecretKeySelector{Key: "baz-secret"},
+				}},
+			},
+			expected: []v1.EnvVar{
+				{Name: "foo", Value: "bar"},
+				{Name: "baz", ValueFrom: &v1.EnvVarSource{
+					SecretKeyRef: &v1.SecretKeySelector{Key: "baz-secret"},
+				}},
+			},
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			if result := fixEnvVars(tc.vars, "1.15"); !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(tc.expected, result))
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			if result := fixEnvVars(test.vars, "1.15"); !reflect.DeepEqual(result, test.expected) {
+				t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(test.expected, result))
 			}
 		})
 	}
 }
 
 func TestFixTestgridAnnotations(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name        string
 		annotations map[string]string
@@ -424,22 +477,29 @@ func TestFixTestgridAnnotations(t *testing.T) {
 		{
 			name:        "update tab names",
 			annotations: map[string]string{testgridTabNameAnnotation: "foo master"},
-			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-job-config-errors", testgridTabNameAnnotation: "foo 1.15"},
+			expected: map[string]string{
+				testgridDashboardsAnnotation: "sig-release-job-config-errors",
+				testgridTabNameAnnotation:    "foo 1.15",
+			},
 			isPresubmit: false,
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			result := fixTestgridAnnotations(tc.annotations, "1.15", tc.isPresubmit)
-			if !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(tc.expected, result))
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			result := fixTestgridAnnotations(test.annotations, "1.15", test.isPresubmit)
+			if !reflect.DeepEqual(result, test.expected) {
+				t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(test.expected, result))
 			}
 		})
 	}
 }
 
 func TestGenerateNameVariant(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name          string
 		testName      string
@@ -458,28 +518,32 @@ func TestGenerateNameVariant(t *testing.T) {
 			expected:      "ci-party-beta",
 		},
 		{
-			name:     "jobs not ending in in -master have a number appended",
+			name:     "jobs not ending in -master have a number appended",
 			testName: "ci-party",
 			expected: "ci-party-1-15",
 		},
 		{
-			name:          "generic jobs not ending in in -master have 'beta' appended",
+			name:          "generic jobs not ending in -master have 'beta' appended",
 			testName:      "ci-party",
 			genericSuffix: true,
 			expected:      "ci-party-beta",
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			if result := generateNameVariant(tc.testName, "1.15", tc.genericSuffix); result != tc.expected {
-				t.Errorf("Expected name %q, but got name %q.", tc.expected, result)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			if result := generateNameVariant(test.testName, "1.15", test.genericSuffix); result != test.expected {
+				t.Errorf("Expected name %q, but got name %q.", test.expected, result)
 			}
 		})
 	}
 }
 
 func TestGeneratePresubmits(t *testing.T) {
+	t.Parallel()
+
 	presubmits := map[string][]config.Presubmit{
 		"kubernetes/kubernetes": {
 			{
@@ -634,17 +698,29 @@ func TestGeneratePresubmits(t *testing.T) {
 		},
 	}
 
-	result, err := generatePresubmits(config.JobConfig{PresubmitsStatic: presubmits}, templateVars{Version: "1.15", GoVersion: "1.20.2"})
+	result, err := generatePresubmits(
+		config.JobConfig{PresubmitsStatic: presubmits},
+		templateVars{Version: "1.15", GoVersion: "1.20.2"},
+	)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 
 	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Result does not match expected. Difference:\n%s", cmp.Diff(expected, result, cmpopts.IgnoreUnexported(config.Brancher{}, config.RegexpChangeMatcher{}, config.Presubmit{})))
+		t.Errorf(
+			"Result does not match expected. Difference:\n%s",
+			cmp.Diff(expected, result, cmpopts.IgnoreUnexported(
+				config.Brancher{},
+				config.RegexpChangeMatcher{},
+				config.Presubmit{},
+			)),
+		)
 	}
 }
 
 func TestGeneratePeriodics(t *testing.T) {
+	t.Parallel()
+
 	yes := true
 	periodics := []config.Periodic{
 		{
@@ -729,15 +805,21 @@ func TestGeneratePeriodics(t *testing.T) {
 		{
 			Cron: "0 * * * *",
 			JobBase: config.JobBase{
-				Name:        "some-generic-periodic-beta",
-				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "sig-release-job-config-errors"},
+				Name: "some-generic-periodic-beta",
+				Annotations: map[string]string{
+					suffixAnnotation:             "true",
+					testgridDashboardsAnnotation: "sig-release-job-config-errors",
+				},
 			},
 		},
 		{
 			Cron: "0 * * * *",
 			JobBase: config.JobBase{
-				Name:        "generic-periodic-with-deletions-beta",
-				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "sig-release-job-config-errors"},
+				Name: "generic-periodic-with-deletions-beta",
+				Annotations: map[string]string{
+					suffixAnnotation:             "true",
+					testgridDashboardsAnnotation: "sig-release-job-config-errors",
+				},
 				Labels: map[string]string{
 					"preset-e2e-scalability-periodics": "true",
 				},
@@ -777,17 +859,26 @@ func TestGeneratePeriodics(t *testing.T) {
 		},
 	}
 
-	result, err := generatePeriodics(config.JobConfig{Periodics: periodics}, templateVars{Version: "1.15", GoVersion: "1.20.2"})
+	result, err := generatePeriodics(
+		config.JobConfig{Periodics: periodics},
+		templateVars{Version: "1.15", GoVersion: "1.20.2"},
+	)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 
 	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Result does not match expected. Difference:\n%s\n", cmp.Diff(expected, result, cmpopts.IgnoreUnexported(config.Periodic{})))
+		t.Errorf(
+			"Result does not match expected. Difference:\n%s\n",
+			cmp.Diff(expected, result,
+				cmpopts.IgnoreUnexported(config.Periodic{})),
+		)
 	}
 }
 
 func TestGeneratePostsubmits(t *testing.T) {
+	t.Parallel()
+
 	postsubmits := map[string][]config.Postsubmit{
 		"kubernetes/kubernetes": {
 			{
@@ -917,7 +1008,10 @@ func TestGeneratePostsubmits(t *testing.T) {
 		},
 	}
 
-	result, err := generatePostsubmits(config.JobConfig{PostsubmitsStatic: postsubmits}, templateVars{Version: "1.15", GoVersion: "1.20.2"})
+	result, err := generatePostsubmits(
+		config.JobConfig{PostsubmitsStatic: postsubmits},
+		templateVars{Version: "1.15", GoVersion: "1.20.2"},
+	)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

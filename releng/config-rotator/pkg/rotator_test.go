@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2026 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,15 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package rotator
 
 import "testing"
 
 func TestUpdateGenericVersionMarker(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		s      string
 		marker string
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -79,6 +82,8 @@ func TestUpdateGenericVersionMarker(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if got := updateGenericVersionMarker(tt.args.s); got != tt.want {
 				t.Errorf("updateGenericVersionMarker() = %v, want %v", got, tt.want)
 			}

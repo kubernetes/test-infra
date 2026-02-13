@@ -15,10 +15,10 @@ limitations under the License.
 */
 
 // prepare-release-branch orchestrates the creation of Kubernetes release branch
-// job configurations. It calls config-rotator and config-forker as subprocesses
-// to rotate existing branch tiers and fork a new branch config.
+// job configurations. It rotates existing branch tiers and forks a new branch
+// config using the config-rotator and config-forker libraries.
 //
-// Usage: prepare-release-branch <config-rotator> <config-forker>
+// Usage: prepare-release-branch
 //
 // The binary expects to be run from the repository root.
 package main
@@ -37,43 +37,11 @@ import (
 const (
 	branchJobDir = "config/jobs/kubernetes/sig-release/release-branch-jobs"
 	jobConfigDir = "config/jobs"
-	requiredArgs = 3 // program name + 2 tool binaries
 )
 
-var (
-	errBazelWorkspace = errors.New("please run via make rule: make -C releng prepare-release-branch")
-	errUsage          = errors.New("invalid arguments")
-)
-
-type options struct {
-	rotatorBin string
-	forkerBin  string
-}
-
-func parseArgs(args []string) (options, error) {
-	if len(args) != requiredArgs {
-		name := "prepare-release-branch"
-		if len(args) > 0 {
-			name = args[0]
-		}
-
-		return options{}, fmt.Errorf(
-			"%w: usage: %s <config-rotator> <config-forker>", errUsage, name,
-		)
-	}
-
-	return options{
-		rotatorBin: args[1],
-		forkerBin:  args[2],
-	}, nil
-}
+var errBazelWorkspace = errors.New("please run via make rule: make -C releng prepare-release-branch")
 
 func execute(ctx context.Context) error {
-	opts, err := parseArgs(os.Args)
-	if err != nil {
-		return err
-	}
-
 	version, err := release.CheckVersion(branchJobDir)
 	if err != nil {
 		return fmt.Errorf("checking version: %w", err)
@@ -96,19 +64,15 @@ func execute(ctx context.Context) error {
 
 	log.Printf("Next version: %s (Go %s)", next.String(), goVersion)
 
-	commander := &run.ExecCommander{Stdout: os.Stdout, Stderr: os.Stderr}
-
 	log.Println("Rotating files...")
 
-	if err := run.RotateFiles(ctx, commander, opts.rotatorBin, branchJobDir, version); err != nil {
+	if err := run.RotateFiles(branchJobDir, version); err != nil {
 		return fmt.Errorf("rotating files: %w", err)
 	}
 
 	log.Println("Forking new file...")
 
-	if err := run.ForkNewFile(
-		ctx, commander, opts.forkerBin, branchJobDir, jobConfigDir, version, goVersion,
-	); err != nil {
+	if err := run.ForkNewFile(branchJobDir, jobConfigDir, version, goVersion); err != nil {
 		return fmt.Errorf("forking new file: %w", err)
 	}
 

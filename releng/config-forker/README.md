@@ -8,6 +8,7 @@ config-forker forks presubmit, periodic, and postsubmit job configs with the `fo
 * `--output`: Path to the output yaml to create. If not specified, the process still runs but no file is generated
   (potentially useful for presubmits)
 * `--version`: the version to generate a forked config for, e.g. `1.15`
+* `--go-version`: the current Go version in use, e.g. `1.24.0`
 
 ## Supported annotations
 
