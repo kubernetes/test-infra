@@ -16,11 +16,11 @@ presubmits:
         - ./test.sh
         resources:
           limits:
-            cpu: 4000m
-            memory: 8Gi
+            cpu: 7
+            memory: 16Gi
           requests:
-            cpu: 4000m
-            memory: 8Gi
+            cpu: 7
+            memory: 16Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder
@@ -28,7 +28,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 40m
+      timeout: 60m
     optional: false
     skip_if_only_changed: "^docs/|^designs/|^roadmap/|^scripts/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/kubebuilder
@@ -47,11 +47,11 @@ presubmits:
               value: "true"
           resources:
             limits:
-              cpu: 6
-              memory: 8Gi
+              cpu: 7
+              memory: 16Gi
             requests:
-              cpu: 6
-              memory: 8Gi
+              cpu: 7
+              memory: 16Gi
           securityContext:
             privileged: true
     annotations:
@@ -64,7 +64,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 40m
+      timeout: 60m
     optional: false
     skip_if_only_changed: "^docs/|^designs/|^roadmap/|^scripts/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/kubebuilder
@@ -83,11 +83,11 @@ presubmits:
               value: "true"
           resources:
             limits:
-              cpu: 6
-              memory: 8Gi
+              cpu: 7
+              memory: 16Gi
             requests:
-              cpu: 6
-              memory: 8Gi
+              cpu: 7
+              memory: 16Gi
           securityContext:
             privileged: true
     annotations:
@@ -100,7 +100,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 40m
+      timeout: 60m
     optional: false
     skip_if_only_changed: "^docs/|^designs/|^roadmap/|^scripts/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/kubebuilder
@@ -120,10 +120,10 @@ presubmits:
           resources:
             limits:
               cpu: 6
-              memory: 8Gi
+              memory: 16Gi
             requests:
               cpu: 6
-              memory: 8Gi
+              memory: 16Gi
           securityContext:
             privileged: true
     annotations:
