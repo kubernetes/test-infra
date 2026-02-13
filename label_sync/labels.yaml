@@ -1568,7 +1568,7 @@ repos:
         addedBy: humans
       - color: d2b48c
         description: Categorizes an issue or PR as relevant to WAS or TAS Workstreams.
-        name: ws/workload-aware
+        name: area/workload-aware
         target: both
         addedBy: humans
 
