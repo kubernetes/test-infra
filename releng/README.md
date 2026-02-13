@@ -1,9 +1,8 @@
 # Release Engineering tooling <!-- omit in toc -->
 
-This directory contains tooling to generate Prow jobs.
-While some of this may be generically useful for other cases, the primary
-function of these tools is to generate release branch jobs after
-kubernetes/kubernetes releases which create new branches.
+This directory contains tooling to fork and rotate Prow jobs for Kubernetes
+release branches. Jobs annotated with `fork-per-release` are automatically
+forked for new branches and rotated through stability tiers.
 
 > NOTE: The documentation here supersedes overlapping guidance from the
 [Release Manager handbooks][branch-manager-handbook] (which will be removed at
@@ -21,20 +20,21 @@ a future date).
 ## Tools
 
 - [`prepare-release-branch`](./prepare-release-branch/): Orchestrates
-  release branch preparation using `config-rotator` and `config-forker`
+  release branch preparation using `config-rotator` and `config-forker`.
+  The tool is idempotent and will exit early if the next release branch
+  does not exist yet.
 - [`config-forker`](./config-forker/README.md): Forks presubmit, periodic, and
-  postsubmit job configs with the `fork-per-release` annotation
+  postsubmit job configs with the `fork-per-release` annotation. Also
+  importable as a Go package (`config-forker/pkg`).
 - [`config-rotator`](./config-rotator/README.md): Rotates forked presubmit,
-  periodic, and postsubmit job configs created by `config-forker`
+  periodic, and postsubmit job configs created by `config-forker`. Also
+  importable as a Go package (`config-rotator/pkg`).
 
 ## Release branch jobs
 
-**WARNING:** Release branch jobs generation for 1.28+ requires special steps
-that are yet to be documented. See [#29387](https://github.com/kubernetes/test-infra/pull/29387)
-and "TODO(1.32)" comments for more details.
-
-This task should be done after the release is complete and previous PRs are
-merged. The following steps should be run from the root of this repository.
+This task should be done after the release branch has been created and
+previous PRs are merged. The following steps should be run from the root of
+this repository.
 
 ### Generate jobs
 

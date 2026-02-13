@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package run handles subprocess execution and external HTTP requests
+// Package run handles job config rotation, forking, and external HTTP requests
 // for the release branch preparation workflow.
 package run
 
@@ -24,10 +24,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
+	forker "k8s.io/test-infra/releng/config-forker/pkg"
+	rotator "k8s.io/test-infra/releng/config-rotator/pkg"
 	"k8s.io/test-infra/releng/prepare-release-branch/internal/release"
 )
 
@@ -49,45 +50,19 @@ func Suffixes() []string {
 	return []string{"beta", "stable1", "stable2", "stable3", "stable4"}
 }
 
-// Commander executes external commands.
-type Commander interface {
-	Run(ctx context.Context, name string, args ...string) error
-}
-
-// ExecCommander runs commands via os/exec with connected stdout and stderr.
-type ExecCommander struct {
-	Stdout io.Writer
-	Stderr io.Writer
-}
-
-// Run executes the named command with the given arguments.
-func (c *ExecCommander) Run(ctx context.Context, name string, args ...string) error {
-	cmd := exec.CommandContext(ctx, name, args...)
-	cmd.Stdout = c.Stdout
-	cmd.Stderr = c.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("%s: %w", filepath.Base(name), err)
-	}
-
-	return nil
-}
-
 // RotateFiles calls config-rotator for each tier, from the current version
 // backwards. Each version's config is rotated to the next stability tier.
-func RotateFiles(
-	ctx context.Context, commander Commander, rotatorBin, branchDir string, version release.Version,
-) error {
+func RotateFiles(branchDir string, version release.Version) error {
 	suffixes := Suffixes()
 
 	for index := range len(suffixes) - 1 {
 		target := release.Version{Major: version.Major, Minor: version.Minor - index}
 
-		if err := commander.Run(ctx, rotatorBin,
-			"--old", suffixes[index],
-			"--new", suffixes[index+1],
-			"--config-file", filepath.Join(branchDir, target.Filename()),
-		); err != nil {
+		if err := rotator.Run(rotator.Options{
+			ConfigFile: filepath.Join(branchDir, target.Filename()),
+			OldVersion: suffixes[index],
+			NewVersion: suffixes[index+1],
+		}); err != nil {
 			return fmt.Errorf("rotating %s (%s to %s): %w",
 				target.Filename(), suffixes[index], suffixes[index+1], err)
 		}
@@ -98,9 +73,7 @@ func RotateFiles(
 
 // ForkNewFile calls config-forker to create a config for the next version.
 func ForkNewFile(
-	ctx context.Context,
-	commander Commander,
-	forkerBin, branchDir, jobConfigDir string,
+	branchDir, jobConfigDir string,
 	version release.Version,
 	goVersion string,
 ) error {
@@ -116,12 +89,12 @@ func ForkNewFile(
 		return fmt.Errorf("resolving output path: %w", err)
 	}
 
-	if err := commander.Run(ctx, forkerBin,
-		"--job-config", absJobConfig,
-		"--output", absOutput,
-		"--version", next.String(),
-		"--go-version", goVersion,
-	); err != nil {
+	if err := forker.Run(forker.Options{
+		JobConfig:  absJobConfig,
+		OutputPath: absOutput,
+		Version:    next.String(),
+		GoVersion:  goVersion,
+	}); err != nil {
 		return fmt.Errorf("forking %s: %w", next.Filename(), err)
 	}
 

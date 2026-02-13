@@ -1,12 +1,12 @@
 # config-rotator
 
-config-rotator rotated forked presubmit, periodic, and postsubmit job configs created by `config-forker`.
+config-rotator rotates forked presubmit, periodic, and postsubmit job configs created by `config-forker`.
 
 ## Usage
 
 * `--config-file`: Path to the job config to rotate
-* `--new`: Version to rotate to (one of stable1, stable2, stable3)
-* `--old`: Version to rotate from (one of beta, stable1, stable2)
+* `--new`: Version to rotate to (one of stable1, stable2, stable3, stable4)
+* `--old`: Version to rotate from (one of beta, stable1, stable2, stable3)
 
 ## Actions taken
 
