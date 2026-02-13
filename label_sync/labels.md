@@ -610,6 +610,7 @@ larger set of contributors to apply/remove them.
 | <a id="wg/lts" href="#wg/lts">`wg/lts`</a> | Categorizes an issue or PR as relevant to WG LTS.| humans | |
 | <a id="wg/machine-learning" href="#wg/machine-learning">`wg/machine-learning`</a> | Categorizes an issue or PR as relevant to WG Machine Learning.| humans | |
 | <a id="wg/security-audit" href="#wg/security-audit">`wg/security-audit`</a> | Categorizes an issue or PR as relevant to WG Security Audit.| humans | |
+| <a id="ws/workload-aware" href="#ws/workload-aware">`ws/workload-aware`</a> | Categorizes an issue or PR as relevant to WAS or TAS Workstreams.| humans | |
 
 ## Labels that apply to kubernetes/kubernetes, only for issues
 
