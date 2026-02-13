@@ -1567,7 +1567,7 @@ repos:
         target: both
         addedBy: humans
       - color: d2b48c
-        description: Categorizes an issue or PR as relevant to WAS or TAS Workstreams.
+        description: Categorizes an issue or PR as relevant to Workload-aware and Topology-aware scheduling subprojects.
         name: area/workload-aware
         target: both
         addedBy: humans
