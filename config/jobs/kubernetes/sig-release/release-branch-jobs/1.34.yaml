@@ -1118,6 +1118,59 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+    testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, conformance-ppc64le, ibm-k8s-e2e
+    testgrid-num-failures-to-alert: "2"
+    testgrid-tab-name: ci-kubernetes-ppc64le-conformance-latest-1.34
+  cluster: k8s-infra-ppc64le-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 5h0m0s
+  extra_refs:
+  - base_ref: main
+    org: kubernetes-sigs
+    repo: provider-ibmcloud-test-infra
+    workdir: true
+  interval: 3h
+  labels:
+    preset-ibmcloud-cred: "true"
+  name: ci-kubernetes-ppc64le-conformance-latest-1-34
+  spec:
+    containers:
+    - args:
+      - bash
+      - -c
+      - |
+        set -o xtrace
+        MARKER_VERSION=latest-1.34.txt;
+
+        #Setup of kubetest2 tf deployer
+        make install-deployer-tf
+
+        export TF_VAR_powervs_system_type=e980
+        kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
+          --powervs-ssh-key k8s-prow-sshkey \
+          --ssh-private-key /etc/secret-volume/ssh-privatekey \
+          --workers-count 2 --cluster-name conformance-$(date +%s) \
+          --up --down --auto-approve --retry-on-tf-failure 3 \
+          --break-kubetest-on-upfail true --ignore-destroy-errors \
+          --build-version $(curl -Ls https://dl.k8s.io/ci/$MARKER_VERSION) \
+          --release-marker $(curl -Ls https://dl.k8s.io/ci/$MARKER_VERSION) \
+          --test=ginkgo -- --test-package-dir ci --test-package-marker $MARKER_VERSION --focus-regex='\[Conformance\]'
+      command:
+      - runner.sh
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-1.34
+      name: ""
+      resources:
+        limits:
+          cpu: "4"
+          memory: 14Gi
+        requests:
+          cpu: "4"
+          memory: 14Gi
+      securityContext:
+        privileged: true
+- annotations:
     fork-per-release-cron: 0 2 * * *
     testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
     testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
