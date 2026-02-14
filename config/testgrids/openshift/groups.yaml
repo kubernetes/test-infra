@@ -93,7 +93,6 @@ dashboard_groups:
   - redhat-openshift-presubmit-master-gcp
   - redhat-openshift-serverless
   - redhat-openshift-virtualization
-  - redhat-quay
   - redhat-single-node
   - redhat-stackrox-merge
   - redhat-stackrox-nightly
