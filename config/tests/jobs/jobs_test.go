@@ -53,9 +53,15 @@ var k8sProw = flag.Bool("k8s-prow", true, "If the config is for k8s prow cluster
 // Loaded at TestMain.
 var c *cfg.Config
 
-// TODO: (rjsadow) figure out a better way to incorporate all/any community clusters
-func isCritical(clusterName string) bool {
-	return clusterName == "k8s-infra-prow-build" || clusterName == "eks-prow-build-cluster"
+// These are a list of Build Clusters used by Prow
+var BuildClusters = []string{
+	"k8s-infra-aks-prow-build",
+	"k8s-infra-kops-prow-build",
+	"k8s-infra-prow-build",
+	"k8s-infra-prow-build-trusted",
+	"eks-prow-build-cluster",
+	"k8s-infra-ppc64le-prow-build",
+	"k8s-infra-s390x-prow-build",
 }
 
 func matchesAnyRegex(job string, patterns []string) (bool, error) {
@@ -1139,19 +1145,23 @@ func verifyPodQOSGuaranteed(spec *coreapi.PodSpec, required bool) (errs []error)
 			if limit.Cmp(zero) == 0 {
 				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] %v be non-zero", c.Name, r, should))
 			} else if limit.Cmp(request) != 0 {
-				errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] (%v) %v match request (%v)", c.Name, r, limit.String(), should, request.String()))
+				errs = append(errs, fmt.Errorf("resources.limits[%v] (%v) %v match resources.request[%v] (%v)", r, limit.String(), should, r, request.String()))
+			} else if r == coreapi.ResourceMemory {
+				// Enforce a maximum memory limit to allow jobs to fit in an 8 core, 30G Node
+				maxMem := resource.MustParse("27Gi")
+				if limit.Cmp(maxMem) > 0 {
+					errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] (%v) %v be at most %v", c.Name, r, limit.String(), should, maxMem.String()))
+				}
+			} else if r == coreapi.ResourceCPU {
+				// Enforce a maximum CPU limit to allow jobs to fit in an 8 core, 30G Node
+				maxCPU := resource.MustParse("7")
+				if limit.Cmp(maxCPU) > 0 {
+					errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] (%v) %v be at most %v", c.Name, r, limit.String(), should, maxCPU.String()))
+				}
 			}
 		}
 	}
 	return errs
-}
-
-// A job is merge-blocking if it:
-// - is not optional
-// - reports (aka does not skip reporting)
-// - always runs OR runs if some path changed
-func isMergeBlocking(job cfg.Presubmit) bool {
-	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "" || job.SkipIfOnlyChanged != "")
 }
 
 func isKubernetesReleaseBlocking(job cfg.JobBase) bool {
@@ -1163,77 +1173,27 @@ func isKubernetesReleaseBlocking(job cfg.JobBase) bool {
 	return re.MatchString(dashboards)
 }
 
-func TestKubernetesMergeBlockingJobsCIPolicy(t *testing.T) {
-	jobsToFix := 0
-	repo := "kubernetes/kubernetes"
-	jobs := c.AllStaticPresubmits([]string{repo})
-	sort.Slice(jobs, func(i, j int) bool {
-		return jobs[i].Name < jobs[j].Name
-	})
-	for _, job := range jobs {
-		// Only consider Pods that are merge-blocking
-		if job.Spec == nil || !isMergeBlocking(job) {
-			continue
-		}
-		// job Pod must qualify for Guaranteed QoS
-		errs := verifyPodQOSGuaranteed(job.Spec, true)
-		if !isCritical(job.Cluster) {
-			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build or eks-prow-build-cluster, found: %v", job.Cluster))
-		}
-		branches := job.Branches
-		if len(errs) > 0 {
-			jobsToFix++
-		}
-		for _, err := range errs {
-			t.Errorf("%v (%v): %v", job.Name, branches, err)
-		}
-	}
-	t.Logf("summary: %4d/%4d jobs fail to meet kubernetes/kubernetes merge-blocking CI policy", jobsToFix, len(jobs))
-}
-
 func TestClusterName(t *testing.T) {
 	jobsToFix := 0
 	jobs := allStaticJobs()
 	for _, job := range jobs {
 		// Useful for identifiying how many jobs are running a specific cluster by omitting from this list
-		validClusters := []string{"default", "test-infra-trusted", "k8s-infra-aks-prow-build", "k8s-infra-kops-prow-build", "k8s-infra-prow-build", "k8s-infra-prow-build-trusted", "eks-prow-build-cluster", "k8s-infra-ppc64le-prow-build", "k8s-infra-s390x-prow-build"}
-		if !slices.Contains(validClusters, job.Cluster) || job.Cluster == "" {
-			err := fmt.Errorf("must run in one of these clusters: %v, found: %v", validClusters, job.Cluster)
+		if !slices.Contains(BuildClusters, job.Cluster) || job.Cluster == "" {
+			err := fmt.Errorf("must run in one of these clusters: %v, found: %v", BuildClusters, job.Cluster)
 			t.Errorf("%v: %v", job.Name, err)
 			jobsToFix++
 		}
 
 	}
-	t.Logf("summary: %4d/%4d jobs fail to meet sig-k8s-infra cluster name policy", jobsToFix, len(jobs))
-}
-func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
-	jobsToFix := 0
-	jobs := allStaticJobs()
-	for _, job := range jobs {
-		// Only consider Pods that are release-blocking
-		if job.Spec == nil || !isKubernetesReleaseBlocking(job) {
-			continue
-		}
-		// job Pod must qualify for Guaranteed QoS
-		errs := verifyPodQOSGuaranteed(job.Spec, true)
-		if !isCritical(job.Cluster) {
-			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build or eks-prow-build-cluster, found: %v", job.Cluster))
-		}
-		if len(errs) > 0 {
-			jobsToFix++
-		}
-		for _, err := range errs {
-			t.Errorf("%v: %v", job.Name, err)
-		}
-	}
-	t.Logf("summary: %4d/%4d jobs fail to meet kubernetes/kubernetes release-blocking CI policy", jobsToFix, len(jobs))
+	t.Logf("summary: %4d/%4d jobs failed to reference a valid build cluster", jobsToFix, len(jobs))
 }
 
 func TestK8sInfraProwBuildJobsCIPolicy(t *testing.T) {
 	jobsToFix := 0
 	jobs := allStaticJobs()
 	for _, job := range jobs {
-		if job.Spec == nil || !isCritical(job.Cluster) {
+		// We don't enforce CI policies on the trusted cluster
+		if job.Spec == nil || (job.Cluster == "k8s-infra-prow-build-trusted" && job.Spec.ServiceAccountName == "gcb-builder") {
 			continue
 		}
 		// job Pod must qualify for Guaranteed QoS
