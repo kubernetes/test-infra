@@ -43,7 +43,7 @@ periodics:
               cpu: 6
               memory: "28Gi"
 
-  - name: ci-kubernetes-integration-master-ppc64le
+  - name: ci-kubernetes-integration-ppc64le-master
     interval: 1h
     cluster: k8s-infra-ppc64le-prow-build
     decorate: true
@@ -56,7 +56,7 @@ periodics:
       fork-per-release: "true"
       fork-per-release-cron: 0 0/2 * * *, 0 1/6 * * *, 0 2 * * *
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
-      testgrid-tab-name: ci-kubernetes-integration-master-ppc64le
+      testgrid-tab-name: ci-kubernetes-integration-ppc64le-master
       testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '2'
       description: "Ends up running: make test-integration"
