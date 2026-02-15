@@ -16,7 +16,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.24.6
+      - image: public.ecr.aws/docker/library/golang:1.25.1
         command:
         - make
         args:
@@ -43,7 +43,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.24.6
+      - image: public.ecr.aws/docker/library/golang:1.25.1
         command:
         - make
         args:
@@ -71,11 +71,49 @@ presubmits:
     run_if_changed: '\.go$'
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.24.6
+      - image: public.ecr.aws/docker/library/golang:1.25.1
         command:
         - make
         args:
         - test-unit
+        resources:
+          limits:
+            cpu: 6
+            memory: 4Gi
+          requests:
+            cpu: 6
+            memory: 4Gi
+  - name: pull-descheduler-test-e2e-k8s-master-1-35
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.35
+    decorate: true
+    decoration_config:
+      timeout: 40m
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.35.1"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         resources:
           limits:
             cpu: 6
@@ -144,44 +182,6 @@ presubmits:
         env:
         - name: KUBERNETES_VERSION
           value: "v1.33.0"
-        - name: KIND_E2E
-          value: "true"
-        args:
-        - make
-        - test-e2e
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 6
-            memory: 4Gi
-          requests:
-            cpu: 6
-            memory: 4Gi
-  - name: pull-descheduler-test-e2e-k8s-master-1-32
-    cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.32
-    decorate: true
-    decoration_config:
-      timeout: 40m
-    always_run: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    branches:
-    - master
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
-        command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
-        - runner.sh
-        env:
-        - name: KUBERNETES_VERSION
-          value: "v1.32.3"
         - name: KIND_E2E
           value: "true"
         args:

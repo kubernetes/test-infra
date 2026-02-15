@@ -1,22 +1,22 @@
 # sigs.k8s.io/descheduler presubmits
 presubmits:
   kubernetes-sigs/descheduler:
-  - name: pull-descheduler-verify-release-1-32
+  - name: pull-descheduler-verify-release-1-35
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-verify-release-1.32
+      testgrid-tab-name: pull-descheduler-verify-release-1.35
     decorate: true
     decoration_config:
       timeout: 15m
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.32$
+    - ^release-1.35$
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.23.3
+      - image: public.ecr.aws/docker/library/golang:1.25.1
         command:
         - make
         args:
@@ -28,22 +28,22 @@ presubmits:
           requests:
             cpu: 7
             memory: 8Gi
-  - name: pull-descheduler-verify-build-release-1-32
+  - name: pull-descheduler-verify-build-release-1-35
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-verify-build-release-1.32
+      testgrid-tab-name: pull-descheduler-verify-build-release-1.35
     decorate: true
     decoration_config:
       timeout: 10m
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.32$
+    - ^release-1.35$
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.23.3
+      - image: public.ecr.aws/docker/library/golang:1.25.1
         command:
         - make
         args:
@@ -55,23 +55,23 @@ presubmits:
           requests:
             cpu: 6
             memory: 4Gi
-  - name: pull-descheduler-unit-test-release-1-32
+  - name: pull-descheduler-unit-test-release-1-35
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-unit-test-release-1.32
+      testgrid-tab-name: pull-descheduler-unit-test-release-1.35
     decorate: true
     decoration_config:
       timeout: 10m
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.32$
+    - ^release-1.35$
     always_run: false
     run_if_changed: '\.go$'
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.23.3
+      - image: public.ecr.aws/docker/library/golang:1.25.1
         command:
         - make
         args:
@@ -83,11 +83,11 @@ presubmits:
           requests:
             cpu: 6
             memory: 4Gi
-  - name: pull-descheduler-test-e2e-k8s-release-1-32-1-32
+  - name: pull-descheduler-test-e2e-k8s-release-1-35-1-35
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-32-1.32
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-35-1.35
     decorate: true
     decoration_config:
       timeout: 40m
@@ -96,7 +96,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.32
+    - release-1.35
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -105,7 +105,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.32.0"
+          value: "v1.35.1"
         - name: KIND_E2E
           value: "true"
         args:
@@ -121,11 +121,11 @@ presubmits:
           requests:
             cpu: 6
             memory: 4Gi
-  - name: pull-descheduler-test-e2e-k8s-release-1-32-1-31
+  - name: pull-descheduler-test-e2e-k8s-release-1-35-1-34
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-32-1.31
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-35-1.34
     decorate: true
     decoration_config:
       timeout: 40m
@@ -134,7 +134,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.32
+    - release-1.35
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -143,7 +143,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.31.4"
+          value: "v1.34.0"
         - name: KIND_E2E
           value: "true"
         args:
@@ -159,11 +159,11 @@ presubmits:
           requests:
             cpu: 6
             memory: 4Gi
-  - name: pull-descheduler-test-e2e-k8s-release-1-32-1-30
+  - name: pull-descheduler-test-e2e-k8s-release-1-35-1-33
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-32-1.30
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-35-1.33
     decorate: true
     decoration_config:
       timeout: 40m
@@ -172,7 +172,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.32
+    - release-1.35
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -181,7 +181,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.30.8"
+          value: "v1.33.0"
         - name: KIND_E2E
           value: "true"
         args:
