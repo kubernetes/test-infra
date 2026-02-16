@@ -890,6 +890,11 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: d2b48c
+        description: Categorizes an issue or PR as relevant to Workload-aware and Topology-aware scheduling subprojects.
+        name: area/workload-aware
+        target: both
+        addedBy: humans
       - color: cc99ff
         description: Categorizes KEP tracking issues and PRs modifying the KEP directory
         name: kind/kep
@@ -1914,6 +1919,11 @@ repos:
         target: prs
         prowPlugin: label
         addedBy: anyone
+      - color: d2b48c
+        description: Categorizes an issue or PR as relevant to Workload-aware and Topology-aware scheduling subprojects.
+        name: area/workload-aware
+        target: both
+        addedBy: humans
   kubernetes/kubeadm:
     labels:
       - color: c7def8
