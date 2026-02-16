@@ -455,6 +455,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/contributor-comms" href="#area/contributor-comms">`area/contributor-comms`</a> | Issues or PRs related to the upstream marketing team| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/enhancements" href="#area/enhancements">`area/enhancements`</a> | Issues or PRs related to the Enhancements subproject| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/workload-aware" href="#area/workload-aware">`area/workload-aware`</a> | Categorizes an issue or PR as relevant to Workload-aware and Topology-aware scheduling subprojects.| humans | |
 | <a id="kind/kep" href="#kind/kep">`kind/kep`</a> | Categorizes KEP tracking issues and PRs modifying the KEP directory| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 
 ## Labels that apply to kubernetes/enhancements, only for issues
@@ -706,6 +707,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/contributor-comms" href="#area/contributor-comms">`area/contributor-comms`</a> | Issues or PRs related to the upstream marketing team| humans | |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/web-development" href="#area/web-development">`area/web-development`</a> | Issues or PRs related to the kubernetes.io's infrastructure, design, or build processes| humans | |
+| <a id="area/workload-aware" href="#area/workload-aware">`area/workload-aware`</a> | Categorizes an issue or PR as relevant to Workload-aware and Topology-aware scheduling subprojects.| humans | |
 | <a id="language/ar" href="#language/ar">`language/ar`</a> | Issues or PRs related to Arabic language| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="language/bn" href="#language/bn">`language/bn`</a> | Issues or PRs related to Bengali language| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="language/de" href="#language/de">`language/de`</a> | Issues or PRs related to German language| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
