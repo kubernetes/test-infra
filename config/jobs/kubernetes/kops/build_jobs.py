@@ -70,7 +70,6 @@ def marker_updown_green(kops_version):
 def build_test(cloud='aws',
                distro='u2404',
                networking='cilium',
-               irsa=True,
                k8s_version='ci',
                kops_channel='alpha',
                kops_version=None,
@@ -162,16 +161,6 @@ def build_test(cloud='aws',
     tab = name_override or (f"kops-grid{suffix}")
     job_name = f"e2e-{tab}"
 
-    # TODO: Uncomment when dynamic discovery buckets are available
-    # if irsa and cloud == "aws" and scenario is None and terraform_version is None:
-    #     if extra_flags is None:
-    #         extra_flags = []
-    #     if build_cluster == "k8s-infra-kops-prow-build":
-    #         # TODO: migrate to an s3 bucket within the k8s-infra-kops-prow-build cluster's account
-    #         extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
-    #     else:
-    #         extra_flags.append("--discovery-store=s3://k8s-kops-ci-prow/discovery")
-
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, extra_flags, kops_image, distro)
 
@@ -201,8 +190,6 @@ def build_test(cloud='aws',
         env['KUBE_SSH_USER'] = kops_ssh_user
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
-        if irsa and cloud == "aws":
-            env['KOPS_IRSA'] = "true"
 
     tmpl = jinja2.Environment(loader=loader).get_template(tmpl_file)
     job = tmpl.render(
@@ -299,7 +286,6 @@ def presubmit_test(branch='master',
                    cloud='aws',
                    distro='u2404',
                    networking='cilium',
-                   irsa=True,
                    k8s_version='stable',
                    kops_channel='alpha',
                    name='',
@@ -372,10 +358,6 @@ def presubmit_test(branch='master',
 
     if instance_groups_overrides is None:
         instance_groups_overrides = []
-    # TODO: Uncomment when dynamic discovery buckets are available
-    # if (irsa and cloud == "aws" and scenario is None and
-    #         terraform_version is None and name != "pull-kops-aws-distro-al2023"):
-    #     extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, extra_flags, kops_image, distro)
@@ -390,8 +372,6 @@ def presubmit_test(branch='master',
         env['CLOUD_PROVIDER'] = cloud
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
-        if irsa and cloud == "aws":
-            env['KOPS_IRSA'] = "true"
 
     tmpl = jinja2.Environment(loader=loader).get_template(tmpl_file)
     job = tmpl.render(
@@ -541,7 +521,7 @@ def generate_grid():
                                    kops_version=kops_version,
                                    networking=networking_arg,
                                    extra_flags=extra_flags,
-                                   irsa=False)
+                                   )
                     )
 
     for networking in network_plugins_periodics['supports_gce']:
@@ -682,17 +662,6 @@ def generate_misc():
                                 '--bastion',
                                 ],
                    extra_dashboards=['kops-distros', 'kops-network-plugins', 'kops-ipv6']),
-
-        # A special test for disabling IRSA
-        build_test(name_override="kops-scenario-no-irsa",
-                   cloud="aws",
-                   distro="u2404arm64",
-                   k8s_version="stable",
-                   runs_per_day=3,
-                   irsa=False,
-                   extra_flags=['--api-loadbalancer-type=public',
-                                ],
-                   extra_dashboards=['kops-misc']),
 
         # A special test for warm pool
         build_test(name_override="kops-warm-pool",
