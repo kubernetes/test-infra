@@ -1152,6 +1152,8 @@ periodics:
       securityContext:
         privileged: true
       env:
+      - name: CL2_INFORMER_TOLERATE_CONTROL_PLANE
+        value: "true"
       - name: CL2_ENABLE_INFORMER_LATENCY_TEST
         value: "true"
       - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
