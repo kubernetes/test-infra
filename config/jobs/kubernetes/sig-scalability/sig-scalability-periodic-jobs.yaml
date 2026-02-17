@@ -1164,15 +1164,14 @@ periodics:
         value: "4Gi"
       - name: CL2_EXECSERVICE_TOLERATE_CONTROL_PLANE
         value: "true"
-      # Override for 1.93GB pod resource size
       - name: CL2_DAEMONSET_POD_PAYLOAD_SIZE
-        value: "8000"
+        value: "4000"
       - name: CL2_DEPLOYMENT_POD_PAYLOAD_SIZE
-        value: "8000"
+        value: "4000"
       - name: CL2_STATEFULSET_POD_PAYLOAD_SIZE
-        value: "8000"
+        value: "4000"
       - name: CL2_JOB_POD_PAYLOAD_SIZE
-        value: "8000"
+        value: "4000"
       #  Remaining parameters should match ci-kubernetes-e2e-gce-scale-performance-5000
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
