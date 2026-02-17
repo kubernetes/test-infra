@@ -598,8 +598,8 @@ periodics:
       - --gcp-node-size=e2-highcpu-8
       - --extract=ci/latest
       - --timeout=240m
-      - --env=KUBE_FEATURE_GATES=HPAConfigurableTolerance=true
-      - --test_args=--ginkgo.focus=\[Feature:HPAConfigurableTolerance\]
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true
+      - --test_args=--ginkgo.focus=\[Feature:HPA\]
         --minStartupPods=8
       - --ginkgo-parallel=10
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
