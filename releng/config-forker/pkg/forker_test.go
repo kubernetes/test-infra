@@ -17,6 +17,7 @@ limitations under the License.
 package forker
 
 import (
+	"context"
 	"maps"
 	"reflect"
 	"testing"
@@ -699,8 +700,10 @@ func TestGeneratePresubmits(t *testing.T) {
 	}
 
 	result, err := generatePresubmits(
+		context.Background(),
 		config.JobConfig{PresubmitsStatic: presubmits},
 		templateVars{Version: "1.15", GoVersion: "1.20.2"},
+		nil,
 	)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -860,8 +863,10 @@ func TestGeneratePeriodics(t *testing.T) {
 	}
 
 	result, err := generatePeriodics(
+		context.Background(),
 		config.JobConfig{Periodics: periodics},
 		templateVars{Version: "1.15", GoVersion: "1.20.2"},
+		nil,
 	)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -1009,8 +1014,10 @@ func TestGeneratePostsubmits(t *testing.T) {
 	}
 
 	result, err := generatePostsubmits(
+		context.Background(),
 		config.JobConfig{PostsubmitsStatic: postsubmits},
 		templateVars{Version: "1.15", GoVersion: "1.20.2"},
+		nil,
 	)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -1018,5 +1025,67 @@ func TestGeneratePostsubmits(t *testing.T) {
 
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(expected, result))
+	}
+}
+
+type fakeResolver struct {
+	resolved map[string]string
+}
+
+func (f *fakeResolver) Resolve(_ context.Context, image string) (string, error) {
+	if r, ok := f.resolved[image]; ok {
+		return r, nil
+	}
+
+	return image, nil
+}
+
+func TestGeneratePeriodicWithResolver(t *testing.T) {
+	t.Parallel()
+
+	periodics := []config.Periodic{
+		{
+			Cron: "0 * * * *",
+			JobBase: config.JobBase{
+				Name:        "some-periodic-master",
+				Annotations: map[string]string{forkAnnotation: "true"},
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-old-master",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	const (
+		oldImage = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-old-1.15"
+		newImage = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260210-new-1.15"
+	)
+
+	resolver := &fakeResolver{
+		resolved: map[string]string{oldImage: newImage},
+	}
+
+	result, err := generatePeriodics(
+		context.Background(),
+		config.JobConfig{Periodics: periodics},
+		templateVars{Version: "1.15", GoVersion: "1.20.2"},
+		resolver,
+	)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if len(result) != 1 {
+		t.Fatalf("Expected 1 periodic, got %d", len(result))
+	}
+
+	gotImage := result[0].Spec.Containers[0].Image
+
+	if gotImage != newImage {
+		t.Errorf("Image = %q, want %q", gotImage, newImage)
 	}
 }

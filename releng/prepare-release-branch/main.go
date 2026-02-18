@@ -72,7 +72,7 @@ func execute(ctx context.Context) error {
 
 	log.Println("Forking new file...")
 
-	if err := run.ForkNewFile(branchJobDir, jobConfigDir, version, goVersion); err != nil {
+	if err := run.ForkNewFile(ctx, branchJobDir, jobConfigDir, version, goVersion); err != nil {
 		return fmt.Errorf("forking new file: %w", err)
 	}
 

@@ -21,8 +21,10 @@ package forker
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -35,6 +37,13 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+// ImageResolver validates container image references against a registry.
+// When a mutated image tag does not exist, it resolves to the latest
+// available tag with the same version suffix.
+type ImageResolver interface {
+	Resolve(ctx context.Context, image string) (string, error)
+}
+
 // Sentinel errors for validation and processing failures.
 var (
 	ErrJobConfigRequired      = errors.New("job-config must be specified")
@@ -46,6 +55,7 @@ var (
 	ErrEnvReplacementResult   = errors.New("expected a single string result replacing env var")
 	ErrEnvReplacementFormat   = errors.New("expected NAME=VALUE format replacing env var")
 	ErrReplacementParse       = errors.New("failed to parse replacement")
+	ErrImageResolve           = errors.New("image resolution failed")
 )
 
 // Number of parts expected when splitting key=value or replacement pairs.
@@ -61,6 +71,9 @@ type Options struct {
 	Version string
 	// GoVersion is the Go version for the release branch (e.g., "1.24.0").
 	GoVersion string
+	// ImageResolver optionally validates and resolves container image tags
+	// against the registry. When nil, images are rewritten but not validated.
+	ImageResolver ImageResolver
 }
 
 // Validate checks that the options are well-formed.
@@ -94,7 +107,7 @@ func (o Options) Validate() error {
 }
 
 // Run reads the job config, generates forked jobs, and writes the output YAML.
-func Run(opts Options) error {
+func Run(ctx context.Context, opts Options) error {
 	if err := opts.Validate(); err != nil {
 		return err
 	}
@@ -109,17 +122,17 @@ func Run(opts Options) error {
 		GoVersion: opts.GoVersion,
 	}
 
-	newPresubmits, err := generatePresubmits(jobConfig, vars)
+	newPresubmits, err := generatePresubmits(ctx, jobConfig, vars, opts.ImageResolver)
 	if err != nil {
 		return fmt.Errorf("generating presubmits: %w", err)
 	}
 
-	newPeriodics, err := generatePeriodics(jobConfig, vars)
+	newPeriodics, err := generatePeriodics(ctx, jobConfig, vars, opts.ImageResolver)
 	if err != nil {
 		return fmt.Errorf("generating periodics: %w", err)
 	}
 
-	newPostsubmits, err := generatePostsubmits(jobConfig, vars)
+	newPostsubmits, err := generatePostsubmits(ctx, jobConfig, vars, opts.ImageResolver)
 	if err != nil {
 		return fmt.Errorf("generating postsubmits: %w", err)
 	}
@@ -164,14 +177,42 @@ const (
 // filePermissions is the permission mode used when writing output files.
 const filePermissions = 0o600
 
+// resolveImage validates an image tag via the ImageResolver if one is
+// provided. Returns the image unchanged when the resolver is nil or
+// the image contains variable references that cannot be resolved.
+func resolveImage(
+	ctx context.Context, resolver ImageResolver, image string,
+) (string, error) {
+	if resolver == nil {
+		return image, nil
+	}
+
+	if strings.Contains(image, "${") {
+		return image, nil
+	}
+
+	resolved, err := resolver.Resolve(ctx, image)
+	if err != nil {
+		return "", fmt.Errorf("%w: %s: %w", ErrImageResolve, image, err)
+	}
+
+	if resolved != image {
+		log.Printf("Resolved image %s -> %s", image, resolved)
+	}
+
+	return resolved, nil
+}
+
 // processContainers applies env var fixes, image fixes, and replacement
 // annotations to all containers in a pod spec. It returns an error wrapping
 // the job name if any replacement fails.
 func processContainers(
+	ctx context.Context,
 	spec *v1.PodSpec,
 	vars templateVars,
 	annotation string,
 	jobName string,
+	resolver ImageResolver,
 ) error {
 	if spec == nil {
 		return nil
@@ -183,6 +224,11 @@ func processContainers(
 		container.Image = fixImage(container.Image, vars.Version)
 
 		var err error
+
+		container.Image, err = resolveImage(ctx, resolver, container.Image)
+		if err != nil {
+			return fmt.Errorf("%s: %w", jobName, err)
+		}
 
 		container.Command, err = performReplacement(
 			container.Command, vars, annotation,
@@ -216,7 +262,10 @@ func processContainers(
 }
 
 func generatePostsubmits(
-	jobConfig config.JobConfig, vars templateVars,
+	ctx context.Context,
+	jobConfig config.JobConfig,
+	vars templateVars,
+	resolver ImageResolver,
 ) (map[string][]config.Postsubmit, error) {
 	newPostsubmits := map[string][]config.Postsubmit{}
 
@@ -235,9 +284,9 @@ func generatePostsubmits(
 			job.Branches = []string{"release-" + vars.Version}
 
 			if err := processContainers(
-				job.Spec, vars,
+				ctx, job.Spec, vars,
 				job.Annotations[replacementAnnotation],
-				postsubmit.Name,
+				postsubmit.Name, resolver,
 			); err != nil {
 				return nil, err
 			}
@@ -257,7 +306,10 @@ func generatePostsubmits(
 }
 
 func generatePresubmits(
-	jobConfig config.JobConfig, vars templateVars,
+	ctx context.Context,
+	jobConfig config.JobConfig,
+	vars templateVars,
+	resolver ImageResolver,
 ) (map[string][]config.Presubmit, error) {
 	newPresubmits := map[string][]config.Presubmit{}
 
@@ -276,9 +328,9 @@ func generatePresubmits(
 			)
 
 			if err := processContainers(
-				job.Spec, vars,
+				ctx, job.Spec, vars,
 				job.Annotations[replacementAnnotation],
-				presubmit.Name,
+				presubmit.Name, resolver,
 			); err != nil {
 				return nil, err
 			}
@@ -308,12 +360,14 @@ func shouldDecorate(
 }
 
 func processPeriodicContainers(
+	ctx context.Context,
 	spec *v1.PodSpec,
 	conf *config.JobConfig,
 	util config.UtilityConfig,
 	vars templateVars,
 	annotation string,
 	jobName string,
+	resolver ImageResolver,
 ) error {
 	if spec == nil {
 		return nil
@@ -324,12 +378,17 @@ func processPeriodicContainers(
 		container.Image = fixImage(container.Image, vars.Version)
 		container.Env = fixEnvVars(container.Env, vars.Version)
 
+		var err error
+
+		container.Image, err = resolveImage(ctx, resolver, container.Image)
+		if err != nil {
+			return fmt.Errorf("%s: %w", jobName, err)
+		}
+
 		if !shouldDecorate(conf, util) {
 			container.Command = fixBootstrapArgs(container.Command, vars.Version)
 			container.Args = fixBootstrapArgs(container.Args, vars.Version)
 		}
-
-		var err error
 
 		container.Command, err = performReplacement(container.Command, vars, annotation)
 		if err != nil {
@@ -393,7 +452,10 @@ func processPeriodicSchedule(
 }
 
 func generatePeriodics(
-	conf config.JobConfig, vars templateVars,
+	ctx context.Context,
+	conf config.JobConfig,
+	vars templateVars,
+	resolver ImageResolver,
 ) ([]config.Periodic, error) {
 	var newPeriodics []config.Periodic
 
@@ -410,8 +472,9 @@ func generatePeriodics(
 		)
 
 		if err := processPeriodicContainers(
-			job.Spec, &conf, job.UtilityConfig, vars,
+			ctx, job.Spec, &conf, job.UtilityConfig, vars,
 			job.Annotations[replacementAnnotation], periodic.Name,
+			resolver,
 		); err != nil {
 			return nil, err
 		}

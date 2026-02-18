@@ -73,6 +73,7 @@ func RotateFiles(branchDir string, version release.Version) error {
 
 // ForkNewFile calls config-forker to create a config for the next version.
 func ForkNewFile(
+	ctx context.Context,
 	branchDir, jobConfigDir string,
 	version release.Version,
 	goVersion string,
@@ -89,11 +90,12 @@ func ForkNewFile(
 		return fmt.Errorf("resolving output path: %w", err)
 	}
 
-	if err := forker.Run(forker.Options{
-		JobConfig:  absJobConfig,
-		OutputPath: absOutput,
-		Version:    next.String(),
-		GoVersion:  goVersion,
+	if err := forker.Run(ctx, forker.Options{
+		JobConfig:     absJobConfig,
+		OutputPath:    absOutput,
+		Version:       next.String(),
+		GoVersion:     goVersion,
+		ImageResolver: forker.NewRegistryResolver(nil),
 	}); err != nil {
 		return fmt.Errorf("forking %s: %w", next.Filename(), err)
 	}
