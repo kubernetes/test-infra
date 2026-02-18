@@ -15,6 +15,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      testgrid-tab-name: pr-kind-dra-canary
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
@@ -100,6 +101,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      testgrid-tab-name: pr-kind-dra-all-canary
       description: Runs E2E tests for Dynamic Resource Allocation alpha and beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
@@ -196,6 +198,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      testgrid-tab-name: pr-kind-dra-all-slow-canary
       description: Runs E2E tests for Dynamic Resource Allocation alpha and beta features against a Kubernetes master cluster created with sigs.k8s.io/kind, including slow tests
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
@@ -292,6 +295,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      testgrid-tab-name: pr-kind-dra-n-1-canary
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the "current - 1" release.
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
@@ -426,6 +430,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      testgrid-tab-name: pr-kind-dra-n-2-canary
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the "current - 2" release.
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
@@ -560,6 +565,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      testgrid-tab-name: pr-kind-dra-n-3-canary
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the "current - 3" release.
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
@@ -694,6 +700,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      testgrid-tab-name: pr-dra-integration-canary
       description: Runs integration tests for DRA which need some additional setup in the job.
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
@@ -740,6 +747,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-cri-o
+      testgrid-tab-name: pr-node-e2e-crio-dra-canary
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
@@ -796,6 +804,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
+      testgrid-tab-name: pr-node-e2e-containerd-1-7-dra-canary
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 1.7
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
@@ -845,6 +854,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
+      testgrid-tab-name: pr-node-e2e-containerd-2-0-dra-canary
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 2.1
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
@@ -897,6 +907,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
+      testgrid-tab-name: pr-node-e2e-containerd-2-0-dra-alpha-beta-features-canary
       description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 2.1 and with all feature gates enabled (including non-DRA feature gates)
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true

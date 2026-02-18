@@ -49,6 +49,9 @@ presubmits:
       {%- endif %}
     annotations:
       testgrid-dashboards: {{testgrid_dashboards}}
+      {%- if not ci %}
+      testgrid-tab-name: {{ job_name | replace("pull-kubernetes-", "pr-") }}
+      {%- endif %}
       description: {{description}}
       testgrid-alert-email: {{testgrid_alert_email}}
       {%- if not canary and ( not all_features or presubmit ) %}
