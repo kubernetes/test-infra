@@ -86,10 +86,10 @@ presubmits:
         resources:
           requests:
             cpu: "7"
-            memory: "8Gi"
+            memory: "12Gi"
           limits:
             cpu: "7"
-            memory: "8Gi"
+            memory: "12Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: unit-test
