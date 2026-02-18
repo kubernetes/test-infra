@@ -1122,7 +1122,7 @@ periodics:
   job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
   decorate: true
   decoration_config:
-    timeout: 240m
+    timeout: 450m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
