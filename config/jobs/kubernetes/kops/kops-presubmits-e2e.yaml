@@ -1049,8 +1049,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: "6"
@@ -1109,8 +1107,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: "6"
@@ -1164,8 +1160,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: "6"
@@ -2151,8 +2145,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: "6"
@@ -2206,8 +2198,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: "6"
@@ -2263,8 +2253,6 @@ presubmits:
           value: "--ipv6 --topology=private --bastion"
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: "6"
@@ -2333,8 +2321,6 @@ presubmits:
           value: "3"
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: "6"
@@ -2387,8 +2373,6 @@ presubmits:
           value: /home/prow/go
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: "6"

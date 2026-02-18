@@ -40,14 +40,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -114,14 +110,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -182,14 +174,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -256,14 +244,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -324,14 +308,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -398,14 +378,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -466,14 +442,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -540,14 +512,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -608,14 +576,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -682,14 +646,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -750,14 +710,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -824,14 +780,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -892,14 +844,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -966,14 +914,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1034,14 +978,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1108,14 +1048,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1176,14 +1112,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1250,14 +1182,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1318,14 +1246,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1392,14 +1316,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1460,14 +1380,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1534,14 +1450,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1602,14 +1514,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1676,14 +1584,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1744,14 +1648,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1818,14 +1718,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1886,14 +1782,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -1960,14 +1852,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2028,14 +1916,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2102,14 +1986,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2170,14 +2050,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2244,14 +2120,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2312,14 +2184,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2386,14 +2254,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2454,14 +2318,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2528,14 +2388,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2596,14 +2452,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2670,14 +2522,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2738,14 +2586,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2812,14 +2656,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2880,14 +2720,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -2954,14 +2790,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -3022,14 +2854,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -3096,14 +2924,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -3164,14 +2988,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:
@@ -3238,14 +3058,10 @@ periodics:
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
       imagePullPolicy: Always
       resources:

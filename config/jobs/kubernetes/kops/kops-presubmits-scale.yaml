@@ -87,8 +87,6 @@ presubmits:
           value: "false"
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: "6"
@@ -187,8 +185,6 @@ presubmits:
           value: "20s"
         - name: CLOUD_PROVIDER
           value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: "6"
