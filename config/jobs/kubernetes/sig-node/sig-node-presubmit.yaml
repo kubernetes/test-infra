@@ -1856,6 +1856,57 @@ presubmits:
             env:
               - name: GOPATH
                 value: /go
+    - name: pull-kubernetes-node-kubelet-serial-device-manager
+      cluster: k8s-infra-prow-build
+      always_run: false
+      optional: true
+      skip_report: false
+      skip_branches:
+        - release-\d+\.\d+ # per-release image
+      annotations:
+        testgrid-dashboards: sig-node-presubmits
+        testgrid-tab-name: pr-kubelet-serial-e2e-device-manager
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+      decorate: true
+      decoration_config:
+        timeout: 240m
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: kubernetes
+          repo: release
+          base_ref: master
+          path_alias: k8s.io/release
+        - org: kubernetes
+          repo: test-infra
+          base_ref: master
+          path_alias: k8s.io/test-infra
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            command:
+              - runner.sh
+              - /workspace/scenarios/kubernetes_e2e.py
+            args:
+              - --deployment=node
+              - --gcp-zone=us-central1-b
+              - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
+              - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --cgroup-driver=systemd"
+              - --node-tests=true
+              - --provider=gce
+              - '--test_args=--nodes=1 --skip= --focus="Device \b(Plugin|Manager)\b.*"'
+              - --timeout=180m
+            env:
+              - name: GOPATH
+                value: /go
     - name: pull-kubernetes-crio-node-memoryqos
       cluster: k8s-infra-prow-build
       # explicitly needs /test pull-kubernetes-crio-node-memoryqos to run
