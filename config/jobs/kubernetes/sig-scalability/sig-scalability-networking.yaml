@@ -209,6 +209,8 @@ periodics:
       securityContext:
         privileged: true
       env:
+      - name: CLUSTER_NAME
+        value: e2e-kops-gce-small-kindnet
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
