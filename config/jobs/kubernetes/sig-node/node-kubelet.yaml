@@ -152,7 +152,7 @@ periodics:
     description: "Uses kubetest to run serial node-e2e tests (+Serial|+Flaky, (Benchmark|Node*Feature|Feature:OffByDefault)"
 
 
-- name: ci-kubernetes-node-kubelet-serial-cri-o
+- name: ci-kubernetes-node-kubelet-serial-crio
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -173,7 +173,7 @@ periodics:
     path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: node-kubelet-serial-crio
+    testgrid-tab-name: ci-kubernetes-node-kubelet-serial-crio
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "OWNER: sig-node; runs serial node-e2e tests with CRI-O (+Serial, -Flaky|Benchmark|Node*Feature|Feature:OffByDefault)"
   spec:
