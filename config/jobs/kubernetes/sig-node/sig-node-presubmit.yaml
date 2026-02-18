@@ -1251,7 +1251,7 @@ presubmits:
             env:
               - name: GOPATH
                 value: /go
-    - name: pull-kubernetes-node-crio-imagefs-e2e
+    - name: pull-node-crio-imagefs-e2e
       cluster: k8s-infra-prow-build
       always_run: false
       optional: true
@@ -1274,7 +1274,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-crio-imagefs-e2e
+        testgrid-tab-name: pull-node-crio-imagefs-e2e
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -1305,9 +1305,9 @@ presubmits:
                 value: core
               - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
                 value: "1"
-    - name: pull-kubernetes-node-crio-userns-e2e-serial
+    - name: pull-node-crio-userns-serial
       cluster: k8s-infra-prow-build
-      # explicitly needs /test pull-kubernetes-node-crio-userns-e2e-serial to run
+      # explicitly needs /test pull-node-crio-userns-serial to run
       always_run: false
       optional: true
       max_concurrency: 12
@@ -1329,7 +1329,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-crio-userns-e2e-serial
+        testgrid-tab-name: pull-node-crio-userns-serial
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -1358,7 +1358,7 @@ presubmits:
                 value: core
               - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
                 value: "1"
-    - name: pull-kubernetes-node-crio-splitfs-e2e
+    - name: pull-node-crio-splitfs-e2e
       cluster: k8s-infra-prow-build
       always_run: false
       optional: true
@@ -1381,7 +1381,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-crio-splitfs-e2e
+        testgrid-tab-name: pull-node-crio-splitfs-e2e
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -1412,9 +1412,9 @@ presubmits:
                 value: core
               - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
                 value: "1"
-    - name: pull-kubernetes-node-crio-evented-pleg-e2e
+    - name: pull-node-crio-evented-pleg
       cluster: k8s-infra-prow-build
-      # explicitly needs /test pull-kubernetes-node-crio-evented-pleg-e2e to run
+      # explicitly needs /test pull-node-crio-evented-pleg to run
       always_run: false
       optional: true
       skip_branches:
@@ -1435,7 +1435,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-crio-evented-pleg-gce-e2e
+        testgrid-tab-name: pull-node-crio-evented-pleg
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -1513,9 +1513,9 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-    - name: pull-kubernetes-node-crio-e2e
+    - name: pull-node-crio-e2e
       cluster: k8s-infra-prow-build
-      # explicitly needs /test pull-kubernetes-node-crio-e2e to run
+      # explicitly needs /test pull-node-crio-e2e to run
       always_run: false
       # if at all it is run and fails, don't block the PR
       optional: true
@@ -1539,7 +1539,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-crio-gce-e2e
+        testgrid-tab-name: pull-node-crio-e2e
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -1569,9 +1569,9 @@ presubmits:
               - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
               - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
               - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
-    - name: pull-kubernetes-node-crio-e2e-canary
+    - name: pull-node-crio-e2e-canary
       cluster: k8s-infra-prow-build
-      # explicitly needs /test pull-kubernetes-node-crio-e2e-canary to run
+      # explicitly needs /test pull-node-crio-e2e-canary to run
       always_run: false
       # if at all it is run and fails, don't block the PR
       optional: true
@@ -1595,7 +1595,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-crio-gce-e2e-canary
+        testgrid-tab-name: pull-node-crio-e2e-canary
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -1625,9 +1625,9 @@ presubmits:
               - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
               - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
               - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-canary.yaml
-    - name: pull-kubernetes-node-kubelet-serial-crio
+    - name: pull-node-crio-kubelet-serial
       cluster: k8s-infra-prow-build
-      # explicitly needs /test pull-kubernetes-node-kubelet-serial-crio to run
+      # explicitly needs /test pull-node-crio-kubelet-serial to run
       always_run: false
       optional: true
       skip_report: false
@@ -1650,7 +1650,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-node-kubelet-serial-crio
+        testgrid-tab-name: pull-node-crio-kubelet-serial
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -1684,7 +1684,7 @@ presubmits:
                 value: core
               - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
                 value: "1"
-    - name: pull-crio-node-e2e-hugepages
+    - name: pull-node-crio-hugepages
       cluster: k8s-infra-prow-build
       always_run: false
       optional: true
@@ -1711,7 +1711,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-kubelet-crio-node-e2e-hugepages
+        testgrid-tab-name: pull-node-crio-hugepages
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -1743,7 +1743,7 @@ presubmits:
                 value: core
               - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
                 value: "1"
-    - name: pull-crio-node-e2e-resource-managers
+    - name: pull-node-crio-resource-managers
       cluster: k8s-infra-prow-build
       always_run: false
       optional: true
@@ -1770,7 +1770,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-crio-node-e2e-resource-managers
+        testgrid-tab-name: pull-node-crio-resource-managers
         description: "Executes CPU, Memory and Topology manager e2e tests for crio"
       spec:
         containers:
@@ -1856,9 +1856,9 @@ presubmits:
             env:
               - name: GOPATH
                 value: /go
-    - name: pull-kubernetes-crio-node-memoryqos
+    - name: pull-node-crio-memoryqos
       cluster: k8s-infra-prow-build
-      # explicitly needs /test pull-kubernetes-crio-node-memoryqos to run
+      # explicitly needs /test pull-node-crio-memoryqos to run
       always_run: false
       optional: true
       max_concurrency: 12
@@ -1881,7 +1881,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-crio-node-memoryqos
+        testgrid-tab-name: pull-node-crio-memoryqos
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -1911,13 +1911,13 @@ presubmits:
                 value: core
               - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
                 value: "1"
-    - name: pull-kubernetes-node-swap-fedora
+    - name: pull-node-crio-swap
       cluster: k8s-infra-prow-build
       skip_branches:
         - release-\d+\.\d+ # per-release image
       annotations:
         testgrid-dashboards: sig-node-presubmits
-        testgrid-tab-name: pr-kubelet-gce-e2e-swap-fedora
+        testgrid-tab-name: pull-node-crio-swap
       always_run: false
       skip_report: false
       optional: true
@@ -2016,13 +2016,13 @@ presubmits:
                 cpu: 4
                 memory: 6Gi
 
-    - name: pull-kubernetes-node-swap-fedora-serial
+    - name: pull-node-crio-swap-serial
       cluster: k8s-infra-prow-build
       skip_branches:
         - release-\d+\.\d+ # per-release image
       annotations:
         testgrid-dashboards: sig-node-presubmits
-        testgrid-tab-name: pr-kubelet-gce-e2e-swap-fedora-serial
+        testgrid-tab-name: pull-node-crio-swap-serial
       always_run: false
       skip_report: false
       optional: true
@@ -2125,13 +2125,13 @@ presubmits:
                 cpu: 4
                 memory: 6Gi
 
-    - name: pull-kubernetes-node-swap-conformance-fedora-serial
+    - name: pull-node-crio-swap-conformance-serial
       cluster: k8s-infra-prow-build
       skip_branches:
         - release-\d+\.\d+ # per-release image
       annotations:
         testgrid-dashboards: sig-node-presubmits
-        testgrid-tab-name: pr-kubelet-swap-conformance-fedora-serial
+        testgrid-tab-name: pull-node-crio-swap-conformance-serial
       always_run: false
       skip_report: false
       optional: true
@@ -2490,7 +2490,7 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-    - name: pull-crio-node-e2e-eviction
+    - name: pull-node-crio-eviction
       cluster: k8s-infra-prow-build
       always_run: false
       optional: true
@@ -2514,7 +2514,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-crio-node-e2e-eviction
+        testgrid-tab-name: pull-node-crio-eviction
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -2547,7 +2547,7 @@ presubmits:
                 value: core
               - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
                 value: "1"
-    - name: pull-crio-imagefs-separatedisktest
+    - name: pull-node-crio-imagefs-separatedisk
       cluster: k8s-infra-prow-build
       always_run: false
       optional: true
@@ -2571,7 +2571,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-crio-imagefs-e2e-separatedisktest
+        testgrid-tab-name: pull-node-crio-imagefs-separatedisk
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -2603,7 +2603,7 @@ presubmits:
                 value: core
               - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
                 value: "1"
-    - name: pull-crio-splitfs-separate-disk
+    - name: pull-node-crio-splitfs-separatedisk
       cluster: k8s-infra-prow-build
       always_run: false
       optional: true
@@ -2627,7 +2627,7 @@ presubmits:
         preset-pull-kubernetes-e2e-gce: "true"
       annotations:
         testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-        testgrid-tab-name: pr-crio-splitfs-separate-disk
+        testgrid-tab-name: pull-node-crio-splitfs-separatedisk
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
