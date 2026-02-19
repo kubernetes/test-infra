@@ -407,16 +407,16 @@ presubmits:
             - -c
             - |
               cd kubetest2-ec2 && GOPROXY=direct go install .
-              VERSION=$(curl -Ls https://dl.k8s.io/ci/fast/latest-fast.txt)
+              VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast/latest-fast.txt)
               kubetest2 ec2 \
-               --stage https://dl.k8s.io/ci/fast/ \
+               --stage https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast/ \
                --version $VERSION \
                --up \
                --down \
                --test=ginkgo \
                -- \
                --parallel=30 \
-               --test-package-url=https://dl.k8s.io/ \
+               --test-package-url=https://gcsweb.k8s.io/gcs/k8s-release-dev/ \
                --test-package-dir=ci/fast \
                --test-package-marker=latest-fast.txt \
                --focus-regex='Pods should be submitted and removed'
@@ -462,9 +462,9 @@ presubmits:
             - -c
             - |
               cd kubetest2-ec2 && GOPROXY=direct go install .
-              VERSION=$(curl -Ls https://dl.k8s.io/ci/fast/latest-fast.txt)
+              VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast/latest-fast.txt)
               kubetest2 ec2 \
-               --stage https://dl.k8s.io/ci/fast/ \
+               --stage https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast/ \
                --external-cloud-provider true \
                --version $VERSION \
                --up \
@@ -472,7 +472,7 @@ presubmits:
                --test=ginkgo \
                -- \
                --parallel=30 \
-               --test-package-url=https://dl.k8s.io/ \
+               --test-package-url=https://gcsweb.k8s.io/gcs/k8s-release-dev/ \
                --test-package-dir=ci/fast \
                --test-package-marker=latest-fast.txt \
                --focus-regex='Pods should be submitted and removed'
