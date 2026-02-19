@@ -72,6 +72,7 @@ func TestKubernetesPresubmitJobs(t *testing.T) {
 			Branches:     job.Branches,
 
 			Optional:          job.Optional,
+			SkipReport:        job.SkipReport,
 			RunIfChanged:      job.RunIfChanged,
 			SkipIfOnlyChanged: job.SkipIfOnlyChanged,
 		}
@@ -177,6 +178,7 @@ type presubmitJob struct {
 	SkipBranches      []string `yaml:"skip_branches,omitempty"`
 	Branches          []string `yaml:"branches,omitempty"`
 	Optional          bool     `yaml:"optional,omitempty"`
+	SkipReport        bool     `yaml:"skip_report,omitempty"`
 	RunIfChanged      string   `yaml:"run_if_changed,omitempty"`
 	SkipIfOnlyChanged string   `yaml:"skip_if_only_changed,omitempty"`
 }
