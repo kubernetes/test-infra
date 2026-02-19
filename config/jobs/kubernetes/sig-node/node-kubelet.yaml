@@ -152,7 +152,7 @@ periodics:
     description: "Uses kubetest to run serial node-e2e tests (+Serial|+Flaky, (Benchmark|Node*Feature|Feature:OffByDefault)"
 
 
-- name: ci-kubernetes-node-kubelet-serial-crio
+- name: ci-node-crio-kubelet-serial
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -173,7 +173,7 @@ periodics:
     path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-kubernetes-node-kubelet-serial-crio
+    testgrid-tab-name: ci-node-crio-kubelet-serial
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "OWNER: sig-node; runs serial node-e2e tests with CRI-O (+Serial, -Flaky|Benchmark|Node*Feature|Feature:OffByDefault)"
   spec:
@@ -268,7 +268,7 @@ periodics:
             cpu: 4
             memory: 6Gi
 
-- name: ci-kubernetes-node-swap-fedora
+- name: ci-node-crio-swap
   cluster: k8s-infra-prow-build
   interval: 4h
   labels:
@@ -289,7 +289,7 @@ periodics:
     path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-node-kubelet, sig-node-cri-o
-    testgrid-tab-name: kubelet-gce-e2e-swap-fedora
+    testgrid-tab-name: ci-node-crio-swap
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: Executes E2E suite with swap enabled on Fedora
   spec:
@@ -377,12 +377,12 @@ periodics:
             cpu: 4
             memory: 6Gi
 
-- name: ci-kubernetes-node-swap-fedora-serial
+- name: ci-node-crio-swap-serial
   interval: 4h
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-dashboards: sig-node-kubelet, sig-node-cri-o
-    testgrid-tab-name: kubelet-gce-e2e-swap-fedora-serial
+    testgrid-tab-name: ci-node-crio-swap-serial
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Run serial node e2e tests with swap environment on Fedora"
   labels:
@@ -487,12 +487,12 @@ periodics:
             cpu: 4
             memory: 6Gi
 
-- name: ci-kubernetes-node-swap-conformance-fedora-serial
+- name: ci-node-crio-swap-conformance-serial
   interval: 4h
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-dashboards: sig-node-kubelet, sig-node-cri-o
-    testgrid-tab-name: kubelet-swap-conformance-fedora-serial
+    testgrid-tab-name: ci-node-crio-swap-conformance-serial
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Run serial swap conformance e2e tests with swap environment on Fedora"
   labels:

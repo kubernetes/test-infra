@@ -72,4 +72,4 @@ Make sure the specified cri-o version is uploaded to
 otherwise the tests should fail.
 
 You can test the cri-o version change by changing [env-canary.yaml](./templates/base/env-canary.yaml)
-and run `pull-kubernetes-node-crio-e2e-canary`.
+and run `pull-node-crio-e2e-canary`.

@@ -49,6 +49,7 @@ presubmits:
       {%- endif %}
     annotations:
       testgrid-dashboards: {{testgrid_dashboards}}
+      testgrid-tab-name: {{job_name}}
       description: {{description}}
       testgrid-alert-email: {{testgrid_alert_email}}
       {%- if not canary and ( not all_features or presubmit ) %}
