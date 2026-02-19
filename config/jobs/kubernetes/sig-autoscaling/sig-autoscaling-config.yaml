@@ -599,6 +599,7 @@ periodics:
       - --extract=ci/latest
       - --timeout=240m
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true
+      - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:HPA\]
         --minStartupPods=8
       - --ginkgo-parallel=10
