@@ -26,7 +26,9 @@ Only jobs annotated with `fork-per-release` will be forked.
 
 For all jobs:
 
-- If `spec` includes a container with an `image` ending in `-master`, it is replaced with `-1.15`.
+- If `spec` includes a container with an `image` ending in `-master`, it is replaced with `-1.15`. The resulting image
+  tag is then validated against the OCI registry; if it does not exist, the forker resolves to the latest available tag
+  with the same version suffix.
 - If `spec` includes a container with an `env` variable with `BRANCH` (case-insensitive) in the name and the value
   `master`, the value will be changed to `release-1.15`.
 - If the `fork-per-release-replacements` annotation is specified, those replacements will be performed in the `args`

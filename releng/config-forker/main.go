@@ -18,6 +18,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 
@@ -33,7 +34,9 @@ func main() {
 	flag.StringVar(&opts.GoVersion, "go-version", "", "Current go version in use")
 	flag.Parse()
 
-	if err := forker.Run(opts); err != nil {
+	opts.ImageResolver = forker.NewRegistryResolver(nil)
+
+	if err := forker.Run(context.Background(), opts); err != nil {
 		log.Fatalln(err)
 	}
 }
