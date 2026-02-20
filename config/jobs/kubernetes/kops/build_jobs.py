@@ -1893,7 +1893,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.34', '1.33', '1.32']:
+    for version in ['master', '1.35', '1.34', '1.33', '1.32']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
@@ -1912,6 +1912,37 @@ def generate_pipeline():
                 publish_version_marker=publish_version_marker,
             )
         )
+    return results
+
+
+# kops-presubmits-branch.yaml #
+######################
+def generate_presubmits_branch():
+    results = []
+    for version in ['1.35', '1.34', '1.33', '1.32']:
+        results.extend([
+            presubmit_test(
+                name=f"pull-kops-e2e-k8s-aws-calico-{version.replace('.', '-')}",
+                tab_name=f"e2e-aws-cilium-{version.replace('.', '-')}",
+                branch=f"release-{version}",
+                cloud='aws',
+                k8s_version=version,
+                kops_channel='alpha',
+                networking='cilium',
+                always_run=True,
+            ),
+            presubmit_test(
+                name=f"pull-kops-e2e-k8s-gce-cilium-{version.replace('.', '-')}",
+                tab_name=f"e2e-gce-cilium-{version.replace('.', '-')}",
+                branch=f"release-{version}",
+                k8s_version=version,
+                cloud='gce',
+                kops_channel='alpha',
+                networking='cilium',
+                always_run=True,
+                extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
+            ),
+        ])
     return results
 
 ########################################
@@ -2351,43 +2382,6 @@ def generate_presubmits_e2e():
                 '--dns=public',
             ],
         ),
-
-        presubmit_test(
-            branch='release-1.32',
-            k8s_version='1.32',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-cilium-1-32',
-            networking='cilium',
-            tab_name='e2e-1-32',
-            always_run=True,
-        ),
-        presubmit_test(
-            branch='release-1.33',
-            k8s_version='1.33',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-cilium-1-33',
-            networking='cilium',
-            tab_name='e2e-1-33',
-            always_run=True,
-        ),
-        presubmit_test(
-            branch='release-1.34',
-            k8s_version='1.34',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-cilium-1-34',
-            networking='cilium',
-            tab_name='e2e-1-34',
-            always_run=True,
-        ),
-        presubmit_test(
-            branch='release-1.31',
-            k8s_version='1.31',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-cilium-1-31',
-            networking='cilium',
-            tab_name='e2e-1-31',
-            always_run=True,
-        ),
         presubmit_test(
             name="pull-kops-scenario-aws-karpenter",
             cloud="aws",
@@ -2540,6 +2534,7 @@ presubmits_files = {
     'kops-presubmits-network-plugins.yaml': generate_presubmits_network_plugins,
     'kops-presubmits-e2e.yaml': generate_presubmits_e2e,
     'kops-presubmits-scale.yaml': generate_presubmits_scale,
+    'kops-presubmits-branch.yaml': generate_presubmits_branch,
 }
 
 def output_file(filename: pathlib.Path, contents: str, verify: bool) -> str:
