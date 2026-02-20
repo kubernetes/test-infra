@@ -16,6 +16,7 @@
 import argparse
 import difflib
 import filecmp
+import hashlib
 import json
 import math
 import os
@@ -188,6 +189,14 @@ def build_test(cloud='aws',
             env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
         env['CLOUD_PROVIDER'] = cloud
         env['KUBE_SSH_USER'] = kops_ssh_user
+        if not cluster_name:
+            # scenario scripts often need to reference the cluster name outside of kubetest2-kops.
+            # Since kubetest2-kops defaults to generating one automatically, the easiest way to
+            # reference the cluster name is to just pass it into the script
+            # so it may be used by both kubetest2-kops and the rest of the script.
+            name_hash = hashlib.md5(job_name.encode()).hexdigest()
+            cluster_name = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.tests-kops-aws.k8s.io"
+            env['CLUSTER_NAME'] = cluster_name
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
 
