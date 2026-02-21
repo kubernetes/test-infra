@@ -62,6 +62,9 @@ func getProjectID() (string, error) {
 }
 
 func getImageName(o options, tag string, config string) (string, error) {
+	// If you specify images in cloudbuild.yaml, your image won't be multi-arch
+	// and you should migrate to building with buildx, here is an example
+	// https://docs.cloud.google.com/dataflow/docs/guides/multi-architecture-container#use-cloud-build
 	var cloudbuildyamlFile CloudBuildYAMLFile
 	buf, _ := os.ReadFile(o.cloudbuildFile)
 	if err := yaml.Unmarshal(buf, &cloudbuildyamlFile); err != nil {
@@ -188,6 +191,18 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 		args = append(args, "--project", o.project)
 	}
 
+	if o.machineType != "" {
+		args = append(args, "--machine-type", o.machineType)
+	}
+
+	if o.workerPool != "" {
+		args = append(args, "--worker-pool", o.workerPool)
+	}
+
+	if o.region != "" {
+		args = append(args, "--region", o.region)
+	}
+
 	if o.scratchBucket != "" {
 		args = append(args, "--gcs-log-dir", o.scratchBucket+gcsLogsDir)
 		args = append(args, "--gcs-source-staging-dir", o.scratchBucket+gcsSourceDir)
@@ -306,6 +321,9 @@ func runBuildJobs(o options) []error {
 			return []error{err}
 		}
 		var imageName, _ = getImageName(o, tag, "")
+		if imageName != "" {
+			log.Printf("WARNING: the image built is not multi-arch, please amend this as soon as possible")
+		}
 		log.Printf("Successfully built image: %v \n", imageName)
 		return nil
 	}
@@ -325,7 +343,9 @@ func runBuildJobs(o options) []error {
 				log.Printf("Job %q failed: %v\n", job, err)
 			} else {
 				var imageName, _ = getImageName(o, tag, job)
-				log.Printf("Successfully built image: %v \n", imageName)
+				if imageName != "" {
+					log.Printf("WARNING: the image built is not multi-arch, please amend this as soon as possible")
+				}
 				log.Printf("Job %q completed.\n", job)
 			}
 		}(k, v)
@@ -348,6 +368,9 @@ type options struct {
 	envPassthrough   string
 	pollingInterval  int
 	suppressLogs     bool
+	machineType      string
+	workerPool       string
+	region           string
 
 	// withGitDirectory will include the .git directory when uploading the source to GCB
 	withGitDirectory bool
@@ -378,6 +401,9 @@ func parseFlags() options {
 	flag.BoolVar(&o.withGitDirectory, "with-git-dir", o.withGitDirectory, "If true, upload the .git directory to GCB, so we can e.g. get the git log and tag.")
 	flag.IntVar(&o.pollingInterval, "polling-interval", 10, "Amount of time in seconds to wait between polling build status. (default=10)")
 	flag.BoolVar(&o.suppressLogs, "suppress-logs", o.suppressLogs, "If true, build logs not streamed to stdout.")
+	flag.StringVar(&o.region, "region", "global", "If specified, use the given region for the GCB build, otherwise 'global' is used.")
+	flag.StringVar(&o.machineType, "machine-type", "", "If specified, use the given machine type for the GCB build.")
+	flag.StringVar(&o.workerPool, "worker-pool", "", "If specified, use the given worker pool for the GCB build.")
 
 	flag.Parse()
 
