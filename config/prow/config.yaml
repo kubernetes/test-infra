@@ -623,9 +623,7 @@ branch-protection:
           required_status_checks:
             contexts:
               - Lint
-              - Test Linux
-              - Test MacOS
-              - Test Windows
+              - Test Summary
         lwkd:
           exclude:
             - "^20\\d+" # don't protect weekly article dev branch
