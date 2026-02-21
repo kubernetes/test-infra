@@ -16,8 +16,15 @@
 set -o errexit
 
 readonly OUTPUT="$(dirname $0)/k8s-staging-e2e-test-images.yaml"
+
+# Default machine type for builds
+readonly DEFAULT_MACHINE_TYPE="E2_HIGHCPU_8"
+
+# Images to build. Format: "image-name" or "image-name:worker-pool"
+# If worker-pool is specified, the --worker-pool flag will be used instead of --machine-type
+# Worker pools must be pre-configured in the GCP project and have the same name as the instance type
 readonly IMAGES=(
-    agnhost
+    agnhost:c3-highcpu-22
     apparmor-loader
     busybox
     glibc-dns-testing
@@ -29,9 +36,7 @@ readonly IMAGES=(
     node-perf/npb-ep
     node-perf/npb-is
     node-perf/pytorch-wide-deep
-    nonewprivs
     nonroot
-    perl
     pets/peer-finder
     pets/zookeeper-installer
     regression-issue-74839
@@ -50,7 +55,24 @@ postsubmits:
   kubernetes/kubernetes:
 EOF
 
-for image in "${IMAGES[@]}"; do
+for entry in "${IMAGES[@]}"; do
+    # Parse entry - format is "image" or "image:worker-pool"
+    image="${entry%%:*}"
+    worker_pool="${entry#*:}"
+    # If no colon was present, worker_pool equals image
+    if [[ "${worker_pool}" == "${image}" ]]; then
+        worker_pool=""
+    fi
+
+    # Determine machine-type or worker-pool args
+    if [[ -n "${worker_pool}" ]]; then
+        machine_args="--worker-pool=projects/k8s-staging-e2e-test-images/locations/us-central1/workerPools/${worker_pool}"
+        region_arg=$'\n              - --region=us-central1'
+    else
+        machine_args="--machine-type=${DEFAULT_MACHINE_TYPE}"
+        region_arg=""
+    fi
+
     cat >>"${OUTPUT}" <<EOF
     - name: post-kubernetes-push-e2e-${image//\//-}-test-images
       rerun_auth_config:
@@ -86,6 +108,7 @@ for image in "${IMAGES[@]}"; do
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - ${machine_args}${region_arg}
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
@@ -140,6 +163,7 @@ periodics:
           args:
             - --project=k8s-staging-e2e-test-images
             - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+            - --machine-type=${DEFAULT_MACHINE_TYPE}
             - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
             - --build-dir=.
             - test/images
