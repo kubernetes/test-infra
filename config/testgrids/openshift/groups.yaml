@@ -94,6 +94,7 @@ dashboard_groups:
   - redhat-openshift-serverless
   - redhat-openshift-virtualization
   - redhat-quay
+  - redhat-openshift-sandboxed-containers
   - redhat-single-node
   - redhat-stackrox-merge
   - redhat-stackrox-nightly
