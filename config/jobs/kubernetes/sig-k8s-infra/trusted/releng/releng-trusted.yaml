@@ -381,3 +381,77 @@ periodics:
     github_team_slugs:
       - org: kubernetes
         slug: release-managers
+
+- name: ci-downloadkubernetes-upload-dl-k8s-io
+  cluster: k8s-infra-prow-build-trusted
+  cron: "0 0 * * *"
+  annotations:
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-tab-name: downloadkubernetes-upload-dl-k8s-io
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: downloadkubernetes
+    base_ref: main
+    path_alias: sigs.k8s.io/downloadkubernetes
+  spec:
+    serviceAccountName: gcb-builder
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+        command:
+          - /run.sh
+        args:
+          - --project=k8s-release
+          - --scratch-bucket=gs://k8s-release-gcb
+          - --env-passthrough=BUCKET_NAME,FASTLY_SERVICE_NAME
+          - --with-git-dir
+          - .
+        env:
+          - name: LOG_TO_STDOUT
+            value: "y"
+          - name: BUCKET_NAME
+            value: 767373bbdcb8270361b96548387bf2a9ad0d48758c35
+          - name: FASTLY_SERVICE_NAME
+            value: dl.k8s.io
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+
+- name: ci-downloadkubernetes-upload-dl-k8s-dev
+  cluster: k8s-infra-prow-build-trusted
+  cron: "0 0 * * *"
+  annotations:
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-tab-name: downloadkubernetes-upload-dl-k8s-dev
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: downloadkubernetes
+    base_ref: main
+    path_alias: sigs.k8s.io/downloadkubernetes
+  spec:
+    serviceAccountName: gcb-builder
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+        command:
+          - /run.sh
+        args:
+          - --project=k8s-release
+          - --scratch-bucket=gs://k8s-release-gcb
+          - --env-passthrough=BUCKET_NAME,FASTLY_SERVICE_NAME
+          - --with-git-dir
+          - .
+        env:
+          - name: LOG_TO_STDOUT
+            value: "y"
+          - name: BUCKET_NAME
+            value: 5d7373bbdcb8270361b96548387bf2a9ad0d48758c35
+          - name: FASTLY_SERVICE_NAME
+            value: dl.k8s.dev
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
