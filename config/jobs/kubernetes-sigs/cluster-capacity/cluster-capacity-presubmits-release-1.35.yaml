@@ -1,17 +1,17 @@
 # sigs.k8s.io/cluster-capacity presubmits
 presubmits:
   kubernetes-sigs/cluster-capacity:
-  - name: pull-cluster-capacity-verify-gofmt-release-1-31
+  - name: pull-cluster-capacity-verify-gofmt-release-1-35
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.31$
+    - ^release-1.35$
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22.5
+      - image: public.ecr.aws/docker/library/golang:1.25.1
         command:
         - make
         args:
@@ -23,13 +23,13 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-verify-build-release-1-31
+  - name: pull-cluster-capacity-verify-build-release-1-35
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.31$
+    - ^release-1.35$
     always_run: true
     spec:
       containers:
@@ -45,13 +45,13 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-unit-test-release-1-31
+  - name: pull-cluster-capacity-unit-test-release-1-35
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.31$
+    - ^release-1.35$
     always_run: true
     spec:
       containers:
@@ -67,11 +67,11 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-test-e2e-k8s-release-1-31-1-31
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-35-1-35
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.31-1.31
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.35-1.35
     decorate: true
     decoration_config:
       timeout: 20m
@@ -81,7 +81,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.31
+    - release-1.35
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -90,7 +90,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.31.1"
+          value: "v1.35.1"
         - name: KIND_E2E
           value: "true"
         args:
@@ -106,11 +106,11 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-test-e2e-k8s-release-1-31-1-30
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-35-1-34
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.31-1.30
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.35-1.34
     decorate: true
     decoration_config:
       timeout: 20m
@@ -120,7 +120,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.31
+    - release-1.35
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -129,7 +129,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.30.4"
+          value: "v1.34.3"
         - name: KIND_E2E
           value: "true"
         args:
@@ -145,11 +145,11 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-test-e2e-k8s-release-1-31-1-29
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-35-1-33
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.31-1.29
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.35-1.33
     decorate: true
     decoration_config:
       timeout: 20m
@@ -159,7 +159,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.31
+    - release-1.35
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
@@ -168,7 +168,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.29.8"
+          value: "v1.33.7"
         - name: KIND_E2E
           value: "true"
         args:
