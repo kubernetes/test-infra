@@ -556,7 +556,7 @@ periodics:
       - --gcp-node-size=e2-highcpu-8
       - --extract=ci/latest
       - --timeout=240m
-      - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Alpha\]|\[Beta\]
+      - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Feature:OffByDefault\]
         --minStartupPods=8
       - --ginkgo-parallel=10
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
