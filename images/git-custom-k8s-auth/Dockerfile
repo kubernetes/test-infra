@@ -30,7 +30,7 @@ RUN apt update && apt install -y unzip && curl -fsSLO https://github.com/Azure/k
 # alpine edge base image, which has a faster release cadence than alpine:latest
 # (which tracks alpine stable), to pick up security patches more quickly.
 # TODO: switch to Distroless https://github.com/GoogleContainerTools/distroless (help-wanted)
-FROM alpine:3.22.2
+FROM alpine:3.23.0
 
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
