@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:bookworm-20251020
+FROM debian:bookworm-20251208
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
