@@ -137,6 +137,7 @@ presubmits:
         - --gcp-zone=us-central1-b
         - --gcp-node-image=gci
         - --gcp-node-size=e2-highcpu-8
+        - --runtime-config=api/all=true
         - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true
         - --test_args=--ginkgo.focus=\[Feature:HPA\]
           --minStartupPods=8
