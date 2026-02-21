@@ -1,0 +1,20 @@
+postsubmits:
+  kubernetes-sigs/inference-perf:
+    - name: post-inference-perf-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251029-79c2132152
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-inference-perf
+              - --scratch-bucket=gs://k8s-staging-inference-perf-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
