@@ -17,7 +17,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -65,7 +65,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -110,7 +110,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -155,7 +155,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -200,7 +200,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -245,7 +245,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -297,7 +297,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -347,7 +347,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -397,7 +397,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -447,7 +447,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -515,7 +515,7 @@ periodics:
       - --test=false
       - --test-cmd=../cluster-autoscaler/hack/e2e/run-e2e.sh
       - --timeout=400m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       resources:
         limits:
           cpu: 2
@@ -559,7 +559,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Feature:OffByDefault\]
         --minStartupPods=8
       - --ginkgo-parallel=10
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       resources:
         limits:
           cpu: 2
@@ -603,7 +603,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:HPA\]
         --minStartupPods=8
       - --ginkgo-parallel=10
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       resources:
         limits:
           cpu: 2
