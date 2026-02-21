@@ -4,7 +4,9 @@ dashboard_groups:
   - minikube-presubmits
   - minikube-periodics
   - minikube-images
+  - minikube-preloads-presubmits
 dashboards:
 - name: minikube-presubmits
 - name: minikube-periodics
 - name: minikube-images
+- name: minikube-preloads-presubmits
