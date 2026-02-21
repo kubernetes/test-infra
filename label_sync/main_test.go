@@ -18,12 +18,15 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"sigs.k8s.io/prow/pkg/github"
 )
 
 // Tests for getting data from GitHub are not needed:
@@ -517,5 +520,69 @@ func TestLoadYAML(t *testing.T) {
 		if diff := cmp.Diff(actual, &tc.expected, cmpopts.IgnoreUnexported(Label{})); errNil && diff != "" {
 			t.Errorf("TestLoadYAML: test case number %d, labels differ:%s", i+1, diff)
 		}
+	}
+}
+
+// fakeClient implements the client interface for testing. GetRepoLabels returns
+// an error for any org listed in orgFailures; all other methods are no-ops.
+type fakeClient struct {
+	orgFailures map[string]bool
+}
+
+func (f *fakeClient) AddRepoLabel(org, repo, name, description, color string) error { return nil }
+func (f *fakeClient) UpdateRepoLabel(org, repo, currentName, newName, description, color string) error {
+	return nil
+}
+func (f *fakeClient) DeleteRepoLabel(org, repo, label string) error { return nil }
+func (f *fakeClient) AddLabel(org, repo string, number int, label string) error  { return nil }
+func (f *fakeClient) RemoveLabel(org, repo string, number int, label string) error { return nil }
+func (f *fakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error) {
+	return nil, nil
+}
+func (f *fakeClient) GetRepos(org string, isUser bool) ([]github.Repo, error) { return nil, nil }
+func (f *fakeClient) GetRepoLabels(org, repo string) ([]github.Label, error) {
+	if f.orgFailures[org] {
+		return nil, fmt.Errorf("injected error for org %s", org)
+	}
+	return nil, nil
+}
+func (f *fakeClient) SetMax404Retries(int) {}
+
+func TestSyncOrgs(t *testing.T) {
+	tests := []struct {
+		name        string
+		orgFailures map[string]bool
+		orgsToSync  map[string][]string
+		wantFailed  []string
+	}{
+		{
+			name:        "all orgs succeed",
+			orgFailures: map[string]bool{},
+			orgsToSync:  map[string][]string{"org1": {"repo1"}, "org2": {"repo2"}},
+			wantFailed:  nil,
+		},
+		{
+			name:        "some orgs fail",
+			orgFailures: map[string]bool{"org1": true},
+			orgsToSync:  map[string][]string{"org1": {"repo1"}, "org2": {"repo2"}},
+			wantFailed:  []string{"org1"},
+		},
+		{
+			name:        "all orgs fail",
+			orgFailures: map[string]bool{"org1": true, "org2": true},
+			orgsToSync:  map[string][]string{"org1": {"repo1"}, "org2": {"repo2"}},
+			wantFailed:  []string{"org1", "org2"},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := &fakeClient{orgFailures: tc.orgFailures}
+			got := syncOrgs(tc.orgsToSync, fc, Configuration{}, false)
+			sort.Strings(got)
+			sort.Strings(tc.wantFailed)
+			if diff := cmp.Diff(tc.wantFailed, got); diff != "" {
+				t.Errorf("syncOrgs() mismatch (-want +got):\n%s", diff)
+			}
+		})
 	}
 }

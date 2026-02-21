@@ -801,10 +801,8 @@ func main() {
 			if parseError != nil {
 				logrus.WithError(err).Fatal("invalid value for --only")
 			}
-			for org := range reposToSync {
-				if err = syncOrg(org, githubClient, *config, reposToSync[org], o.confirm); err != nil {
-					logrus.WithError(err).Fatalf("failed to update %s", org)
-				}
+			if failedOrgs := syncOrgs(reposToSync, githubClient, *config, o.confirm); len(failedOrgs) > 0 {
+				logrus.Fatalf("failed to update org(s): %s", strings.Join(failedOrgs, ", "))
 			}
 			return
 		}
@@ -818,20 +816,27 @@ func main() {
 			skippedRepos = reposToSkip
 		}
 
+		var failedOrgs []string
 		for _, org := range strings.Split(o.orgs, ",") {
 			org = strings.TrimSpace(org)
 			logger := logrus.WithField("org", org)
 			logger.Info("Reading repos")
 			repos, err := loadRepos(org, githubClient)
 			if err != nil {
-				logger.WithError(err).Fatalf("failed to read repos")
+				logger.WithError(err).Error("failed to read repos")
+				failedOrgs = append(failedOrgs, org)
+				continue
 			}
 			if skipped, exist := skippedRepos[org]; exist {
 				repos = sets.NewString(repos...).Difference(sets.NewString(skipped...)).UnsortedList()
 			}
 			if err = syncOrg(org, githubClient, *config, repos, o.confirm); err != nil {
-				logrus.WithError(err).Fatalf("failed to update %s", org)
+				logrus.WithError(err).Errorf("failed to update %s", org)
+				failedOrgs = append(failedOrgs, org)
 			}
+		}
+		if len(failedOrgs) > 0 {
+			logrus.Fatalf("failed to update org(s): %s", strings.Join(failedOrgs, ", "))
 		}
 	default:
 		logrus.Fatalf("unrecognized action: %s", o.action)
@@ -936,6 +941,18 @@ func linkify(text string) string {
 	link = discard.ReplaceAllString(link, "")
 	// lowercase
 	return strings.ToLower(link)
+}
+
+// syncOrgs calls syncOrg for each org in orgsToSync and returns the names of any orgs that failed.
+func syncOrgs(orgsToSync map[string][]string, githubClient client, config Configuration, confirm bool) []string {
+	var failedOrgs []string
+	for org, repos := range orgsToSync {
+		if err := syncOrg(org, githubClient, config, repos, confirm); err != nil {
+			logrus.WithError(err).Errorf("failed to update %s", org)
+			failedOrgs = append(failedOrgs, org)
+		}
+	}
+	return failedOrgs
 }
 
 func syncOrg(org string, githubClient client, config Configuration, repos []string, confirm bool) error {
