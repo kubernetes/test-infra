@@ -55,6 +55,64 @@ presubmits:
       testgrid-dashboards: sig-testing-misc
       description: Runs single node conformance tests using kubetest with local-up-cluster
 
+  kubernetes/test-infra:
+  - name: pull-test-infra-local-e2e
+    branches:
+    - master
+    always_run: false
+    skip_report: false
+    max_concurrency: 8
+    optional: true
+    # Image bumps modify this YAML file and must not break jobs like pull-kubernetes-local-e2e.
+    run_if_changed: 'local-e2e.yaml'
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251205-d1700a27d1-master
+        env:
+        - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+          value: "true"
+        - name: CONTAINER_RUNTIME_ENDPOINT
+          value: "/var/run/docker/containerd/containerd.sock"
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --deployment=local
+        - --ginkgo-parallel=1
+        - --provider=local
+        # Currently doesn't run any tests. Maybe it should run something very simple.
+        - --test_args=--ginkgo.focus=nothing-nada-niente-nichts --ginkgo.skip=.
+        - --timeout=180m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-misc
+      description: Brings up a cluster using kubetest with local-up-cluster
+
 periodics:
 - name: ci-kubernetes-local-e2e
   interval: 3h
