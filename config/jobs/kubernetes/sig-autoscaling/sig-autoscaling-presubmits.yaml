@@ -88,8 +88,10 @@ presubmits:
         - --provider=gce
         - --gcp-zone=us-central1-b
         - --gcp-node-image=gci
-        - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Alpha\]|\[Beta\] --minStartupPods=8
-        - --ginkgo-parallel=1
+        - --gcp-node-size=e2-highcpu-8
+        - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Alpha\]|\[Beta\]
+          --minStartupPods=8
+        - --ginkgo-parallel=10
         - --timeout=300m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
         securityContext:
