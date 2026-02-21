@@ -22,6 +22,11 @@ presubmits:
       repo: release
       base_ref: master
       path_alias: k8s.io/release
+    - org: kubernetes
+      repo: autoscaler
+      base_ref: master
+      path_alias: k8s.io/autoscaler
+      workdir: true
     spec:
       containers:
       - command:
@@ -43,7 +48,8 @@ presubmits:
         - --gcp-zone=us-central1-b
         - --provider=gce
         - --runtime-config=scheduling.k8s.io/v1alpha1=true
-        - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+        - --test=false
+        - --test-cmd=../cluster-autoscaler/hack/run-e2e.sh
         - --timeout=450m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
         securityContext:
