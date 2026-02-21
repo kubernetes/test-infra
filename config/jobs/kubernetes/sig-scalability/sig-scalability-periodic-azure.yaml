@@ -86,6 +86,11 @@ periodics:
           value: "true"
         - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
           value: "99.5"
+        # CAPZ clusters don't expose each individual control plane node.
+        - name: CL2_API_AVAILABILITY_MEASUREMENT_IPS_CONFIGURED
+          value: "true"
+        - name: CL2_API_AVAILABILITY_MEASUREMENT_USE_INTERNAL_IPS
+          value: "false"
         # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
         - name: DEPLOY_AZURE_CSI_DRIVER
           value: "false"
