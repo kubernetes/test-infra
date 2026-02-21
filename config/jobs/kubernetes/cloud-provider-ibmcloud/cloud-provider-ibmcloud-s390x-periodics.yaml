@@ -272,3 +272,116 @@ periodics:
                   echo "ERROR: Serial k8s Conformance tests exited with code: $rc2"
                   exit $rc2
               fi
+
+  - name: ci-kubernetes-s390x-e2e-node-latest-kubetest2
+    cron: "30 3-21/6 * * *" #  every 6h starting at 03:30 UTC
+    cluster: k8s-infra-s390x-prow-build
+    labels:
+      preset-ibmcloud-cred-z: "true"
+    decorate: true
+    decoration_config:
+      timeout: 220m
+    extra_refs:
+      - base_ref: main
+        org: kubernetes-sigs
+        repo: provider-ibmcloud-test-infra
+        workdir: true
+    annotations:
+      description: Runs e2e-node tests using kubetest2 on IBM VPC
+      testgrid-dashboards: ibm-s390x-node-e2e, ibm-s390x-k8s, sig-node-s390x
+      testgrid-tab-name: ci-kubernetes-s390x-e2e-node-latest-kubetest2
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+          securityContext:
+            privileged: true
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: "USER"
+              value: "ci-kubernetes-s390x-e2e-node-latest-kubetest2"
+          resources:
+            requests:
+              cpu: 2
+              memory: "8Gi"
+            limits:
+              cpu: 4
+              memory: "10Gi"
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              set -o xtrace
+              RESOURCE_TYPE="vpc-service"
+              #Call to boskos to checkout resource
+              heartbeat_account(){
+                count=0
+                url="http://${BOSKOS_HOST}/update?name=${BOSKOS_RESOURCE_NAME}&state=busy&owner=${USER}"
+                while [ ${count} -lt 120 ]
+                do
+                  status_code=$(curl -s -o /dev/null -w '%{http_code}' -X POST ${url})
+                  if [[ ${status_code} != 200 ]]; then
+                    echo "Heart beat to resource '${BOSKOS_RESOURCE_NAME}' failed due to invalid response, status code: ${status_code}"
+                    exit 1
+                  fi
+                  count=$(( $count + 1 ))
+                  sleep 60
+                done
+              }
+              if [ -n "${BOSKOS_HOST:-}" ]; then
+                set +o xtrace
+                url="http://${BOSKOS_HOST}/acquire?type=${RESOURCE_TYPE}&state=free&dest=busy&owner=${USER}"
+                output=$(curl -v -X POST ${url})
+                [ $? = 0 ] && status_code=200
+                if [[ ${status_code} == 200 && ${output} =~ "failed" ]]; then
+                  echo "Failed to acquire resource from Boskos of type ${RESOURCE_TYPE}"
+                  exit 1
+                elif [[ ${status_code} == 200 ]]; then
+                  export BOSKOS_RESOURCE_NAME=$(echo ${output} | jq -r '.name')
+                  export BOSKOS_REGION=$(echo ${output} | jq -r '.userdata["region"]')
+                  export BOSKOS_RESOURCE_GROUP=$(echo ${output} | jq -r '.userdata["resource-group-name"]')
+                  export BOSKOS_ZONE=$(echo ${output} | jq -r '.userdata["zone"]')
+                  export BOSKOS_SUBNET_NAME=$(echo ${output} | jq -r '.userdata["subnet-name"]')
+                  export BOSKOS_SUBNET_ID=$(echo ${output} | jq -r '.userdata["subnet-id"]')
+                  rm -rf output.json
+                else
+                  echo "Failed to acquire resource due to invalid response, status code : ${status_code}"
+                  exit 1
+                fi
+                heartbeat_account >> "$ARTIFACTS/boskos.log" 2>&1 &
+                HEART_BEAT_PID=$(echo $!)
+              fi
+
+              make install-deployer-tf
+              CLUSTER_NAME="config2-$(date +%s)"
+              set +o errexit
+
+              kubetest2 tf --target-provider vpc  --vpc-node-image-name ibm-ubuntu-22-04-4-minimal-s390x-3 --boskos-resource-type vpc \
+              --vpc-node-profile bz2-4x16 \
+              --vpc-region ${BOSKOS_REGION} --vpc-zone ${BOSKOS_ZONE} --vpc-subnet ${BOSKOS_SUBNET_NAME}\
+              --vpc-name ${BOSKOS_RESOURCE_NAME} \
+              --vpc-resource-group ${BOSKOS_RESOURCE_GROUP} \
+              --vpc-ssh-key k8s-s390x-ssh-key \
+              --ssh-private-key /etc/secret-volume/ssh-privatekey \
+              --cluster-name $CLUSTER_NAME \
+              --up --set-kubeconfig=false --auto-approve --retry-on-tf-failure 3 \
+              --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
+              --break-kubetest-on-upfail true \
+              --playbook k8s-node-remote.yml
+              
+              EXTERNAL_IP=`grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' $(pwd)/$CLUSTER_NAME/hosts`
+              kubetest2 tf --test=exec -- ssh -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP \
+              "export SKIP='\[Flaky\]|\[Slow\]|\[Serial\]' && /make-test-e2e-node.sh"; \
+              rc=$?; scp -r -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP:/tmp/_artifacts $ARTIFACTS
+
+              kubetest2 tf --target-provider vpc  --boskos-resource-type vpc \
+              --vpc-region ${BOSKOS_REGION} --vpc-zone ${BOSKOS_ZONE} --vpc-subnet ${BOSKOS_SUBNET_NAME}\
+              --vpc-name ${BOSKOS_RESOURCE_NAME} \
+              --vpc-resource-group ${BOSKOS_RESOURCE_GROUP} \
+              --ignore-cluster-dir true \
+              --cluster-name $CLUSTER_NAME \
+              --down --auto-approve --ignore-destroy-errors
+              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
+              [ $rc != 0 ] && echo "ERROR: E2ENode Test suite exited with code:$rc"; exit $rc
