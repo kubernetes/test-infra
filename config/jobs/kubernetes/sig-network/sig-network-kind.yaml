@@ -948,7 +948,7 @@ periodics:
       - name: RUNTIME_CONFIG
         value: '{"api/all":"true"}'
       - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+        value: "(Conformance || sig-network ) && !Serial && !Feature: containsAny {Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
         value: SCTPConnectivity
       - name: PARALLEL

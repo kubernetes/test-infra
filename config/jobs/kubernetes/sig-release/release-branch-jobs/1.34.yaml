@@ -977,7 +977,7 @@ periodics:
         -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       - name: LABEL_FILTER
-        value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
+        value: '!Serial && Feature: isEmpty && !Slow && !Disruptive && !Flaky'
       - name: PARALLEL
         value: "true"
       image: gcr.io/k8s-staging-test-infra/krte:v20260205-38cfa9523f-1.34
@@ -1024,7 +1024,7 @@ periodics:
       - name: IP_FAMILY
         value: ipv6
       - name: LABEL_FILTER
-        value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
+        value: '!Serial && Feature: isEmpty && !Slow && !Disruptive && !Flaky'
       - name: PARALLEL
         value: "true"
       image: gcr.io/k8s-staging-test-infra/krte:v20260205-38cfa9523f-1.34
@@ -1443,6 +1443,7 @@ presubmits:
           --test-mode kind
         env:
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
         - name: PARALLEL
           value: "true"
@@ -1521,6 +1522,7 @@ presubmits:
           - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
         - name: PARALLEL
           value: "true"

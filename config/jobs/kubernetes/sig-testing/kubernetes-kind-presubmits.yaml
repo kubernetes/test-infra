@@ -23,7 +23,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -70,7 +70,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -112,7 +112,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -162,7 +162,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -310,6 +310,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/beta":"true", "api/ga":"true"}'
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: "Feature: isSubsetOf OffByDefault && !Alpha && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
@@ -356,11 +357,8 @@ presubmits:
           value: '{"AllBeta":true}'
         - name: RUNTIME_CONFIG
           value: '{"api/beta":"true", "api/ga":"true"}'
-        - name: FOCUS
-          value: ""
-        - name: SKIP
-          value: ""
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
@@ -407,11 +405,8 @@ presubmits:
           value: '{"AllBeta":true}'
         - name: RUNTIME_CONFIG
           value: '{"api/beta":"true", "api/ga":"true"}'
-        - name: FOCUS
-          value: ""
-        - name: SKIP
-          value: ""
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
@@ -460,6 +455,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
@@ -507,11 +503,8 @@ presubmits:
           value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
-        - name: FOCUS
-          value: ""
-        - name: SKIP
-          value: ""
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
@@ -559,11 +552,8 @@ presubmits:
           value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
-        - name: FOCUS
-          value: ""
-        - name: SKIP
-          value: ""
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
@@ -615,6 +605,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
@@ -717,6 +708,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/alpha":"true", "api/ga":"true"}'
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: "Feature: isSubsetOf EventedPLEG && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"

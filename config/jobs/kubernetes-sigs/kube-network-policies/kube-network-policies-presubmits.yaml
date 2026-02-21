@@ -26,7 +26,7 @@ presubmits:
         - name: "PARALLEL"
           value: "true"
         - name: LABEL_FILTER
-          value: "!Slow && !Disruptive && !Flaky && Feature: containsAny NetworkPolicy"
+          value: "!Serial && !Slow && !Disruptive && !Flaky && Feature: containsAny NetworkPolicy"
         - name: SKIP
           value: \[Feature:SCTPConnectivity\]
         command:
@@ -79,7 +79,7 @@ presubmits:
         - name: "PARALLEL"
           value: "true"
         - name: LABEL_FILTER
-          value: "!Slow && !Disruptive && !Flaky && Feature: containsAny NetworkPolicy"
+          value: "!Serial && !Slow && !Disruptive && !Flaky && Feature: containsAny NetworkPolicy"
         - name: SKIP
           value: \[Feature:SCTPConnectivity\]
         command:

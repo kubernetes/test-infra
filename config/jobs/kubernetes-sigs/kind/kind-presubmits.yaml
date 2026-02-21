@@ -194,7 +194,7 @@ presubmits:
         - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Conformance && Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         - name: IP_FAMILY
@@ -239,7 +239,7 @@ presubmits:
         - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -281,7 +281,7 @@ presubmits:
         - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
