@@ -15,7 +15,7 @@
     "@bazel/rollup": "^3.1.0",
     "@bazel/terser": "^3.1.0",
     "@bazel/typescript": "^3.1.0",
-    "@rollup/plugin-commonjs": "14.0.0",
+    "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-json": "4.1.0",
     "@rollup/plugin-node-resolve": "8.4.0",
     "@types/color": "^3.0.0",
