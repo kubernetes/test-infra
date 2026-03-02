@@ -291,7 +291,7 @@ periodics:
 # promotion pipeline to avoid rate limit contention with cosign signing.
 # The operation is idempotent; missed or failed replications are caught
 # on the next run.
-- cron: '*/30 * * * *'
+- cron: '0 */2 * * 1-5'
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
   name: ci-k8sio-image-signature-replication
