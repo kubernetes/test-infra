@@ -9,11 +9,11 @@ prow_ignored:
   # prowjob configuration files (presubmits, periodics)
   branches:
     main:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-1.33"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33"
     release-2.10:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-1.33"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33"
     release-2.9:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-1.32"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.32"
     release-2.8:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30"
     release-2.7:

@@ -20,7 +20,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20260205-38cfa9523f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260217-29ba10ecec-master
         command:
         - wrapper.sh
         - bash
@@ -69,7 +69,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
         securityContext:
           allowPrivilegeEscalation: false
         command:
@@ -111,7 +111,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20260205-38cfa9523f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260217-29ba10ecec-master
         command:
         - wrapper.sh
         - bash
@@ -162,7 +162,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
         securityContext:
           allowPrivilegeEscalation: false
         command:
@@ -212,7 +212,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260217-29ba10ecec-master
       command:
       - wrapper.sh
       - bash
@@ -261,7 +261,7 @@ periodics:
       runAsUser: 2001
       runAsGroup: 2010
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       securityContext:
         allowPrivilegeEscalation: false
       command:
@@ -302,7 +302,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260217-29ba10ecec-master
       command:
       - wrapper.sh
       - bash
@@ -353,7 +353,7 @@ periodics:
       runAsUser: 2001
       runAsGroup: 2010
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
       securityContext:
         allowPrivilegeEscalation: false
       command:
@@ -394,7 +394,7 @@ periodics:
       runAsUser: 2001
       runAsGroup: 2010
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
         securityContext:
           allowPrivilegeEscalation: false
         command:
@@ -445,7 +445,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260205-38cfa9523f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py

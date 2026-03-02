@@ -38,7 +38,7 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-7e3760a104-521b7.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260209-dbbff72479-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
       imagePullPolicy: Always
       resources:
         limits:
