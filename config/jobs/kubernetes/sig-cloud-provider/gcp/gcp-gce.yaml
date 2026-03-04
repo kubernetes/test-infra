@@ -86,7 +86,7 @@ periodics:
       # in occasional flakes in the presubmit.
       # - --gcp-nodes=4
       - --gcp-region=us-central1
-      - --ginkgo-parallel=30
+      - --ginkgo-parallel=25
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
         --minStartupPods=8
@@ -852,7 +852,7 @@ presubmits:
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-region=us-central1
-        - --ginkgo-parallel=30
+        - --ginkgo-parallel=25
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
