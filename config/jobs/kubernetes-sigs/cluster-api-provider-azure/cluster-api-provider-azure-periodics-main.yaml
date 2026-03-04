@@ -484,7 +484,7 @@ periodics:
         - ./scripts/ci-e2e.sh
       env:
         - name: GINKGO_FOCUS
-          value: \[REQUIRED\]
+          value: "Creating a VMSS cluster \\[REQUIRED\\]"
         - name: GINKGO_SKIP
           value: ""
         - name: MGMT_CLUSTER_TYPE
