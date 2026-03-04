@@ -9,6 +9,7 @@ presets:
 
 periodics:
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
+  job_queue_name: gce-gpu-test
   cluster: k8s-infra-prow-build
   cron: "30 1-23/2 * * *"
   labels:

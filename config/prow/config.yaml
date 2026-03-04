@@ -15,6 +15,9 @@ plank:
     '5k-gce-scale-test': 4
     # limits concurrency for 5k AWS jobs
     '5k-aws-scale-test': 1
+    # limits for GPU testing on GCE
+    # https://github.com/kubernetes/k8s.io/blob/834da669fd533d483a4ec3fa3cae741dc8a6d2c7/kubernetes/gke-prow-build/prow/boskos-resources-configmap.yaml#L168-L180
+    'gce-gpu-test': 10
   default_decoration_config_entries:
   - config:
       timeout: 2h

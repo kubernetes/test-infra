@@ -12,6 +12,7 @@ presets:
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    job_queue_name: gce-gpu-test
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+

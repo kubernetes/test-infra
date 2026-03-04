@@ -53,6 +53,7 @@ periodics:
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.34
   cluster: k8s-infra-prow-build
+  job_queue_name: gce-gpu-test
   cron: 0 0-23/2 * * *
   decorate: true
   decoration_config:
@@ -2010,6 +2011,7 @@ presubmits:
         securityContext:
           privileged: true
   - always_run: false
+    job_queue_name: gce-gpu-test
     branches:
     - release-1.34
     cluster: k8s-infra-prow-build
