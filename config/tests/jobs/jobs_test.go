@@ -1213,7 +1213,6 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 
 	// TODO: finish eliminating this list and remove the known-failures logic
 	knownFailures := map[string]bool{
-		"ci-kubernetes-conformance-kind-ga-only":          false,
 		"ci-kubernetes-e2e-gce-cos-alphafeatures-beta":    false,
 		"ci-kubernetes-e2e-gce-cos-alphafeatures-master":  false,
 		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable1": false,
