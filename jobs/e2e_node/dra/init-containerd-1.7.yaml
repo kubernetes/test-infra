@@ -41,8 +41,9 @@ runcmd:
   - echo "Configure Containerd"
   - mkdir -p /etc/containerd
   - containerd config default > /etc/containerd/config.toml
-  - echo "Enabling CDI"
+  - echo "Enabling CDI and SystemdCgroup"
   - sed -ie 's/enable_cdi = false/enable_cdi = true/' /etc/containerd/config.toml
+  - sed -ie 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
 
   - echo "Restarting containerd"
   - systemctl daemon-reload
