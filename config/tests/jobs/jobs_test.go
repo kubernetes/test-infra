@@ -1213,33 +1213,32 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 
 	// TODO: finish eliminating this list and remove the known-failures logic
 	knownFailures := map[string]bool{
-		"ci-kubernetes-conformance-kind-ga-only":          true,
-		"ci-kubernetes-e2e-gce-cos-alphafeatures-beta":    true,
-		"ci-kubernetes-e2e-gce-cos-alphafeatures-master":  true,
-		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable1": true,
-		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable2": true,
-		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable3": true,
-		"ci-kubernetes-e2e-gce-cos-reboot-beta":           true,
-		"ci-kubernetes-e2e-gce-cos-reboot-master":         true,
-		"ci-kubernetes-e2e-gce-cos-reboot-stable1":        true,
-		"ci-kubernetes-e2e-gce-cos-reboot-stable2":        true,
-		"ci-kubernetes-e2e-gce-cos-reboot-stable3":        true,
-		"ci-kubernetes-e2e-gce-device-plugin-gpu":         true,
-		"ci-kubernetes-e2e-gce-device-plugin-gpu-1-32":    true,
-		"ci-kubernetes-e2e-gce-device-plugin-gpu-1-33":    true,
-		"ci-kubernetes-e2e-gce-device-plugin-gpu-1-34":    true,
-		"ci-kubernetes-e2e-gce-device-plugin-gpu-1-35":    true,
-		"ci-kubernetes-e2e-gce-scale-performance-100":     true,
-		"ci-kubernetes-e2e-gci-gce-alpha-features":        true,
-		"ci-kubernetes-e2e-gci-gce-reboot":                true,
-		"ci-kubernetes-gce-conformance-latest":            true,
-		"ci-kubernetes-gce-conformance-latest-1-32":       true,
-		"ci-kubernetes-gce-conformance-latest-1-33":       true,
-		"ci-kubernetes-gce-conformance-latest-1-34":       true,
-		"ci-kubernetes-gce-conformance-latest-1-35":       true,
-		"ci-kubernetes-kind-cloud-provider-loadbalancer":  true,
-		"ci-kubernetes-node-e2e-containerd":               true,
-		"ci-node-crio-conformance":                        true,
+		"ci-kubernetes-e2e-gce-cos-alphafeatures-beta":    false,
+		"ci-kubernetes-e2e-gce-cos-alphafeatures-master":  false,
+		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable1": false,
+		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable2": false,
+		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable3": false,
+		"ci-kubernetes-e2e-gce-cos-reboot-beta":           false,
+		"ci-kubernetes-e2e-gce-cos-reboot-master":         false,
+		"ci-kubernetes-e2e-gce-cos-reboot-stable1":        false,
+		"ci-kubernetes-e2e-gce-cos-reboot-stable2":        false,
+		"ci-kubernetes-e2e-gce-cos-reboot-stable3":        false,
+		"ci-kubernetes-e2e-gce-device-plugin-gpu":         false,
+		"ci-kubernetes-e2e-gce-device-plugin-gpu-1-32":    false,
+		"ci-kubernetes-e2e-gce-device-plugin-gpu-1-33":    false,
+		"ci-kubernetes-e2e-gce-device-plugin-gpu-1-34":    false,
+		"ci-kubernetes-e2e-gce-device-plugin-gpu-1-35":    false,
+		"ci-kubernetes-e2e-gce-scale-performance-100":     false,
+		"ci-kubernetes-e2e-gci-gce-alpha-features":        false,
+		"ci-kubernetes-e2e-gci-gce-reboot":                false,
+		"ci-kubernetes-gce-conformance-latest":            false,
+		"ci-kubernetes-gce-conformance-latest-1-32":       false,
+		"ci-kubernetes-gce-conformance-latest-1-33":       false,
+		"ci-kubernetes-gce-conformance-latest-1-34":       false,
+		"ci-kubernetes-gce-conformance-latest-1-35":       false,
+		"ci-kubernetes-kind-cloud-provider-loadbalancer":  false,
+		"ci-kubernetes-node-e2e-containerd":               false,
+		"ci-node-crio-conformance":                        false,
 	}
 
 	for _, job := range c.AllPeriodics() {
@@ -1276,6 +1275,7 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 		for _, err := range errs {
 			if _, ok := knownFailures[job.Name]; ok {
 				t.Logf("%v: %v", job.Name, err)
+				knownFailures[job.Name] = true
 			} else {
 				t.Errorf("%v: %v", job.Name, err)
 			}
@@ -1315,6 +1315,7 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 			for _, err := range errs {
 				if _, ok := knownFailures[job.Name]; ok {
 					t.Logf("%v: %v", job.Name, err)
+					knownFailures[job.Name] = true
 				} else {
 					t.Errorf("%v: %v", job.Name, err)
 				}
@@ -1323,6 +1324,12 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 	}
 
 	t.Logf("summary: %4d/%4d jobs fail to meet kubernetes/kubernetes release-blocking CI policy", jobsToFix, numJobs)
+
+	for name, stillFailing := range knownFailures {
+		if !stillFailing {
+			t.Errorf("%v: job is not failing anymore, remove it from knownFailures", name)
+		}
+	}
 }
 
 func kubernetesBranch(refs []prowapi.Refs) string {
