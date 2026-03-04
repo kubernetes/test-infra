@@ -37,53 +37,9 @@ periodics:
     testgrid-tab-name: capz-periodic-conformance-v1beta1-release-1-21
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
     description: Runs conformance & node conformance tests on a stable k8s version with cluster-api-provider-azure release-1.21 (v1beta1)
-- name: periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts-release-1-21
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  minimum_interval: 72h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: release-1.21
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    - org: kubernetes-sigs
-      repo: cloud-provider-azure
-      base_ref: master
-      path_alias: sigs.k8s.io/cloud-provider-azure
-      workdir: false
-  spec:
-    serviceAccountName: azure
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.32
-        command:
-          - runner.sh
-        args:
-          - ./scripts/ci-conformance.sh
-        env:
-        - name: E2E_ARGS
-          value: "-kubetest.use-ci-artifacts"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 6
-            memory: "9Gi"
-          requests:
-            cpu: 6
-            memory: "9Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-conformance-k8s-ci-v1beta1-release-1-21
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Runs conformance & node conformance tests on latest kubernetes main with cluster-api-provider-azure release-1.21 (v1beta1)
+# TODO: Add back N-2 periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts once CAPZ 1.23
+# releases. periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts-release-1-21 was removed
+# due to the old CAPI version being incompatible with k8s 1.36+
 - name: periodic-cluster-api-provider-azure-capi-e2e-v1beta1-release-1-21
   cluster: eks-prow-build-cluster
   decorate: true
