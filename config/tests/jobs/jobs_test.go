@@ -1223,7 +1223,6 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 		"ci-kubernetes-e2e-gce-cos-reboot-stable1":        false,
 		"ci-kubernetes-e2e-gce-cos-reboot-stable2":        false,
 		"ci-kubernetes-e2e-gce-cos-reboot-stable3":        false,
-		"ci-kubernetes-e2e-gce-scale-performance-100":     false,
 		"ci-kubernetes-e2e-gci-gce-alpha-features":        false,
 		"ci-kubernetes-e2e-gci-gce-reboot":                false,
 	}

@@ -186,7 +186,7 @@ periodics:
     preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
-    timeout: 480m
+    timeout: 1h
   extra_refs:
   - org: kubernetes
     repo: kubernetes
