@@ -300,6 +300,7 @@ periodics:
     base_ref: main
   spec:
     serviceAccountName: k8s-infra-gcr-promoter
+    activeDeadlineSeconds: 7800 # 2h10m
     containers:
     - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
       command:
@@ -312,10 +313,10 @@ periodics:
       resources:
         requests:
           cpu: 1
-          memory: "2Gi"
+          memory: "4Gi"
         limits:
           cpu: 1
-          memory: "2Gi"
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: sig-release-releng-informing, sig-k8s-infra-k8sio
     testgrid-alert-email: release-managers+alerts@kubernetes.io
