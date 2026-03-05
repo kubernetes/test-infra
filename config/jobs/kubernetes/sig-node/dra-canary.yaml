@@ -721,7 +721,7 @@ presubmits:
           # The full log output gets enabled to see progress while the test runs
           # and to debug potential cross-test interactions.
           make WHAT="cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
-          make test WHAT=./test/e2e_dra FULL_LOG=y KUBE_TIMEOUT=30m KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir
+          make test WHAT=./test/e2e_dra FULL_LOG=y KUBE_TIMEOUT=-timeout=30m KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
