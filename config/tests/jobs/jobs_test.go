@@ -1226,7 +1226,6 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 		"ci-kubernetes-e2e-gce-scale-performance-100":     false,
 		"ci-kubernetes-e2e-gci-gce-alpha-features":        false,
 		"ci-kubernetes-e2e-gci-gce-reboot":                false,
-		"ci-node-crio-conformance":                        false,
 	}
 
 	for _, job := range c.AllPeriodics() {
