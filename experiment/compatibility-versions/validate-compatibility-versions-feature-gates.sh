@@ -18,6 +18,10 @@
 #
 # Usage: validate-compatibility-versions-feature-gates.sh <emulated_version> <current_version> <metrics_file> <feature_list> <prev_feature_list> <results_file>
 set -o errexit -o nounset -o pipefail
+
+SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
+source "${SCRIPT_DIR}/versioned_specs_util.sh"
+
 # Check arg count
 if [[ $# -ne 6 ]]; then
   echo "Usage: ${0} <emulated_version> <current_version> <metrics_file> <feature_list> <prev_feature_list> <results_file>"
@@ -73,19 +77,10 @@ while IFS= read -r feature_entry; do
   specs_json=$(echo "${feature_entry}"   | jq -c '.versionedSpecs')
 
   # Numeric parse for .version vs emulated_version
-  target_spec="$(
-    echo "${specs_json}" \
-    | jq -r --arg ver "${emulated_version}" '
-        [ .[]
-          | select(
-              ( .version | sub("^v"; "") | tonumber )
-              <=
-              ($ver | sub("^v"; "") | tonumber)
-            )
-        ]
-        | last
-      '
-  )"
+  target_spec="$(get_target_spec "${specs_json}" "${emulated_version}")"
+
+  prev_target_spec="$(get_prev_target_spec "${specs_json}" "${emulated_version}")"
+
 
   # If no matching spec, skip
   if [[ -z "$target_spec" || "$target_spec" == "null" ]]; then
@@ -94,6 +89,7 @@ while IFS= read -r feature_entry; do
 
   # Read fields
   raw_stage=$(echo "$target_spec"       | jq -r '.preRelease')
+  prev_raw_stage=$(echo "$prev_target_spec" | jq -r '.preRelease')
   lockToDefault=$(echo "$target_spec"   | jq -r '.lockToDefault')
   defaultVal=$(echo "$target_spec"      | jq -r '.default')
 
@@ -104,6 +100,7 @@ while IFS= read -r feature_entry; do
   fi
 
   expected_stage["$feature_name"]="${raw_stage^^}"
+  expected_prev_stage["$feature_name"]="${prev_raw_stage^^}"
   expected_lock["$feature_name"]="$lockToDefault"
   expected_value["$feature_name"]="$want"
 done < <(echo "$prev_feature_stream")
@@ -114,6 +111,7 @@ done < <(echo "$prev_feature_stream")
 # - If present & stage!=ALPHA => compare numeric value
 for feature_name in "${!expected_stage[@]}"; do
   stage="${expected_stage[$feature_name]}"
+  prev_stage="${expected_prev_stage[$feature_name]}"
   locked="${expected_lock[$feature_name]}"
   want="${expected_value[$feature_name]}"
   got="${actual_features[$feature_name]:-}"  # empty if missing
@@ -126,6 +124,11 @@ for feature_name in "${!expected_stage[@]}"; do
   if [[ -z "$got" ]]; then
     # Missing from metrics
     if [[ "$locked" == "true" ]]; then
+      continue
+    fi
+
+    # If the feature is deprecated but not locked, and was alpha in the previous version, it can be missing from metrics
+    if [[ "$prev_stage" == "ALPHA" && "$stage" == "DEPRECATED" ]]; then
       continue
     fi
 
@@ -161,19 +164,9 @@ while IFS= read -r feature_entry; do
   feature_name=$(echo "${feature_entry}" | jq -r '.name')
   specs_json=$(echo "${feature_entry}"   | jq -c '.versionedSpecs')
   # We want the spec matching or below the emulated_version
-  target_spec="$(
-    echo "${specs_json}" \
-    | jq -r --arg ver "${emulated_version}" '
-        [ .[]
-          | select(
-              ( .version | sub("^v"; "") | tonumber )
-              <=
-              ($ver | sub("^v"; "") | tonumber)
-            )
-        ]
-        | last
-      '
-  )"
+  target_spec="$(get_target_spec "${specs_json}" "${emulated_version}")"
+
+  prev_target_spec="$(get_prev_target_spec "${specs_json}" "${emulated_version}")"
   # If no matching spec, skip
   if [[ -z "$target_spec" || "$target_spec" == "null" ]]; then
     continue
@@ -201,36 +194,14 @@ while IFS= read -r feature_entry; do
   specs_json=$(echo "${feature_entry}"   | jq -c '.versionedSpecs')
   
   # Check for version 1.0 features
-  version_1_0_spec="$(
-    echo "${specs_json}" \
-    | jq -r '
-        [ .[]
-          | select(
-              (.version | sub("^v"; "") | tonumber) == 1.0
-            )
-        ]
-        | if length > 0 then .[0] else null end
-      '
-  )"
+  version_1_0_spec="$(get_version_1_0_spec "${specs_json}")"
   if [[ -n "$version_1_0_spec" && "$version_1_0_spec" != "null" ]]; then
     ga_stage=$(echo "$version_1_0_spec" | jq -r '.preRelease')
     version_1_0_stage["$feature_name"]="${ga_stage^^}"  # uppercase
   fi
   
   # We want the spec matching EXACTLY the current_version
-  current_version_spec="$(
-    echo "${specs_json}" \
-    | jq -r --arg ver "${current_version}" '
-        [ .[]
-          | select(
-              ( .version | sub("^v"; "") | tonumber )
-              ==
-              ($ver | sub("^v"; "") | tonumber)
-            )
-        ]
-        | if length > 0 then .[0] else null end
-      '
-  )"
+  current_version_spec="$(get_exact_version_spec "${specs_json}" "${current_version}")"
   # If no exact matching spec, skip
   if [[ -z "$current_version_spec" || "$current_version_spec" == "null" ]]; then
     continue
