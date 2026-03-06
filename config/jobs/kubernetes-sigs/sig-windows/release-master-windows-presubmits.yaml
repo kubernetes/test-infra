@@ -17,7 +17,12 @@ presubmits:
       timeout: 2h30m
     always_run: false
     optional: true
-    run_if_changed: 'azure.*\.go$|.*windows\.go$|test/e2e/windows/.*'
+    # This job is permanently failing
+    # We do not permit this due to signal fatigue
+    # TODO: consider removing job entirely if no action on fixing persists
+    # https://github.com/kubernetes/kubernetes/issues/137467
+    # run_if_changed is disabled until the above issue is fixed
+    #run_if_changed: 'azure.*\.go$|.*windows\.go$|test/e2e/windows/.*'
     path_alias: k8s.io/kubernetes
     branches:
       - master
