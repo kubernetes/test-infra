@@ -44,6 +44,8 @@ periodics:
           hash=${revision/*+/}
           kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
           kind_node_source="https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           features=( )
           curl --fail --silent --show-error --location "https://dl.k8s.io/ci/fast/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
           ginkgo=kubernetes/test/bin/ginkgo
@@ -136,8 +138,16 @@ periodics:
           hash=${revision/*+/}
           kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
           kind_node_source="https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           # Which DRA features exist can change over time.
           features=( $( curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/pkg/features/kube_features.go" | grep '"DRA'  | sed 's/.*"\(.*\)"/\1/' ) )
+          # These extra features are dependencies for some DRA features but only
+          # valid for Kubernetes 1.35+. Additional features here should not
+          # affect behavior of tests that don't require them.
+          if ((major >= 1 && minor - 0 >= 35)); then
+            features+=('GenericWorkload')
+          fi
           : "Enabling DRA feature(s): ${features[*]}."
           curl --fail --silent --show-error --location "https://dl.k8s.io/ci/fast/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
           ginkgo=kubernetes/test/bin/ginkgo
@@ -242,6 +252,8 @@ periodics:
           hash=${revision/*+/}
           kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
           kind_node_source="https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           features=( )
           curl --fail --silent --show-error --location "https://dl.k8s.io/ci/fast/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
           ginkgo=kubernetes/test/bin/ginkgo
@@ -283,8 +295,6 @@ periodics:
 
           # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
           # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
-          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
-          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 1))
           if [[ $revision == *alpha.0* ]]; then
               : Treating alpha.0 like previous release because it already gets set on the master branch during code freeze and/or is too similar to the previous release to justify a change in what the jobs test against.
@@ -371,6 +381,8 @@ periodics:
           hash=${revision/*+/}
           kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
           kind_node_source="https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           features=( )
           curl --fail --silent --show-error --location "https://dl.k8s.io/ci/fast/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
           ginkgo=kubernetes/test/bin/ginkgo
@@ -412,8 +424,6 @@ periodics:
 
           # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
           # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
-          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
-          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 2))
           if [[ $revision == *alpha.0* ]]; then
               : Treating alpha.0 like previous release because it already gets set on the master branch during code freeze and/or is too similar to the previous release to justify a change in what the jobs test against.
@@ -500,6 +510,8 @@ periodics:
           hash=${revision/*+/}
           kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
           kind_node_source="https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           features=( )
           curl --fail --silent --show-error --location "https://dl.k8s.io/ci/fast/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
           ginkgo=kubernetes/test/bin/ginkgo
@@ -541,8 +553,6 @@ periodics:
 
           # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
           # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
-          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
-          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 3))
           if [[ $revision == *alpha.0* ]]; then
               : Treating alpha.0 like previous release because it already gets set on the master branch during code freeze and/or is too similar to the previous release to justify a change in what the jobs test against.
