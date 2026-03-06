@@ -64,16 +64,6 @@ optional_and_run_if_changed:
       run_if_changed: azure.*\.go
     - name: pull-kubernetes-e2e-capz-conformance
       run_if_changed: azure.*\.go
-    - name: pull-kubernetes-e2e-capz-windows
-      run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
-    - name: pull-kubernetes-e2e-capz-windows-1-32
-      run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
-    - name: pull-kubernetes-e2e-capz-windows-1-33
-      run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
-    - name: pull-kubernetes-e2e-capz-windows-1-34
-      run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
-    - name: pull-kubernetes-e2e-capz-windows-1-35
-      run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
     - name: pull-kubernetes-e2e-gce-cos-alpha-features
       run_if_changed: ^.*feature.*\.go
     - name: pull-kubernetes-e2e-gce-csi-serial
