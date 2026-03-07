@@ -64,6 +64,7 @@ done < <(grep '^kubernetes_feature_enabled' "${metrics_file}")
 # Build the "expected" sets from previous versioned_feature_list.yaml
 # => expected_stage[featureName], expected_lock[featureName], expected_value[featureName]
 declare -A expected_stage
+declare -A expected_prev_stage
 declare -A expected_lock
 declare -A expected_value
 
