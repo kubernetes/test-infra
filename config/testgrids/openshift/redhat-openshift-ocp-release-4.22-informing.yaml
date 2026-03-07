@@ -1855,6 +1855,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-techpreview-remote-s2s-libvirt-multi-p-p
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-techpreview-remote-s2s-libvirt-multi-p-p
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-powervs-ovn-multi-p-px
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -4528,6 +4555,87 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-cr-quay-e2e-tests-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-cr-quay-e2e-tests-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-quay-e2e-tests-quay316-ocp422-aws-s3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-quay-e2e-tests-quay316-ocp422-aws-s3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-upgrade-4.19-to-4.20-to-4.21-to-4.22-ci
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -4690,6 +4798,8 @@ test_groups:
   name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-serial-aws-multi-a-a-2of2
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-techpreview-multi-z-z
   name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-techpreview-multi-z-z
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-techpreview-remote-s2s-libvirt-multi-p-p
+  name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-techpreview-remote-s2s-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-powervs-ovn-multi-p-px
   name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-powervs-ovn-multi-p-px
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-serial-aws-ovn-multi-x-ax
@@ -4951,6 +5061,12 @@ test_groups:
   name: periodic-ci-openshift-release-main-nightly-4.22-upgrade-from-stable-4.21-e2e-metal-ipi-ovn-upgrade
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-nightly-4.22-upgrade-from-stable-4.21-e2e-metal-ipi-upgrade-ovn-ipv6
   name: periodic-ci-openshift-release-main-nightly-4.22-upgrade-from-stable-4.21-e2e-metal-ipi-upgrade-ovn-ipv6
+- gcs_prefix: test-platform-results/logs/periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-aws-fips
+  name: periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-cr-quay-e2e-tests-aws
+  name: periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-cr-quay-e2e-tests-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-quay-e2e-tests-quay316-ocp422-aws-s3
+  name: periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-quay-e2e-tests-quay316-ocp422-aws-s3
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.19-to-4.20-to-4.21-to-4.22-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.19-to-4.20-to-4.21-to-4.22-ci
