@@ -1152,8 +1152,6 @@ periodics:
       securityContext:
         privileged: true
       env:
-      - name: CL2_INFORMER_TOLERATE_CONTROL_PLANE
-        value: "true"
       - name: CL2_ENABLE_INFORMER_LATENCY_TEST
         value: "true"
       - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
@@ -1162,8 +1160,6 @@ periodics:
         value: "4"
       - name: CL2_EXECSERVICE_MEMORY_REQUESTS
         value: "8Gi"
-      - name: CL2_EXECSERVICE_TOLERATE_CONTROL_PLANE
-        value: "true"
       # Override for 1.5GB pod resource size
       - name: CL2_DAEMONSET_POD_PAYLOAD_SIZE
         value: "6000"
