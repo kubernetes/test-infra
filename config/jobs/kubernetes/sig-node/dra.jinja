@@ -224,6 +224,7 @@ presubmits:
               : Treating alpha.0 like previous release because it already gets set on the master branch during code freeze and/or is too similar to the previous release to justify a change in what the jobs test against.
               previous_minor=$((previous_minor - 1))
           fi
+
           {%- if ci %}
           # Test with the most recent CI build, doesn't even need to be released yet.
           # We want to know if those are broken.
@@ -255,6 +256,18 @@ presubmits:
           worker_nodes=$(kind get nodes | grep worker)
           for n in $worker_nodes; do
               docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              {%- if canary %}
+              # DRAExtendedResource has been available since 1.34.
+              # We can do version-skew testing against Kubernetes >= 1.36
+              # where it is on by default, but only if we enable it
+              # explicitly for older kubelets.
+              if [[ $previous_minor -ge 34 ]]; then
+                  docker exec $n sed -i -e 's/\(KUBELET_EXTRA_ARGS=.*\)/\1 --feature-gates=DRAExtendedResource=true/' /etc/default/kubelet
+                  # Verify, intentionally not with --quiet.
+                  docker exec $n cat /etc/default/kubelet | grep DRAExtendedResource=true
+                  docker exec $n systemctl daemon-reload
+              fi
+              {%- endif %}
               docker exec $n systemctl restart kubelet
           done
 

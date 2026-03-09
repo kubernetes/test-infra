@@ -404,6 +404,16 @@ presubmits:
           worker_nodes=$(kind get nodes | grep worker)
           for n in $worker_nodes; do
               docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              # DRAExtendedResource has been available since 1.34.
+              # We can do version-skew testing against Kubernetes >= 1.36
+              # where it is on by default, but only if we enable it
+              # explicitly for older kubelets.
+              if [[ $previous_minor -ge 34 ]]; then
+                  docker exec $n sed -i -e 's/\(KUBELET_EXTRA_ARGS=.*\)/\1 --feature-gates=DRAExtendedResource=true/' /etc/default/kubelet
+                  # Verify, intentionally not with --quiet.
+                  docker exec $n cat /etc/default/kubelet | grep DRAExtendedResource=true
+                  docker exec $n systemctl daemon-reload
+              fi
               docker exec $n systemctl restart kubelet
           done
 
@@ -539,6 +549,16 @@ presubmits:
           worker_nodes=$(kind get nodes | grep worker)
           for n in $worker_nodes; do
               docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              # DRAExtendedResource has been available since 1.34.
+              # We can do version-skew testing against Kubernetes >= 1.36
+              # where it is on by default, but only if we enable it
+              # explicitly for older kubelets.
+              if [[ $previous_minor -ge 34 ]]; then
+                  docker exec $n sed -i -e 's/\(KUBELET_EXTRA_ARGS=.*\)/\1 --feature-gates=DRAExtendedResource=true/' /etc/default/kubelet
+                  # Verify, intentionally not with --quiet.
+                  docker exec $n cat /etc/default/kubelet | grep DRAExtendedResource=true
+                  docker exec $n systemctl daemon-reload
+              fi
               docker exec $n systemctl restart kubelet
           done
 
@@ -674,6 +694,16 @@ presubmits:
           worker_nodes=$(kind get nodes | grep worker)
           for n in $worker_nodes; do
               docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              # DRAExtendedResource has been available since 1.34.
+              # We can do version-skew testing against Kubernetes >= 1.36
+              # where it is on by default, but only if we enable it
+              # explicitly for older kubelets.
+              if [[ $previous_minor -ge 34 ]]; then
+                  docker exec $n sed -i -e 's/\(KUBELET_EXTRA_ARGS=.*\)/\1 --feature-gates=DRAExtendedResource=true/' /etc/default/kubelet
+                  # Verify, intentionally not with --quiet.
+                  docker exec $n cat /etc/default/kubelet | grep DRAExtendedResource=true
+                  docker exec $n systemctl daemon-reload
+              fi
               docker exec $n systemctl restart kubelet
           done
 
