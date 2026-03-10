@@ -361,6 +361,7 @@ periodics:
     preset-capz-windows-2025: "true"
     preset-capz-containerd-2-0-latest: "true"
     preset-capz-serial-slow: "true"
+    preset-capz-gmsa-setup: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
