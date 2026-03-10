@@ -136,7 +136,10 @@ presubmits:
           # valid for Kubernetes 1.35+. Additional features here should not
           # affect behavior of tests that don't require them.
           if ((major >= 1 && minor - 0 >= 35)); then
-            features+=('GenericWorkload')
+            features+=(
+              'GangScheduling'
+              'GenericWorkload'
+            )
           fi
           : "Enabling DRA feature(s): ${features[*]}."
           make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
@@ -242,7 +245,10 @@ presubmits:
           # valid for Kubernetes 1.35+. Additional features here should not
           # affect behavior of tests that don't require them.
           if ((major >= 1 && minor - 0 >= 35)); then
-            features+=('GenericWorkload')
+            features+=(
+              'GangScheduling'
+              'GenericWorkload'
+            )
           fi
           : "Enabling DRA feature(s): ${features[*]}."
           make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
