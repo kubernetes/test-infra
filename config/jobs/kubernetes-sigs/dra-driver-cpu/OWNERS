@@ -1,0 +1,14 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+  - johnbelamaric
+  - pohly
+  - klueska
+  - ffromani
+  - pravk03
+approvers:
+  - johnbelamaric
+  - pohly
+  - klueska
+  - ffromani
+  - pravk03

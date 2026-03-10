@@ -1,0 +1,73 @@
+# sigs.k8s.io/dra-driver-cpu presubmits
+presubmits:
+  kubernetes-sigs/dra-driver-cpu:
+  - name: pull-dra-driver-cpu-e2e-device-mode-individual
+    cluster: eks-prow-build-cluster
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    path_alias: sigs.k8s.io/dra-driver-cpu
+    always_run: true
+    optional: false
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-dra-driver-cpu
+      testgrid-tab-name: e2e-test-master-individual
+      description: "Build image and run e2e-tests in individual mode"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.25
+        env:
+        - name: DRACPU_E2E_CPU_DEVICE_MODE
+          value: "individual"
+        - name: DRACPU_E2E_VERBOSE
+          value: "1"
+        command:
+        - bash
+        args:
+        - $GOPATH/src/sigs.k8s.io/dra-driver-cpu/hack/ci/prow.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+  - name: pull-dra-driver-cpu-e2e-device-mode-grouped
+    cluster: eks-prow-build-cluster
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    path_alias: sigs.k8s.io/dra-driver-cpu
+    always_run: true
+    optional: false
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-dra-driver-cpu
+      testgrid-tab-name: e2e-test-master-grouped
+      description: "Build image and run e2e-tests in grouped mode"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.25
+        env:
+        - name: DRACPU_E2E_CPU_DEVICE_MODE
+          value: "grouped"
+        - name: DRACPU_E2E_VERBOSE
+          value: "1"
+        command:
+        - bash
+        args:
+        - $GOPATH/src/sigs.k8s.io/dra-driver-cpu/hack/ci/prow.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi

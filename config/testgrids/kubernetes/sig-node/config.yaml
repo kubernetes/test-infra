@@ -12,6 +12,7 @@ dashboard_groups:
     - sig-node-ppc64le
     # These dashboards are for out-of-tree SIG Node projects
     - sig-node-cri-tools
+    - sig-node-dra-driver-cpu
     - sig-node-node-feature-discovery
     - sig-node-kernel-module-management
     - sig-node-node-problem-detector
@@ -101,6 +102,7 @@ dashboards:
 - name: sig-node-ppc64le
 - name: sig-node-cri-o
 - name: sig-node-cri-tools
+- name: sig-node-dra-driver-cpu
 - name: sig-node-node-feature-discovery
 - name: sig-node-kernel-module-management
 
