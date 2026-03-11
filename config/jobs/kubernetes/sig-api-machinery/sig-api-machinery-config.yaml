@@ -176,3 +176,113 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-network-proxy
+  - name: pull-kubernetes-unit-fieldsv1string
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      testgrid-dashboards: sig-api-machinery-fieldsv1string
+      testgrid-tab-name: pull-kubernetes-unit-fieldsv1string
+      description: "Manual opt-in unit test for fieldsv1string build tag"
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+    spec:
+      securityContext:
+        runAsUser: 2001
+        runAsGroup: 2010
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+            - make
+            - test
+          env:
+            - name: GOFLAGS
+              value: "-tags=fieldsv1string"
+          resources:
+            limits:
+              cpu: 7
+              memory: "16Gi"
+            requests:
+              cpu: 7
+              memory: "16Gi"
+  - name: pull-kubernetes-integration-fieldsv1string
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      testgrid-dashboards: sig-api-machinery-fieldsv1string
+      testgrid-tab-name: pull-kubernetes-integration-fieldsv1string
+      description: "Manual opt-in integration test for fieldsv1string build tag"
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/test-integration-dockerized.sh
+        env:
+        - name: GOFLAGS
+          value: "-tags=fieldsv1string"
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7
+            memory: 20Gi
+          requests:
+            cpu: 7
+            memory: 20Gi
+  - name: pull-kubernetes-e2e-kind-fieldsv1string
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    decorate: true
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    labels:
+      preset-dind-enabled: "true"
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260217-29ba10ecec-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        - name: GOFLAGS
+          value: "-tags=fieldsv1string"
+        - name: LABEL_FILTER
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+        - name: PARALLEL
+          value: "true"
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7
+            memory: 9000Mi
+          requests:
+            cpu: 7
+            memory: 9000Mi
+    annotations:
+      testgrid-dashboards: sig-api-machinery-fieldsv1string
+      testgrid-tab-name: pull-kubernetes-e2e-kind-fieldsv1string
+      description: "Manual opt-in e2e kind test for fieldsv1string build tag"
