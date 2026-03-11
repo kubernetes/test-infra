@@ -8,6 +8,7 @@ dashboard_groups:
     - sig-api-machinery-kubebuilder
     - sig-api-machinery-network-proxy
     - sig-api-machinery-emulated-version
+    - sig-api-machinery-fieldsv1string
 
 dashboards:
 - name: sig-api-machinery-gce-gke
@@ -38,3 +39,4 @@ dashboards:
 - name: sig-api-machinery-gengo
 - name: sig-api-machinery-network-proxy
 - name: sig-api-machinery-emulated-version
+- name: sig-api-machinery-fieldsv1string
