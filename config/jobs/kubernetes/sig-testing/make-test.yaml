@@ -1,5 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
+  # NOTE: When making changes to this job, please ensure that you also keep the copied job
+  # pull-kubernetes-unit-fieldsv1string in config/jobs/kubernetes/sig-api-machinery/sig-api-machinery-config.yaml in sync.
   - name: pull-kubernetes-unit
     annotations:
       fork-per-release: "true"

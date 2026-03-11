@@ -176,6 +176,8 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-network-proxy
+  # NOTE: When making changes to this job, please ensure that you also keep the original job
+  # pull-kubernetes-unit in config/jobs/kubernetes/sig-testing/make-test.yaml in sync.
   - name: pull-kubernetes-unit-fieldsv1string
     cluster: k8s-infra-prow-build
     optional: true
@@ -184,6 +186,7 @@ presubmits:
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
+      fork-per-release: "true"
       testgrid-dashboards: sig-api-machinery-fieldsv1string
       testgrid-tab-name: pull-kubernetes-unit-fieldsv1string
       description: "Manual opt-in unit test for fieldsv1string build tag"
@@ -211,6 +214,8 @@ presubmits:
             requests:
               cpu: 7
               memory: "16Gi"
+  # NOTE: When making changes to this job, please ensure that you also keep the original job
+  # pull-kubernetes-integration in config/jobs/kubernetes/sig-testing/integration.yaml in sync.
   - name: pull-kubernetes-integration-fieldsv1string
     cluster: k8s-infra-prow-build
     always_run: false
@@ -219,6 +224,7 @@ presubmits:
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
+      fork-per-release: "true"
       testgrid-dashboards: sig-api-machinery-fieldsv1string
       testgrid-tab-name: pull-kubernetes-integration-fieldsv1string
       description: "Manual opt-in integration test for fieldsv1string build tag"
@@ -245,6 +251,8 @@ presubmits:
           requests:
             cpu: 7
             memory: 20Gi
+  # NOTE: When making changes to this job, please ensure that you also keep the original job
+  # pull-kubernetes-e2e-kind in config/jobs/kubernetes/sig-testing/kubernetes-kind-presubmits.yaml in sync.
   - name: pull-kubernetes-e2e-kind-fieldsv1string
     cluster: k8s-infra-prow-build
     optional: true
@@ -283,6 +291,7 @@ presubmits:
             cpu: 7
             memory: 9000Mi
     annotations:
+      fork-per-release: "true"
       testgrid-dashboards: sig-api-machinery-fieldsv1string
       testgrid-tab-name: pull-kubernetes-e2e-kind-fieldsv1string
       description: "Manual opt-in e2e kind test for fieldsv1string build tag"
