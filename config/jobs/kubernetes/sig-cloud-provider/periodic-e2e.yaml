@@ -35,9 +35,9 @@ periodics:
             AMI_ID=$(aws ssm get-parameters --names \
                      /aws/service/eks/optimized-ami/1.34/amazon-linux-2023/x86_64/nvidia/recommended/image_id \
                      --query 'Parameters[0].[Value]' --output text)
-            VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast/latest-fast.txt)
+            VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://dl.k8s.io/ci/fast/latest-fast.txt)
             kubetest2 ec2 \
-             --stage https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast \
+             --stage https://dl.k8s.io/ci/fast \
              --version $VERSION \
              --worker-instance-type=g4dn.12xlarge \
              --device-plugin-nvidia true \
@@ -48,7 +48,7 @@ periodics:
              --test=ginkgo \
              -- \
              --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
-             --test-package-url=https://gcsweb.k8s.io/gcs/k8s-release-dev/ \
+             --test-package-url=https://dl.k8s.io \
              --test-package-dir=ci/fast \
              --test-package-marker=latest-fast.txt \
              --focus-regex="\[Feature:GPUDevicePlugin\]" \
@@ -101,9 +101,9 @@ periodics:
             source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
 
             GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
-            VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast/latest-fast.txt)
+            VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://dl.k8s.io/ci/fast/latest-fast.txt)
             kubetest2 ec2 \
-             --stage https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast \
+             --stage https://dl.k8s.io/ci/fast \
              --version $VERSION \
              --feature-gates="AllAlpha=true,AllBeta=true,EventedPLEG=false" \
              --runtime-config="api/all=true" \
@@ -113,7 +113,7 @@ periodics:
              --test=ginkgo \
              -- \
              --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
-             --test-package-url=https://gcsweb.k8s.io/gcs/k8s-release-dev/ \
+             --test-package-url=https://dl.k8s.io \
              --test-package-dir=ci/fast \
              --test-package-marker=latest-fast.txt \
              --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0|Services should preserve source pod IP for traffic thru service cluster IP" \
@@ -167,9 +167,9 @@ periodics:
             source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
 
             GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
-            VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast/latest-fast.txt)
+            VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://dl.k8s.io/ci/fast/latest-fast.txt)
             kubetest2 ec2 \
-             --stage https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast \
+             --stage https://dl.k8s.io/ci/fast \
              --version $VERSION \
              --feature-gates="AllAlpha=true,AllBeta=true,EventedPLEG=false" \
              --runtime-config="api/all=true" \
@@ -178,7 +178,7 @@ periodics:
              --test=ginkgo \
              -- \
              --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
-             --test-package-url=https://gcsweb.k8s.io/gcs/k8s-release-dev/ \
+             --test-package-url=https://dl.k8s.io/ \
              --test-package-dir=ci/fast \
              --test-package-marker=latest-fast.txt \
              --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
