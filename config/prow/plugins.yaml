@@ -2138,7 +2138,7 @@ external_plugins:
     - issue_comment
     - pull_request
     endpoint: http://cherrypicker
-  kubernetes-sigs/kube-agentic-networking
+  kubernetes-sigs/kube-agentic-networking:
   - name: cherrypicker
     events:
     - issue_comment
