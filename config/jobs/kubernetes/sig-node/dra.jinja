@@ -162,10 +162,14 @@ presubmits:
           # valid for Kubernetes 1.35+. Additional features here should not
           # affect behavior of tests that don't require them.
           if ((major >= 1 && minor - {{ kubelet_skew }} >= 35)); then
+          {%- if canary %}
             features+=(
               'GangScheduling'
               'GenericWorkload'
             )
+          {%- else %}
+            features+=('GenericWorkload')
+          {%- endif %}
           fi
           : "Enabling DRA feature(s): ${features[*]}."
           {%- else %}
