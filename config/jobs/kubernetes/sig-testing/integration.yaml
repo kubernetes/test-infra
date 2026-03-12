@@ -1,7 +1,8 @@
 presubmits:
   kubernetes/kubernetes:
-  # NOTE: When making changes to this job, please ensure that you also keep the copied job
-  # pull-kubernetes-integration-fieldsv1string in config/jobs/kubernetes/sig-api-machinery/sig-api-machinery-config.yaml in sync.
+  # NOTE: When making changes to this job, please ensure that you also keep the copied jobs
+  # pull-kubernetes-integration-fieldsv1string and ci-kubernetes-integration-fieldsv1string
+  # in config/jobs/kubernetes/sig-api-machinery/sig-api-machinery-config.yaml in sync.
   - name: pull-kubernetes-integration
     cluster: k8s-infra-prow-build
     always_run: true

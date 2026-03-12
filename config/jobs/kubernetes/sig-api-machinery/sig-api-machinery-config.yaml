@@ -73,6 +73,131 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-api-machinery-network-proxy
+# NOTE: When making changes to this job, please ensure that you also keep the original job
+# pull-kubernetes-unit in config/jobs/kubernetes/sig-testing/make-test.yaml
+# and the pull job pull-kubernetes-unit-fieldsv1string in sync.
+- interval: 4h
+  name: ci-kubernetes-unit-fieldsv1string
+  cluster: k8s-infra-prow-build
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-api-machinery-fieldsv1string
+    testgrid-tab-name: ci-kubernetes-unit-fieldsv1string
+    description: "Periodic unit test for fieldsv1string build tag"
+  path_alias: k8s.io/kubernetes
+  labels:
+    preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    securityContext:
+      runAsUser: 2001
+      runAsGroup: 2010
+    containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        securityContext:
+          allowPrivilegeEscalation: false
+        command:
+          - make
+          - test
+        env:
+          - name: GOFLAGS
+            value: "-tags=fieldsv1string"
+        resources:
+          limits:
+            cpu: 7
+            memory: "16Gi"
+          requests:
+            cpu: 7
+            memory: "16Gi"
+# NOTE: When making changes to this job, please ensure that you also keep the original job
+# pull-kubernetes-integration in config/jobs/kubernetes/sig-testing/integration.yaml
+# and the pull job pull-kubernetes-integration-fieldsv1string in sync
+- interval: 4h
+  name: ci-kubernetes-integration-fieldsv1string
+  cluster: k8s-infra-prow-build
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-api-machinery-fieldsv1string
+    testgrid-tab-name: ci-kubernetes-integration-fieldsv1string
+    description: "Periodic integration test for fieldsv1string build tag"
+  path_alias: k8s.io/kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      command:
+      - runner.sh
+      args:
+      - ./hack/jenkins/test-integration-dockerized.sh
+      env:
+      - name: GOFLAGS
+        value: "-tags=fieldsv1string"
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 7
+          memory: 20Gi
+        requests:
+          cpu: 7
+          memory: 20Gi
+# NOTE: When making changes to this job, please ensure that you also keep the original job
+# pull-kubernetes-e2e-kind in config/jobs/kubernetes/sig-testing/kubernetes-kind-presubmits.yaml
+# and the pull job pull-kubernetes-e2e-fieldsv1string in sync.
+- interval: 4h
+  name: ci-kubernetes-e2e-kind-fieldsv1string
+  cluster: k8s-infra-prow-build
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-api-machinery-fieldsv1string
+    testgrid-tab-name: ci-kubernetes-e2e-kind-fieldsv1string
+    description: "Periodic e2e kind test for fieldsv1string build tag"
+  path_alias: k8s.io/kubernetes
+  labels:
+    preset-dind-enabled: "true"
+  decoration_config:
+    timeout: 60m
+    grace_period: 15m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260217-29ba10ecec-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      - name: GOFLAGS
+        value: "-tags=fieldsv1string"
+      - name: LABEL_FILTER
+        value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+      - name: PARALLEL
+        value: "true"
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 7
+          memory: 9000Mi
+        requests:
+          cpu: 7
+          memory: 9000Mi
 
 presubmits:
   kubernetes/kubernetes:
@@ -177,7 +302,8 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-network-proxy
   # NOTE: When making changes to this job, please ensure that you also keep the original job
-  # pull-kubernetes-unit in config/jobs/kubernetes/sig-testing/make-test.yaml in sync.
+  # pull-kubernetes-unit in config/jobs/kubernetes/sig-testing/make-test.yaml
+  # and the periodic job ci-kubernetes-unit-fieldsv1string in sync.
   - name: pull-kubernetes-unit-fieldsv1string
     cluster: k8s-infra-prow-build
     optional: true
@@ -215,7 +341,8 @@ presubmits:
               cpu: 7
               memory: "16Gi"
   # NOTE: When making changes to this job, please ensure that you also keep the original job
-  # pull-kubernetes-integration in config/jobs/kubernetes/sig-testing/integration.yaml in sync.
+  # pull-kubernetes-integration in config/jobs/kubernetes/sig-testing/integration.yaml
+  # and the periodic job ci-kubernetes-integration-fieldsv1string in sync.
   - name: pull-kubernetes-integration-fieldsv1string
     cluster: k8s-infra-prow-build
     always_run: false
@@ -252,7 +379,8 @@ presubmits:
             cpu: 7
             memory: 20Gi
   # NOTE: When making changes to this job, please ensure that you also keep the original job
-  # pull-kubernetes-e2e-kind in config/jobs/kubernetes/sig-testing/kubernetes-kind-presubmits.yaml in sync.
+  # pull-kubernetes-e2e-kind in config/jobs/kubernetes/sig-testing/kubernetes-kind-presubmits.yaml
+  # and the periodic job ci-kubernetes-e2e-kind-fieldsv1string in sync.
   - name: pull-kubernetes-e2e-kind-fieldsv1string
     cluster: k8s-infra-prow-build
     optional: true
