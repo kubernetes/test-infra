@@ -1131,3 +1131,9 @@ presets:
 - env:
   - name: GOPROXY
     value: "https://proxy.golang.org"
+# enable GOTOOLCHAIN=auto by default
+# to match running locally outside of a golang container image
+# https://github.com/kubernetes/test-infra/issues/36080
+- env:
+  - name: GOTOOLCHAIN
+    value: "auto"
