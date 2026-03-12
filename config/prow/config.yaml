@@ -311,6 +311,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cri-streaming:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         csi-translation-lib:
           restrictions:
             users: []
@@ -464,6 +469,11 @@ branch-protection:
             teams:
             - stage-bots
         sample-controller:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        streaming:
           restrictions:
             users: []
             teams:
