@@ -6,12 +6,16 @@ reviewers:
 - jprzychodzen
 - mmamczur
 - YifeiZhuang
+- hdp617
+- LogicalShark
 approvers:
 - mikedanese
 - jpbetz
 - jprzychodzen
 - mmamczur
 - YifeiZhuang
+- hdp617
+- LogicalShark
 emeritus_approvers:
 - amwat
 labels:
