@@ -18,7 +18,6 @@
 # snippet.
 
 import argparse
-import datetime
 import glob
 import os
 import re
@@ -214,15 +213,14 @@ def get_files(extensions):
 
 
 def get_dates():
-    years = datetime.datetime.now().year
-    return '(%s)' % '|'.join((str(year) for year in range(2014, years + 1)))
+    return '20[0-9]{2}'
 
 
 def get_regexs():
     regexs = {}
     # Search for "YEAR" which exists in the boilerplate, but shouldn't in the real thing
     regexs["year"] = re.compile('YEAR')
-    # dates can be any year between 2014 and the current year, company holder names can be anything
+    # dates can be any 4-digit year starting with 20, company holder names can be anything
     regexs["date"] = re.compile(get_dates())
     # strip // +build \n\n build constraints
     regexs["go_build_constraints"] = re.compile(r"^(//( \+build|go:build).*\n)+\n",
