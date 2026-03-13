@@ -90,6 +90,10 @@ optional_and_run_if_changed:
       run_if_changed: ^pkg/features/
     - name: pull-kubernetes-e2e-kind-alpha-beta-features
       run_if_changed: ^pkg/features/
+    - name: pull-kubernetes-e2e-kind-beta-enabled
+      run_if_changed: ^pkg/features/
+    - name: pull-kubernetes-e2e-kind-beta-features
+      run_if_changed: ^pkg/features/
     - name: pull-kubernetes-e2e-kind-kms
       run_if_changed: staging/src/k8s.io/apiserver/pkg/storage/value/|staging/src/k8s.io/kms/|staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/|test/e2e/testing-manifests/auth/encrypt/
     - name: pull-kubernetes-e2e-kind-nftables

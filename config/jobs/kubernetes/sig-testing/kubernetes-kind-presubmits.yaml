@@ -290,6 +290,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     optional: true
     always_run: false
+    run_if_changed: ^pkg/features/
     decorate: true
     skip_branches:
     - release-\d+\.\d+ # per-release settings
@@ -337,6 +338,7 @@ presubmits:
       fork-per-release: "true"
     optional: true
     always_run: false
+    run_if_changed: ^pkg/features/
     decorate: true
     skip_branches:
     - release-\d+\.\d+ # per-release settings
