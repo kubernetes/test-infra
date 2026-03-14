@@ -234,15 +234,15 @@ dashboards:
 # s390x dashboard
 - name: conformance-s390x
   dashboard_tab:
+    - name: Periodic s390x conformance test on local cluster , v1.35
+      test_group_name: s390x-conformance-v1.35
+      description: Runs conformance tests by using kubetest2 against latest v1.35 branch HEAD of kubernetes on local s390x cluster
+    - name: Periodic s390x conformance test on local cluster , v1.34
+      test_group_name: s390x-conformance-v1.34
+      description: Runs conformance tests by using kubetest2 against latest v1.34 branch HEAD of kubernetes on local s390x cluster
     - name: Periodic s390x conformance test on local cluster , v1.33
       test_group_name: s390x-conformance-v1.33
       description: Runs conformance tests by using kubetest2 against latest v1.33 branch HEAD of kubernetes on local s390x cluster
-    - name: Periodic s390x conformance test on local cluster , v1.32
-      test_group_name: s390x-conformance-v1.32
-      description: Runs conformance tests by using kubetest2 against latest v1.32 branch HEAD of kubernetes on local s390x cluster
-    - name: Periodic s390x conformance test on local cluster , v1.31
-      test_group_name: s390x-conformance-v1.31
-      description: Runs conformance tests by using kubetest2 against latest v1.31 branch HEAD of kubernetes on local s390x cluster
 
 # CEL Conformance Tests
 - name: google-cel
@@ -263,12 +263,12 @@ test_groups:
   gcs_prefix: cel-conformance/test-logs
 
 #IBM s390x test results
+- name: s390x-conformance-v1.35
+  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.35
+- name: s390x-conformance-v1.34
+  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.34
 - name: s390x-conformance-v1.33
   gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.33
-- name: s390x-conformance-v1.32
-  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.32
-- name: s390x-conformance-v1.31
-  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.31
 
 # google-osconfig
 - name: osconfig-unstable
