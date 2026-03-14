@@ -68,6 +68,9 @@ periodics:
           args:
             - make
             - verify-website-links
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
           resources:
             requests:
               cpu: "6"
