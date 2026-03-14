@@ -10,7 +10,7 @@ periodics:
         path_alias: k8s.io/kubernetes
     annotations:
       fork-per-release: "true"
-      fork-per-release-cron: 0 3/2 * * *, 0 4/6 * * *, 0 5 * * *, 0 6 * * *, 0 7 * * *
+      fork-per-release-cron: 0 3/2 * * *, 0 1/6 * * *, 0 5 * * *, 0 6 * * *, 0 7 * * *
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
       testgrid-tab-name: ci-kubernetes-unit-ppc64le-master
       testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
@@ -111,10 +111,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: 4
+              cpu: 2
               memory: "14Gi"
             limits:
-              cpu: 4
+              cpu: 2
               memory: "14Gi"
           command:
             - runner.sh
@@ -170,10 +170,10 @@ periodics:
               value: "ci-kubernetes-ppc64le-e2e-node-latest-kubetest2"
           resources:
             requests:
-              cpu: 2
+              cpu: "1500m"
               memory: 10Gi
             limits:
-              cpu: 2
+              cpu: "1500m"
               memory: 10Gi
           command:
             - runner.sh
@@ -215,13 +215,13 @@ periodics:
               [ $rc != 0 ] && echo "ERROR: E2ENode Test suite exited with code:$rc"; exit $rc
 
   - name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
-    cron: "30 4-22/6 * * *" # every 6h starting at 04:30 UTC
+    cron: "30 1-22/6 * * *" # every 6h starting at 01:30 UTC
     cluster: k8s-infra-ppc64le-prow-build
     labels:
       preset-ibmcloud-cred: "true"
     decorate: true
     decoration_config:
-      timeout: 2h
+      timeout: 2h30m
     extra_refs:
       - base_ref: main
         org: kubernetes-sigs
@@ -240,10 +240,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: 2
+              cpu: "1500m"
               memory: "6Gi"
             limits:
-              cpu: 2
+              cpu: "1500m"
               memory: "6Gi"
           command:
             - runner.sh
@@ -293,10 +293,10 @@ periodics:
         - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
           resources:
             requests:
-              cpu: 2
+              cpu: "1500m"
               memory: "6Gi"
             limits:
-              cpu: 2
+              cpu: "1500m"
               memory: "6Gi"
           command:
             - runner.sh
@@ -347,11 +347,11 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: 1
-              memory: "6Gi"
+              cpu: "1500m"
+              memory: "8Gi"
             limits:
-              cpu: 1
-              memory: "6Gi"
+              cpu: "1500m"
+              memory: "8Gi"
           command:
             - runner.sh
           args:
@@ -397,10 +397,10 @@ periodics:
         - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
           resources:
             requests:
-              cpu: 4
+              cpu: 2
               memory: "14Gi"
             limits:
-              cpu: 4
+              cpu: 2
               memory: "14Gi"
           command:
             - runner.sh
