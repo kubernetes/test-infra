@@ -1288,10 +1288,10 @@ periodics:
       name: ""
       resources:
         limits:
-          cpu: "4"
+          cpu: "2"
           memory: 14Gi
         requests:
-          cpu: "4"
+          cpu: "2"
           memory: 14Gi
       securityContext:
         privileged: true
@@ -1331,7 +1331,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 4/6 * * *, 0 5 * * *, 0 6 * * *, 0 7 * * *
+    fork-per-release-cron: 0 1/6 * * *, 0 5 * * *, 0 6 * * *, 0 7 * * *
     testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
     testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
     testgrid-num-failures-to-alert: "2"

@@ -891,10 +891,10 @@ periodics:
       name: ""
       resources:
         limits:
-          cpu: "4"
+          cpu: "2"
           memory: 14Gi
         requests:
-          cpu: "4"
+          cpu: "2"
           memory: 14Gi
       securityContext:
         privileged: true
