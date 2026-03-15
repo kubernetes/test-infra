@@ -53,9 +53,11 @@ function readOptions() {
     reText: read('filter-include-text'),
     reJob: read('filter-include-job'),
     reTest: read('filter-include-test'),
+    reRepo: read('filter-include-repo'),
     reXText: read('filter-exclude-text'),
     reXJob: read('filter-exclude-job'),
     reXTest: read('filter-exclude-test'),
+    reXRepo: read('filter-exclude-repo'),
     showNormalize: read('show-normalize'),
     sort: read('sort'),
     sig: readSigs(),
@@ -66,7 +68,7 @@ function readOptions() {
   if (!opts.ci) url += '&ci=0';
   if (opts.pr) url += '&pr=1';
   if (opts.sig.length) url += '&sig=' + opts.sig.join(',');
-  for (var name of ["text", "job", "test", "xtext", "xjob", "xtest"]) {
+  for (var name of ["text", "job", "test", "repo", "xtext", "xjob", "xtest", "xrepo"]) {
     var re = (name[0] == 'x') ?
       opts['reX' + name[1].toUpperCase() + name.slice(2)] :
       opts['re'  + name[0].toUpperCase() + name.slice(1)];
@@ -126,9 +128,11 @@ function setOptionsFromURL() {
   write('filter-include-text', qs.text);
   write('filter-include-job', qs.job);
   write('filter-include-test', qs.test);
+  write('filter-include-repo', qs.repo);
   write('filter-exclude-text', qs.xtext);
   write('filter-exclude-job', qs.xjob);
   write('filter-exclude-test', qs.xtest);
+  write('filter-exclude-repo', qs.xrepo);
   writeSigs(qs.sig);
 }
 
@@ -294,6 +298,10 @@ function get(uri, callback, onprogress) {
   req.send();
 }
 
+// Cached job-to-repo mapping, loaded from job_repos.json.
+// null if not yet loaded or unavailable (graceful fallback).
+var jobReposMapping = null;
+
 function getData() {
   var clusterId = null;
   if (/^#[a-f0-9]{20}$/.test(window.location.hash)) {
@@ -303,12 +311,36 @@ function getData() {
     setElementVisibility('btn-sig-group', false);
   }
 
-  var url = '/triage/';
+  var baseUrl = '/triage/';
   if (document.location.host == 'storage.googleapis.com' && document.location.pathname.endsWith('index.html')) {
     // Use the bucket name where available
     var pathname = document.location.pathname;
-    url = pathname.substring(0, pathname.lastIndexOf('/')+1);
+    baseUrl = pathname.substring(0, pathname.lastIndexOf('/')+1);
   }
+
+  // Load job_repos.json in parallel (best-effort, not blocking)
+  if (!jobReposMapping) {
+    get(baseUrl + 'job_repos.json',
+      req => {
+        if (req.status < 300) {
+          try {
+            jobReposMapping = JSON.parse(req.response);
+            // If builds already loaded, attach the mapping
+            if (builds) {
+              builds.setJobRepos(jobReposMapping);
+              if (clusteredAll) {
+                rerender();
+              }
+            }
+          } catch(e) {
+            console.warn('Could not parse job_repos.json:', e);
+          }
+        }
+      }
+    );
+  }
+
+  var url = baseUrl;
   var date = document.getElementById('date');
   if (date && date.value) {
     url += 'history/' + date.value.replace(/-/g, '') + '.json';
@@ -337,6 +369,10 @@ function getData() {
       setTimeout(() => {
         var data = JSON.parse(req.response);
         builds = new Builds(data.builds);
+        // Attach job repos mapping if already loaded
+        if (jobReposMapping) {
+          builds.setJobRepos(jobReposMapping);
+        }
         if (clusterId) {
           // rendering just one cluster, filter here.
           for (let c of data.clustered) {

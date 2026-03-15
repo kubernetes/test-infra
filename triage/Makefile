@@ -22,6 +22,10 @@ test:
 
 STATIC_FILES=index.html interactive.js model.js render.js style.css
 
+.PHONY: generate-job-repos
+generate-job-repos:
+	python3 generate_job_repos.py ../config/jobs job_repos.json
+
 # these need to be run by k8s-infra-prow or community members with access to the kubernetes.io GCP org
 push-static:
 	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp $(STATIC_FILES) gs://k8s-triage/
@@ -36,5 +40,4 @@ redirect-static:
 redirect-staging:
 	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -a public-read redirect/index.html gs://k8s-gubernator/triage/staging/
 
-.PHONY: push push-static push-staging redirect-static redirect-staging
-
+.PHONY: push push-static push-staging redirect-static redirect-staging generate-job-repos
