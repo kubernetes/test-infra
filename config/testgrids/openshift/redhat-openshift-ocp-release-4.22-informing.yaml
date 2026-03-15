@@ -883,33 +883,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-main-nightly-4.22-install-analysis-all-ppc64le
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-main-nightly-4.22-install-analysis-all-ppc64le
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-multiarch-main-nightly-4.22-install-analysis-all-s390x
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1755,6 +1728,33 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-remote-s2s-libvirt-ppc64le
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-rhcos10-techpreview-remote-s2s-libvirt-multi-p-p
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-rhcos10-techpreview-remote-s2s-libvirt-multi-p-p
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -4744,6 +4744,114 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-red-hat-storage-ocs-ci-master-ocp-4.22-lp-interop-cr-odf-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-red-hat-storage-ocs-ci-master-ocp-4.22-lp-interop-cr-odf-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-red-hat-storage-ocs-ci-master-ocp-4.22-lp-interop-odf-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-red-hat-storage-ocs-ci-master-ocp-4.22-lp-interop-odf-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--422
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--422
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--watcher-bot--422
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--watcher-bot--422
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-stackrox-stackrox-master-ocp-4.22-lp-interop-acs-latest-acs-tests-aws-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -4872,8 +4980,6 @@ test_groups:
   name: periodic-ci-openshift-microshift-release-4.22-periodics-e2e-aws-ovn-ocp-conformance-serial
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-main-nightly-4.22-install-analysis-all-multi-p-p
   name: periodic-ci-openshift-multiarch-main-nightly-4.22-install-analysis-all-multi-p-p
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-main-nightly-4.22-install-analysis-all-ppc64le
-  name: periodic-ci-openshift-multiarch-main-nightly-4.22-install-analysis-all-ppc64le
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-main-nightly-4.22-install-analysis-all-s390x
   name: periodic-ci-openshift-multiarch-main-nightly-4.22-install-analysis-all-s390x
 - days_of_results: 60
@@ -4952,6 +5058,8 @@ test_groups:
   name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-remote-s2s-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-remote-s2s-libvirt-ppc64le
   name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-remote-s2s-libvirt-ppc64le
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-rhcos10-techpreview-remote-s2s-libvirt-multi-p-p
+  name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-rhcos10-techpreview-remote-s2s-libvirt-multi-p-p
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-serial-aws-multi-a-a-1of2
   name: periodic-ci-openshift-multiarch-main-nightly-4.22-ocp-e2e-ovn-serial-aws-multi-a-a-1of2
@@ -5237,6 +5345,14 @@ test_groups:
   name: periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-cr-quay-e2e-tests-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-quay-e2e-tests-quay316-ocp422-aws-s3
   name: periodic-ci-quay-quay-tests-master-ocp-4.22-quay-lp-interop-quay-e2e-tests-quay316-ocp422-aws-s3
+- gcs_prefix: test-platform-results/logs/periodic-ci-red-hat-storage-ocs-ci-master-ocp-4.22-lp-interop-cr-odf-aws
+  name: periodic-ci-red-hat-storage-ocs-ci-master-ocp-4.22-lp-interop-cr-odf-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-red-hat-storage-ocs-ci-master-ocp-4.22-lp-interop-odf-aws-fips
+  name: periodic-ci-red-hat-storage-ocs-ci-master-ocp-4.22-lp-interop-odf-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--422
+  name: periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--422
+- gcs_prefix: test-platform-results/logs/periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--watcher-bot--422
+  name: periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--watcher-bot--422
 - gcs_prefix: test-platform-results/logs/periodic-ci-stackrox-stackrox-master-ocp-4.22-lp-interop-acs-latest-acs-tests-aws-fips
   name: periodic-ci-stackrox-stackrox-master-ocp-4.22-lp-interop-acs-latest-acs-tests-aws-fips
 - gcs_prefix: test-platform-results/logs/periodic-ci-stackrox-stackrox-master-ocp-4.22-lp-interop-acs-latest-cr-acs-latest-tests-aws
