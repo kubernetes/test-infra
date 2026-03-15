@@ -41,14 +41,16 @@ FROM alpine:3.15.6
 # update_summaries.sh requires bash.
 RUN apk add --no-cache \
     python3 \
+    py3-yaml \
     bash
 
 # Copy the Google Cloud SDK and link the binaries
 COPY --from=build /google-cloud-sdk/ /google-cloud-sdk/
 RUN ln -s /google-cloud-sdk/bin/* /bin/
 
-# Copy over the triage binary and shell script that orchestrates everything
+# Copy over the triage binary, shell script, and job repos generator
 COPY --from=build /test-infra/triage/triage /
 COPY --from=build /test-infra/triage/update_summaries.sh /
+COPY --from=build /test-infra/triage/generate_job_repos.py /
 
 ENTRYPOINT ["timeout", "10800", "/update_summaries.sh"]
