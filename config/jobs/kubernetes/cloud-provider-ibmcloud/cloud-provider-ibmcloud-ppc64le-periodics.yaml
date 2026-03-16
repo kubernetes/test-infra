@@ -195,6 +195,7 @@ periodics:
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --cluster-name $CLUSTER_NAME \
                 --up --set-kubeconfig=false --auto-approve --retry-on-tf-failure 3 \
+                --extra-vars=container_runtime_test_handler:true \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --break-kubetest-on-upfail true \
                 --playbook k8s-node-remote.yml
