@@ -1,1 +1,27 @@
 periodics:
+- name: ci-agent-sandbox-perf-load-test-every-30-minutes
+  cluster: eks-prow-build-cluster
+  interval: 30m
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: agent-sandbox
+    base_ref: main
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        command:
+          - runner.sh
+          - dev/ci/periodics/test-load-test
+        securityContext:
+          privileged: true 
+        resources:
+          requests:
+            cpu: 0.5
+            memory: 1Gi
+          # limits:
+          #   cpu: 2
+          #   memory: 4Gi
