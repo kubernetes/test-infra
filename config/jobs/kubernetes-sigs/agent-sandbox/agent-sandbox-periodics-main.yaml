@@ -20,8 +20,8 @@ periodics:
           privileged: true 
         resources:
           requests:
-            cpu: 0.5
-            memory: 1Gi
-          # limits:
-          #   cpu: 2
-          #   memory: 4Gi
+            cpu: 7
+            memory: 14Gi
+          limits:
+            cpu: 7
+            memory: 14Gi
