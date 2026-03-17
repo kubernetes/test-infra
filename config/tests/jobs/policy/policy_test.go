@@ -20,7 +20,6 @@ package policy
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -34,22 +33,21 @@ import (
 	yaml "sigs.k8s.io/yaml/goyaml.v3"
 
 	cfg "sigs.k8s.io/prow/pkg/config"
+
+	// Importing these packages triggers rerunning the test
+	// each time some input file changes.
+	_ "k8s.io/test-infra/config/jobs"
+	_ "k8s.io/test-infra/config/prow"
 )
 
-var configPath = flag.String("config", "../../../../config/prow/config.yaml", "Path to prow config")
-var jobConfigPath = flag.String("job-config", "../../../jobs", "Path to prow job config")
+const configPath = "../../../../config/prow/config.yaml"
+const jobConfigPath = "../../../jobs"
 
 // Loaded at TestMain.
 var c *cfg.Config
 
 func TestMain(m *testing.M) {
-	flag.Parse()
-	if *configPath == "" {
-		fmt.Println("--config must set")
-		os.Exit(1)
-	}
-
-	conf, err := cfg.Load(*configPath, *jobConfigPath, nil, "")
+	conf, err := cfg.Load(configPath, jobConfigPath, nil, "")
 	if err != nil {
 		fmt.Printf("Could not load config: %v", err)
 		os.Exit(1)
@@ -60,6 +58,15 @@ func TestMain(m *testing.M) {
 }
 
 func TestKubernetesPresubmitJobs(t *testing.T) {
+	// If sigs.k8s.io/prow/pkg/config could load from io.FS and bytes,
+	// then we could load from jobs.Jobs  and prow.ConfigYAML directly.
+	// Probably not important, so instead we use those package only to
+	// trigger rerunning the test and load files directly.
+	c, err := cfg.Load(configPath, jobConfigPath, nil, "")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+
 	jobs := c.AllStaticPresubmits([]string{"kubernetes/kubernetes"})
 	var expected presubmitJobs
 
