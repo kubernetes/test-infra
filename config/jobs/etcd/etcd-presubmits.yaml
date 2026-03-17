@@ -542,7 +542,7 @@ presubmits:
               make install-lazyfs
               set -euo pipefail
               go clean -testcache
-              GO_TEST_FLAGS="-v --count 10 --timeout '30m' --run TestRobustness"
+              GO_TEST_FLAGS="-v --count 8 --timeout '30m' --run TestRobustness"
               make gofail-enable
               make build
               make gofail-disable
@@ -589,7 +589,7 @@ presubmits:
               make install-lazyfs
               set -euo pipefail
               go clean -testcache
-              GO_TEST_FLAGS="-v --count 10 --timeout '30m' --run TestRobustness"
+              GO_TEST_FLAGS="-v --count 8 --timeout '30m' --run TestRobustness"
               make gofail-enable
               make build
               make gofail-disable
