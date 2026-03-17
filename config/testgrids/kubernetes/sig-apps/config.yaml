@@ -18,3 +18,4 @@ dashboards:
       base_options: include-filter-by-regex=sig-apps
       description: apps gce statefulset e2e tests for master branch
 - name: sig-apps-agent-sandbox
+- name: sig-apps-mcp-lifecycle-operator

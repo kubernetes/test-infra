@@ -1,0 +1,23 @@
+presubmits:
+  kubernetes-sigs/mcp-lifecycle-operator:
+  - name: presubmit-mcp-lifecycle-operator-unit-test
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.24
+        command:
+        - make
+        args:
+        - test
+        resources:
+          requests:
+            cpu: 1
+            memory: 4Gi
+          limits:
+            cpu: 1
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-apps-mcp-lifecycle-operator
+      testgrid-tab-name: presubmit-mcp-lifecycle-operator-unit-test
