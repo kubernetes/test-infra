@@ -1,0 +1,22 @@
+postsubmits:
+  kubernetes-sigs/mcp-lifecycle-operator:
+    - name: post-mcp-lifecycle-operator-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-apps-mcp-lifecycle-operator, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^main$
+        - ^release-
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
+              - .
