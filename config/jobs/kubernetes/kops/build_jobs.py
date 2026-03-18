@@ -1345,6 +1345,9 @@ def generate_conformance():
                 runs_per_day=1,
                 focus_regex=r'\[Conformance\]',
                 skip_regex=r'\[NoSkip\]',
+                env={
+                    'GINKGO_NO_COLOR': 'TRUE',
+                }
             )
         )
         results.append(
@@ -1364,6 +1367,9 @@ def generate_conformance():
                 runs_per_day=1,
                 focus_regex=r'\[Conformance\]',
                 skip_regex=r'\[NoSkip\]',
+                env={
+                    'GINKGO_NO_COLOR': 'TRUE',
+                }
             )
         )
         results.append(
@@ -1381,6 +1387,9 @@ def generate_conformance():
                 runs_per_day=3,
                 focus_regex=r'\[Conformance\]',
                 skip_regex=r'\[NoSkip\]',
+                env={
+                    'GINKGO_NO_COLOR': 'TRUE',
+                }
             )
         )
     return results
