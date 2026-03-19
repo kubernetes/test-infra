@@ -62,6 +62,25 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
       testgrid-tab-name: presubmit-lint-go
+  - name: presubmit-agent-sandbox-lint-api
+    cluster: eks-prow-build-cluster
+    run_if_changed: "^.*\\.go$|^go\\.(mod|sum)$|^dev/ci/presubmits/lint-api$"
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        command:
+        - dev/ci/presubmits/lint-api
+        resources:
+          requests:
+            cpu: 4
+            memory: 8Gi
+          limits:
+            cpu: 4
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-lint-api
   - name: presubmit-agent-sandbox-e2e-test
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^(docs|site)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$|^\\.github/workflows/"
