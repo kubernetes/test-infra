@@ -16,7 +16,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
         command:
         - dev/ci/presubmits/cloud-provider-gcp-tests
         resources:
@@ -40,7 +40,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
           command:
             - runner.sh
           args:
@@ -74,7 +74,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
         resources:
           limits:
             cpu: 4
@@ -117,7 +117,7 @@ presubmits:
       path_alias: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
         resources:
           limits:
             cpu: 4
@@ -158,7 +158,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -188,7 +188,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
           command:
             - runner.sh
           args:
