@@ -64,7 +64,7 @@ presubmits:
       testgrid-tab-name: presubmit-lint-go
   - name: presubmit-agent-sandbox-lint-api
     cluster: eks-prow-build-cluster
-    run_if_changed: "^.*\\.go$|^go\\.(mod|sum)$|^dev/ci/presubmits/lint-api$"
+    run_if_changed: "^(extensions/)?api/|^dev/(ci/presubmits|tools)/lint-api|^dev/tools/(build-kal|\\.golangci-kal\\.yml|\\.custom-gcl\\.yaml)$"
     decorate: true
     spec:
       containers:
