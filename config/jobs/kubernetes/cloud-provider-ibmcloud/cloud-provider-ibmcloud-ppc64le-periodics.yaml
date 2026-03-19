@@ -54,7 +54,7 @@ periodics:
       path_alias: k8s.io/kubernetes
     annotations:
       fork-per-release: "true"
-      fork-per-release-cron: 0 0/2 * * *, 0 1/6 * * *, 0 2 * * *
+      fork-per-release-cron: 0 0/2 * * *, 0 1/6 * * *, 0 2 * * *, 0 4 * * *, 0 6 * * *
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
       testgrid-tab-name: ci-kubernetes-integration-ppc64le-master
       testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
