@@ -292,6 +292,9 @@ periodics:
 - cron: '0 */2 * * 1-5'
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
+  # Serialize with image promotion jobs to avoid Artifact Registry quota
+  # exhaustion when both run concurrently.
+  job_queue_name: "k8sio-image-promo"
   name: ci-k8sio-image-signature-replication
   decorate: true
   extra_refs:
