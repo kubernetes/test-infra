@@ -1213,16 +1213,16 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 
 	// TODO: finish eliminating this list and remove the known-failures logic
 	knownFailures := map[string]bool{
-		"ci-kubernetes-e2e-gce-cos-alphafeatures-beta":    false,
 		"ci-kubernetes-e2e-gce-cos-alphafeatures-master":  false,
 		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable1": false,
 		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable2": false,
 		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable3": false,
-		"ci-kubernetes-e2e-gce-cos-reboot-beta":           false,
+		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable4": false,
 		"ci-kubernetes-e2e-gce-cos-reboot-master":         false,
 		"ci-kubernetes-e2e-gce-cos-reboot-stable1":        false,
 		"ci-kubernetes-e2e-gce-cos-reboot-stable2":        false,
 		"ci-kubernetes-e2e-gce-cos-reboot-stable3":        false,
+		"ci-kubernetes-e2e-gce-cos-reboot-stable4":        false,
 		"ci-kubernetes-e2e-gci-gce-alpha-features":        false,
 		"ci-kubernetes-e2e-gci-gce-reboot":                false,
 	}
