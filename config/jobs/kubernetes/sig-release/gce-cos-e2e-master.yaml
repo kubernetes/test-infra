@@ -10,7 +10,7 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 2h20m0s
   extra_refs:
   - base_ref: master
     org: kubernetes
@@ -29,7 +29,7 @@ periodics:
       - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest
-      - --timeout=180m
+      - --timeout=120m
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
@@ -105,7 +105,7 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 1h20m0s
   extra_refs:
   - base_ref: master
     org: kubernetes
@@ -124,7 +124,7 @@ periodics:
       - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest
-      - --timeout=180m
+      - --timeout=60m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       command:
       - runner.sh
