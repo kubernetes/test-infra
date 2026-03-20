@@ -748,7 +748,7 @@ tide:
     - kubernetes/kubernetes
     excludedBranches:
     - master
-    - release-1.35
+    - release-1.36
     labels:
     - lgtm
     - approved
