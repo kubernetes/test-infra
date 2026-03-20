@@ -592,7 +592,7 @@ periodics:
         #Setup of kubetest2 tf deployer
         make install-deployer-tf
 
-        export TF_VAR_powervs_system_type=e980
+        export TF_VAR_powervs_system_type=s1022
         kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
           --powervs-ssh-key k8s-prow-sshkey \
           --ssh-private-key /etc/secret-volume/ssh-privatekey \
