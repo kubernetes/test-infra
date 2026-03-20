@@ -46,4 +46,5 @@ find -L . -type f -not \( \
     \) -prune \
     -o -name 'go.mod' \
     -o -name 'go.sum' \
+    -o -name 'OWNERS' \
     \) | xargs "${MISSPELL}" -w
