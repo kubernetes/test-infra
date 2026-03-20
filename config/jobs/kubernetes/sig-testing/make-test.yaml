@@ -24,7 +24,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -58,7 +58,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -103,7 +103,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -143,7 +143,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-go-canary
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-go-canary
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -183,7 +183,7 @@ periodics:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
