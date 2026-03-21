@@ -116,6 +116,8 @@
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
       {%- endif %}
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       {%- for key, val in env.items() %}
       - name: {{ key }}
         value: "{{ val }}"

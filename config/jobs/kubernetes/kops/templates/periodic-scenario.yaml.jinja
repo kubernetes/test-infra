@@ -38,6 +38,8 @@
       args:
       - ./tests/e2e/scenarios/{{ scenario }}/run-test.sh
       env:
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       {%- for key, val in env.items() %}
       - name: {{ key }}
         value: "{{ val }}"

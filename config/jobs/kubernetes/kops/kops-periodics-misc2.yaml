@@ -28,6 +28,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/smoketest/run-test.sh
       env:
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       - name: KOPS_BASE_URL
         value: "https://artifacts.k8s.io/binaries/kops/1.33.1/"
       - name: KOPS_VERSION
@@ -115,6 +117,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -181,6 +185,8 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -245,6 +251,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -309,6 +317,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -373,6 +383,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -438,6 +450,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: core
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -503,6 +517,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: core
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -567,6 +583,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -632,6 +650,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -697,6 +717,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -761,6 +783,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -808,6 +832,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/aws-lb-controller/run-test.sh
       env:
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -866,6 +892,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/keypair-rotation/run-test.sh
       env:
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
       - name: KOPS_STATE_STORE
@@ -930,6 +958,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/metrics-server/run-test.sh
       env:
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -988,6 +1018,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/podidentitywebhook/run-test.sh
       env:
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -1046,6 +1078,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/addon-resource-tracking/run-test.sh
       env:
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -1121,6 +1155,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -1185,6 +1221,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -1251,6 +1289,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -1298,6 +1338,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/karpenter/run-test.sh
       env:
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -1356,6 +1398,8 @@ periodics:
       args:
       - ./tests/e2e/scenarios/karpenter/run-test.sh
       env:
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       - name: OVERRIDES
         value: "--ipv6 --topology=private --bastion"
       - name: KOPS_STATE_STORE
@@ -1436,6 +1480,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -1504,6 +1550,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -1577,6 +1625,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -1647,6 +1697,8 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -1714,6 +1766,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -1781,6 +1835,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -1849,6 +1905,8 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -1917,6 +1975,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -1985,6 +2045,8 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -2053,6 +2115,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -2120,6 +2184,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -2189,6 +2255,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -2258,6 +2326,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -2326,6 +2396,8 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -2394,6 +2466,8 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -2462,6 +2536,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -2531,6 +2607,8 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -2599,6 +2677,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -2668,6 +2748,8 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
@@ -2737,6 +2819,8 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
       imagePullPolicy: Always
       resources:
