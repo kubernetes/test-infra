@@ -35,6 +35,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         - name: CLOUD_PROVIDER

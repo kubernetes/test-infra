@@ -118,6 +118,8 @@
         - name: KUBE_SSH_USER
           value: {{kops_ssh_user}}
         {%- endif %}
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         {%- for key, val in env.items() %}

@@ -1298,7 +1298,7 @@ def generate_periodics_ai_conformance():
             name_override="kops-ai-conformance",
             scenario="ai-conformance",
             extra_dashboards=["kops-misc"],
-            runs_per_day=1,
+            runs_per_day=3,
         )
     )
     return results
@@ -1344,10 +1344,7 @@ def generate_conformance():
                 extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-ec2'],
                 runs_per_day=1,
                 focus_regex=r'\[Conformance\]',
-                skip_regex=r'\[NoSkip\]',
-                env={
-                    'GINKGO_NO_COLOR': 'TRUE',
-                }
+                skip_regex=r'\[NoSkip\]'
             )
         )
         results.append(
@@ -1366,10 +1363,7 @@ def generate_conformance():
                 extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-arm64', 'conformance-ec2'],
                 runs_per_day=1,
                 focus_regex=r'\[Conformance\]',
-                skip_regex=r'\[NoSkip\]',
-                env={
-                    'GINKGO_NO_COLOR': 'TRUE',
-                }
+                skip_regex=r'\[NoSkip\]'
             )
         )
         results.append(
@@ -1386,10 +1380,7 @@ def generate_conformance():
                 extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-azure'],
                 runs_per_day=3,
                 focus_regex=r'\[Conformance\]',
-                skip_regex=r'\[NoSkip\]',
-                env={
-                    'GINKGO_NO_COLOR': 'TRUE',
-                }
+                skip_regex=r'\[NoSkip\]'
             )
         )
     return results

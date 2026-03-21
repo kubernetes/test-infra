@@ -49,6 +49,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: admin
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -114,6 +116,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: admin
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -179,6 +183,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: admin
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -244,6 +250,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: admin
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -309,6 +317,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: admin
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -374,6 +384,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: admin
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -439,6 +451,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -504,6 +518,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -569,6 +585,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -635,6 +653,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -701,6 +721,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -766,6 +788,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -831,6 +855,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -897,6 +923,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -963,6 +991,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1028,6 +1058,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1093,6 +1125,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1159,6 +1193,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1225,6 +1261,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ec2-user
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1290,6 +1328,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ec2-user
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1355,6 +1395,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ec2-user
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1421,6 +1463,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ec2-user
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1487,6 +1531,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ec2-user
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1552,6 +1598,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ec2-user
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1617,6 +1665,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ec2-user
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1683,6 +1733,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ec2-user
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1749,6 +1801,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: rocky
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1814,6 +1868,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: rocky
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1879,6 +1935,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: rocky
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -1945,6 +2003,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: rocky
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2011,6 +2071,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: core
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2076,6 +2138,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: core
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2141,6 +2205,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2207,6 +2273,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2273,6 +2341,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2339,6 +2409,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2405,6 +2477,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2471,6 +2545,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2537,6 +2613,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2603,6 +2681,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2669,6 +2749,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2735,6 +2817,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2801,6 +2885,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2867,6 +2953,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2933,6 +3021,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -2999,6 +3089,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3065,6 +3157,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3131,6 +3225,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3197,6 +3293,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3263,6 +3361,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3329,6 +3429,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3395,6 +3497,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3461,6 +3565,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3527,6 +3633,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3593,6 +3701,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3659,6 +3769,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3725,6 +3837,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3791,6 +3905,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3857,6 +3973,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3923,6 +4041,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -3989,6 +4109,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -4055,6 +4177,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -4121,6 +4245,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -4187,6 +4313,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -4253,6 +4381,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -4319,6 +4449,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -4385,6 +4517,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
@@ -4451,6 +4585,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         resources:
