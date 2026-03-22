@@ -3,7 +3,6 @@ presubmits:
   - name: pull-community-verify
     cluster: eks-prow-build-cluster
     branches:
-    - master
     - main
     always_run: true
     decorate: true
