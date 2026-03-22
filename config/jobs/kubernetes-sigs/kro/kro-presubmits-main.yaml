@@ -50,6 +50,31 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cloud-provider-kro-presubmits
       testgrid-tab-name: presubmits-verify-lint
+  - name: presubmits-verify-codegen
+    always_run: true
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    path_alias: "sigs.k8s.io/kro"
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-1.33
+        command:
+        - scripts/ci/presubmits/verify-codegen
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-kro-presubmits
+      testgrid-tab-name: presubmits-verify-codegen
   - name: presubmits-integration-tests
     always_run: true
     optional: false
@@ -105,6 +130,36 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cloud-provider-kro-presubmits
       testgrid-tab-name: presubmits-e2e-tests
+  - name: presubmits-e2e-upgrade-tests
+    labels:
+      preset-dind-enabled: "true"
+    always_run: true
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    path_alias: "sigs.k8s.io/kro"
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-1.33
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        - scripts/ci/presubmits/e2e-upgrade-tests
+        resources:
+          limits:
+            cpu: 7
+            memory: 16Gi
+          requests:
+            cpu: 7
+            memory: 16Gi
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-kro-presubmits
+      testgrid-tab-name: presubmits-e2e-upgrade-tests
   - name: presubmits-build-image
     always_run: true
     optional: false
