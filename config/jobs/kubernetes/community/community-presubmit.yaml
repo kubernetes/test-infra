@@ -4,6 +4,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - master
+    - main
     always_run: true
     decorate: true
     spec:
