@@ -522,6 +522,7 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="area/HA" href="#area/HA">`area/HA`</a> | | label | |
 | <a id="area/admission-control" href="#area/admission-control">`area/admission-control`</a> | | label | |
+| <a id="area/api-validation" href="#area/api-validation">`area/api-validation`</a> | Issues or PRs related to API validation and declarative validation| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/apiserver" href="#area/apiserver">`area/apiserver`</a> | | label | |
 | <a id="area/app-lifecycle" href="#area/app-lifecycle">`area/app-lifecycle`</a> | | label | |
 | <a id="area/artifacts" href="#area/artifacts">`area/artifacts`</a> | Issues or PRs related to the hosting of release artifacts for subprojects| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |

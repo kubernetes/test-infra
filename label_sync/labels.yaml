@@ -1160,6 +1160,12 @@ repos:
         target: issues
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to API validation and declarative validation
+        name: area/api-validation
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         name: area/apiserver
         target: both
         addedBy: label
