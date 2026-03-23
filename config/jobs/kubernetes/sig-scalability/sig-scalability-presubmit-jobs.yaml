@@ -501,7 +501,7 @@ presubmits:
             memory: 25Gi
 
   kubernetes/perf-tests:
-  - name: pull-perf-tests-benchmark-kube-dns
+  - name: pull-perf-tests-benchmark-coredns
     cluster: k8s-infra-prow-build
     always_run: false
     skip_report: false
@@ -519,7 +519,7 @@ presubmits:
       path_alias: k8s.io/release
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
-      testgrid-tab-name: pull-perf-tests-benchmark-kube-dns
+      testgrid-tab-name: pull-perf-tests-benchmark-coredns
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -532,14 +532,14 @@ presubmits:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --check-leaked-resources
-        - --cluster=kube-dns-benchmark
+        - --cluster=coredns-benchmark
         - --extract=ci/latest
         - --gcp-nodes=3
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=kube-dns
+        - --test-cmd-args=coredns
         - --test-cmd-args=$(ARTIFACTS)/out
         - --test-cmd-args=$(ARTIFACTS)
         - --test-cmd-name=KubeDnsBenchmark
