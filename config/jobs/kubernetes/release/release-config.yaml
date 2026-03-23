@@ -7,7 +7,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.25-trixie
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.26-trixie
         imagePullPolicy: Always
         command:
         - make
@@ -33,7 +33,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.25-trixie
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.26-trixie
         imagePullPolicy: Always
         command:
         - make
@@ -58,7 +58,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.25-trixie
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.26-trixie
         imagePullPolicy: Always
         command:
         - make
@@ -83,7 +83,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.25-trixie
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.26-trixie
         imagePullPolicy: Always
         command:
         - make
