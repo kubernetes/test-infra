@@ -1285,25 +1285,6 @@ def generate_misc():
     return results
 
 
-######################################
-# kops-periodics-ai-conformance.yaml #
-######################################
-def generate_periodics_ai_conformance():
-    results = []
-    results.append(
-        build_test(
-            cloud="aws",
-            k8s_version="stable",
-            kops_channel="alpha",
-            name_override="kops-ai-conformance",
-            scenario="ai-conformance",
-            extra_dashboards=["kops-misc"],
-            runs_per_day=3,
-        )
-    )
-    return results
-
-
 #######################################
 # kops-presubmits-ai-conformance.yaml #
 #######################################
@@ -1383,6 +1364,19 @@ def generate_conformance():
                 skip_regex=r'\[NoSkip\]'
             )
         )
+
+    results.append(
+        build_test(
+            cloud="aws",
+            k8s_version="stable",
+            kops_channel="alpha",
+            name_override="kops-ai-conformance",
+            scenario="ai-conformance",
+            extra_dashboards=["kops-conformance", 'conformance-all'],
+            runs_per_day=3,
+        )
+    )
+
     return results
 
 ###############################
@@ -2518,7 +2512,6 @@ def generate_presubmits_e2e():
 # YAML File Generation #
 ########################
 periodics_files = {
-    'kops-periodics-ai-conformance.yaml': generate_periodics_ai_conformance,
     'kops-periodics-conformance.yaml': generate_conformance,
     'kops-periodics-distros.yaml': generate_distros,
     'kops-periodics-grid.yaml': generate_grid,
