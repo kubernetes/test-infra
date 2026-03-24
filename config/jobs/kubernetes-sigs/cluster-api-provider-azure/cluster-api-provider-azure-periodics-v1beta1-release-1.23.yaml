@@ -12,7 +12,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.21
+      base_ref: release-1.23
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     serviceAccountName: azure
@@ -36,7 +36,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-conformance-v1beta1-release-1-21
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs conformance & node conformance tests on a stable k8s version with cluster-api-provider-azure release-1.21 (v1beta1)
+    description: Runs conformance & node conformance tests on a stable k8s version with cluster-api-provider-azure release-1.23 (v1beta1)
 # TODO: Add back N-2 periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts once CAPZ 1.23
 # releases. periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts-release-1-21 was removed
 # due to the old CAPI version being incompatible with k8s 1.36+
@@ -53,7 +53,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.21
+      base_ref: release-1.23
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     serviceAccountName: azure
@@ -82,7 +82,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-capi-e2e-v1beta1-release-1-21
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs Cluster API E2E tests on cluster-api-provider-azure release-1.21 (v1beta1)
+    description: Runs Cluster API E2E tests on cluster-api-provider-azure release-1.23 (v1beta1)
 - name: periodic-cluster-api-provider-azure-e2e-v1beta1-release-1-21
   cluster: eks-prow-build-cluster
   decorate: true
@@ -96,7 +96,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.21
+      base_ref: release-1.23
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     serviceAccountName: azure
@@ -125,7 +125,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-e2e-v1beta1-release-1-21
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs Cluster API Provider Azure E2E tests on cluster-api-provider-azure release-1.21 (v1beta1)
+    description: Runs Cluster API Provider Azure E2E tests on cluster-api-provider-azure release-1.23 (v1beta1)
 - name: periodic-cluster-api-provider-azure-e2e-aks-v1beta1-release-1-21
   cluster: eks-prow-build-cluster
   decorate: true
@@ -139,7 +139,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.21
+      base_ref: release-1.23
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     serviceAccountName: azure
@@ -168,4 +168,4 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-e2e-aks-v1beta1-release-1-21
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs managed Kubernetes E2E tests on cluster-api-provider-azure release-1.21 (v1beta1)
+    description: Runs managed Kubernetes E2E tests on cluster-api-provider-azure release-1.23 (v1beta1)
