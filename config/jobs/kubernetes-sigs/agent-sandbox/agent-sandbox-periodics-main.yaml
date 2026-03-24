@@ -1,7 +1,7 @@
 periodics:
-- name: ci-agent-sandbox-perf-load-test-every-30-minutes
+- name: ci-agent-sandbox-perf-load-test-every-6-hours
   cluster: eks-prow-build-cluster
-  interval: 30m
+  interval: 6h
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
