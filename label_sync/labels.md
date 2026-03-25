@@ -8,6 +8,7 @@
 - [Labels that apply to all repos, for both issues and PRs](#labels-that-apply-to-all-repos-for-both-issues-and-prs)
 - [Labels that apply to all repos, only for issues](#labels-that-apply-to-all-repos-only-for-issues)
 - [Labels that apply to all repos, only for PRs](#labels-that-apply-to-all-repos-only-for-prs)
+- [Labels that apply to kubernetes-sigs/agent-sandbox, for both issues and PRs](#labels-that-apply-to-kubernetes-sigsagent-sandbox-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api, only for PRs](#labels-that-apply-to-kubernetes-sigscluster-api-only-for-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-operator, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-operator-for-both-issues-and-prs)
@@ -198,6 +199,12 @@ larger set of contributors to apply/remove them.
 | <a id="tide/merge-method-merge" href="#tide/merge-method-merge">`tide/merge-method-merge`</a> | Denotes a PR that should use a standard merge by tide when it merges.| humans | |
 | <a id="tide/merge-method-rebase" href="#tide/merge-method-rebase">`tide/merge-method-rebase`</a> | Denotes a PR that should be rebased by tide when it merges.| humans | |
 | <a id="tide/merge-method-squash" href="#tide/merge-method-squash">`tide/merge-method-squash`</a> | Denotes a PR that should be squashed by tide when it merges. <br><br> This was previously `tide/squash`, | humans | |
+
+## Labels that apply to kubernetes-sigs/agent-sandbox, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="overseer" href="#overseer">`overseer`</a> | Overseer label for coderbot-robot review/solve| anyone | |
 
 ## Labels that apply to kubernetes-sigs/cluster-api, for both issues and PRs
 
