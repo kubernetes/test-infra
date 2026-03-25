@@ -423,7 +423,7 @@ postsubmits:
 # NOTE: only certain images with external inputs should have periodics!
 periodics:
   - name: periodic-test-infra-push-krte
-    cron: '0 9 * * *' # daily at 1am or 2am pacific
+    cron: '0 9 * * MON' # daily at 1am or 2am pacific on monday
     cluster: k8s-infra-prow-build-trusted
     annotations:
       testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
@@ -452,7 +452,7 @@ periodics:
         - --build-dir=.
         - images/krte/
   - name: periodic-test-infra-push-kubekins-e2e
-    cron: '0 9 * * *' # daily at 1am or 2am pacific
+    cron: '0 9 * * MON' # daily at 1am or 2am pacific on monday
     cluster: k8s-infra-prow-build-trusted
     annotations:
       testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
@@ -481,7 +481,7 @@ periodics:
         - --build-dir=.
         - images/kubekins-e2e/
   - name: periodic-test-infra-push-kubekins-e2e-v2
-    cron: '0 9 * * *' # daily at 1am or 2am pacific
+    cron: '0 9 * * MON' # daily at 1am or 2am pacific on monday
     cluster: k8s-infra-prow-build-trusted
     annotations:
       testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
