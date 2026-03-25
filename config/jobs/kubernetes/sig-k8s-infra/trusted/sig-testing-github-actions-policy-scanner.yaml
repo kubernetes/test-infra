@@ -1,0 +1,54 @@
+periodics:
+- cron: "17 0,12 * * *"  # Twice a day at 00:17 and 12:17 UTC
+  name: ci-test-infra-github-actions-policy-scanner
+  cluster: k8s-infra-prow-build-trusted
+  labels:
+    app: github-actions-policy-scanner
+  decorate: true
+  decoration_config:
+    timeout: 10h
+  max_concurrency: 1
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - name: github-actions-policy-scanner
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
+      command:
+      - /bin/sh
+      - -c
+      args:
+      - |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+        cd /home/prow/go/src/k8s.io/test-infra
+        go run ./experiment/github-actions-policy-scanner \
+          --github-token-path /etc/github-token/token \
+          --owner kubernetes,kubernetes-sigs \
+          --endpoint http://ghproxy.test-pods.svc.cluster.local
+      volumeMounts:
+      - name: github-token
+        mountPath: /etc/github-token
+        readOnly: true
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
+    volumes:
+    - name: github-token
+      secret:
+        secretName: k8s-triage-robot-github-token
+  annotations:
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: github_actions_policy_scanner
+    testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, github-managment-alerts@kubernetes.io
+    description: Scans the kubernetes and kubernetes-sigs GitHub organizations for GitHub Actions policy violations.
