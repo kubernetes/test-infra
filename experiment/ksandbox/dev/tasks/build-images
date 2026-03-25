@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-SRC_DIR=${REPO_ROOT}/experimental/ksandbox
+SRC_DIR=${REPO_ROOT}/experiment/ksandbox
 cd "${SRC_DIR}"
 
 KO="go run github.com/google/ko@v0.17.1"
