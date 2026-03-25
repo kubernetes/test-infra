@@ -106,7 +106,7 @@ if [[ "${#FAILED[@]}" == 0 ]]; then
 else
   echo ""
   echo "One or more verify checks failed! See details above. Failed check:"
-  for failed in "${FAILED}"; do
+  for failed in "${FAILED[@]}"; do
     echo "  FAILED: $failed"
   done
   res=1
