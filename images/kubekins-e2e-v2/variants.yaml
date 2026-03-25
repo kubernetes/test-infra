@@ -1,36 +1,41 @@
 variants:
+  # TODO: why do we still have this variant?
+  # Shouldn't these jobs be retired in favor of
+  # 1. Jobs that override locally and use gotip
+  # 2. PRs to .go-version
   go-canary:
     CONFIG: go-canary
-    GO_VERSION: 1.26.0
+    GO_VERSION: 1.26.1
     K8S_RELEASE: stable
+    K8S_BRANCH: master
     BAZEL_VERSION: 3.4.1
   master:
     CONFIG: master
-    GO_VERSION: 1.26.0
     K8S_RELEASE: stable
+    K8S_BRANCH: master
     BAZEL_VERSION: 3.4.1
     DOCKER_VERSION: 5:28.*
   '1.35':
     CONFIG: '1.35'
-    GO_VERSION: 1.25.7
     K8S_RELEASE: latest-1.35
+    K8S_BRANCH: release-1.35
     BAZEL_VERSION: 3.4.1
     DOCKER_VERSION: 5:28.*
   '1.34':
     CONFIG: '1.34'
-    GO_VERSION: 1.24.13
     K8S_RELEASE: latest-1.34
+    K8S_BRANCH: release-1.34
     BAZEL_VERSION: 3.4.1
     DOCKER_VERSION: 5:28.*
   '1.33':
     CONFIG: '1.33'
-    GO_VERSION: 1.24.13
     K8S_RELEASE: latest-1.33
+    K8S_BRANCH: release-1.33
     BAZEL_VERSION: 3.4.1
     DOCKER_VERSION: 5:28.*
   '1.32':
     CONFIG: '1.32'
-    GO_VERSION: 1.24.13
     K8S_RELEASE: latest-1.32
+    K8S_BRANCH: release-1.32
     BAZEL_VERSION: 3.4.1
     DOCKER_VERSION: 5:28.*
