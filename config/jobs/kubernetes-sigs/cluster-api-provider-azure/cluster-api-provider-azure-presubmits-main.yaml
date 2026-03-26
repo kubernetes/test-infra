@@ -144,6 +144,8 @@ presubmits:
             value: \[OPTIONAL\]
           - name: GINKGO_SKIP
             value: ""
+          - name: KUBERNETES_VERSION
+            value: v1.33.9 # TODO: Remove this once v1.33.10 artifacts are published for Flatcar and RKE2 tests
         resources:
           limits:
             cpu: 4
