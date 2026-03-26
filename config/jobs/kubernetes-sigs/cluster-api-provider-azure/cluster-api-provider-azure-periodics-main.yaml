@@ -293,6 +293,8 @@ periodics:
           value: "Workload cluster creation"
         - name: GINKGO_SKIP
           value: \[Managed Kubernetes\]|\[WINDOWS\]
+        - name: KUBERNETES_VERSION
+          value: v1.33.9 # TODO: Remove this once v1.33.10 artifacts are published for Flatcar and RKE2 tests
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
