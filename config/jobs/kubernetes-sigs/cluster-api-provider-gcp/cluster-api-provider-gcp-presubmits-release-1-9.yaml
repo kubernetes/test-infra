@@ -111,6 +111,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^release-1.9$
@@ -146,6 +147,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^release-1.9$
@@ -181,6 +183,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^release-1.9$
@@ -219,6 +222,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^release-1.9$
