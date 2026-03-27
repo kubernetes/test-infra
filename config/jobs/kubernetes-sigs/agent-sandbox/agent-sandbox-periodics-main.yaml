@@ -1,5 +1,5 @@
 periodics:
-- name: ci-agent-sandbox-perf-load-test-every-6-hours
+- name: periodic-agent-sandbox-perf-load-test
   cluster: eks-prow-build-cluster
   interval: 6h
   decorate: true
