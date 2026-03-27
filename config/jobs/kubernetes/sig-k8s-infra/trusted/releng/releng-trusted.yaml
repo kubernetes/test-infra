@@ -54,7 +54,8 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+      - image: gcr.io/k8s-staging-artifact-promoter/kpromo:latest
+        imagePullPolicy: Always
         command:
         - /kpromo
         args:
