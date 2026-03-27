@@ -67,6 +67,7 @@ periodics:
     preset-service-account: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
     timeout: 3h
