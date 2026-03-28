@@ -897,7 +897,7 @@ periodics:
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=1 --skip="\[Featuure:OffByDefault\]" --focus="\[Feature:CPUManager\]"
+          - --test_args=--nodes=1 --skip="\[Feature:OffByDefault\]" --focus="\[Feature:CPUManager\]"
           - --timeout=180m
         env:
           - name: GOPATH
@@ -1002,7 +1002,7 @@ periodics:
           - --provider=gce
           # all criproxy tests are serial, but no need to specify it
           # disabled features are handled by -all-alpha variant of this test job
-          - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]|\[Featuure:OffByDefault\]"
+          - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]|\[Feature:OffByDefault\]"
           - --timeout=120m
         env:
           - name: GOPATH

@@ -3122,7 +3122,7 @@ presubmits:
               - --provider=gce
               # all criproxy tests are serial, but no need to specify it
               # the -all-alpha variant covers features that are not enabled by default
-              - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]|\[Featuure:OffByDefault\]"
+              - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]|\[Feature:OffByDefault\]"
               - --timeout=120m
             env:
               - name: GOPATH
