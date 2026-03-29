@@ -131,7 +131,7 @@ presubmits:
               - name: IMAGE_CONFIG_DIR
                 value: config
               - name: IMAGE_CONFIG_FILE
-                value: aws-instance.yaml
+                value: aws-instance-serial.yaml
               - name: SKIP
                 value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]|\[Feature:OffByDefault\]
               - name: TEST_ARGS
@@ -183,7 +183,7 @@ presubmits:
               - name: IMAGE_CONFIG_DIR
                 value: config
               - name: IMAGE_CONFIG_FILE
-                value: aws-instance-arm64.yaml
+                value: aws-instance-arm64-serial.yaml
               - name: TEST_ARGS
                 value: '--kubelet-flags="--cgroup-driver=systemd"'
             # docker-in-docker needs privileged mode
