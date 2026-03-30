@@ -3,6 +3,9 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 6h
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-apps-agent-sandbox
+    testgrid-tab-name: periodic-perf-load-test
   extra_refs:
   - org: kubernetes-sigs
     repo: agent-sandbox
@@ -11,17 +14,17 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
-        command:
-          - runner.sh
-          - dev/ci/periodics/test-load-test
-        securityContext:
-          privileged: true 
-        resources:
-          requests:
-            cpu: 7
-            memory: 14Gi
-          limits:
-            cpu: 7
-            memory: 14Gi
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      command:
+      - runner.sh
+      - dev/ci/periodics/test-load-test
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7
+          memory: 14Gi
+        limits:
+          cpu: 7
+          memory: 14Gi
