@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.1-0
         command:
         - /kpromo
         args:
@@ -54,7 +54,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.1-0
         command:
         - /kpromo
         args:
@@ -122,7 +122,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.1-0
       command:
       - /kpromo
       args:
@@ -155,7 +155,7 @@ periodics:
     serviceAccountName: k8s-infra-promoter
     containers:
     - name: promote-to-mirrors
-      image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+      image: registry.k8s.io/artifact-promoter/kpromo:v4.4.1-0
       command:
       - /kpromo
       args:
@@ -184,7 +184,7 @@ periodics:
           name: aws-iam-token
           readOnly: true
     - name: promote-to-mirrors-staging
-      image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+      image: registry.k8s.io/artifact-promoter/kpromo:v4.4.1-0
       command:
       - /kpromo
       args:
@@ -255,7 +255,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.1-0
       command:
       - /kpromo
       args:
@@ -305,7 +305,7 @@ periodics:
     serviceAccountName: k8s-infra-gcr-promoter
     activeDeadlineSeconds: 7800 # 2h10m
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.1-0
       command:
       - /kpromo
       args:
@@ -415,7 +415,7 @@ periodics:
     path_alias: sigs.k8s.io/promo-tools
   spec:
     containers:
-    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.4.0-0
+    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.4.1-0
       imagePullPolicy: Always
       command:
         - /kpromo
