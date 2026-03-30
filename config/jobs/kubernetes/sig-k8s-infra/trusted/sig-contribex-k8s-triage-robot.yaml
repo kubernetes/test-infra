@@ -15,7 +15,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -75,7 +75,7 @@ periodics:
     testgrid-tab-name: stable-metrics-help
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -126,7 +126,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -181,7 +181,7 @@ periodics:
     testgrid-tab-name: close-issues
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -255,7 +255,7 @@ periodics:
     testgrid-tab-name: close-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -325,7 +325,7 @@ periodics:
     testgrid-tab-name: stale-prs-agent-sandbox
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -388,7 +388,7 @@ periodics:
     testgrid-tab-name: close-prs-agent-sandbox
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -450,7 +450,7 @@ periodics:
     testgrid-tab-name: rotten-issues
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -524,7 +524,7 @@ periodics:
     testgrid-tab-name: rotten-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -596,7 +596,7 @@ periodics:
     testgrid-tab-name: stale-issues
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -670,7 +670,7 @@ periodics:
     testgrid-tab-name: stale-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -742,7 +742,7 @@ periodics:
     testgrid-tab-name: thaw-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -802,7 +802,7 @@ periodics:
     testgrid-tab-name: re-triage
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -865,7 +865,7 @@ periodics:
     testgrid-tab-name: re-triage-important
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -929,7 +929,7 @@ periodics:
     testgrid-tab-name: re-triage-critical
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
@@ -994,7 +994,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/issue-creator:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/issue-creator:v20260325-0ac3b4d79f
       command:
       - issue-creator
       args:

@@ -14,7 +14,7 @@ periodics:
     description: Automatically /retest-required for approved PRs that are failing tests
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:
