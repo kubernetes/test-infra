@@ -1200,6 +1200,24 @@ presubmits:
         securityContext:
           privileged: true
         env:
+        - name: CL2_ENABLE_INFORMER_LATENCY_TEST
+          value: "true"
+        - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
+          value: "21474836480"
+        - name: CL2_EXECSERVICE_CPU_REQUESTS
+          value: "4"
+        - name: CL2_EXECSERVICE_MEMORY_REQUESTS
+          value: "8Gi"
+        # Override for 1.5GB pod resource size
+        - name: CL2_DAEMONSET_POD_PAYLOAD_SIZE
+          value: "6000"
+        - name: CL2_DEPLOYMENT_POD_PAYLOAD_SIZE
+          value: "6000"
+        - name: CL2_STATEFULSET_POD_PAYLOAD_SIZE
+          value: "6000"
+        - name: CL2_JOB_POD_PAYLOAD_SIZE
+          value: "6000"
+        #  Remaining parameters should match ci-kubernetes-e2e-gce-scale-performance-5000
         - name: KUBE_SSH_KEY_PATH
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
@@ -1247,7 +1265,7 @@ presubmits:
         resources:
           requests:
             cpu: 7
-            memory: 25Gi
+            memory: "32Gi"
           limits:
             cpu: 7
-            memory: 25Gi
+            memory: "32Gi"
