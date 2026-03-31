@@ -159,6 +159,6 @@ prow_ignored:
       coreDNS: "v1.13.1"
       k8sRelease: "stable-1.35"
     "1.36":
-      etcd: "3.6.6-0"
-      coreDNS: "v1.13.1"
+      etcd: "3.6.8-0"
+      coreDNS: "v1.14.2"
       k8sRelease: "ci/latest-1.36"
