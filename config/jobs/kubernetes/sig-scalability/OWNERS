@@ -8,11 +8,12 @@ reviewers:
 
 approvers:
 - marseel
-- mborsz
 - mm4tt
+- serathius
 - wojtek-t
 
 emeritus_approvers:
+- mborsz
 - shyamjvs
 
 labels:
