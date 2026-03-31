@@ -30,8 +30,6 @@ optional_and_run_if_changed:
       run_if_changed: ^(test/conformance/testdata/|api/openapi-spec/)
     - name: pull-kubernetes-conformance-image-test
       run_if_changed: conformance
-    - name: pull-kubernetes-conformance-kind-ipv6-parallel
-      run_if_changed: ^test/
     - name: pull-kubernetes-cross
       run_if_changed: (^.go-version)|(^build/build-image/)|(^hack/lib/golang.sh)|(^build/common.sh)
     - name: pull-kubernetes-dra-integration
