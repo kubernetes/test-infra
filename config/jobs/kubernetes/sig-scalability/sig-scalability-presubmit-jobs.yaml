@@ -1240,6 +1240,8 @@ presubmits:
           value: "1"
         - name: CONTROL_PLANE_SIZE
           value: "c4-standard-96"
+        - name: ADDONS_NODE_SIZE
+          value: "c3-standard-44"
         - name: KUBE_PROXY_MODE
           value: "nftables"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
