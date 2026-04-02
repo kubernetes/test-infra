@@ -47,6 +47,12 @@ triggers:
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   only_org_members: true
   trigger_github_workflows: true
+- repos:
+  - kubernetes-sigs/controller-runtime
+  - kubernetes-sigs/controller-tools
+  join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+  only_org_members: true
+  trigger_github_workflows: true
 
 owners:
   mdyamlrepos:
