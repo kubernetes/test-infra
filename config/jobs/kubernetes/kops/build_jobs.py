@@ -2323,6 +2323,16 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
+            name="pull-kops-e2e-gce-apiserver-nodes",
+            cloud="gce",
+            networking="kubenet",
+            template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver-gce.yaml.tmpl",
+            extra_flags=["--gce-service-account=default"],
+            feature_flags=['APIServerNodes'],
+            optional=True,
+        ),
+
+        presubmit_test(
             name="pull-kops-e2e-arm64",
             cloud="aws",
             distro="u2404arm64",
