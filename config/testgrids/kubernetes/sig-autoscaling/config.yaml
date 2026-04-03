@@ -4,6 +4,8 @@ dashboard_groups:
       - sig-autoscaling-cluster-autoscaler
       - sig-autoscaling-hpa
       - sig-autoscaling-vpa
+      - sig-autoscaling-vpa-periodics
+      - sig-autoscaling-vpa-presubmits
       - sig-autoscaling-karpenter
       - sig-autoscaling-addon-resizer
       - sig-autoscaling-vpa-images
@@ -13,6 +15,8 @@ dashboards:
   - name: sig-autoscaling-cluster-autoscaler
   - name: sig-autoscaling-hpa
   - name: sig-autoscaling-vpa
+  - name: sig-autoscaling-vpa-periodics
+  - name: sig-autoscaling-vpa-presubmits
   - name: sig-autoscaling-karpenter
   - name: sig-autoscaling-addon-resizer
   - name: sig-autoscaling-vpa-images
