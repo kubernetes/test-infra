@@ -4,7 +4,7 @@ postsubmits:
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     branches:
-    - ^master$
+    - ^main$
     run_if_changed: '^communication/slack-config'
     annotations:
       testgrid-num-failures-to-alert: "1"
