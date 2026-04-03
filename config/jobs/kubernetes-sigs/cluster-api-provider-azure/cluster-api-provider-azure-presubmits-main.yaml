@@ -896,7 +896,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    run_if_changed: 'test\/e2e\/azure_kuberay\.go|test\/e2e\/azure_test\.go|templates\/test.*kuberay|^scripts\/'
+    run_if_changed: 'test\/e2e\/azure_kuberay\.go'
     decoration_config:
       timeout: 4h
     max_concurrency: 5
