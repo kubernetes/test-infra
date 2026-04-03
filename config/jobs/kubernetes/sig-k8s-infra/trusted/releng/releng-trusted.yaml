@@ -438,7 +438,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: downloadkubernetes
-    base_ref: main
+    base_ref: master
     path_alias: sigs.k8s.io/downloadkubernetes
   spec:
     serviceAccountName: gcb-builder
