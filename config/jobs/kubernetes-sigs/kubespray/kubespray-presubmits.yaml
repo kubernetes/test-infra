@@ -22,3 +22,29 @@ presubmits:
           requests:
             cpu: 1
             memory: 4Gi
+  - name: pull-kubespray-kubevirt-image-builder-validate
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kubespray
+      testgrid-tab-name: kubevirt-image-builder-validate
+    run_if_changed: '^test-infra/image-builder/.*'
+    always_run: false
+    skip_report: false
+    decorate: true
+    spec:
+      containers:
+      - image: quay.io/kubespray/kubespray:v2.13.0
+        command:
+        - /bin/bash
+        args:
+        - -ceu
+        - |
+          cd test-infra/image-builder
+          ansible-playbook --syntax-check -i hosts.ini cluster.yml
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
