@@ -158,7 +158,7 @@ presubmits:
   - name: pull-autoscaling-e2e-vpa-full
     cluster: k8s-infra-prow-build
     annotations:
-      testgrid-dashboards: sig-autoscaling-vpa
+      testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-full-presubmits
     optional: false
     decorate: true
@@ -199,7 +199,7 @@ presubmits:
   - name: pull-autoscaling-e2e-vpa-full-alpha-beta
     cluster: k8s-infra-prow-build
     annotations:
-      testgrid-dashboards: sig-autoscaling-vpa
+      testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-full-alpha-beta-presubmits
     optional: false
     decorate: true
@@ -245,7 +245,7 @@ presubmits:
   - name: pull-autoscaling-e2e-vpa-actuation
     cluster: k8s-infra-prow-build
     annotations:
-      testgrid-dashboards: sig-autoscaling-vpa
+      testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-actuation-presubmits
     optional: false
     decorate: true
@@ -289,7 +289,7 @@ presubmits:
   - name: pull-autoscaling-e2e-vpa-actuation-alpha-beta
     cluster: k8s-infra-prow-build
     annotations:
-      testgrid-dashboards: sig-autoscaling-vpa
+      testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-actuation-alpha-beta-presubmits
     optional: false
     decorate: true
@@ -337,7 +337,7 @@ presubmits:
   - name: pull-autoscaling-e2e-vpa-admission-controller
     cluster: k8s-infra-prow-build
     annotations:
-      testgrid-dashboards: sig-autoscaling-vpa
+      testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-admission-controller-presubmits
     optional: false
     decorate: true
@@ -378,7 +378,7 @@ presubmits:
   - name: pull-autoscaling-e2e-vpa-admission-controller-alpha-beta
     cluster: k8s-infra-prow-build
     annotations:
-      testgrid-dashboards: sig-autoscaling-vpa
+      testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-admission-controller-alpha-beta-presubmits
     optional: false
     decorate: true
@@ -424,7 +424,7 @@ presubmits:
   - name: pull-autoscaling-e2e-vpa-recommender
     cluster: k8s-infra-prow-build
     annotations:
-      testgrid-dashboards: sig-autoscaling-vpa
+      testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-recommender-presubmits
     optional: false
     decorate: true
@@ -465,7 +465,7 @@ presubmits:
   - name: pull-autoscaling-e2e-vpa-recommender-alpha-beta
     cluster: k8s-infra-prow-build
     annotations:
-      testgrid-dashboards: sig-autoscaling-vpa
+      testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-recommender-alpha-beta-presubmits
     optional: false
     decorate: true
@@ -511,7 +511,7 @@ presubmits:
   - name: pull-autoscaling-e2e-vpa-updater
     cluster: k8s-infra-prow-build
     annotations:
-      testgrid-dashboards: sig-autoscaling-vpa
+      testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-updater-presubmits
     optional: false
     decorate: true
@@ -552,7 +552,7 @@ presubmits:
   - name: pull-autoscaling-e2e-vpa-updater-alpha-beta
     cluster: k8s-infra-prow-build
     annotations:
-      testgrid-dashboards: sig-autoscaling-vpa
+      testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-updater-alpha-beta-presubmits
     optional: false
     decorate: true

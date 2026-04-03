@@ -45,7 +45,7 @@ periodics:
       - name: NUMPROC
         value: "8"
   annotations:
-    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-dashboards: sig-autoscaling-vpa-periodics
     testgrid-tab-name: autoscaling-vpa-actuation
 - name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
   cluster: k8s-infra-prow-build
@@ -90,7 +90,7 @@ periodics:
           cpu: 2
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-dashboards: sig-autoscaling-vpa-periodics
     testgrid-tab-name: autoscaling-vpa-admission-controller
 - name: ci-kubernetes-e2e-autoscaling-vpa-full
   cluster: k8s-infra-prow-build
@@ -135,7 +135,7 @@ periodics:
           cpu: 2
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-dashboards: sig-autoscaling-vpa-periodics
     testgrid-tab-name: autoscaling-vpa-full
 - name: ci-kubernetes-e2e-autoscaling-vpa-recommender
   cluster: k8s-infra-prow-build
@@ -180,7 +180,7 @@ periodics:
           cpu: 2
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-dashboards: sig-autoscaling-vpa-periodics
     testgrid-tab-name: autoscaling-vpa-recommender
 - name: ci-kubernetes-e2e-autoscaling-vpa-updater
   cluster: k8s-infra-prow-build
@@ -225,7 +225,7 @@ periodics:
           cpu: 2
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-dashboards: sig-autoscaling-vpa-periodics
     testgrid-tab-name: autoscaling-vpa-updater
 - name: ci-kubernetes-e2e-autoscaling-vpa-actuation-alpha-beta
   cluster: k8s-infra-prow-build
@@ -277,7 +277,7 @@ periodics:
       - name: TEST_WITH_FEATURE_GATES_ENABLED
         value: "true"
   annotations:
-    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-dashboards: sig-autoscaling-vpa-periodics
     testgrid-tab-name: autoscaling-vpa-actuation-alpha-beta
 - name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller-alpha-beta
   cluster: k8s-infra-prow-build
@@ -327,7 +327,7 @@ periodics:
       - name: TEST_WITH_FEATURE_GATES_ENABLED
         value: "true"
   annotations:
-    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-dashboards: sig-autoscaling-vpa-periodics
     testgrid-tab-name: autoscaling-vpa-admission-controller-alpha-beta
 - name: ci-kubernetes-e2e-autoscaling-vpa-full-alpha-beta
   cluster: k8s-infra-prow-build
@@ -377,7 +377,7 @@ periodics:
       - name: TEST_WITH_FEATURE_GATES_ENABLED
         value: "true"
   annotations:
-    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-dashboards: sig-autoscaling-vpa-periodics
     testgrid-tab-name: autoscaling-vpa-full-alpha-beta
 - name: ci-kubernetes-e2e-autoscaling-vpa-recommender-alpha-beta
   cluster: k8s-infra-prow-build
@@ -427,7 +427,7 @@ periodics:
       - name: TEST_WITH_FEATURE_GATES_ENABLED
         value: "true"
   annotations:
-    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-dashboards: sig-autoscaling-vpa-periodics
     testgrid-tab-name: autoscaling-vpa-recommender-alpha-beta
 - name: ci-kubernetes-e2e-autoscaling-vpa-updater-alpha-beta
   cluster: k8s-infra-prow-build
@@ -477,7 +477,7 @@ periodics:
       - name: TEST_WITH_FEATURE_GATES_ENABLED
         value: "true"
   annotations:
-    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-dashboards: sig-autoscaling-vpa-periodics
     testgrid-tab-name: autoscaling-vpa-updater-alpha-beta
 - interval: 24h
   name: ci-kubernetes-e2e-gci-gce-autoscaling
