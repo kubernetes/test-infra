@@ -541,6 +541,9 @@ def generate_grid():
         for distro, kops_versions in gce_distro_options.items():
             for k8s_version in [v for v in k8s_versions if v != 'master']:
                 for kops_version in kops_versions:
+                    # cilium-etcd + gce support was added in kops 1.36+
+                    if networking == 'cilium-etcd' and kops_version in ('1.32', '1.33', '1.34', '1.35'):
+                        continue
                     distro_short = distro_shortener(distro)
                     extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
                     if 'arm64' in distro:

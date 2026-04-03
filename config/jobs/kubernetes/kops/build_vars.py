@@ -108,7 +108,7 @@ network_plugins_periodics = {
         "kubenet",
         "kuberouter",
     ],
-    "supports_gce": ["kubenet", "calico", "cilium", "kindnet", "gce"],
+    "supports_gce": ["kubenet", "calico", "cilium", "cilium-etcd", "kindnet", "gce"],
     "supports_azure": ["kubenet", "calico", "cilium", "kindnet"],
 }
 
@@ -126,7 +126,7 @@ network_plugins_presubmits = {
         "kubenet": r"^pkg\/apis\/kops\/networking.go",
     },
     "supports_ipv6": {"amazonvpc", "calico", "cilium", "kindnet"},
-    "supports_gce": {"calico", "cilium", "kindnet"},
+    "supports_gce": {"calico", "cilium", "cilium-etcd", "kindnet"},
     "supports_azure": {"calico", "cilium", "kubenet", "kindnet"},
     "supports_aws": {"amazonvpc", "calico", "cilium", "cilium-etcd", "flannel", "cilium-eni", "kindnet", "kubenet", "kuberouter"}
 }
