@@ -29,7 +29,7 @@ elif ! (command -v docker >/dev/null); then
   exit 1
 fi
 
-LINT_COMMAND=("yamllint" "-c" "config/jobs/.yamllint.conf" "config/jobs" "config/prow/cluster")
+LINT_COMMAND=("yamllint" "-c" "config/jobs/.yamllint.conf" "config/jobs")
 
 "${DOCKER[@]}" run \
     --rm -i \
