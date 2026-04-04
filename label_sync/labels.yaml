@@ -1944,6 +1944,13 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes-sigs/agent-sandbox:
+    labels:
+      - color: 0052cc
+        description: Overseer label for coderbot-robot review/solve
+        name: overseer
+        target: both
+        addedBy: anyone
   kubernetes-sigs/cluster-api:
     labels:
       - color: c7def8
