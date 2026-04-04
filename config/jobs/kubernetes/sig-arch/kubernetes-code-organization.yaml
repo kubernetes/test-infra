@@ -28,6 +28,7 @@ presubmits:
         - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh --test-mode kind
         env:
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
@@ -119,6 +120,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
+          # Includes serial tests for the sake of completeness.
           value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
