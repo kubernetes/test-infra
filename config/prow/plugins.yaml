@@ -1579,6 +1579,10 @@ plugins:
     - mergecommitblocker
     - override
 
+  kubernetes-sigs/external-dns:
+    plugins:
+    - issue-management
+
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
     plugins:
     - release-note
