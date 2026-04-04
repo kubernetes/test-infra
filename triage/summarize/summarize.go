@@ -76,6 +76,9 @@ func parseFlags() summarizeFlags {
 func setUpLogging(logtostderr bool, v int) {
 	klogFlags := flag.NewFlagSet("klog", flag.PanicOnError)
 	klog.InitFlags(klogFlags) // Add the klog flags
+	// Opt into fixed stderrthreshold behavior (https://github.com/kubernetes/klog/issues/212).
+	_ = klogFlags.Set("legacy_stderr_threshold_behavior", "false")
+	_ = klogFlags.Set("stderrthreshold", "INFO")
 
 	// Set the flags
 	err := klogFlags.Set("logtostderr", fmt.Sprint(logtostderr))
