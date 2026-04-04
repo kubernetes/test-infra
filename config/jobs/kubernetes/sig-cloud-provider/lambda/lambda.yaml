@@ -1,0 +1,97 @@
+presets:
+- labels:
+    preset-lambda-credential: "true"
+  env:
+  - name: LAMBDA_API_KEY_FILE
+    value: /etc/lambda-cred/api-key
+  volumeMounts:
+  - name: lambda-cred
+    mountPath: /etc/lambda-cred
+    readOnly: true
+  volumes:
+  - name: lambda-cred
+    secret:
+      secretName: lambda-api-key
+
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-lambda-device-plugin-gpu
+    cluster: eks-prow-build-cluster
+    optional: true
+    always_run: false
+    max_concurrency: 1
+    skip_branches:
+    - release-\d+\.\d+
+    labels:
+      preset-lambda-credential: "true"
+    annotations:
+      testgrid-dashboards: sig-node-gpu
+      testgrid-tab-name: pull-lambda-device-plugin-gpu
+      description: "Runs [Feature:GPUDevicePlugin] e2e tests on a Lambda Cloud A100 GPU instance"
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          exec "$(go env GOPATH)/src/k8s.io/test-infra/experiment/lambda/e2e-test.sh"
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+
+periodics:
+- name: ci-kubernetes-e2e-lambda-device-plugin-gpu
+  cluster: eks-prow-build-cluster
+  interval: 6h
+  labels:
+    preset-lambda-credential: "true"
+  annotations:
+    testgrid-dashboards: sig-node-gpu
+    testgrid-tab-name: ci-lambda-device-plugin-gpu
+    description: "Runs [Feature:GPUDevicePlugin] e2e tests on a Lambda Cloud A100 GPU instance"
+  decorate: true
+  decoration_config:
+    timeout: 2h
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        exec "$(go env GOPATH)/src/k8s.io/test-infra/experiment/lambda/e2e-test.sh"
+      resources:
+        limits:
+          cpu: 4
+          memory: 8Gi
+        requests:
+          cpu: 4
+          memory: 8Gi
