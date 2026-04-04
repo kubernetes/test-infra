@@ -154,7 +154,7 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 3h20m0s
+    timeout: 2h20m0s
   interval: 30m
   labels:
     preset-k8s-ssh: "true"
@@ -175,7 +175,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
         --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0
         --minStartupPods=8
-      - --timeout=180m
+      - --timeout=120m
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -273,7 +273,7 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 3h20m0s
+    timeout: 1h20m0s
   interval: 30m
   labels:
     preset-k8s-ssh: "true"
@@ -288,7 +288,7 @@ periodics:
       - --gcp-region=us-central1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      - --timeout=180m
+      - --timeout=60m
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
