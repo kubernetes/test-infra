@@ -5,7 +5,7 @@ steps:
     - build
     - --tag=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
     - --build-arg=GO_VERSION=$_GO_VERSION
-    - --build-arg=K8S_RELEASE=$_K8S_RELEASE
+    - --build-arg=K8S_BRANCH=$_K8S_BRANCH
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
     - .
     dir: images/krte
@@ -18,11 +18,8 @@ steps:
 substitutions:
   _GIT_TAG: '12345'
   _CONFIG: master
-  _GO_VERSION: 1.13.5
-  _K8S_RELEASE: stable
-  _BAZEL_VERSION: 3.4.1
-  _OLD_BAZEL_VERSION: 2.2.0
-  _CFSSL_VERSION: R1.2
+  _GO_VERSION: 1.26.1
+  _K8S_BRANCH: master
 options:
   substitution_option: ALLOW_LOOSE
   # this is a large and critical CI image, builds are slow on the default 1 core
