@@ -21,6 +21,15 @@ prow_ignored:
         to: "1.35"
       - from: "1.35"
         to: "1.36"
+      other:
+        vmOperator:
+        - version: "8.0"
+          apiVersion: "v1alpha2"
+        - version: "9.1"
+          apiVersion: "v1alpha2"
+        # This version is tested by default
+        # - version: "9.1"
+        #   apiVersion: "v1alpha5"
     release-1.16:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-1.35"
       # interval for coverage job
@@ -34,6 +43,15 @@ prow_ignored:
         to: "1.35"
       - from: "1.35"
         to: "1.36"
+      other:
+        vmOperator:
+        - version: "8.0"
+          apiVersion: "v1alpha2"
+        - version: "9.1"
+          apiVersion: "v1alpha2"
+        # This version is tested by default
+        # - version: "9.1"
+        #   apiVersion: "v1alpha5"
     release-1.15:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-1.34"
       # interval for coverage job
