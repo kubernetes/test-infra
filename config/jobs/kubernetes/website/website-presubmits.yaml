@@ -1,0 +1,42 @@
+---
+presubmits:
+  kubernetes/website:
+  - name: pull-website-build
+    cluster: eks-prow-build-cluster
+    always_run: false
+    optional: true
+    run_if_changed: >-
+      ^(content/|data/|i18n/|static/|layouts/|assets/|themes/|archetypes/|hugo\.toml|netlify\.toml|Makefile|package\.json|package-lock\.json|postcss\.config\.js|scripts/|styles/|\.gitmodules)
+    branches:
+    - main
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    annotations:
+      testgrid-dashboards: sig-docs-website
+      testgrid-tab-name: pull-website-build
+      description: "Runs a production website build for normal content and rendering changes"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/node:20.17.0
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          set -euo pipefail
+          apt-get update && apt-get install -y curl git
+          HUGO_VERSION=$(grep ^HUGO_VERSION netlify.toml | tail -n 1 | cut -d '=' -f 2 | tr -d ' "')
+          curl -fsSL "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz" | tar -xz -C /usr/local/bin hugo
+          cd /home/prow/go/src/github.com/kubernetes/website
+          git submodule update --init --recursive --depth 1
+          npm ci
+          HUGO_BASEURL=https://kubernetes.io/ HUGO_ENV=production HUGO_ENABLEGITINFO=true make production-build
+          npx -y pagefind --site public
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
