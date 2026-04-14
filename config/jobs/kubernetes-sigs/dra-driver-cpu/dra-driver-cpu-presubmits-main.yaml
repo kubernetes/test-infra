@@ -40,7 +40,7 @@ presubmits:
             cpu: 4
             memory: 8Gi
   - name: pull-dra-driver-cpu-e2e-device-mode-individual-arm64
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -116,7 +116,7 @@ presubmits:
             cpu: 4
             memory: 8Gi
   - name: pull-dra-driver-cpu-e2e-device-mode-grouped-arm64
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
