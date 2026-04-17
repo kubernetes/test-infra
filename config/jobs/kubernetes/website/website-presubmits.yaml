@@ -1,42 +1,69 @@
 ---
+# Runs a production Hugo build on PRs to verify the site compiles before merge,
+# independently of Netlify's deploy preview. We don't publish the output — this
+# is purely a correctness gate for broken shortcodes, Hugo errors, and missing deps.
 presubmits:
   kubernetes/website:
   - name: pull-website-build
     cluster: eks-prow-build-cluster
     always_run: false
     optional: true
-    run_if_changed: >-
-      ^(content/|data/|i18n/|static/|layouts/|assets/|themes/|archetypes/|hugo\.toml|netlify\.toml|Makefile|package\.json|package-lock\.json|postcss\.config\.js|scripts/|styles/|\.gitmodules)
+    skip_if_only_changed: '^(OWNERS|OWNERS_ALIASES|LICENSE|\.github/|\.gitignore|README\.md|archetypes/)'
     branches:
     - main
     decorate: true
     decoration_config:
-      timeout: 20m
+      timeout: 30m
     annotations:
       testgrid-dashboards: sig-docs-website
       testgrid-tab-name: pull-website-build
       description: "Runs a production website build for normal content and rendering changes"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/node:20.17.0
+      - image: public.ecr.aws/docker/library/debian:stable-slim
         command:
         - /bin/bash
         args:
         - -c
         - |
           set -euo pipefail
-          apt-get update && apt-get install -y curl git
-          HUGO_VERSION=$(grep ^HUGO_VERSION netlify.toml | tail -n 1 | cut -d '=' -f 2 | tr -d ' "')
-          curl -fsSL "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz" | tar -xz -C /usr/local/bin hugo
+
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            curl git ca-certificates
+          rm -rf /var/lib/apt/lists/*
+
           cd /home/prow/go/src/github.com/kubernetes/website
+
+          # Install nvm pinned to a specific commit SHA (supply-chain hygiene).
+          export NVM_DIR="/usr/local/nvm"
+          mkdir -p "$NVM_DIR"
+          # nvm sha for v0.40.4 (https://github.com/nvm-sh/nvm/releases/tag/v0.40.4)
+          NVM_SHA="62387b8f92aa012d48202747fd75c40850e5e261"
+          curl -fsSL --retry 3 --retry-delay 5 \
+            "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_SHA}/install.sh" | bash
+          # shellcheck disable=SC1091
+          . "$NVM_DIR/nvm.sh"
+
+          # Source both toolchain versions from netlify.toml so k/website owns them.
+          NODE_VERSION=$(grep ^NODE_VERSION netlify.toml | tail -n 1 | cut -d '=' -f 2 | tr -d ' "')
+          HUGO_VERSION=$(grep ^HUGO_VERSION netlify.toml | tail -n 1 | cut -d '=' -f 2 | tr -d ' "')
+
+          nvm install "$NODE_VERSION"
+          nvm use "$NODE_VERSION"
+
+          curl -fsSL --retry 3 --retry-delay 5 \
+            "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz" \
+            | tar -xz -C /usr/local/bin hugo
+
           git submodule update --init --recursive --depth 1
           npm ci
           HUGO_BASEURL=https://kubernetes.io/ HUGO_ENV=production HUGO_ENABLEGITINFO=true make production-build
           npx -y pagefind --site public
         resources:
           requests:
-            cpu: "4"
+            cpu: "8"
             memory: "8Gi"
           limits:
-            cpu: "4"
+            cpu: "8"
             memory: "8Gi"
