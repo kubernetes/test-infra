@@ -20,7 +20,7 @@ presubmits:
       description: "Runs a production website build for normal content and rendering changes"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/debian:stable-slim
+      - image: public.ecr.aws/docker/library/debian:13-slim
         command:
         - /bin/bash
         args:
@@ -28,38 +28,12 @@ presubmits:
         - |
           set -euo pipefail
 
-          apt-get update
-          apt-get install -y --no-install-recommends \
-            curl git ca-certificates
-          rm -rf /var/lib/apt/lists/*
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends make
 
           cd /home/prow/go/src/github.com/kubernetes/website
-
-          # Install nvm pinned to a specific commit SHA (supply-chain hygiene).
-          export NVM_DIR="/usr/local/nvm"
-          mkdir -p "$NVM_DIR"
-          # nvm sha for v0.40.4 (https://github.com/nvm-sh/nvm/releases/tag/v0.40.4)
-          NVM_SHA="62387b8f92aa012d48202747fd75c40850e5e261"
-          curl -fsSL --retry 3 --retry-delay 5 \
-            "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_SHA}/install.sh" | bash
-          # shellcheck disable=SC1091
-          . "$NVM_DIR/nvm.sh"
-
-          # Source both toolchain versions from netlify.toml so k/website owns them.
-          NODE_VERSION=$(grep ^NODE_VERSION netlify.toml | tail -n 1 | cut -d '=' -f 2 | tr -d ' "')
-          HUGO_VERSION=$(grep ^HUGO_VERSION netlify.toml | tail -n 1 | cut -d '=' -f 2 | tr -d ' "')
-
-          nvm install "$NODE_VERSION"
-          nvm use "$NODE_VERSION"
-
-          curl -fsSL --retry 3 --retry-delay 5 \
-            "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz" \
-            | tar -xz -C /usr/local/bin hugo
-
-          git submodule update --init --recursive --depth 1
-          npm ci
-          HUGO_BASEURL=https://kubernetes.io/ HUGO_ENV=production HUGO_ENABLEGITINFO=true make production-build
-          npx -y pagefind --site public
+          make prepare-ci-test
+          make run-ci-test-production
         resources:
           requests:
             cpu: "8"
