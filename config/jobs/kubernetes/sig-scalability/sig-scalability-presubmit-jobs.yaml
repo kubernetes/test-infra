@@ -451,7 +451,7 @@ presubmits:
         - name: CL2_ENABLE_INFORMER_LATENCY_TEST
           value: "true"
         - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
-          value: "21474836480"
+          value: "21474836481"
         - name: CL2_EXECSERVICE_CPU_REQUESTS
           value: "4"
         - name: CL2_EXECSERVICE_MEMORY_REQUESTS
