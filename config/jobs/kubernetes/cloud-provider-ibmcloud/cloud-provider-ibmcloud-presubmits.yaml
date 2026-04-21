@@ -33,9 +33,11 @@ presubmits:
               set -o xtrace
 
               # Build the kubetest2 tf deployer locally and source the other dependencies.
+              pushd kubetest2-tf
               OUT_DIR=/go/bin WHAT='terraform' make build-deployer-tf download-from-cos
               make download-tf-plugins-from-cos
               make install-ansible
+              popd
 
               K8S_BUILD_VERSION=$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
 
