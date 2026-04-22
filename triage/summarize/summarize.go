@@ -77,6 +77,16 @@ func setUpLogging(logtostderr bool, v int) {
 	klogFlags := flag.NewFlagSet("klog", flag.PanicOnError)
 	klog.InitFlags(klogFlags) // Add the klog flags
 
+	// Opt into the new klog behavior so that -stderrthreshold is honored even
+	// when -logtostderr=true (the default).
+	// Ref: kubernetes/klog#212, kubernetes/klog#432
+	if err := klogFlags.Set("legacy_stderr_threshold_behavior", "false"); err != nil {
+		klog.Fatalf("Could not set klog flag 'legacy_stderr_threshold_behavior': %s", err)
+	}
+	if err := klogFlags.Set("stderrthreshold", "INFO"); err != nil {
+		klog.Fatalf("Could not set klog flag 'stderrthreshold': %s", err)
+	}
+
 	// Set the flags
 	err := klogFlags.Set("logtostderr", fmt.Sprint(logtostderr))
 	if err != nil {

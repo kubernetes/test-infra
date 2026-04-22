@@ -10,7 +10,7 @@ go 1.21
 
 require (
 	k8s.io/apimachinery v0.22.0
-	k8s.io/klog/v2 v2.10.0
+	k8s.io/klog/v2 v2.140.0
 )
 
-require github.com/go-logr/logr v0.4.0 // indirect
+require github.com/go-logr/logr v1.4.1 // indirect
