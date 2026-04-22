@@ -641,7 +641,6 @@ presubmits:
     path_alias: k8s.io/autoscaler
     branches:
       - ^master$
-      - ^cluster-autoscaler-release-1\.(3[5-9]|[4-9][0-9]|[1-9][0-9]{2,})$
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -670,5 +669,131 @@ presubmits:
             cpu: 2
             memory: 6Gi
         # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-autoscaling-e2e-gci-gce-ca-test-1-35
+    cluster: k8s-infra-prow-build
+    annotations:
+      testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+      testgrid-tab-name: cluster-autoscaler-gci-gce-e2e-test-1-35
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 450m
+    run_if_changed: '^cluster-autoscaler\/'
+    path_alias: k8s.io/autoscaler
+    branches:
+      - ^cluster-autoscaler-release-1\.35$
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --extract=ci/latest-1.35
+        - --gcp-node-image=gci
+        - --gcp-nodes=3
+        - --gcp-zone=us-central1-b
+        - --provider=gce
+        - --test=false
+        - --test-cmd=../cluster-autoscaler/hack/e2e/run-e2e.sh
+        - --test-cmd-args=--presubmit
+        - --timeout=400m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+        securityContext:
+          privileged: true
+  - name: pull-autoscaling-e2e-gci-gce-ca-test-1-34
+    cluster: k8s-infra-prow-build
+    annotations:
+      testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+      testgrid-tab-name: cluster-autoscaler-gci-gce-e2e-test-1-34
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 450m
+    run_if_changed: '^cluster-autoscaler\/'
+    path_alias: k8s.io/autoscaler
+    branches:
+      - ^cluster-autoscaler-release-1\.34$
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --extract=ci/latest-1.34
+        - --gcp-node-image=gci
+        - --gcp-nodes=3
+        - --gcp-zone=us-central1-b
+        - --provider=gce
+        - --test=false
+        - --test-cmd=../cluster-autoscaler/hack/e2e/run-e2e.sh
+        - --test-cmd-args=--presubmit
+        - --timeout=400m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+        securityContext:
+          privileged: true
+  - name: pull-autoscaling-e2e-gci-gce-ca-test-1-33
+    cluster: k8s-infra-prow-build
+    annotations:
+      testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+      testgrid-tab-name: cluster-autoscaler-gci-gce-e2e-test-1-33
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 450m
+    run_if_changed: '^cluster-autoscaler\/'
+    path_alias: k8s.io/autoscaler
+    branches:
+      - ^cluster-autoscaler-release-1\.33$
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --extract=ci/latest-1.33
+        - --gcp-node-image=gci
+        - --gcp-nodes=3
+        - --gcp-zone=us-central1-b
+        - --provider=gce
+        - --test=false
+        - --test-cmd=../cluster-autoscaler/hack/e2e/run-e2e.sh
+        - --test-cmd-args=--presubmit
+        - --timeout=400m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
         securityContext:
           privileged: true
