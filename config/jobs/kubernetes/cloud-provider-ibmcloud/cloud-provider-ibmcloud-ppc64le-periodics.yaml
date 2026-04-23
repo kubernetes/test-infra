@@ -476,9 +476,10 @@ periodics:
                 --ignore-destroy-errors --set-kubeconfig \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --test=exec -- \
-                  bash -c "
+                  bash -c '
                     set -e
-                    echo \"Running CSI driver tests\"
-                    export INSTANCE_LIST_JSON=\"\$(pwd)/$CLUSTER_NAME/instance_list.json\"
+                    echo "Running CSI driver tests"
+                    export INSTANCE_LIST_JSON="$(pwd)/'"$CLUSTER_NAME"'/instance_list.json"
+                    echo "INSTANCE_LIST_JSON: $INSTANCE_LIST_JSON"
                     ./hack/csi-driver.sh
-                  "   
+                  '  
