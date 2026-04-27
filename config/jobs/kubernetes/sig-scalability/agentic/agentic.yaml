@@ -1,0 +1,128 @@
+periodics:
+- cron: '0 4 * * *'
+  name: ci-kubernetes-e2e-gce-agentic-sandbox-burst
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 240m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    testgrid-dashboards: sig-scalability-gce, google-gce, kops-misc
+    testgrid-tab-name: gce-agentic-sandbox-burst
+    description: "Agentic sandbox burst scalability test on GCE using kops and run-test.sh"
+  spec:
+    serviceAccountName: prow-build
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      env:
+      - name: CLOUD_PROVIDER
+        value: "gce"
+      - name: KUBE_NODE_COUNT
+        value: "100"
+      - name: NODE_SIZE
+        value: "e2-standard-8"
+      - name: KOPS_CL2_TEST_CONFIG
+        value: "testing/agentic-sandbox/agent-sandbox-rapid-burst.yaml"
+      - name: CL2_BURST_SIZE
+        value: "300"
+      - name: CL2_ENABLE_PSL_BY_ORDER
+        value: "false"
+      - name: CL2_QPS
+        value: "300"
+      - name: CL2_SLEEP_FOR_CLUSTER_PREP
+        value: "5m"
+      - name: CL2_TOTAL_BURSTS
+        value: "2"
+      - name: CL2_WARMPOOL_SIZE
+        value: "3300"
+      # Variables requiring run-test.sh PR:
+      - name: GCE_REGION
+        value: "us-central1"
+      - name: ENABLE_PROMETHEUS_SERVER
+        value: "true"
+      - name: EXPERIMENTAL_GCP_SNAPSHOT_PROMETHEUS_DISK
+        value: "true"
+
+- cron: '0 6 * * *'
+  name: ci-kubernetes-e2e-gce-agentic-sandbox-continuous-burst
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 240m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    testgrid-dashboards: sig-scalability-gce, google-gce, kops-misc
+    testgrid-tab-name: gce-agentic-sandbox-continuous-burst
+    description: "Agentic sandbox continuous burst scalability test on GCE using kops and run-test.sh"
+  spec:
+    serviceAccountName: prow-build
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      env:
+      - name: CLOUD_PROVIDER
+        value: "gce"
+      - name: KUBE_NODE_COUNT
+        value: "100"
+      - name: NODE_SIZE
+        value: "e2-standard-8"
+      - name: KOPS_CL2_TEST_CONFIG
+        value: "testing/agentic-sandbox/agent-sandbox-continuous-burst.yaml"
+      - name: CL2_DURATION_SECONDS
+        value: "12"
+      - name: CL2_ENABLE_PSL_BY_ORDER
+        value: "false"
+      - name: CL2_QPS
+        value: "300"
+      - name: CL2_SLEEP_FOR_CLUSTER_PREP
+        value: "5m"
+      - name: CL2_WARMPOOL_SIZE
+        value: "3700"
+      # Variables requiring run-test.sh PR:
+      - name: GCE_REGION
+        value: "us-central1"
+      - name: ENABLE_PROMETHEUS_SERVER
+        value: "true"
+      - name: EXPERIMENTAL_GCP_SNAPSHOT_PROMETHEUS_DISK
+        value: "true"
