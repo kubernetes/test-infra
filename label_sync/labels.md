@@ -498,8 +498,8 @@ larger set of contributors to apply/remove them.
 | <a id="area/contributor-comms" href="#area/contributor-comms">`area/contributor-comms`</a> | Issues or PRs related to the upstream marketing team| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/enhancements" href="#area/enhancements">`area/enhancements`</a> | Issues or PRs related to the Enhancements subproject| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
-| <a id="area/workload-aware" href="#area/workload-aware">`area/workload-aware`</a> | Categorizes an issue or PR as relevant to Workload-aware and Topology-aware scheduling subprojects.| humans | |
 | <a id="kind/kep" href="#kind/kep">`kind/kep`</a> | Categorizes KEP tracking issues and PRs modifying the KEP directory| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="wg/workload-aware-scheduling" href="#wg/workload-aware-scheduling">`wg/workload-aware-scheduling`</a> | Categorizes issue or PR as relevant to Workload-aware or Topology-aware scheduling WG.| humans | |
 
 ## Labels that apply to kubernetes/enhancements, only for issues
 
@@ -639,7 +639,6 @@ larger set of contributors to apply/remove them.
 | <a id="area/workload-api/deployment" href="#area/workload-api/deployment">`area/workload-api/deployment`</a> | | label | |
 | <a id="area/workload-api/job" href="#area/workload-api/job">`area/workload-api/job`</a> | | label | |
 | <a id="area/workload-api/replicaset" href="#area/workload-api/replicaset">`area/workload-api/replicaset`</a> | | label | |
-| <a id="area/workload-aware" href="#area/workload-aware">`area/workload-aware`</a> | Categorizes an issue or PR as relevant to Workload-aware and Topology-aware scheduling subprojects.| humans | |
 | <a id="cve/wontfix" href="#cve/wontfix">`cve/wontfix`</a> | Indicates that an announced CVE does not require a fix.| humans | |
 | <a id="kind/dependency" href="#kind/dependency">`kind/dependency`</a> | Categorizes issue or PR as related to a dependency update.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="kind/design" href="#kind/design">`kind/design`</a> | Categorizes issue or PR as related to design.| humans | |
@@ -657,6 +656,7 @@ larger set of contributors to apply/remove them.
 | <a id="wg/lts" href="#wg/lts">`wg/lts`</a> | Categorizes an issue or PR as relevant to WG LTS.| humans | |
 | <a id="wg/machine-learning" href="#wg/machine-learning">`wg/machine-learning`</a> | Categorizes an issue or PR as relevant to WG Machine Learning.| humans | |
 | <a id="wg/security-audit" href="#wg/security-audit">`wg/security-audit`</a> | Categorizes an issue or PR as relevant to WG Security Audit.| humans | |
+| <a id="wg/workload-aware-scheduling" href="#wg/workload-aware-scheduling">`wg/workload-aware-scheduling`</a> | Categorizes issue or PR as relevant to Workload-aware or Topology-aware scheduling WG.| humans | |
 
 ## Labels that apply to kubernetes/kubernetes, only for issues
 
@@ -752,7 +752,6 @@ larger set of contributors to apply/remove them.
 | <a id="area/contributor-comms" href="#area/contributor-comms">`area/contributor-comms`</a> | Issues or PRs related to the upstream marketing team| humans | |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/web-development" href="#area/web-development">`area/web-development`</a> | Issues or PRs related to the kubernetes.io's infrastructure, design, or build processes| humans | |
-| <a id="area/workload-aware" href="#area/workload-aware">`area/workload-aware`</a> | Categorizes an issue or PR as relevant to Workload-aware and Topology-aware scheduling subprojects.| humans | |
 | <a id="language/ar" href="#language/ar">`language/ar`</a> | Issues or PRs related to Arabic language| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="language/bn" href="#language/bn">`language/bn`</a> | Issues or PRs related to Bengali language| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="language/de" href="#language/de">`language/de`</a> | Issues or PRs related to German language| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
@@ -773,6 +772,7 @@ larger set of contributors to apply/remove them.
 | <a id="language/vi" href="#language/vi">`language/vi`</a> | Issues or PRs related to Vietnamese language| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="language/zh" href="#language/zh">`language/zh`</a> | Issues or PRs related to Chinese language <br><br> This was previously `language/cn`, | anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="language/zh-tw" href="#language/zh-tw">`language/zh-tw`</a> | Issues or PRs related to Traditional Chinese language| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="wg/workload-aware-scheduling" href="#wg/workload-aware-scheduling">`wg/workload-aware-scheduling`</a> | Categorizes issue or PR as relevant to Workload-aware or Topology-aware scheduling WG. <br><br> This was previously `area/workload-aware`, | humans | |
 
 ## Labels that apply to kubernetes/website, only for issues
 
