@@ -1,0 +1,19 @@
+presubmits:
+  kubernetes/contributor-site:
+  - name: pull-contributor-site-validate-hugo-modules
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-contribex-contributor-website
+      testgrid-tab-name: pull-contributor-site-validate-hugo-modules
+    decorate: true
+    always_run: true
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/update-hugo-modules.sh
+        - --dry-run
