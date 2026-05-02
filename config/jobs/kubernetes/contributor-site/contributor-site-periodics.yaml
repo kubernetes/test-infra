@@ -12,7 +12,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260316-e86cefa561-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260410-1226423a7b-master
       command:
       - runner.sh
       args:
