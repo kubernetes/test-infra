@@ -22,7 +22,6 @@ postsubmits:
       #  # only merged code should trigger these jobs
       #  - '^dependabot'
       branches:
-        - ^master$
         - ^main$
       spec:
         serviceAccountName: gcb-builder
