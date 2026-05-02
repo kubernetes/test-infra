@@ -1,9 +1,11 @@
 periodics:
 - name: ci-contributor-site-update-hugo-modules
-  interval: 168h # Weekly
+  interval: 24h # Daily
   annotations:
     testgrid-dashboards: sig-contribex-contributor-website
     testgrid-tab-name: ci-contributor-site-update-hugo-modules
+    testgrid-alert-email: sig-contribex-leads@kubernetes.io
+    testgrid-num-failures-to-alert: "1"
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   extra_refs:
