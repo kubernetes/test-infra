@@ -1,0 +1,29 @@
+periodics:
+- name: ci-contributor-site-update-hugo-modules
+  interval: 168h # Weekly
+  annotations:
+    testgrid-dashboards: sig-contribex-contributor-website
+    testgrid-tab-name: ci-contributor-site-update-hugo-modules
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: contributor-site
+    base_ref: master
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
+      command:
+      - runner.sh
+      args:
+      - ./hack/update-hugo-modules.sh
+      env:
+      - name: GITHUB_TOKEN_PATH
+        value: /etc/github-token/oauth
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-ci-robot-github-token
