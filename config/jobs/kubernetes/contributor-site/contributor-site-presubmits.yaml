@@ -17,3 +17,10 @@ presubmits:
         args:
         - ./hack/update-hugo-modules.sh
         - --dry-run
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
