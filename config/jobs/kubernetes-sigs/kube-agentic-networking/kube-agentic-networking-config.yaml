@@ -21,6 +21,9 @@ presubmits:
         args:
           - make
           - verify
+        env:
+        - name: "GOWORK"
+          value: "off"
         # docker-in-docker needs privileged mode.
         securityContext:
           privileged: true
@@ -52,6 +55,9 @@ presubmits:
           args:
             - make
             - test
+          env:
+          - name: "GOWORK"
+            value: "off"
           # docker-in-docker needs privileged mode.
           securityContext:
             privileged: true
