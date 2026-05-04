@@ -45,3 +45,8 @@ prefixes:
     repo: "https://github.com/kubernetes-sigs/apisnoop"
     summarise: false
     consistentImages: false
+  - name: "k8s-staging-images contributor-site"
+    prefix: "us-central1-docker.pkg.dev/k8s-staging-images/contributor-site"
+    repo: "https://github.com/kubernetes/contributor-site"
+    summarise: false
+    consistentImages: false

@@ -14,7 +14,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-images/contributor-site/k8s-contrib-site-hugo:v0.133.0-7f658d63039e
+    - image: us-central1-docker.pkg.dev/k8s-staging-images/contributor-site/k8s-contrib-site-hugo:v20260504-5ae63b7
       command:
       - bash
       args:
