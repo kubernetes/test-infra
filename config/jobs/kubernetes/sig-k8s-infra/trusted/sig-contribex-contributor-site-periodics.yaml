@@ -1,6 +1,6 @@
 periodics:
 - name: ci-contributor-site-update-hugo-modules
-  interval: 24h # Daily
+  interval: 24h
   annotations:
     testgrid-dashboards: sig-contribex-contributor-website
     testgrid-tab-name: ci-contributor-site-update-hugo-modules
@@ -14,25 +14,27 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260410-1226423a7b-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-images/contributor-site/k8s-contrib-site-hugo:latest
       command:
-      - runner.sh
+      - bash
       args:
       - ./hack/update-hugo-modules.sh
       env:
       - name: GITHUB_TOKEN_PATH
         value: /etc/github-token/oauth
+      - name: GOMODCACHE
+        value: /tmp/gomod
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
         readOnly: true
       resources:
         limits:
-          cpu: 200m
-          memory: 256Mi
+          cpu: "1"
+          memory: 1Gi
         requests:
-          cpu: 200m
-          memory: 256Mi
+          cpu: "1"
+          memory: 1Gi
     volumes:
     - name: github
       secret:

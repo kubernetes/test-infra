@@ -11,16 +11,19 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260410-1226423a7b-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-images/contributor-site/k8s-contrib-site-hugo:latest
         command:
-        - runner.sh
+        - bash
         args:
         - ./hack/update-hugo-modules.sh
         - --dry-run
+        env:
+        - name: GOMODCACHE
+          value: /tmp/gomod
         resources:
           limits:
-            cpu: 200m
-            memory: 256Mi
+            cpu: "1"
+            memory: 1Gi
           requests:
-            cpu: 200m
-            memory: 256Mi
+            cpu: "1"
+            memory: 1Gi
