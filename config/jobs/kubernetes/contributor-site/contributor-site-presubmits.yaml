@@ -11,7 +11,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-images/contributor-site/k8s-contrib-site-hugo:latest
+      - image: us-central1-docker.pkg.dev/k8s-staging-images/contributor-site/k8s-contrib-site-hugo:v0.133.0-7f658d63039e
         command:
         - bash
         args:
