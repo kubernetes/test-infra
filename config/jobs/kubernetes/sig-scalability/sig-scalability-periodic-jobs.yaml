@@ -1154,6 +1154,8 @@ periodics:
       env:
       - name: CL2_ENABLE_INFORMER_LATENCY_TEST
         value: "true"
+      - name: CL2_INFORMER_RUN_ON_CONTROL_PLANE
+        value: "true"
       - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
         value: "21474836480"
       - name: CL2_EXECSERVICE_CPU_REQUESTS
