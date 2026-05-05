@@ -333,7 +333,7 @@ presubmits:
         - name: KUBERNETES_VERSION  # CAPZ config
           value: "latest-1.33"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-no-win-oot-credential-provider.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.22/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: CUSTOM_CLOUD_PROVIDER_CONFIG  # CAPZ config
