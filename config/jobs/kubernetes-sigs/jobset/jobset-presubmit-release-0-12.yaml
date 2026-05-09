@@ -19,7 +19,7 @@ presubmits:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
         command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
+        # generic runner script, handles DIND for caching, etc.
         - runner.sh
         args:
         - make
@@ -78,7 +78,7 @@ presubmits:
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.26
           command:
-            # generic runner script, handles DIND, bazelrc for caching, etc.
+            # generic runner script, handles DIND for caching, etc.
             - runner.sh
           args:
             - make
@@ -114,7 +114,7 @@ presubmits:
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.26
           command:
-            # generic runner script, handles DIND, bazelrc for caching, etc.
+            # generic runner script, handles DIND for caching, etc.
             - runner.sh
           args:
             - make
@@ -150,7 +150,7 @@ presubmits:
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.26
           command:
-            # generic runner script, handles DIND, bazelrc for caching, etc.
+            # generic runner script, handles DIND for caching, etc.
             - runner.sh
           args:
             - make

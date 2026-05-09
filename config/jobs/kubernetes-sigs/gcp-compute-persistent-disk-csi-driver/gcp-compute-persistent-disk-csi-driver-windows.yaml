@@ -14,8 +14,6 @@ periodics:
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-e2e-gce-windows-containerd: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
@@ -60,8 +58,6 @@ periodics:
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-e2e-gce-windows-containerd: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
@@ -101,8 +97,6 @@ presubmits:
       preset-common-gce-windows: "true"
       preset-e2e-gce-windows: "true"
       preset-e2e-gce-windows-containerd: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
     always_run: true
     optional: true
@@ -147,8 +141,6 @@ presubmits:
       preset-common-gce-windows: "true"
       preset-e2e-gce-windows: "true"
       preset-e2e-gce-windows-containerd: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
     always_run: true
     optional: true

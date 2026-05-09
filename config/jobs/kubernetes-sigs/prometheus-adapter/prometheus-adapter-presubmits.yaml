@@ -60,7 +60,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
-        # generic runner script, handles DIND, etc.
+        # generic runner script, handles DIND etc.
         - runner.sh
         env:
         - name: KIND_E2E

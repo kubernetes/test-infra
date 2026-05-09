@@ -25,7 +25,7 @@ presubmits:
         - name: DRACPU_E2E_VERBOSE
           value: "1"
         command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
+        # generic runner script, handles DIND for caching, etc.
         - runner.sh
         args:
         - hack/ci/prow.sh
@@ -63,7 +63,7 @@ presubmits:
         - name: DRACPU_E2E_VERBOSE
           value: "1"
         command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
+        # generic runner script, handles DIND for caching, etc.
         - runner.sh
         args:
         - hack/ci/prow.sh
@@ -101,7 +101,7 @@ presubmits:
         - name: DRACPU_E2E_VERBOSE
           value: "1"
         command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
+        # generic runner script, handles DIND for caching, etc.
         - runner.sh
         args:
         - hack/ci/prow.sh
@@ -139,7 +139,7 @@ presubmits:
         - name: DRACPU_E2E_VERBOSE
           value: "1"
         command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
+        # generic runner script, handles DIND for caching, etc.
         - runner.sh
         args:
         - hack/ci/prow.sh

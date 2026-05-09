@@ -77,7 +77,6 @@ presubmits:
         - --use-logexporter
         - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
         resources:
-          # Using 6 CPU to speed up bazel build phase (2 is enough for the test itself)
           limits:
             cpu: 6
             memory: "14Gi"
@@ -309,13 +308,8 @@ presubmits:
         - --timeout=100m
         - --use-logexporter
         - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
-        # TODO(krzyzacy): Figure out bazel built kubemark image
-        #env:
-        # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y"
         resources:
           limits:
-            # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
             cpu: 6
             memory: 16Gi
           requests:
@@ -393,13 +387,8 @@ presubmits:
         - --timeout=1080m
         - --use-logexporter
         - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
-        # TODO(krzyzacy): Figure out bazel built kubemark image
-        #env:
-        # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y"
         resources:
           limits:
-            # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
             cpu: 6
             memory: "16Gi"
           requests:

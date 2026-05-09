@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# generic runner script, handles DIND, etc.
+# generic runner script, handles DIND etc.
 
 # runs custom docker data root cleanup binary and debugs remaining resources
 cleanup_dind() {

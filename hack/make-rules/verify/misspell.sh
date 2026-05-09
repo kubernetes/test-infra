@@ -52,7 +52,6 @@ if find -L . -type f -not \( \
     -o -path './_bin/*' \
     -o -path './_output/*' \
     -o -path './_artifacts/*' \
-    -o -path './bazel-*/*' \
     -o -path './.python_virtual_env/*' \
     \) -prune \
     \) -exec grep -Hn 'Git'hub '{}' '+' ; then

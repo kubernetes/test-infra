@@ -27,16 +27,11 @@ Please see [ProwJob docs](https://docs.prow.k8s.io/docs/jobs/) for more info
 
 ### Job Images
 
-Where possible, we prefer that jobs use images that are pinned to a specific
-version, containing only what is needed.
+Where possible, we prefer that jobs use the kubekins-e2e image as it contains everything you need for kubernetes ecosytem.
 
-Some good examples include:
+This image is available at `us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e`, it is bumped automatically so search this repo for the most recent tag that matches the format `vYYYYMMDD-c27e3ff179-master`.
 
-- [pull-release-unit] uses `golang:1.12` to run `go test ./...`
-- [pull-release-notes-lint] uses `node:11` to run `npm ci && npm lint`
-- [pull-org-test-all] uses `launcher.gcr.io/google/bazel:0.26.0` to run `bazel test //...`
-
-Many jobs use `gcr.io/k8s-testimages/foo` images that are built from source in
+Many jobs use `gcr.io/k8s-staging-test-infra/foo` images that are built from source in
 [`images/`]. Some of these have evolved organically, with way more dependencies
 than needed, and will be periodically bumped by PRs. These are sources of
 technical debt that are often not very well maintained. Use at your own risk,
@@ -95,7 +90,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.12.5
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - /bin/bash
         args:
@@ -136,7 +131,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
       command:
       - "./scripts/ci-aws-cred-test.sh"
 ```
@@ -180,7 +175,6 @@ need to trigger it again and are a Prow administrator you have a few options:
 
 - you can use the rerun feature in prow.k8s.io to run the job again *with the same config*
 - you can use [`config/mkpj.sh`](/config/mkpj.sh) to create a prowjob CR from your local config
-- you can use `bazel run //prow/cmd/mkpj -- --job=foo ...` to create a prowjob CR from your local config
 
 For the latter two options you'll need to submit the resulting CR via `kubectl` configured against
 the prow services cluster.

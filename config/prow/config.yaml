@@ -137,8 +137,6 @@ deck:
           - \[(0;)?31m
           - "^diff " # [+-]{3}\\s" has too much noise from go test output and set -x
           - • Failure
-          # This highlights the start of bazel tests/runs to skip go importing noise.
-          - "^INFO: Analyzed \\d+ targets"
       required_files:
         - ^.*build-log\.txt$
     - lens:
@@ -1058,23 +1056,6 @@ presets:
     - name: azure-cred
       mountPath: /etc/azure-cred
       readOnly: true
-# storage / caching presets
-- labels:
-    preset-bazel-scratch-dir: "true"
-  env:
-  - name: TEST_TMPDIR
-    value: /bazel-scratch/.cache/bazel
-  volumes:
-  - name: bazel-scratch
-    emptyDir: {}
-  volumeMounts:
-  - name: bazel-scratch
-    mountPath: /bazel-scratch/.cache
-- labels:
-    preset-bazel-remote-cache-enabled: "true"
-  env:
-  - name: BAZEL_REMOTE_CACHE_ENABLED
-    value: "false"
 # docker-in-docker (with images/bootstrap) preset
 # NOTE: using this also requires using that image,
 # ensuring you run your test under either the ENTRYPOINT or:

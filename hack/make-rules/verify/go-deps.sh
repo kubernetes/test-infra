@@ -46,10 +46,6 @@ make_temp_repo_copy() {
       -type d -path "./.git" -o \
       -type d -path "./_bin" -o \
       -type d -path "./_output" \
-      -type d -path "./bazel-bin" \
-      -type d -path "./bazel-out" \
-      -type d -path "./bazel-test-infra" \
-      -type d -path "./bazel-testlogs" \
     \) -prune -o \
     -exec bash -c 'cp -r "${0}" "${1}/${0}" >/dev/null 2>&1' {} "${TMP_REPO}" \;
 }
@@ -69,10 +65,6 @@ main() {
           -x ".git" \
           -x "_bin" \
           -x "_output" \
-          -x "bazel-bin" \
-          -x "bazel-out" \
-          -x "bazel-test-infra" \
-          -x "bazel-testlogs" \
          "${REPO_ROOT}" "${TMP_REPO}" 2>/dev/null || true)
   if [[ -n "${diff}" ]]; then
     echo "unexpectedly dirty working directory after ${0}" >&2

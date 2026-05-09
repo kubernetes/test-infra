@@ -1,9 +1,0 @@
-reviewers:
-- cpanato
-emeritus_approvers:
-- BenTheElder
-- clarketm
-- fejta
-- mikedanese
-labels:
-- sig/testing

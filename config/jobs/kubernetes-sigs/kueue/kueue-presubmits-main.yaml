@@ -136,7 +136,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -174,7 +174,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -212,7 +212,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -250,7 +250,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -288,7 +288,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -326,7 +326,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -364,7 +364,7 @@ presubmits:
                 - name: BASE_BUILDER_IMAGE
                   value: public.ecr.aws/docker/library/golang
               command:
-                # generic runner script, handles DIND, bazelrc for caching, etc.
+                # generic runner script, handles DIND for caching, etc.
                 - runner.sh
               args:
                 - make
@@ -403,7 +403,7 @@ presubmits:
                     - name: BASE_BUILDER_IMAGE
                       value: public.ecr.aws/docker/library/golang
                   command:
-                    # generic runner script, handles DIND, bazelrc for caching, etc.
+                    # generic runner script, handles DIND for caching, etc.
                     - runner.sh
                   args:
                     - make
@@ -441,7 +441,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -479,7 +479,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -517,7 +517,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -555,7 +555,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -593,7 +593,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -631,7 +631,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make
@@ -887,7 +887,7 @@ presubmits:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
+              # generic runner script, handles DIND for caching, etc.
               - runner.sh
             args:
               - make

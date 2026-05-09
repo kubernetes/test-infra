@@ -3,7 +3,6 @@
 *.sublime-project
 *.sublime-workspace
 *~
-/bazel-*
 /_artifacts
 /_output
 /_bin

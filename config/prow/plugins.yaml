@@ -113,7 +113,6 @@ approve:
   require_self_approval: true
   ignore_review_state: true
 - repos:
-  - bazelbuild
   - kubernetes-sigs/bom
   - kubernetes-sigs/boskos
   - kubernetes-sigs/cluster-api-provider-digitalocean
@@ -248,7 +247,6 @@ label:
 
 lgtm:
 - repos:
-  - bazelbuild
   - kubernetes-sigs/aws-ebs-csi-driver
   - kubernetes-sigs/bom
   - kubernetes-sigs/boskos

@@ -31,8 +31,6 @@ postsubmits:
     branches:
     - ^your-branch$ # TODO: Replace this
     max_concurrency: 1
-    labels:
-      preset-bazel-scratch-dir: "true"
     run_if_changed: '^(dir/to/your/prowjobs/.*\.yaml)|(dir/to/your/testgrid/default\.yaml)$' # TODO: Replace this
     decorate: true
     annotations: # TODO: These add your postsubmit job to TestGrid. Replace these
