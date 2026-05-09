@@ -6,7 +6,7 @@ presubmits:
     path_alias: sigs.k8s.io/scheduler-library
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-scheduler-library
       testgrid-tab-name: pull-scheduler-library-verify-main
     branches:
     - ^main$

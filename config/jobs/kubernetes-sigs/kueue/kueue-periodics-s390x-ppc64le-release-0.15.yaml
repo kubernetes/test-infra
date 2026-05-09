@@ -3,7 +3,7 @@ periodics:
     name: periodic-kueue-build-s390x-ppc64le-release-0-15
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-build-s390x-ppc64le-release-0-15
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'

@@ -4,7 +4,7 @@ presubmits:
   - name: pull-descheduler-verify-release-1-33
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-descheduler, sig-scheduling-descheduler-presubmits
       testgrid-tab-name: pull-descheduler-verify-release-1.33
     decorate: true
     decoration_config:
@@ -31,7 +31,7 @@ presubmits:
   - name: pull-descheduler-verify-build-release-1-33
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-descheduler, sig-scheduling-descheduler-presubmits
       testgrid-tab-name: pull-descheduler-verify-build-release-1.33
     decorate: true
     decoration_config:
@@ -58,7 +58,7 @@ presubmits:
   - name: pull-descheduler-unit-test-release-1-33
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-descheduler, sig-scheduling-descheduler-presubmits
       testgrid-tab-name: pull-descheduler-unit-test-release-1.33
     decorate: true
     decoration_config:
@@ -86,7 +86,7 @@ presubmits:
   - name: pull-descheduler-test-e2e-k8s-release-1-33-1-33
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-descheduler, sig-scheduling-descheduler-presubmits
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-33-1.33
     decorate: true
     decoration_config:
@@ -124,7 +124,7 @@ presubmits:
   - name: pull-descheduler-test-e2e-k8s-release-1-33-1-32
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-descheduler, sig-scheduling-descheduler-presubmits
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-33-1.32
     decorate: true
     decoration_config:
@@ -162,7 +162,7 @@ presubmits:
   - name: pull-descheduler-test-e2e-k8s-release-1-33-1-31
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-descheduler, sig-scheduling-descheduler-presubmits
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-33-1.31
     decorate: true
     decoration_config:

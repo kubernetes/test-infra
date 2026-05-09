@@ -70,7 +70,7 @@ presubmits:
   - name: pull-cluster-capacity-test-e2e-k8s-master-1-35
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-cluster-capacity
       testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.35
     decorate: true
     decoration_config:
@@ -109,7 +109,7 @@ presubmits:
   - name: pull-cluster-capacity-test-e2e-k8s-master-1-34
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-cluster-capacity
       testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.34
     decorate: true
     decoration_config:
@@ -148,7 +148,7 @@ presubmits:
   - name: pull-cluster-capacity-test-e2e-k8s-master-1-33
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-cluster-capacity
       testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.33
     decorate: true
     decoration_config:
