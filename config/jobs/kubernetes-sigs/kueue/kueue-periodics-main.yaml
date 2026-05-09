@@ -3,7 +3,7 @@ periodics:
     name: periodic-kueue-test-unit-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-unit-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -43,7 +43,7 @@ periodics:
     name: periodic-kueue-verify-website-links-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-verify-website-links-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -82,7 +82,7 @@ periodics:
     name: periodic-kueue-test-integration-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-integration-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -120,7 +120,7 @@ periodics:
     name: periodic-kueue-test-integration-multikueue-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-integration-multikueue-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -158,7 +158,7 @@ periodics:
     name: periodic-kueue-test-scheduling-perf-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-scheduling-perf-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -196,7 +196,7 @@ periodics:
     name: periodic-kueue-test-tas-scheduling-perf-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-tas-scheduling-perf-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -272,7 +272,7 @@ periodics:
     name: periodic-kueue-test-e2e-main-1-33
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-main-1-33
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -318,7 +318,7 @@ periodics:
     name: periodic-kueue-test-e2e-main-1-34
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-main-1-34
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -364,7 +364,7 @@ periodics:
     name: periodic-kueue-test-e2e-main-1-35
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-main-1-35
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -410,7 +410,7 @@ periodics:
     name: periodic-kueue-test-e2e-multikueue-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -456,7 +456,7 @@ periodics:
     name: periodic-kueue-test-e2e-multikueue-sequential-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-sequential-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -502,7 +502,7 @@ periodics:
     name: periodic-kueue-test-e2e-tas-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-tas-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -548,8 +548,7 @@ periodics:
     name: periodic-kueue-test-e2e-sequential-baseline-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-sequential-baseline-main
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic sequential baseline end to end tests"
@@ -595,7 +594,7 @@ periodics:
     name: periodic-kueue-test-e2e-sequential-extended-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-sequential-extended-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -641,7 +640,7 @@ periodics:
     name: periodic-kueue-test-e2e-certmanager-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-certmanager-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -687,7 +686,7 @@ periodics:
     name: periodic-kueue-test-e2e-dra-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-dra-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -733,7 +732,7 @@ periodics:
     name: periodic-kueue-test-e2e-multikueue-dra-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-dra-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -779,7 +778,7 @@ periodics:
     name: periodic-kueue-test-e2e-k8s-main-was
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-k8s-main-was
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -821,7 +820,7 @@ periodics:
     name: periodic-kueue-test-e2e-kueueviz-main
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-kueueviz-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'

@@ -8,7 +8,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-unit-release-0-16
         description: "Run kueue unit tests"
       spec:
@@ -38,7 +38,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-integration-baseline-release-0-16
         description: "Run kueue test-integration-baseline"
       spec:
@@ -66,7 +66,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-integration-extended-release-0-16
         description: "Run kueue test-integration-extended"
       spec:
@@ -94,7 +94,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-integration-multikueue-release-0-16
         description: "Run kueue test-multikueue-integration"
       spec:
@@ -122,7 +122,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-release-0-16-1-33
         description: "Run kueue end to end tests for Kubernetes 1.33"
       labels:
@@ -160,7 +160,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-release-0-16-1-34
         description: "Run kueue end to end tests for Kubernetes 1.34"
       labels:
@@ -198,7 +198,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-release-0-16-1-35
         description: "Run kueue end to end tests for Kubernetes 1.35"
       labels:
@@ -236,7 +236,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-multikueue-release-0-16
         description: "Run multikueue end to end tests"
       labels:
@@ -274,7 +274,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-multikueue-sequential-release-0-16
         description: "Run multikueue sequential end to end tests"
       labels:
@@ -312,7 +312,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-tas-release-0-16
         description: "Run tas end to end tests"
       labels:
@@ -350,8 +350,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-sequential-baseline-release-0-16
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         description: "Run sequential baseline end to end tests"
       labels:
         preset-dind-enabled: "true"
@@ -426,7 +425,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-certmanager-release-0-16
         description: "Run cert-manager end to end tests"
       labels:
@@ -464,7 +463,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-dra-release-0-16
         description: "Run DRA end to end tests"
       labels:
@@ -502,7 +501,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-kueueviz-release-0-16
         description: "Run kueueviz end to end tests"
       labels:
@@ -540,7 +539,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-upgrade-release-0-16
         description: "Run kueue upgrade end to end tests"
       labels:
@@ -578,7 +577,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-certmanager-upgrade-release-0-16
         description: "Run kueue upgrade with cert-manager end to end tests"
       labels:
@@ -616,7 +615,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-verify-release-0-16
         description: "Run kueue verify checks"
       labels:
@@ -649,7 +648,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-build-image-release-0-16
         description: "Build container image of kueue"
       labels:
@@ -687,7 +686,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-scheduling-perf-release-0-16
         description: "Run kueue test-scheduling-perf"
       spec:
@@ -715,7 +714,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-tas-scheduling-perf-release-0-16
         description: "Run kueue test-tas-scheduling-perf"
       spec:
@@ -743,7 +742,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-populator-verify-release-0-16
         description: "Run kueue-populator verify checks"
       labels:
@@ -776,7 +775,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-populator-test-unit-release-0-16
         description: "Run kueue-populator unit tests"
       spec:
@@ -806,7 +805,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-populator-test-integration-release-0-16
         description: "Run kueue-populator integration tests"
       spec:
@@ -834,7 +833,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-populator-test-e2e-release-0-16
         description: "Run kueue-populator end to end tests"
       labels:

@@ -1,7 +1,8 @@
 dashboard_groups:
 - name: sig-api-machinery
   dashboard_names:
-    - sig-api-machinery-gce-gke
+    - sig-api-machinery-gce
+    - sig-api-machinery-kind
     - sig-api-machinery-gengo
     - sig-api-machinery-kube-storage-version-migrator
     - sig-api-machinery-structured-merge-diff
@@ -11,7 +12,7 @@ dashboard_groups:
     - sig-api-machinery-fieldsv1string
 
 dashboards:
-- name: sig-api-machinery-gce-gke
+- name: sig-api-machinery-gce
   dashboard_tab:
     - name: gce
       test_group_name: ci-kubernetes-e2e-gci-gce
@@ -33,6 +34,12 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gci-gce-serial
       base_options: include-filter-by-regex=sig-api-machinery
       description: apimachinery gce serial e2e tests for master branch
+- name: sig-api-machinery-kind
+  dashboard_tab:
+    - name: kind
+      test_group_name: ci-kubernetes-e2e-kind
+      base_options: include-filter-by-regex=sig-api-machinery
+      description: apimachinery kind e2e tests for master branch
 - name: sig-api-machinery-kube-storage-version-migrator
 - name: sig-api-machinery-structured-merge-diff
 - name: sig-api-machinery-kubebuilder
@@ -40,3 +47,5 @@ dashboards:
 - name: sig-api-machinery-network-proxy
 - name: sig-api-machinery-emulated-version
 - name: sig-api-machinery-fieldsv1string
+
+

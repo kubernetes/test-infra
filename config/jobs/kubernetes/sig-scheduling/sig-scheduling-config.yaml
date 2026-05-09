@@ -42,8 +42,7 @@ periodics:
           cpu: 4
           memory: 9Gi
   annotations:
-    testgrid-dashboards: sig-scheduling
-    testgrid-tab-name: sig-scheduling-kind, multizone
+    testgrid-dashboards: sig-scheduling-kind
     description: Runs tests against a Multizone Kubernetes in Docker cluster
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, acondor@google.com
 
@@ -65,7 +64,7 @@ presubmits:
     always_run: false
     optional: true
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-presubmits
       testgrid-tab-name: scheduler-perf
       testgrid-alert-email: sig-scheduling-alerts@kubernetes.io
     decorate: true
