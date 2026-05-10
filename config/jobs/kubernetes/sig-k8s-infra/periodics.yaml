@@ -31,8 +31,6 @@ periodics:
     cluster: k8s-infra-aks-prow-build
     interval: 2h
     decorate: true
-    decoration_config:
-      skip_cloning: true
     extra_refs:
       - org: kubernetes
         repo: kubernetes
