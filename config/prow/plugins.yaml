@@ -1904,6 +1904,10 @@ plugins:
     plugins:
     - milestone
 
+  kubernetes-sigs/dranet:
+    plugins:
+    - release-note
+
 external_plugins:
   kubernetes:
   - name: needs-rebase
