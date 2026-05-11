@@ -122,7 +122,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
-      run_if_changed: '^(deploy/storage-provisioner/|pkg/storage/storage_provisioner\.go)'
+      run_if_changed: '^(deploy/storage-provisioner/|pkg/storage/)'
       spec:
         serviceAccountName: gcb-builder
         containers:
