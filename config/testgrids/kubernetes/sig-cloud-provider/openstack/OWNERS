@@ -1,13 +1,13 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- chrigl
-- lingxiankong
-- ramineni
+- zetaab
+- stephenfin
+- kayrus
 approvers:
-- chrigl
-- lingxiankong
-- ramineni
+- zetaab
+- stephenfin
+- kayrus
 
 labels:
 - area/provider/openstack
