@@ -3,6 +3,8 @@ periodics:
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  decoration_config:
+    skip_cloning: true
   extra_refs:
   - org: kubernetes
     repo: org
@@ -14,7 +16,7 @@ periodics:
     description: Automatically /retest-required for approved PRs that are failing tests
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260226-ccc15f6c33
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20260325-0ac3b4d79f
       command:
       - commenter
       args:

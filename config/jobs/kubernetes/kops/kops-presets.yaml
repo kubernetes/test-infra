@@ -56,8 +56,6 @@ presets:
       value: "d1aa7522-0959-442e-80ee-8c4f7fb4c184"
     - name: AZURE_FEDERATED_TOKEN_FILE
       value: "/var/run/secrets/azure-token/serviceaccount/token"
-    - name: AZURE_STORAGE_ACCOUNT
-      value: "stkopsstatestore"
   volumes:
     - name: azure-token
       projected:

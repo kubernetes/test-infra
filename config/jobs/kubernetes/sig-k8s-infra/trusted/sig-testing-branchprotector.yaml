@@ -16,7 +16,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: us-docker.pkg.dev/k8s-infra-prow/images/branchprotector:v20260306-8c5d6f1cb
+      image: us-docker.pkg.dev/k8s-infra-prow/images/branchprotector:v20260513-3e578e4f0
       command:
       - branchprotector
       args:
@@ -31,6 +31,13 @@ periodics:
       - name: github
         mountPath: /etc/github
         readOnly: true
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: github
       secret:

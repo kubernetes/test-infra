@@ -25,13 +25,13 @@ postsubmits:
       - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - ./infra/gcp/terraform/k8s-infra-prow-build-trusted/deploy.sh
-      resources:
-        limits:
-          cpu: 100m
-          memory: 512Mi
-        requests:
-          cpu: 100m
-          memory: 512Mi
+        resources:
+          limits:
+            cpu: 100m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 512Mi
     reporter_config:
       slack:
         channel: "prow-alerts"
@@ -94,7 +94,7 @@ periodics:
       slug: test-infra-admins
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260306-8c5d6f1cb
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260513-3e578e4f0
       command:
       - generic-autobumper
       args:
@@ -137,7 +137,7 @@ periodics:
       slug: test-infra-admins
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260306-8c5d6f1cb
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260513-3e578e4f0
       command:
       - generic-autobumper
       args:

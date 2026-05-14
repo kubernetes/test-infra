@@ -19,7 +19,7 @@ presubmits:
       timeout: 60m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260504-419d814ca6-master
         env:
         - name: KUBE_PROXY_MODE
           value: "nftables"
@@ -47,7 +47,8 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-network-dranet
       testgrid-tab-name: pull-dranet conformance, master (dev) [non-serial]
-      testgrid-alert-email: maspinwall@google.com, gauravkg@google.com, antonio.ojea.garcia@gmail.com
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com
+      testgrid-num-failures-to-alert: "8"
   - name: pull-dranet-nftables-ipv6
     cluster: k8s-infra-prow-build
     labels:
@@ -66,7 +67,7 @@ presubmits:
       timeout: 60m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260504-419d814ca6-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -100,4 +101,5 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-network-dranet
       testgrid-tab-name: pull-dranet-ipv6 conformance, master (dev) [non-serial]
-      testgrid-alert-email: maspinwall@google.com, gauravkg@google.com, antonio.ojea.garcia@gmail.com
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com
+      testgrid-num-failures-to-alert: "8"

@@ -21,6 +21,9 @@
       {%- elif not boskos_resource_type %}
       preset-k8s-kops-aws-credential: "true"
       {%- endif %}
+      {%- elif cloud == "azure" %}
+      preset-service-account: "true"
+      preset-kops-azure-cred-wi: "true"
       {%- else %}
       preset-k8s-ssh: "true"
       {%- endif %}
@@ -50,6 +53,8 @@
     spec:
       {%- if cloud == "gce" %}
       serviceAccountName: k8s-kops-test
+      {%- elif cloud == "azure" %}
+      serviceAccountName: azure
       {%- endif %}
       containers:
       - image: {{image}}
@@ -61,10 +66,18 @@
         securityContext:
           privileged: true
         env:
+        {%- if kops_feature_flags %}
+        - name: KOPS_FEATURE_FLAGS
+          value: "{{kops_feature_flags}}"
+        {%- endif %}
+        {%- if cloud != "azure" %}
         - name: KUBE_SSH_KEY_PATH
           value: {{kops_ssh_key_path}}
         - name: KUBE_SSH_USER
           value: {{kops_ssh_user}}
+        {%- endif %}
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         {%- if artifacts %}

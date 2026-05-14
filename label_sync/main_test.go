@@ -19,6 +19,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -26,6 +28,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"go.yaml.in/yaml/v2"
 	"sigs.k8s.io/prow/pkg/github"
 )
 
@@ -584,5 +587,61 @@ func TestSyncOrgs(t *testing.T) {
 				t.Errorf("syncOrgs() mismatch (-want +got):\n%s", diff)
 			}
 		})
+	}
+}
+
+// TestLabelsYAMLColors verifies that every "color" scalar in labels.yaml is
+// unmarshaled as a Go string (i.e. the YAML scalar was tagged !!str) and
+// matches the 6-digit hex format GitHub accepts.
+//
+// Without the string check, an unquoted scalar like `color: 5319e7` is
+// resolved by YAML as !!float (5.319e+10), then coerced into the Color
+// string field as "5.319e+10". GitHub then rejects the label sync with
+// HTTP 422 "Validation Failed: code=invalid, field=color", taking down
+// the ci-test-infra-label-sync periodic.
+func TestLabelsYAMLColors(t *testing.T) {
+	data, err := os.ReadFile("labels.yaml")
+	if err != nil {
+		t.Fatalf("read labels.yaml: %v", err)
+	}
+	var doc interface{}
+	if err := yaml.Unmarshal(data, &doc); err != nil {
+		t.Fatalf("unmarshal labels.yaml: %v", err)
+	}
+	hexColorRE := regexp.MustCompile(`^[0-9a-fA-F]{6}$`)
+	var failures []string
+	walkColors(doc, "$", func(path string, v interface{}) {
+		s, ok := v.(string)
+		if !ok {
+			failures = append(failures, fmt.Sprintf("%s: %v parsed as %T, expected string — quote the value in labels.yaml", path, v, v))
+			return
+		}
+		if !hexColorRE.MatchString(s) {
+			failures = append(failures, fmt.Sprintf("%s: %q is not a 6-digit hex color", path, s))
+		}
+	})
+	if len(failures) > 0 {
+		t.Errorf("labels.yaml has invalid color values:\n  - %s", strings.Join(failures, "\n  - "))
+	}
+}
+
+// walkColors invokes fn on every value found under a "color" map key,
+// recursing through maps and sequences.
+func walkColors(v interface{}, path string, fn func(string, interface{})) {
+	switch x := v.(type) {
+	case map[interface{}]interface{}:
+		for k, val := range x {
+			ks := fmt.Sprintf("%v", k)
+			childPath := path + "." + ks
+			if ks == "color" {
+				fn(childPath, val)
+				continue
+			}
+			walkColors(val, childPath, fn)
+		}
+	case []interface{}:
+		for i, item := range x {
+			walkColors(item, fmt.Sprintf("%s[%d]", path, i), fn)
+		}
 	}
 }

@@ -19,6 +19,7 @@ periodics:
   job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
   decoration_config:
     timeout: 270m
+    skip_cloning: true
   annotations:
     testgrid-num-failures-to-alert: '2'
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
@@ -33,7 +34,7 @@ periodics:
       secret:
         secretName: scale-pull-cache-token
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       volumeMounts:
       - name: cache-secret
         readOnly: true
@@ -60,20 +61,20 @@ periodics:
       - --gcp-nodes=2000
       - --gcp-project-type=scalability-scale-project
       - --gcp-ssh-proxy-instance-name=gce-scale-cluster-master
-      - --gcp-zone=us-east1-b
+      - --gcp-zone=us-central1-f
       - --ginkgo-parallel=40
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8 --node-schedulable-timeout=90m
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
       - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 6
-          memory: "39Gi"
+          memory: "16Gi"
         limits:
           cpu: 6
-          memory: "39Gi"
+          memory: "16Gi"
 
 # This is a sig-release-master-blocking job.
 # The frequency was cut to reduce infrastructure costs.
@@ -115,7 +116,7 @@ periodics:
   spec:
     serviceAccountName: prow-build
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
       command:
       - runner.sh
       args:
@@ -123,6 +124,16 @@ periodics:
       securityContext:
         privileged: true
       env:
+      - name: CL2_ENABLE_INFORMER_LATENCY_TEST
+        value: "true"
+      - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
+        value: "21474836480"
+      - name: CL2_EXECSERVICE_CPU_REQUESTS
+        value: "8"
+      - name: CL2_EXECSERVICE_MEMORY_REQUESTS
+        value: "16Gi"
+      - name: CL2_REALISTIC_POD
+        value: "true"
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
@@ -145,6 +156,8 @@ periodics:
         value: "1"
       - name: CONTROL_PLANE_SIZE
         value: "c4-standard-96"
+      - name: ADDONS_NODE_SIZE
+        value: "c3-standard-44"
       - name: KUBE_PROXY_MODE
         value: "nftables"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
@@ -170,10 +183,10 @@ periodics:
       resources:
         requests:
           cpu: 7
-          memory: 25Gi
+          memory: "27Gi"
         limits:
           cpu: 7
-          memory: 25Gi
+          memory: "27Gi"
 
 - name: ci-kubernetes-e2e-gce-scale-performance-100
   tags:
@@ -208,12 +221,12 @@ periodics:
     testgrid-dashboards: sig-release-master-blocking, sig-scalability-gce, kops-misc
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     description: "Uses kubetest2 to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with kops"
-    testgrid-num-failures-to-alert: '2'
+    testgrid-num-failures-to-alert: '8'
     testgrid-tab-name: gce-master-scale-performance-100
   spec:
     serviceAccountName: prow-build
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
       command:
       - runner.sh
       args:

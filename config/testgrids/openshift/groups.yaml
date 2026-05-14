@@ -14,6 +14,7 @@ dashboard_groups:
   - redhat-openshift-lp-interop-release-4.19-informing
   - redhat-openshift-lp-interop-release-4.20-informing
   - redhat-openshift-lp-interop-release-4.21-informing
+  - redhat-openshift-lp-interop-release-4.22-informing
   - redhat-openshift-lp-rosa-classic-release-4.14-informing
   - redhat-openshift-lp-rosa-classic-release-4.15-informing
   - redhat-openshift-lp-rosa-classic-release-4.16-informing
@@ -25,6 +26,7 @@ dashboard_groups:
   - redhat-openshift-lp-rosa-hypershift-release-4.18-informing
   - redhat-openshift-lp-rosa-hypershift-release-4.19-informing
   - redhat-openshift-lp-rosa-hypershift-release-4.20-informing
+  - redhat-openshift-lp-rosa-hypershift-release-4.21-informing
   - redhat-openshift-ocp-release-4.10-blocking
   - redhat-openshift-ocp-release-4.10-broken
   - redhat-openshift-ocp-release-4.10-informing
@@ -51,6 +53,7 @@ dashboard_groups:
   - redhat-openshift-ocp-release-4.21-informing
   - redhat-openshift-ocp-release-4.22-blocking
   - redhat-openshift-ocp-release-4.22-informing
+  - redhat-openshift-ocp-release-4.23-informing
   - redhat-openshift-ocp-release-4.5-informing
   - redhat-openshift-ocp-release-4.6-informing
   - redhat-openshift-ocp-release-4.7-blocking
@@ -61,6 +64,7 @@ dashboard_groups:
   - redhat-openshift-ocp-release-4.9-blocking
   - redhat-openshift-ocp-release-4.9-broken
   - redhat-openshift-ocp-release-4.9-informing
+  - redhat-openshift-ocp-release-5.0-blocking
   - redhat-openshift-ocp-release-5.0-informing
   - redhat-openshift-okd-release-4.13-blocking
   - redhat-openshift-okd-release-4.13-informing
@@ -82,6 +86,8 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.21-informing
   - redhat-openshift-okd-release-4.22-blocking
   - redhat-openshift-okd-release-4.22-informing
+  - redhat-openshift-okd-release-4.23-blocking
+  - redhat-openshift-okd-release-4.23-informing
   - redhat-openshift-okd-release-4.6-informing
   - redhat-openshift-okd-release-5.0-blocking
   - redhat-openshift-okd-release-5.0-informing

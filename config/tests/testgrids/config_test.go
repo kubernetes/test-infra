@@ -58,6 +58,8 @@ var (
 		"gardener",
 		"jetstack",
 		"kubevirt",
+		"lambda",
+		"nvidia",
 	}
 	orgs = []string{
 		"conformance",
@@ -69,7 +71,6 @@ var (
 		"wg",
 		"provider",
 		"kubernetes-clients",
-		"kcp",
 	}
 	dashboardPrefixes = [][]string{orgs, companies}
 

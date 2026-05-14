@@ -1,20 +1,25 @@
+dashboard_groups:
+- name: sig-apps
+  dashboard_names:
+    - sig-apps-agent-sandbox
+    - sig-apps-mcp-lifecycle-operator
+    - sig-apps-jobset
+    - sig-apps-jobset-periodics
+    - sig-apps-jobset-presubmits
+    - sig-apps-lws
+    - sig-apps-lws-presubmits
+    - sig-apps-kjob
+    - sig-apps-kjob-periodics
+    - sig-apps-kjob-presubmits
+
 dashboards:
-- name: sig-apps # TODO(crimsonfaith91): add upgrade tests when k8s v1.9 rolls out
-  dashboard_tab:
-    - name: gce
-      test_group_name: ci-kubernetes-e2e-gci-gce
-      base_options: include-filter-by-regex=sig-apps
-      description: apps gce e2e tests for master branch
-    - name: gce-slow
-      test_group_name: ci-kubernetes-e2e-gci-gce-slow
-      base_options: include-filter-by-regex=sig-apps
-      description: apps gce slow e2e tests for master branch
-    - name: gce-serial
-      test_group_name: ci-kubernetes-e2e-gci-gce-serial
-      base_options: include-filter-by-regex=sig-apps
-      description: apps gce serial e2e tests for master branch
-    - name: gce-statefulset
-      test_group_name: ci-kubernetes-e2e-gci-gce-statefulset
-      base_options: include-filter-by-regex=sig-apps
-      description: apps gce statefulset e2e tests for master branch
 - name: sig-apps-agent-sandbox
+- name: sig-apps-mcp-lifecycle-operator
+- name: sig-apps-jobset
+- name: sig-apps-jobset-periodics
+- name: sig-apps-jobset-presubmits
+- name: sig-apps-lws
+- name: sig-apps-lws-presubmits
+- name: sig-apps-kjob
+- name: sig-apps-kjob-periodics
+- name: sig-apps-kjob-presubmits

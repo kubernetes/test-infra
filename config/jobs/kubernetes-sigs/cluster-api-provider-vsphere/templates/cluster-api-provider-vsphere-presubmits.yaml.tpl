@@ -195,11 +195,10 @@ presubmits:
       testgrid-tab-name: pr-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
       description: Runs all e2e tests
 {{ if eq $mode "supervisor" -}}
-{{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.14") (eq $.branch "release-1.15")) -}}
-{{ $vmOperatorVersions := list "v1.8.6-0-gde75746a" "v1.9.0-567-g93918c59" -}}
-{{ range $i, $vmOperatorVersion := $vmOperatorVersions -}}
-{{ $vmOperatorApiVersions := list "v1alpha2" -}}
-{{ range $j, $vmOperatorApiVersion := $vmOperatorApiVersions }}
+{{ if not (or (eq $.branch "release-1.14") (eq $.branch "release-1.15")) -}}
+{{ range $i, $matrix := $.config.Other.vmOperator -}}
+{{ $vmOperatorVersion := $matrix.version -}}
+{{ $vmOperatorApiVersion := $matrix.apiVersion }}
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-{{ printf "%.6s" (ReplaceAll $vmOperatorVersion "." "-") }}-{{ $vmOperatorApiVersion }}-{{ ReplaceAll $.branch "." "-" }}
     cluster: k8s-infra-prow-build
     branches:
@@ -252,7 +251,6 @@ presubmits:
       testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-e2e-{{ $mode }}-{{ printf "%.6s" (ReplaceAll $vmOperatorVersion "." "-") }}-{{ $vmOperatorApiVersion }}-{{ ReplaceAll $.branch "." "-" }}
       description: Runs all e2e tests
-{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

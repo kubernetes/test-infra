@@ -1210,23 +1210,6 @@ func TestClusterName(t *testing.T) {
 func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 	jobsToFix := 0
 	numJobs := len(allStaticJobs())
-
-	// TODO: finish eliminating this list and remove the known-failures logic
-	knownFailures := map[string]bool{
-		"ci-kubernetes-e2e-gce-cos-alphafeatures-beta":    false,
-		"ci-kubernetes-e2e-gce-cos-alphafeatures-master":  false,
-		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable1": false,
-		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable2": false,
-		"ci-kubernetes-e2e-gce-cos-alphafeatures-stable3": false,
-		"ci-kubernetes-e2e-gce-cos-reboot-beta":           false,
-		"ci-kubernetes-e2e-gce-cos-reboot-master":         false,
-		"ci-kubernetes-e2e-gce-cos-reboot-stable1":        false,
-		"ci-kubernetes-e2e-gce-cos-reboot-stable2":        false,
-		"ci-kubernetes-e2e-gce-cos-reboot-stable3":        false,
-		"ci-kubernetes-e2e-gci-gce-alpha-features":        false,
-		"ci-kubernetes-e2e-gci-gce-reboot":                false,
-	}
-
 	for _, job := range c.AllPeriodics() {
 		// Only consider Pods that are release-blocking
 		if job.Spec == nil || !isKubernetesReleaseBlocking(job.JobBase) {
@@ -1259,12 +1242,7 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 			jobsToFix++
 		}
 		for _, err := range errs {
-			if _, ok := knownFailures[job.Name]; ok {
-				t.Logf("%v: %v", job.Name, err)
-				knownFailures[job.Name] = true
-			} else {
-				t.Errorf("%v: %v", job.Name, err)
-			}
+			t.Errorf("%v: %v", job.Name, err)
 		}
 	}
 
@@ -1299,23 +1277,12 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 				jobsToFix++
 			}
 			for _, err := range errs {
-				if _, ok := knownFailures[job.Name]; ok {
-					t.Logf("%v: %v", job.Name, err)
-					knownFailures[job.Name] = true
-				} else {
-					t.Errorf("%v: %v", job.Name, err)
-				}
+				t.Errorf("%v: %v", job.Name, err)
 			}
 		}
 	}
 
 	t.Logf("summary: %4d/%4d jobs fail to meet kubernetes/kubernetes release-blocking CI policy", jobsToFix, numJobs)
-
-	for name, stillFailing := range knownFailures {
-		if !stillFailing {
-			t.Errorf("%v: job is not failing anymore, remove it from knownFailures", name)
-		}
-	}
 }
 
 func kubernetesBranch(refs []prowapi.Refs) string {

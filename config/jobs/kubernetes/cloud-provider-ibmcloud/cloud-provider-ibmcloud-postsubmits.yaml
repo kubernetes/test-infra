@@ -1,0 +1,49 @@
+postsubmits:
+  kubernetes-sigs/provider-ibmcloud-test-infra:
+  - name: post-provider-ibmcloud-test-infra-kubetest2-tf-build-push
+    cluster: k8s-infra-ppc64le-prow-build
+    decorate: true
+    branches:
+    - ^main$
+    run_if_changed: 'kubetest2-tf'
+    annotations:
+      testgrid-dashboards: ibm-ppc64le-postsubmits
+      testgrid-tab-name: post-provider-ibmcloud-test-infra-kubetest2-tf-build-push
+      description: Build and push kubetest2-tf binary when repo provider-ibmcloud-test-infra has merge to main
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          set -o xtrace
+
+          echo "Building kubetest2-tf deployer..."
+          make build-deployer-tf
+
+          echo "Pushing kubetest2-tf binary to IBM Cloud COS..."
+          cd kubetest2-tf
+          make push-to-cos WHAT=kubetest2-tf \
+            COS_SERVICE_CREDENTIALS_PATH=/etc/secret/service-credentials
+          echo "Build and push completed successfully!"
+        volumeMounts:
+        - name: service-credentials
+          mountPath: /etc/secret
+          readOnly: true
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+      volumes:
+      - name: service-credentials
+        secret:
+          secretName: k8s-ppc-artifacts-svc-creds

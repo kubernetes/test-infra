@@ -16,6 +16,8 @@
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-azure, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-azure-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-gcp, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-gcp-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-vsphere, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-vsphere-for-both-issues-and-prs)
+- [Labels that apply to kubernetes-sigs/cluster-autoscaler, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-autoscaler-for-both-issues-and-prs)
+- [Labels that apply to kubernetes-sigs/cluster-autoscaler, only for PRs](#labels-that-apply-to-kubernetes-sigscluster-autoscaler-only-for-prs)
 - [Labels that apply to kubernetes-sigs/contributor-playground, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontributor-playground-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/contributor-tweets, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontributor-tweets-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/controller-runtime, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontroller-runtime-for-both-issues-and-prs)
@@ -25,7 +27,10 @@
 - [Labels that apply to kubernetes-sigs/krew, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskrew-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/kubespray, only for PRs](#labels-that-apply-to-kubernetes-sigskubespray-only-for-prs)
 - [Labels that apply to kubernetes-sigs/promo-tools, for both issues and PRs](#labels-that-apply-to-kubernetes-sigspromo-tools-for-both-issues-and-prs)
+- [Labels that apply to kubernetes-sigs/provider-aws-test-infra, only for PRs](#labels-that-apply-to-kubernetes-sigsprovider-aws-test-infra-only-for-prs)
 - [Labels that apply to kubernetes-sigs/prow, for both issues and PRs](#labels-that-apply-to-kubernetes-sigsprow-for-both-issues-and-prs)
+- [Labels that apply to kubernetes/autoscaler, for both issues and PRs](#labels-that-apply-to-kubernetesautoscaler-for-both-issues-and-prs)
+- [Labels that apply to kubernetes/autoscaler, only for PRs](#labels-that-apply-to-kubernetesautoscaler-only-for-prs)
 - [Labels that apply to kubernetes/community, for both issues and PRs](#labels-that-apply-to-kubernetescommunity-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/dns, only for issues](#labels-that-apply-to-kubernetesdns-only-for-issues)
 - [Labels that apply to kubernetes/enhancements, for both issues and PRs](#labels-that-apply-to-kubernetesenhancements-for-both-issues-and-prs)
@@ -310,6 +315,20 @@ larger set of contributors to apply/remove them.
 | <a id="area/govmomi" href="#area/govmomi">`area/govmomi`</a> | Issues or PRs related to the govmomi mode| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/supervisor" href="#area/supervisor">`area/supervisor`</a> | Issues or PRs related to the supervisor mode| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 
+## Labels that apply to kubernetes-sigs/cluster-autoscaler, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/cluster-autoscaler" href="#area/cluster-autoscaler">`area/cluster-autoscaler`</a> | Issues or PRs related to the Cluster Autoscaler component| label | |
+| <a id="area/core-autoscaler" href="#area/core-autoscaler">`area/core-autoscaler`</a> | Denotes an issue that is related to the core autoscaler and is not specific to any provider.| label | |
+
+## Labels that apply to kubernetes-sigs/cluster-autoscaler, only for PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="dependencies" href="#dependencies">`dependencies`</a> | Pull requests that update a dependency file| github | |
+| <a id="do-not-merge/needs-area" href="#do-not-merge/needs-area">`do-not-merge/needs-area`</a> | Indicates that a PR should not merge because it lacks an area label.| prow | |
+
 ## Labels that apply to kubernetes-sigs/contributor-playground, for both issues and PRs
 
 | Name | Description | Added By | Prow Plugin |
@@ -387,6 +406,12 @@ larger set of contributors to apply/remove them.
 | <a id="area/artifacts" href="#area/artifacts">`area/artifacts`</a> | Issues or PRs related to the hosting of release artifacts for subprojects| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
 
+## Labels that apply to kubernetes-sigs/provider-aws-test-infra, only for PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="skip-review" href="#skip-review">`skip-review`</a> | Indicates a PR is trusted, used by tide for auto-merging PRs.| provider-aws-test-infra-admins | |
+
 ## Labels that apply to kubernetes-sigs/prow, for both issues and PRs
 
 | Name | Description | Added By | Prow Plugin |
@@ -416,6 +441,24 @@ larger set of contributors to apply/remove them.
 | <a id="area/spyglass" href="#area/spyglass">`area/spyglass`</a> | Issues or PRs related to prow's spyglass UI| label | |
 | <a id="area/status-reconciler" href="#area/status-reconciler">`area/status-reconciler`</a> | Issues or PRs related to reconciling status when jobs change| label | |
 | <a id="area/tide" href="#area/tide">`area/tide`</a> | Issues or PRs related to prow's tide component| label | |
+
+## Labels that apply to kubernetes/autoscaler, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/addon-resizer" href="#area/addon-resizer">`area/addon-resizer`</a> | Issues or PRs related to the Addon Resizer component| label | |
+| <a id="area/balancer" href="#area/balancer">`area/balancer`</a> | Issues or PRs related to the Balancer component| label | |
+| <a id="area/cluster-autoscaler" href="#area/cluster-autoscaler">`area/cluster-autoscaler`</a> | Issues or PRs related to the Cluster Autoscaler component| label | |
+| <a id="area/core-autoscaler" href="#area/core-autoscaler">`area/core-autoscaler`</a> | Denotes an issue that is related to the core autoscaler and is not specific to any provider.| label | |
+| <a id="area/vertical-pod-autoscaler" href="#area/vertical-pod-autoscaler">`area/vertical-pod-autoscaler`</a> | Issues or PRs related to the Vertical Pod Autoscaler component| label | |
+| <a id="area/vertical-pod-autoscaler/prometheus" href="#area/vertical-pod-autoscaler/prometheus">`area/vertical-pod-autoscaler/prometheus`</a> | Issues and PRs related to Vertical Pod Autoscaler history from Prometheus| label | |
+
+## Labels that apply to kubernetes/autoscaler, only for PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="dependencies" href="#dependencies">`dependencies`</a> | Pull requests that update a dependency file| github | |
+| <a id="do-not-merge/needs-area" href="#do-not-merge/needs-area">`do-not-merge/needs-area`</a> | Indicates that a PR should not merge because it lacks an area label.| prow | |
 
 ## Labels that apply to kubernetes/community, for both issues and PRs
 
@@ -522,6 +565,7 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="area/HA" href="#area/HA">`area/HA`</a> | | label | |
 | <a id="area/admission-control" href="#area/admission-control">`area/admission-control`</a> | | label | |
+| <a id="area/api-validation" href="#area/api-validation">`area/api-validation`</a> | Issues or PRs related to API validation and declarative validation| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/apiserver" href="#area/apiserver">`area/apiserver`</a> | | label | |
 | <a id="area/app-lifecycle" href="#area/app-lifecycle">`area/app-lifecycle`</a> | | label | |
 | <a id="area/artifacts" href="#area/artifacts">`area/artifacts`</a> | Issues or PRs related to the hosting of release artifacts for subprojects| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |

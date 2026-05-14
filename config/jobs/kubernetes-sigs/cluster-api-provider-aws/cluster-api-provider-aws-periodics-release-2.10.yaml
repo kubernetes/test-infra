@@ -23,7 +23,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -39,10 +39,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2
+          cpu: 4
           memory: "9Gi"
         limits:
-          cpu: 2
+          cpu: 4
           memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
@@ -72,7 +72,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -88,10 +88,10 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: "9Gi"
         requests:
-          cpu: 2
+          cpu: 4
           memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-k8s-infra-canaries
@@ -120,7 +120,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
       command:
         - "runner.sh"
         - "./scripts/ci-e2e-eks.sh"
@@ -133,10 +133,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2
+          cpu: 4
           memory: "9Gi"
         limits:
-          cpu: 2
+          cpu: 4
           memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
@@ -166,7 +166,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -182,10 +182,10 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 2
+            cpu: 4
             memory: "9Gi"
           limits:
-            cpu: 2
+            cpu: 4
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
@@ -224,7 +224,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
         env:
           - name: BOSKOS_HOST
             value: "boskos.test-pods.svc.cluster.local"
@@ -246,9 +246,9 @@ periodics:
             # these are both a bit below peak usage during build
             # this is mostly for building kubernetes
             memory: "9Gi"
-            cpu: 2
+            cpu: 4
           limits:
-            cpu: 2
+            cpu: 4
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws

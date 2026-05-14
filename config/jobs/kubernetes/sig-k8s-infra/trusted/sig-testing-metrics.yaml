@@ -18,6 +18,13 @@ periodics:
       - kubernetes-public:k8s_infra_kettle.all
       - kubernetes-public:k8s_infra_kettle.week
       - kubernetes-public:k8s_infra_kettle.day
+      resources:
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '12'

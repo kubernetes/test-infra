@@ -17,13 +17,17 @@
 # supporting kubernetes builds, kind installation, etc.
 
 FROM debian:bookworm
+ARG TARGETARCH
 
 # arg that specifies the image name (for debugging)
 ARG IMAGE_ARG
 
-# arg that specifies the go version to install.
-# empty value specifies the latest version.
+# Overrides the Go version to install.
+# Unset GO_VERSION means we will respect .go-version in the kubernetes repo
+# based on K8S_BRANCH.
 ARG GO_VERSION
+# which Kubernetes branch we're building for
+ARG K8S_BRANCH=master
 
 # add envs:
 # - so we can debug with the image name:tag
@@ -31,7 +35,6 @@ ARG GO_VERSION
 # - disabling prompts when installing gsutil etc.
 # - hinting that we are in a docker container
 ENV KRTE_IMAGE=${IMAGE_ARG} \
-    BAZEL_VERSION=${BAZEL_VERSION_ARG} \
     GOPATH=/home/prow/go \
     PATH=/home/prow/go/bin:/usr/local/go/bin:/google-cloud-sdk/bin:${PATH} \
     CLOUDSDK_CORE_DISABLE_PROMPTS=1 \
@@ -72,8 +75,10 @@ RUN echo "Installing Packages ..." \
             unzip \
         && rm -rf /var/lib/apt/lists/* \
     && echo "Installing Go ..." \
-        && if [ -z "${GO_VERSION}" ]; then GO_VERSION=$(curl -fsSL https://go.dev/VERSION?m=text | grep -oP "go\K(.*)"); fi \
-        && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz" \
+        && if [ -z "${GO_VERSION}" ]; then \
+            GO_VERSION=$(curl --retry 6 --retry-connrefused -fsSL "https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/${K8S_BRANCH}/.go-version"); \
+        fi \
+        && export GO_TARBALL="go${GO_VERSION}.linux-${TARGETARCH}.tar.gz" \
         && curl -fsSL "https://go.dev/dl/${GO_TARBALL}" --output "${GO_TARBALL}" \
         && tar xzf "${GO_TARBALL}" -C /usr/local \
         && rm "${GO_TARBALL}"\

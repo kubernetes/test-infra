@@ -10,7 +10,7 @@ presubmits:
     - ^release-1.10$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -33,7 +33,7 @@ presubmits:
     - ^release-1.10$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -59,7 +59,7 @@ presubmits:
     - ^release-1.10$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -90,7 +90,7 @@ presubmits:
     - ^release-1.10$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
         command:
         - "runner.sh"
         - "make"
@@ -112,6 +112,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^release-1.10$
@@ -122,7 +123,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -147,6 +148,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^release-1.10$
@@ -157,7 +159,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -182,6 +184,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^release-1.10$
@@ -192,7 +195,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -220,6 +223,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
     - ^release-1.10$
@@ -230,7 +234,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -264,7 +268,7 @@ presubmits:
     - ^release-1.10$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
         command:
           - runner.sh
         args:
@@ -294,7 +298,7 @@ presubmits:
         path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
         command:
         - runner.sh
         args:

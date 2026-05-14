@@ -26,6 +26,11 @@ class Builds {
     this.colPr = this.cols.pr;
     this.timespan = minMaxArray(this.cols.started);
     this.runCount = this.cols.started.length;
+    this.jobRepos = null;  // populated from job_repos.json if available
+  }
+
+  setJobRepos(mapping) {
+    this.jobRepos = mapping;
   }
 
   // Create a build object given a job and build number.
@@ -66,6 +71,33 @@ class Builds {
 
   getEndTime() {
     return tsToString(this.timespan[1]);
+  }
+
+  // Return the repository (org/repo) for a job.
+  // Checks job_repos.json mapping first, falls back to parsing job_paths.
+  repoForJob(jobName) {
+    // Strip pr: prefix used in triage data
+    let lookupName = jobName.startsWith('pr:') ? jobName.slice(3) : jobName;
+
+    // Try authoritative mapping from job_repos.json
+    if (this.jobRepos && this.jobRepos[lookupName]) {
+      return this.jobRepos[lookupName];
+    }
+
+    // Fallback: parse repo from GCS path (works for PR jobs only)
+    let path = this.jobPaths[jobName];
+    if (!path) return '';
+    let prMatch = path.match(/\/pr-logs\/pull\/([^\/]+)\//);
+    if (!prMatch) return '';
+    let identifier = prMatch[1];
+    if (/^\d+$/.test(identifier)) {
+      return 'kubernetes/kubernetes';
+    }
+    let idx = identifier.indexOf('_');
+    if (idx > 0) {
+      return identifier.substring(0, idx) + '/' + identifier.substring(idx + 1);
+    }
+    return 'kubernetes/' + identifier;
   }
 }
 
@@ -197,6 +229,13 @@ class Clusters {
           if ((opts.reJob && !opts.reJob.test(job.name)) ||
               (opts.reXJob && opts.reXJob.test(job.name))) {
             continue;
+          }
+          if (opts.reRepo || opts.reXRepo) {
+            let repo = builds.repoForJob(job.name);
+            if ((opts.reRepo && !opts.reRepo.test(repo)) ||
+                (opts.reXRepo && opts.reXRepo.test(repo))) {
+              continue;
+            }
           }
           if (job.name.startsWith("pr:")) {
             if (opts.pr) jobsOut.push(job);

@@ -11,6 +11,11 @@
     {%- elif cloud == "azure" %}
     preset-service-account: "true"
     preset-kops-azure-cred-wi: "true"
+    {%- elif cloud == "do" %}
+    preset-service-account: "true"
+    preset-do-credential: "true"
+    preset-do-spaces-credential: "true"
+    preset-do-ssh: "true"
     {%- else %}
     preset-k8s-ssh: "true"
     {%- endif %}
@@ -54,7 +59,12 @@
         kubetest2 kops \
           -v 2 \
           --up --down \
+          {%- if cloud == "do" %}
+          --cloud-provider=digitalocean \
+          --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
+          {%- else %}
           --cloud-provider={{cloud}} \
+          {%- endif %}
           {%- if cloud == "gce" %}
           --admin-access=0.0.0.0/0 \
           {%- endif %}
@@ -110,12 +120,14 @@
           {%- endif %}
           --parallel={{test_parallelism}}
       env:
-      {%- if cloud != "azure" %}
+      {%- if cloud != "azure" and cloud != "do" %}
       - name: KUBE_SSH_KEY_PATH
         value: {{kops_ssh_key_path}}
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
       {%- endif %}
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
       {%- for key, val in env.items() %}
       - name: {{ key }}
         value: "{{ val }}"

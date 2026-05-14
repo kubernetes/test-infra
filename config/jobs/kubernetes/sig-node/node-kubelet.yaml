@@ -20,7 +20,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -70,7 +70,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -122,7 +122,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -178,7 +178,7 @@ periodics:
     description: "OWNER: sig-node; runs serial node-e2e tests with CRI-O (+Serial, -Flaky|Benchmark|Node*Feature|Feature:OffByDefault)"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       command:
         - runner.sh
       args:
@@ -237,7 +237,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         args:
@@ -294,7 +294,7 @@ periodics:
     description: Executes E2E suite with swap enabled on Fedora
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       command:
         - runner.sh
       args:
@@ -351,7 +351,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -361,7 +361,7 @@ periodics:
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/swap/image-config-swap.yaml
           - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/env
           - --env=KUBE_NODE_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/env
-          - '--node-test-args=--feature-gates="NodeSwap=true" --service-feature-gates="NodeSwap=true" --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --timeout=120m --focus="\[Serial\]" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]|\[Feature:OffByDefault\]"
@@ -403,7 +403,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       command:
         - runner.sh
       args:
@@ -460,7 +460,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         args:
@@ -513,7 +513,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       command:
         - runner.sh
       args:
@@ -569,7 +569,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -619,7 +619,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -673,7 +673,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -729,7 +729,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -783,7 +783,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -837,7 +837,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -886,7 +886,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -897,7 +897,7 @@ periodics:
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=1 --skip="" --focus="\[Feature:CPUManager\]"
+          - --test_args=--nodes=1 --skip="\[Feature:OffByDefault\]" --focus="\[Feature:CPUManager\]"
           - --timeout=180m
         env:
           - name: GOPATH
@@ -935,7 +935,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -989,7 +989,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -1002,7 +1002,7 @@ periodics:
           - --provider=gce
           # all criproxy tests are serial, but no need to specify it
           # disabled features are handled by -all-alpha variant of this test job
-          - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]|\[Featuure:OffByDefault\]"
+          - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]|\[Feature:OffByDefault\]"
           - --timeout=120m
         env:
           - name: GOPATH
@@ -1045,7 +1045,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -1078,7 +1078,7 @@ periodics:
 #    preset-k8s-ssh: "true"
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --timeout=90

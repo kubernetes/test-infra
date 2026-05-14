@@ -18,7 +18,7 @@ periodics:
     fork-per-release: "true"
     fork-per-release-replacements: "latest.txt -> latest-{{.Version}}.txt"
     fork-per-release-cron: 0 0-23/2 * * *, 0 3-23/6 * * *, 0 8-23/12 * * *, 0 8-23/24 * * *, 0 14-23/24 * * *
-    testgrid-dashboards: sig-release-master-blocking, google-gce, sig-node-gpu, sig-node-containerd
+    testgrid-dashboards: sig-release-master-blocking, google-gce, sig-node-gpu, sig-node-containerd, nvidia-device-plugin, nvidia-gpu
     testgrid-tab-name: gce-device-plugin-gpu-master
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com, release-team@kubernetes.io, sig-node-ci+testgrid@kubernetes.io
     description: "Uses kubetest2 to run e2e tests (+Feature:GPUDevicePlugin) against a cluster created with cluster/kube-up.sh"
@@ -60,7 +60,7 @@ periodics:
       - --test-package-marker=latest.txt
       - --focus-regex=\[Feature:GPUDevicePlugin\]
       - --timeout=60m
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
       resources:
         limits:
           cpu: 2

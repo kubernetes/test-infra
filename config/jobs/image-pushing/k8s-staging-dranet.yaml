@@ -1,10 +1,10 @@
 postsubmits:
   kubernetes-sigs/dranet:
     - name: post-dranet-image
-      skip_branches:
-        # do not run on dependabot branches, these exist prior to merge
-        # only merged code should trigger these jobs
-        - '^dependabot'
+      branches:
+        - ^main$
+        # Build semver tags, too
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-dranet, sig-k8s-infra-gcb
@@ -14,7 +14,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
             command:
               - /run.sh
             args:

@@ -15,7 +15,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -45,7 +45,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -78,7 +78,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         resources:
           limits:
             cpu: 2
@@ -119,7 +119,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -164,7 +164,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -211,7 +211,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -235,7 +235,7 @@ presubmits:
       testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-vcsim-govmomi-release-1-15
       description: Runs e2e tests with vcsim / govmomi mode
-  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-34-1-35-release-1-15
+  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-35-1-36-release-1-15
     cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
@@ -256,7 +256,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -265,9 +265,9 @@ presubmits:
         - name: GINKGO_FOCUS
           value: "\\[Conformance\\] \\[K8s-Upgrade\\]"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
-          value: "stable-1.34"
-        - name: KUBERNETES_VERSION_UPGRADE_TO
           value: "stable-1.35"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "stable-1.36"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -282,7 +282,7 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.15
-      testgrid-tab-name: pr-e2e-govmomi-release-1-15-1-34-1-35
+      testgrid-tab-name: pr-e2e-govmomi-release-1-15-1-35-1-36
   - name: pull-cluster-api-provider-vsphere-e2e-govmomi-conformance-release-1-15
     cluster: k8s-infra-prow-build
     branches:
@@ -304,7 +304,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -349,7 +349,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -397,7 +397,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -442,7 +442,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -491,7 +491,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -515,7 +515,7 @@ presubmits:
       testgrid-dashboards: cluster-api-provider-vsphere-1.15
       testgrid-tab-name: pr-e2e-vcsim-supervisor-release-1-15
       description: Runs e2e tests with vcsim / govmomi mode
-  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-upgrade-1-34-1-35-release-1-15
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-upgrade-1-35-1-36-release-1-15
     cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
@@ -536,7 +536,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -545,9 +545,9 @@ presubmits:
         - name: GINKGO_FOCUS
           value: "\\[supervisor\\] \\[Conformance\\] \\[K8s-Upgrade\\]"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
-          value: "stable-1.34"
-        - name: KUBERNETES_VERSION_UPGRADE_TO
           value: "stable-1.35"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "stable-1.36"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -562,7 +562,7 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.15
-      testgrid-tab-name: pr-e2e-supervisor-release-1-15-1-34-1-35
+      testgrid-tab-name: pr-e2e-supervisor-release-1-15-1-35-1-36
   - name: pull-cluster-api-provider-vsphere-e2e-supervisor-conformance-release-1-15
     cluster: k8s-infra-prow-build
     branches:
@@ -584,7 +584,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:
@@ -629,7 +629,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.34
         command:
         - runner.sh
         args:

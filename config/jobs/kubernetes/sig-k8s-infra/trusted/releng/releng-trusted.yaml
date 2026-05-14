@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.0-0
         command:
         - /kpromo
         args:
@@ -21,6 +21,13 @@ postsubmits:
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
         - --confirm
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
@@ -54,7 +61,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.0-0
         command:
         - /kpromo
         args:
@@ -71,10 +78,10 @@ postsubmits:
           # request most of one node 🚀
           requests:
             cpu: 7
-            memory: "40Gi"
+            memory: 16Gi
           limits:
             cpu: 7
-            memory: "40Gi"
+            memory: 16Gi
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
@@ -104,6 +111,14 @@ postsubmits:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes-sigs/promo-tools/canary
         - --confirm
+        resources:
+          # request most of one node 🚀
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-release-releng-informing
       testgrid-alert-email: release-managers+alerts@kubernetes.io
@@ -122,7 +137,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.0-0
       command:
       - /kpromo
       args:
@@ -130,101 +145,17 @@ periodics:
       - files
       - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
       - --confirm
+      resources:
+        limits:
+          cpu: 2
+          memory: "4Gi"
+        requests:
+          cpu: 2
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '2'
-  rerun_auth_config:
-    github_team_slugs:
-      - org: kubernetes
-        slug: release-managers
-
-# Copy artifacts to mirrors (periodic drift correction)
-- interval: 1h
-  cluster: k8s-infra-prow-build-trusted
-  max_concurrency: 1
-  name: ci-k8sio-file-promo-mirrors
-  decorate: true
-  decoration_config:
-    timeout: 3h
-  extra_refs:
-  - org: kubernetes
-    repo: k8s.io
-    base_ref: main
-  spec:
-    serviceAccountName: k8s-infra-promoter
-    containers:
-    - name: promote-to-mirrors
-      image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
-      command:
-      - /kpromo
-      args:
-      - run
-      - files
-      - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/mirroring
-      - --confirm
-      - --use-service-account
-      env:
-        - name: AWS_ROLE_ARN
-          value: arn:aws:iam::354561287328:role/artifacts.k8s.io_s3writer
-        - name: AWS_WEB_IDENTITY_TOKEN_FILE
-          value: /var/run/secrets/aws-iam-token/serviceaccount/token
-        - name: AWS_REGION
-          value: us-east-1
-      resources:
-        # We hash files as we upload them, so take a whole core
-        requests:
-          cpu: 1
-          memory: "2Gi"
-        limits:
-          cpu: 1
-          memory: "2Gi"
-      volumeMounts:
-        - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
-          name: aws-iam-token
-          readOnly: true
-    - name: promote-to-mirrors-staging
-      image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
-      command:
-      - /kpromo
-      args:
-      - run
-      - files
-      - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/mirroring-staging
-      - --confirm
-      - --use-service-account
-      env:
-        - name: AWS_ROLE_ARN
-          value: arn:aws:iam::354561287328:role/artifacts.k8s.io_s3writer
-        - name: AWS_WEB_IDENTITY_TOKEN_FILE
-          value: /var/run/secrets/aws-iam-token/serviceaccount/token
-        - name: AWS_REGION
-          value: us-east-1
-      resources:
-        # We hash files as we upload them, so take a whole core
-        requests:
-          cpu: 1
-          memory: "2Gi"
-        limits:
-          cpu: 1
-          memory: "2Gi"
-      volumeMounts:
-        - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
-          name: aws-iam-token
-          readOnly: true
-    volumes:
-    - name: aws-iam-token
-      projected:
-        defaultMode: 420
-        sources:
-        - serviceAccountToken:
-            audience: sts.amazonaws.com
-            expirationSeconds: 86400
-            path: token
-  annotations:
-    testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
-    #testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
-    #testgrid-num-failures-to-alert: '2'
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes
@@ -239,14 +170,9 @@ periodics:
   # This is an important step to ensure that we avoid issues of running promotion
   # twice in parallel, such as double signing images.
   job_queue_name: "k8sio-image-promo"
-  # This name is the "job name", passed in as "--job=NAME" for mkpj.
   name: ci-k8sio-image-promo
-  # Enable Pod Utilities.
-  # See https://git.k8s.io/test-infra/prow/pod-utilities.md.
   decorate: true
   extra_refs:
-  # We clone the below repo automatically (via Pod Utilities), and get dropped
-  # into /home/prow/go/src/github.com/kubernetes/k8s.io.
   - org: kubernetes
     repo: k8s.io
     base_ref: main
@@ -255,7 +181,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.0-0
       command:
       - /kpromo
       args:
@@ -271,56 +197,14 @@ periodics:
         # request most of one node 🚀
         requests:
           cpu: 7
-          memory: "40Gi"
+          memory: "26Gi"
         limits:
           cpu: 7
-          memory: "40Gi"
+          memory: "26Gi"
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '2'
-  rerun_auth_config:
-    github_team_slugs:
-      - org: kubernetes
-        slug: release-managers
-
-# ci-k8sio-image-signature-replication replicates cosign signatures from
-# primary registries to all mirror registries. Runs independently of the
-# promotion pipeline to avoid rate limit contention with cosign signing.
-# The operation is idempotent; missed or failed replications are caught
-# on the next run.
-- cron: '0 */2 * * 1-5'
-  cluster: k8s-infra-prow-build-trusted
-  max_concurrency: 1
-  name: ci-k8sio-image-signature-replication
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: k8s.io
-    base_ref: main
-  spec:
-    serviceAccountName: k8s-infra-gcr-promoter
-    activeDeadlineSeconds: 7800 # 2h10m
-    containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.4.0-0
-      command:
-      - /kpromo
-      args:
-      - cip
-      - replicate-signatures
-      - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
-      - --confirm
-      resources:
-        requests:
-          cpu: 1
-          memory: "4Gi"
-        limits:
-          cpu: 1
-          memory: "4Gi"
-  annotations:
-    testgrid-dashboards: sig-release-releng-informing, sig-k8s-infra-k8sio
-    testgrid-alert-email: release-managers+alerts@kubernetes.io
-    testgrid-num-failures-to-alert: '3'
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes
@@ -351,6 +235,13 @@ periodics:
       - --log-level=debug
       - --certificate-identity-regexp=(keyless@projectsigstore.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
       - --certificate-oidc-issuer=https://accounts.google.com
+      resources:
+        requests:
+          cpu: 1
+          memory: 1Gi
+        limits:
+          cpu: 1
+          memory: 1Gi
   annotations:
     testgrid-dashboards: sig-release-releng-informing
     testgrid-alert-email: release-managers+alerts@kubernetes.io
@@ -364,6 +255,8 @@ periodics:
   name: ci-fast-forward
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  decoration_config:
+    skip_cloning: true
   extra_refs:
   - org: kubernetes
     repo: release
@@ -405,6 +298,8 @@ periodics:
     testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: verify-image-signatures
   decorate: true
+  decoration_config:
+    skip_cloning: true
   extra_refs:
   - org: kubernetes-sigs
     repo: promo-tools
@@ -412,13 +307,20 @@ periodics:
     path_alias: sigs.k8s.io/promo-tools
   spec:
     containers:
-    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.4.0-0
+    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.5.0-0
       imagePullPolicy: Always
       command:
         - /kpromo
         - --from-days=7
       args:
         - sigcheck
+      resources:
+        requests:
+          cpu: 1
+          memory: 1Gi
+        limits:
+          cpu: 1
+          memory: 1Gi
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes
@@ -435,12 +337,12 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: downloadkubernetes
-    base_ref: main
+    base_ref: master
     path_alias: sigs.k8s.io/downloadkubernetes
   spec:
     serviceAccountName: gcb-builder
     containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
         command:
           - /run.sh
         args:
@@ -456,6 +358,13 @@ periodics:
             value: 767373bbdcb8270361b96548387bf2a9ad0d48758c35
           - name: FASTLY_SERVICE_NAME
             value: dl.k8s.io
+        resources:
+          requests:
+            cpu: 1
+            memory: 1Gi
+          limits:
+            cpu: 1
+            memory: 1Gi
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes
@@ -472,12 +381,12 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: downloadkubernetes
-    base_ref: main
+    base_ref: master
     path_alias: sigs.k8s.io/downloadkubernetes
   spec:
     serviceAccountName: gcb-builder
     containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
         command:
           - /run.sh
         args:
@@ -493,6 +402,13 @@ periodics:
             value: 5d7373bbdcb8270361b96548387bf2a9ad0d48758c35
           - name: FASTLY_SERVICE_NAME
             value: dl.k8s.dev
+        resources:
+          requests:
+            cpu: 1
+            memory: 1Gi
+          limits:
+            cpu: 1
+            memory: 1Gi
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes

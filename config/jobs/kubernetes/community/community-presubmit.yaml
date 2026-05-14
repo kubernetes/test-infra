@@ -3,7 +3,7 @@ presubmits:
   - name: pull-community-verify
     cluster: eks-prow-build-cluster
     branches:
-    - master
+    - main
     always_run: true
     decorate: true
     spec:
@@ -24,29 +24,28 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-contribex-community
       testgrid-tab-name: pull-verify
-# TODO: add back this job but instead of dry-run mode, use a "parse & validate only" mode
-# I.E. no credential.
-#  - name: pull-community-tempelis-check
-#    decorate: true
-#    cluster: eks-prow-build-cluster
-#    branches:
-#    - ^master$
-#    run_if_changed: '^communication/slack-config'
-#    annotations:
-#      testgrid-dashboards: sig-contribex-slack-infra
-#    spec:
-#      containers:
-#      - image: gcr.io/k8s-staging-slack-infra/tempelis:v20200909-1eb97f5
-#        command:
-#        - /tempelis
-#        args:
-#        - --config=communication/slack-config/
-#        - --restrictions=communication/slack-config/restrictions.yaml
-#        - --validate-only
-#        resources:
-#          limits:
-#            cpu: 2
-#            memory: 4Gi
-#          requests:
-#            cpu: 2
-#            memory: 4Gi
+
+  - name: pull-community-tempelis-check
+    decorate: true
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    run_if_changed: '^communication/slack-config'
+    annotations:
+      testgrid-dashboards: sig-contribex-slack-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-slack-infra/tempelis:v20260505-4a08de2
+        command:
+        - /tempelis
+        args:
+        - --config=communication/slack-config/
+        - --restrictions=communication/slack-config/restrictions.yaml
+        - --validate-only
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi

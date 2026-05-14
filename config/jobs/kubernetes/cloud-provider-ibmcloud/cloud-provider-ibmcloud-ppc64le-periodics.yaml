@@ -10,7 +10,7 @@ periodics:
         path_alias: k8s.io/kubernetes
     annotations:
       fork-per-release: "true"
-      fork-per-release-cron: 0 3/2 * * *, 0 4/6 * * *, 0 5 * * *, 0 6 * * *, 0 7 * * *
+      fork-per-release-cron: 0 3/2 * * *, 0 1/6 * * *, 0 5 * * *, 0 6 * * *, 0 7 * * *
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
       testgrid-tab-name: ci-kubernetes-unit-ppc64le-master
       testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
@@ -23,7 +23,7 @@ periodics:
         runAsGroup: 2010
         runAsUser: 2001
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - make
             - test
@@ -38,10 +38,10 @@ periodics:
           resources:
             requests:
               cpu: 6
-              memory: "28Gi"
+              memory: "16Gi"
             limits:
               cpu: 6
-              memory: "28Gi"
+              memory: "16Gi"
 
   - name: ci-kubernetes-integration-ppc64le-master
     interval: 1h
@@ -54,7 +54,7 @@ periodics:
       path_alias: k8s.io/kubernetes
     annotations:
       fork-per-release: "true"
-      fork-per-release-cron: 0 0/2 * * *, 0 1/6 * * *, 0 2 * * *
+      fork-per-release-cron: 0 0/2 * * *, 0 1/6 * * *, 0 2 * * *, 0 4 * * *, 0 6 * * *
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
       testgrid-tab-name: ci-kubernetes-integration-ppc64le-master
       testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
@@ -62,7 +62,7 @@ periodics:
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         args:
@@ -97,7 +97,7 @@ periodics:
         workdir: true
     annotations:
       fork-per-release: "true"
-      fork-per-release-cron: 10 3-23/4 * * *, 20 0-23/4 * * *, 30 1-23/4 * * *, 40 4-23/4 * * *, 50 2-23/4 * * *
+      fork-per-release-cron: 0 1 * * *, 0 5 * * *, 0 9 * * *, 0 13 * * *, 0 17 * * *
       fork-per-release-replacements: "MARKER_VERSION=latest.txt -> MARKER_VERSION=latest-{{.Version}}.txt"
       description: Runs conformance tests using kubetest2 against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, conformance-ppc64le, ibm-k8s-e2e
@@ -106,16 +106,16 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
           securityContext:
             privileged: true
           resources:
             requests:
-              cpu: 4
-              memory: "14Gi"
+              cpu: 2
+              memory: "8Gi"
             limits:
-              cpu: 4
-              memory: "14Gi"
+              cpu: 2
+              memory: "8Gi"
           command:
             - runner.sh
           args:
@@ -130,8 +130,8 @@ periodics:
               #Setup of kubetest2 tf deployer
               make install-deployer-tf
 
-              export TF_VAR_powervs_system_type=e980
-              kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
+              export TF_VAR_powervs_system_type=s1022
+              kubetest2 tf --powervs-image-name CentOS-Stream-10 \
                 --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --workers-count 2 --cluster-name conformance-$(date +%s) \
@@ -162,7 +162,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -170,11 +170,11 @@ periodics:
               value: "ci-kubernetes-ppc64le-e2e-node-latest-kubetest2"
           resources:
             requests:
-              cpu: 2
-              memory: 10Gi
+              cpu: "1500m"
+              memory: 5Gi
             limits:
-              cpu: 2
-              memory: 10Gi
+              cpu: "1500m"
+              memory: 5Gi
           command:
             - runner.sh
           args:
@@ -189,12 +189,13 @@ periodics:
               CLUSTER_NAME="e2e-node-$(date +%s)"
 
               set +o errexit
-              kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-10 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --cluster-name $CLUSTER_NAME \
                 --up --set-kubeconfig=false --auto-approve --retry-on-tf-failure 3 \
+                --extra-vars=container_runtime_test_handler:true \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --break-kubetest-on-upfail true \
                 --playbook k8s-node-remote.yml
@@ -215,13 +216,13 @@ periodics:
               [ $rc != 0 ] && echo "ERROR: E2ENode Test suite exited with code:$rc"; exit $rc
 
   - name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
-    cron: "30 4-22/6 * * *" # every 6h starting at 04:30 UTC
+    cron: "30 1-22/6 * * *" # every 6h starting at 01:30 UTC
     cluster: k8s-infra-ppc64le-prow-build
     labels:
       preset-ibmcloud-cred: "true"
     decorate: true
     decoration_config:
-      timeout: 2h
+      timeout: 2h30m
     extra_refs:
       - base_ref: main
         org: kubernetes-sigs
@@ -235,15 +236,15 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
           securityContext:
             privileged: true
           resources:
             requests:
-              cpu: 2
+              cpu: "1500m"
               memory: "6Gi"
             limits:
-              cpu: 2
+              cpu: "1500m"
               memory: "6Gi"
           command:
             - runner.sh
@@ -257,7 +258,7 @@ periodics:
               make install-deployer-tf
 
               export TF_VAR_controlplane_powervs_memory=32
-              kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-10 \
                 --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --workers-count 2 --cluster-name alpha-enabled-$(date +%s) \
@@ -290,13 +291,13 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
           resources:
             requests:
-              cpu: 2
+              cpu: "1500m"
               memory: "6Gi"
             limits:
-              cpu: 2
+              cpu: "1500m"
               memory: "6Gi"
           command:
             - runner.sh
@@ -309,9 +310,9 @@ periodics:
               #Setup of kubetest2 tf deployer
               make install-deployer-tf
 
-              export TF_VAR_powervs_system_type=e980
+              export TF_VAR_powervs_system_type=s1022
               export TF_VAR_controlplane_powervs_memory=32
-              kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-10 \
                 --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --workers-count 2 --cluster-name e2e-default-$(date +%s) \
@@ -342,16 +343,16 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
           securityContext:
             privileged: true
           resources:
             requests:
-              cpu: 1
-              memory: "6Gi"
+              cpu: "2"
+              memory: "10Gi"
             limits:
-              cpu: 1
-              memory: "6Gi"
+              cpu: "2"
+              memory: "10Gi"
           command:
             - runner.sh
           args:
@@ -364,14 +365,14 @@ periodics:
               make install-deployer-tf
 
               export TF_VAR_powervs_system_type=s1022
-              kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-10 \
                 --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --workers-count 2 --cluster-name e2e-slow-$(date +%s) \
                 --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors\
                 --break-kubetest-on-upfail true \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
-                --test=ginkgo -- --parallel 30 --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Slow\]' --skip-regex='\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:'
+                --test=ginkgo -- --parallel 15 --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Slow\]' --skip-regex='\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:'
 
   - name: ci-kubernetes-e2e-ppc64le-serial-kubetest2
     cron: "30 9-17/8 * * *" # every 8h starting at 09:30 UTC
@@ -394,14 +395,14 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
           resources:
             requests:
-              cpu: 4
-              memory: "14Gi"
+              cpu: 2
+              memory: "5Gi"
             limits:
-              cpu: 4
-              memory: "14Gi"
+              cpu: 2
+              memory: "5Gi"
           command:
             - runner.sh
           args:
@@ -413,7 +414,7 @@ periodics:
               #Setup of kubetest2 tf deployer and ginkgo tester
               make install-deployer-tf
 
-              kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-10 \
                 --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --workers-count 2 --cluster-name e2e-serial-$(date +%s) \

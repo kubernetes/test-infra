@@ -1,5 +1,5 @@
 steps:
-  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260108-7f313c340e
     entrypoint: /buildx-entrypoint
     args:
       - build
@@ -7,11 +7,12 @@ steps:
       - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/git-custom-k8s-auth:$_GIT_TAG
       - --build-arg=AWS_IAM_AUTHENTICATOR_VERSION=$_AWS_IAM_AUTHENTICATOR_VERSION
       - --build-arg=AZURE_KUBELOGIN_VERSION=$_AZURE_KUBELOGIN_VERSION
-      - --platform=linux/amd64,linux/arm64/v8,linux/ppc64le,linux/s390x
+      - --build-arg=GKE_AUTH_PLUGIN_VERSION=$_GKE_AUTH_PLUGIN_VERSION
+      - --platform=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/riscv64
       - --push
       - .
     dir: .
-  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260108-7f313c340e
     entrypoint: gcloud
     args:
       - container
@@ -21,6 +22,6 @@ steps:
       - gcr.io/$PROJECT_ID/git-custom-k8s-auth:latest
 substitutions:
   _GIT_TAG: "12345"
-  # Prefer 0.5.x series (not 0.6.x) for now.
-  _AWS_IAM_AUTHENTICATOR_VERSION: "0.7.9"
-  _AZURE_KUBELOGIN_VERSION: "0.2.13"
+  _AWS_IAM_AUTHENTICATOR_VERSION: "0.7.15"
+  _AZURE_KUBELOGIN_VERSION: "0.2.17"
+  _GKE_AUTH_PLUGIN_VERSION: "35.0.0"

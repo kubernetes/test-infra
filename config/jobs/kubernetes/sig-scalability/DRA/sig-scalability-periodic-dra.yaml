@@ -34,7 +34,7 @@ periodics:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -152,7 +152,7 @@ periodics:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -266,7 +266,7 @@ periodics:
         path_alias: k8s.io/perf-tests
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
             - /workspace/scenarios/kubernetes_e2e.py
@@ -358,7 +358,7 @@ periodics:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -418,10 +418,10 @@ periodics:
         resources:
           requests:
             cpu: "7"
-            memory: "28Gi"
+            memory: "16Gi"
           limits:
             cpu: "7"
-            memory: "28Gi"
+            memory: "16Gi"
 
   - name: ci-kubernetes-e2e-kops-gce-5000-node-dra-with-workload-ipalias-using-cl2
     tags:
@@ -465,7 +465,7 @@ periodics:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -533,7 +533,7 @@ periodics:
         resources:
           requests:
             cpu: "7"
-            memory: "28Gi"
+            memory: "24Gi"
           limits:
             cpu: "7"
-            memory: "28Gi"
+            memory: "24Gi"

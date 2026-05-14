@@ -22,7 +22,7 @@ presubmits:
       spec:
         serviceAccountName: node-e2e-tests
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
             command:
               - runner.sh
             args:
@@ -68,7 +68,7 @@ presubmits:
       spec:
         serviceAccountName: node-e2e-tests
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
             command:
               - runner.sh
             args:
@@ -120,7 +120,7 @@ presubmits:
       spec:
         serviceAccountName: node-e2e-tests
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
             command:
               - runner.sh
             args:
@@ -131,7 +131,7 @@ presubmits:
               - name: IMAGE_CONFIG_DIR
                 value: config
               - name: IMAGE_CONFIG_FILE
-                value: aws-instance.yaml
+                value: aws-instance-serial.yaml
               - name: SKIP
                 value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]|\[Feature:OffByDefault\]
               - name: TEST_ARGS
@@ -166,7 +166,7 @@ presubmits:
       spec:
         serviceAccountName: node-e2e-tests
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
             command:
               - runner.sh
             args:
@@ -183,7 +183,7 @@ presubmits:
               - name: IMAGE_CONFIG_DIR
                 value: config
               - name: IMAGE_CONFIG_FILE
-                value: aws-instance-arm64.yaml
+                value: aws-instance-arm64-serial.yaml
               - name: TEST_ARGS
                 value: '--kubelet-flags="--cgroup-driver=systemd"'
             # docker-in-docker needs privileged mode

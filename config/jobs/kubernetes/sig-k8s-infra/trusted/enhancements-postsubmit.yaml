@@ -16,6 +16,13 @@ postsubmits:
           env:
             - name: KEPS_BUCKET
               value: "gs://k8s-keps"
+          resources:
+            requests:
+              cpu: 2
+              memory: 2Gi
+            limits:
+              cpu: 2
+              memory: 2Gi
         serviceAccountName: k8s-keps
       annotations:
         testgrid-dashboards: sig-arch-enhancements

@@ -148,10 +148,17 @@ RUN rm -f $(which kubectl) && \
     export KUBECTL_VERSION=$(curl --retry 6 --retry-connrefused -fsSL https://dl.k8s.io/release/${K8S_RELEASE}.txt) && \
     wget -q https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl -O /usr/local/bin/kubectl && \
     chmod +x /usr/local/bin/kubectl
-# install go
+# Install go
+# Overrides the Go version to install.
+# Unset GO_VERSION means we will respect .go-version in the kubernetes repo
+# based on K8S_BRANCH.
 ARG GO_VERSION
-ARG GO_TARBALL="go${GO_VERSION}.linux-${TARGETARCH}.tar.gz"
-RUN wget -q "https://go.dev/dl/${GO_TARBALL}" && \
+ARG K8S_BRANCH
+RUN if [ -z "${GO_VERSION}" ]; then \
+      GO_VERSION=$(curl --retry 6 --retry-connrefused -fsSL "https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/${K8S_BRANCH}/.go-version"); \
+    fi && \
+    export GO_TARBALL="go${GO_VERSION}.linux-${TARGETARCH}.tar.gz" && \
+    wget -q "https://go.dev/dl/${GO_TARBALL}" && \
     tar xzf "${GO_TARBALL}" -C /usr/local && \
     mkdir -p "${GOPATH}/bin" && \
     rm "${GO_TARBALL}"

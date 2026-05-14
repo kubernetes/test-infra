@@ -16,7 +16,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - dev/ci/presubmits/cloud-provider-gcp-tests
         resources:
@@ -40,22 +40,14 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
           - "/bin/bash"
           - "-c"
           - REPO_ROOT=$(git rev-parse --show-toplevel);
-            if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
-              export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
-              echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
-            else
-              export BAZEL_VERSION="5.3.0";
-              echo "BAZEL_VERSION - Falling back to 5.3.0";
-            fi;
-            /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
-            ./tools/verify-all.sh
+            make verify
           resources:
             limits:
               cpu: 2
@@ -82,7 +74,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         resources:
           limits:
             cpu: 4
@@ -95,14 +87,8 @@ presubmits:
         command:
         - runner.sh
         args:
-        - "/bin/bash"
-        - "-c"
-        - set -o errexit;
-          set -o nounset;
-          set -o pipefail;
-          set -o xtrace;
-          cd $GOPATH/src/cloud-provider-gcp;
-          tools/run-e2e-test.sh
+        - make
+        - run-e2e-test
 
   - name: pull-cloud-provider-gcp-scenario-kops-simple
     cluster: k8s-infra-prow-build
@@ -131,7 +117,7 @@ presubmits:
       path_alias: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         resources:
           limits:
             cpu: 4
@@ -172,41 +158,15 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
         command:
         - runner.sh
         args:
-        - "/bin/bash"
-        - "-c"
-        - set -o errexit;
-          set -o nounset;
-          set -o pipefail;
-          set -o xtrace;
-          REPO_ROOT=$(git rev-parse --show-toplevel);
-          cd;
-          export GO111MODULE=on;
-          if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
-            export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
-            echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
-          else
-            export BAZEL_VERSION="5.3.0";
-            echo "BAZEL_VERSION - Falling back to 5.3.0";
-          fi;
-          /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
-          go install sigs.k8s.io/kubetest2@latest;
-          go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
-          go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-          if [[ -f "${REPO_ROOT}/ginko-test-package-version.env" ]]; then
-            export TEST_PACKAGE_VERSION=$(cat "${REPO_ROOT}/ginko-test-package-version.env");
-            echo "TEST_PACKAGE_VERSION set to ${TEST_PACKAGE_VERSION}";
-          else
-            export TEST_PACKAGE_VERSION="v1.25.0";
-            echo "TEST_PACKAGE_VERSION - Falling back to v1.25.0";
-          fi;
-          kubetest2 gce -v 2 --repo-root "${REPO_ROOT}" --build --up --down --test=ginkgo --node-size e2-standard-4 --master-size e2-standard-8 -- --test-package-version="${TEST_PACKAGE_VERSION}" --parallel=30 --test-args='--minStartupPods=8' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+        - make
+        - run-e2e-test
         resources:
           limits:
             cpu: 4
@@ -228,22 +188,14 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
           - "/bin/bash"
           - "-c"
           - REPO_ROOT=$(git rev-parse --show-toplevel);
-            if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
-              export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
-              echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
-            else
-              export BAZEL_VERSION="5.3.0";
-              echo "BAZEL_VERSION - Falling back to 5.3.0";
-            fi;
-            /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
-            ./tools/verify-up-to-date.sh
+            make verify-up-to-date
           resources:
             limits:
               cpu: 2
@@ -251,3 +203,35 @@ presubmits:
             requests:
               cpu: 2
               memory: 4Gi
+
+  - name: pull-cloud-provider-gcp-metis-glibc-floor-test
+    cluster: k8s-infra-prow-build
+    decorate: true
+    path_alias: k8s.io/cloud-provider-gcp
+    always_run: false
+    run_if_changed: "^metis/"
+    labels:
+      preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Run GLIBC floor compatibility test for Metis.
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
+        command:
+        - runner.sh
+        args:
+        - /bin/bash
+        - -c
+        - |
+          cd metis
+          make test-glibc-floor
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi

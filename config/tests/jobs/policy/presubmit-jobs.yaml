@@ -30,8 +30,6 @@ optional_and_run_if_changed:
       run_if_changed: ^(test/conformance/testdata/|api/openapi-spec/)
     - name: pull-kubernetes-conformance-image-test
       run_if_changed: conformance
-    - name: pull-kubernetes-conformance-kind-ipv6-parallel
-      run_if_changed: ^test/
     - name: pull-kubernetes-cross
       run_if_changed: (^.go-version)|(^build/build-image/)|(^hack/lib/golang.sh)|(^build/common.sh)
     - name: pull-kubernetes-dra-integration
@@ -42,6 +40,10 @@ optional_and_run_if_changed:
       branches:
         - release-1.35
       run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
+    - name: pull-kubernetes-dra-integration
+      branches:
+        - release-1.36
+      run_if_changed: /(dra|e2e_dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
     - name: pull-kubernetes-dra-integration
       skip_branches:
         - release-\d+\.\d+
@@ -90,6 +92,10 @@ optional_and_run_if_changed:
       run_if_changed: ^pkg/features/
     - name: pull-kubernetes-e2e-kind-alpha-beta-features
       run_if_changed: ^pkg/features/
+    - name: pull-kubernetes-e2e-kind-beta-enabled
+      run_if_changed: ^pkg/features/
+    - name: pull-kubernetes-e2e-kind-beta-features
+      run_if_changed: ^pkg/features/
     - name: pull-kubernetes-e2e-kind-kms
       run_if_changed: staging/src/k8s.io/apiserver/pkg/storage/value/|staging/src/k8s.io/kms/|staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/|test/e2e/testing-manifests/auth/encrypt/
     - name: pull-kubernetes-e2e-kind-nftables
@@ -111,6 +117,10 @@ optional_and_run_if_changed:
         - release-1.35
       run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     - name: pull-kubernetes-kind-dra
+      branches:
+        - release-1.36
+      run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
+    - name: pull-kubernetes-kind-dra
       skip_branches:
         - release-\d+\.\d+
       run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
@@ -127,6 +137,10 @@ optional_and_run_if_changed:
         - release-1.35
       run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     - name: pull-kubernetes-kind-dra-all
+      branches:
+        - release-1.36
+      run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
+    - name: pull-kubernetes-kind-dra-all
       skip_branches:
         - release-\d+\.\d+
       run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
@@ -139,6 +153,10 @@ optional_and_run_if_changed:
         - release-1.35
       run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     - name: pull-kubernetes-kind-dra-n-1
+      branches:
+        - release-1.36
+      run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
+    - name: pull-kubernetes-kind-dra-n-1
       skip_branches:
         - release-\d+\.\d+
       run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
@@ -150,6 +168,10 @@ optional_and_run_if_changed:
       branches:
         - release-1.35
       run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
+    - name: pull-kubernetes-kind-dra-n-2
+      branches:
+        - release-1.36
+      run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
     - name: pull-kubernetes-kind-dra-n-2
       skip_branches:
         - release-\d+\.\d+
@@ -158,6 +180,10 @@ optional_and_run_if_changed:
       branches:
         - release-1.35
       run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
+    - name: pull-kubernetes-kind-dra-n-3
+      branches:
+        - release-1.36
+      run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
     - name: pull-kubernetes-kind-dra-n-3
       skip_branches:
         - release-\d+\.\d+

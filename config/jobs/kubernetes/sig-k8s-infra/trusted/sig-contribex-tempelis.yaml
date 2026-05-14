@@ -4,7 +4,7 @@ postsubmits:
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     branches:
-    - ^master$
+    - ^main$
     run_if_changed: '^communication/slack-config'
     annotations:
       testgrid-num-failures-to-alert: "1"
@@ -13,7 +13,7 @@ postsubmits:
       testgrid-dashboards: sig-contribex-slack-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-slack-infra/tempelis:v20200909-1eb97f5
+      - image: gcr.io/k8s-staging-slack-infra/tempelis:v20260505-4a08de2
         command:
         - /tempelis
         args:
@@ -25,6 +25,13 @@ postsubmits:
         - name: tempelis-creds
           mountPath: /etc/slack-auth
           readOnly: true
+        resources:
+          requests:
+            cpu: 1
+            memory: 2Gi
+          limits:
+            cpu: 1
+            memory: 2Gi
       volumes:
       - name: tempelis-creds
         secret:

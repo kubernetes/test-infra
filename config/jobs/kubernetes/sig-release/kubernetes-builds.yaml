@@ -11,7 +11,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         args:
@@ -41,9 +41,9 @@ periodics:
     repo: kubernetes
     base_ref: master
   labels:
-    preset-service-account: "true"
     preset-dind-enabled: "true"
   spec:
+    serviceAccountName: prow-build
     containers:
     - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
@@ -55,17 +55,24 @@ periodics:
       - --allow-dup=false
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
-      - --extra-version-markers=k8s-master
+      env:
+        - name: FASTLY_SERVICE_NAME
+          value: dl.k8s.io
+        - name: FASTLY_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: fastly-purge-token
+              key: token
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       resources:
         limits:
           cpu: "7"
-          memory: "34Gi"
+          memory: "24Gi"
         requests:
           cpu: "7"
-          memory: "34Gi"
+          memory: "24Gi"
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes
@@ -86,9 +93,9 @@ periodics:
     repo: kubernetes
     base_ref: master
   labels:
-    preset-service-account: "true"
     preset-dind-enabled: "true"
   spec:
+    serviceAccountName: prow-build
     containers:
     - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
@@ -101,6 +108,14 @@ periodics:
       - --fast
       - --bucket=k8s-release-dev
       # docker-in-docker needs privileged mode
+      env:
+        - name: FASTLY_SERVICE_NAME
+          value: dl.k8s.io
+        - name: FASTLY_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: fastly-purge-token
+              key: token
       securityContext:
         privileged: true
       resources:

@@ -22,7 +22,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -35,6 +35,8 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
         - name: CLOUD_PROVIDER

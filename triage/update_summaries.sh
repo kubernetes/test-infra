@@ -100,6 +100,11 @@ gsutil_cp() {
   gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z "$@"
 }
 
+# Generate job-to-repo mapping from Prow configs
+jobs_dir="${JOBS_DIR:-${GOPATH:-/home/prow/go}/src/k8s.io/test-infra/config/jobs}"
+python3 /generate_job_repos.py "${jobs_dir}" job_repos.json
+
+gsutil_cp job_repos.json "${TRIAGE_GCS_PATH}/"
 gsutil_cp failure_data.json "${TRIAGE_GCS_PATH}/"
 gsutil_cp slices/*.json "${TRIAGE_GCS_PATH}/slices/"
 gsutil_cp failure_data.json "${TRIAGE_GCS_PATH}/history/$(date -u +%Y%m%d).json"

@@ -1,0 +1,120 @@
+# DRA driver e2e on GCP + nvkind + GPU Operator.
+#
+# Each run acquires a gpu-project from Boskos, provisions a T4 GCE VM,
+# stands up a DRA-enabled kind cluster via experiment/gcp-nvkind/lib/, then
+# installs GPU Operator (minimal mode) + the DRA driver from PR source and
+# runs the Ginkgo suite under test/e2e/. All Docker work happens on the VM,
+# so the Prow pod needs neither DinD nor privileged.
+
+presubmits:
+  kubernetes-sigs/dra-driver-nvidia-gpu:
+  - name: pull-dra-driver-nvidia-gpu-e2e-gcp-nvkind
+    cluster: k8s-infra-prow-build
+    job_queue_name: gce-gpu-test
+    optional: true
+    always_run: true
+    max_concurrency: 1
+    skip_branches:
+    - release-\d+\.\d+
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-gpu, nvidia-gpu, nvidia-dra, nvidia-presubmits
+      testgrid-tab-name: pull-dra-driver-nvidia-gpu-gcp-nvkind
+      description: "DRA GPU e2e on GCP + nvkind + GPU Operator (optional presubmit)"
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+        command:
+        - runner.sh
+        args:
+        - hack/ci/gcp-nvkind/e2e-test.sh
+        env:
+        - name: BOSKOS_HOST
+          value: "http://boskos.test-pods.svc.cluster.local"
+        - name: BOSKOS_RESOURCE_TYPE
+          value: "gpu-project"
+        - name: GCE_ZONE
+          value: "us-central1-b"
+        - name: GCE_MACHINE_TYPE
+          value: "n1-standard-4"
+        - name: GCE_ACCELERATOR
+          value: "type=nvidia-tesla-t4,count=1"
+        - name: GCE_IMAGE_FAMILY
+          value: "common-cu129-ubuntu-2204-nvidia-580"
+        - name: GCE_IMAGE_PROJECT
+          value: "deeplearning-platform-release"
+        - name: K8S_VERSION
+          value: "v1.34.3"
+        - name: GPU_OPERATOR_VERSION
+          value: "v26.3.1"
+        - name: TESTINFRA_DIR
+          value: "/home/prow/go/src/k8s.io/test-infra"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+
+periodics:
+- name: ci-dra-driver-nvidia-gpu-e2e-gcp-nvkind
+  cluster: k8s-infra-prow-build
+  job_queue_name: gce-gpu-test
+  interval: 6h
+  decorate: true
+  decoration_config:
+    timeout: 2h
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: dra-driver-nvidia-gpu
+    base_ref: main
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  annotations:
+    testgrid-dashboards: sig-node-gpu, nvidia-gpu, nvidia-dra, nvidia-periodics
+    testgrid-tab-name: ci-dra-driver-nvidia-gpu-gcp-nvkind
+    description: "Periodic DRA GPU e2e on GCP + nvkind + GPU Operator"
+  spec:
+    serviceAccountName: prow-build
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+      command:
+      - runner.sh
+      args:
+      - hack/ci/gcp-nvkind/e2e-test.sh
+      env:
+      - name: GCE_ZONE
+        value: "us-central1-b"
+      - name: GCE_MACHINE_TYPE
+        value: "n1-standard-4"
+      - name: GCE_ACCELERATOR
+        value: "type=nvidia-tesla-t4,count=1"
+      - name: GCE_IMAGE_FAMILY
+        value: "common-cu129-ubuntu-2404-nvidia-580"
+      - name: GCE_IMAGE_PROJECT
+        value: "deeplearning-platform-release"
+      - name: K8S_VERSION
+        value: "v1.35.1"
+      - name: GPU_OPERATOR_VERSION
+        value: "v26.3.1"
+      - name: TESTINFRA_DIR
+        value: "/home/prow/go/src/k8s.io/test-infra"
+      resources:
+        requests:
+          cpu: "4"
+          memory: "8Gi"
+        limits:
+          cpu: "4"
+          memory: "8Gi"

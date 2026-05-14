@@ -9,7 +9,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
           command:
             - /run.sh
           args:
@@ -46,7 +46,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - "make"
         args:
@@ -73,7 +73,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.25-trixie
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.26-trixie
         imagePullPolicy: Always
         command:
         - make

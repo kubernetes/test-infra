@@ -1,35 +1,25 @@
 timeout: 1800s
 steps:
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260205-38cfa9523f
+    entrypoint: /buildx-entrypoint
     args:
     - build
     - --tag=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
-    - --build-arg=GO_VERSION=$_GO_VERSION
-    - --build-arg=K8S_RELEASE=$_K8S_RELEASE
+    - --tag=gcr.io/$PROJECT_ID/krte:latest-$_CONFIG
+    - --build-arg=K8S_BRANCH=$_K8S_BRANCH
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
+    - --platform=linux/amd64,linux/arm64
+    - --push
     - .
-    dir: images/krte
-  - name: gcr.io/cloud-builders/docker
-    args:
-    - tag
-    - gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
-    - gcr.io/$PROJECT_ID/krte:latest-$_CONFIG
     dir: images/krte
 substitutions:
   _GIT_TAG: '12345'
   _CONFIG: master
-  _GO_VERSION: 1.13.5
-  _K8S_RELEASE: stable
-  _BAZEL_VERSION: 3.4.1
-  _OLD_BAZEL_VERSION: 2.2.0
-  _CFSSL_VERSION: R1.2
+  _K8S_BRANCH: master
 options:
   substitution_option: ALLOW_LOOSE
   # this is a large and critical CI image, builds are slow on the default 1 core
   machineType: E2_HIGHCPU_32
-images:
-  - 'gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG'
-  - 'gcr.io/$PROJECT_ID/krte:latest-$_CONFIG'
 tags:
   - krte
   - $_CONFIG

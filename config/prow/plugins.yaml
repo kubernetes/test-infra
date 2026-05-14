@@ -43,6 +43,13 @@ triggers:
 - repos:
   - kubernetes-sigs/gateway-api
   - kubernetes-sigs/gateway-api-inference-extension
+  - kubernetes-sigs/kube-agentic-networking
+  join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+  only_org_members: true
+  trigger_github_workflows: true
+- repos:
+  - kubernetes-sigs/controller-runtime
+  - kubernetes-sigs/controller-tools
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   only_org_members: true
   trigger_github_workflows: true
@@ -234,6 +241,10 @@ label:
         - sig-storage-leads
         - sig-testing-leads
         - sig-windows-leads
+    kubernetes-sigs/provider-aws-test-infra:
+      - label: skip-review
+        allowed_teams:
+        - provider-aws-test-infra-admins
 
 lgtm:
 - repos:
@@ -281,6 +292,7 @@ lgtm:
   - kubernetes-sigs/cluster-api-provider-azure
   - kubernetes-sigs/cluster-api-provider-vsphere
   - kubernetes-sigs/cluster-api-provider-aws
+  - kubernetes-sigs/dra-driver-nvidia-gpu
   - kubernetes-sigs/dra-example-driver
   - kubernetes-sigs/kjob
   - kubernetes-sigs/kueue
@@ -499,26 +511,27 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.36
+    master: v1.37
   kubernetes/kubernetes:
-    master: v1.36
+    master: v1.37
+    release-1.36: v1.36
     release-1.35: v1.35
     release-1.34: v1.34
     release-1.33: v1.33
-    release-1.32: v1.32
   kubernetes/org:
-    main: v1.36
+    main: v1.37
   kubernetes/release:
-    master: v1.36
+    master: v1.37
   kubernetes/sig-release:
-    master: v1.36
+    master: v1.37
   kubernetes/test-infra:
-    master: v1.36
+    master: v1.37
   kubernetes-sigs/kjob:
     main: v0.2
     release-0.1: v0.1
   kubernetes-sigs/kueue:
-    main: v0.17
+    main: v0.18
+    release-0.17: v0.17
     release-0.16: v0.16
     release-0.15: v0.15
     release-0.14: v0.14
@@ -529,9 +542,10 @@ milestone_applier:
     release-0.9: v0.9
     release-0.8: v0.8
   kubernetes/k8s.io:
-    main: v1.36
+    main: v1.37
   kubernetes/kops:
-    master: v1.36
+    master: v1.37
+    release-1.36: v1.36
     release-1.35: v1.35
     release-1.34: v1.34
     release-1.33: v1.33
@@ -553,7 +567,8 @@ milestone_applier:
     release-1.17: v1.17
     release-1.16: v1.16
   kubernetes-sigs/cluster-api:
-    main: v1.13
+    main: v1.14
+    release-1.13: v1.13
     release-1.12: v1.12
     release-1.11: v1.11
     release-1.10: v1.10
@@ -575,9 +590,9 @@ milestone_applier:
     release-2.6: v2.6
     release-2.5: v2.5
   kubernetes-sigs/cluster-api-provider-azure:
-    main: v1.23
-    release-1.22: v1.22
-    release-1.21: v1.21
+    main: v1.25
+    release-1.24: v1.24
+    release-1.23: v1.23
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v1.1.0
     release-1.0: v1.0.0
@@ -588,7 +603,8 @@ milestone_applier:
     release-0.4: v0.4
     release-0.3: v0.3
   kubernetes-sigs/cluster-api-provider-vsphere:
-    main: v1.16
+    main: v1.17
+    release-1.16: v1.16
     release-1.15: v1.15
     release-1.14: v1.14
     release-1.13: v1.13
@@ -605,7 +621,7 @@ milestone_applier:
   kubernetes-sigs/boskos:
     master: v1.23
   kubernetes/website:
-    dev-1.36: 1.36
+    dev-1.37: 1.37
   kubernetes/node-problem-detector:
     main: v1.36
     release-1.35: v1.35
@@ -677,6 +693,9 @@ repo_milestone:
   kubernetes-sigs/kueue:
     maintainers_team: kueue-maintainers
     maintainers_friendly_name: Kueue Maintainers
+  kubernetes-sigs/dra-driver-nvidia-gpu:
+    maintainers_team: dra-driver-nvidia-gpu-maintainers
+    maintainers_friendly_name: DRA Driver NVIDIA GPU Maintainers
   kubernetes-sigs/gateway-api-inference-extension:
     maintainers_team: gateway-api-inference-extension-milestone-maintainers
     maintainers_friendly_name: Inference Gateway Milestone Maintainers
@@ -941,6 +960,11 @@ require_matching_label:
   regexp: ^priority/
 - missing_label: needs-kind
   org: kubernetes-sigs
+  repo: dra-driver-nvidia-gpu
+  prs: true
+  regexp: ^kind/
+- missing_label: needs-kind
+  org: kubernetes-sigs
   repo: kustomize
   issues: true
   prs: false
@@ -975,9 +999,43 @@ require_matching_label:
     Area labels can be added by org members by writing `/area ${COMPONENT}` in a comment
 
     Please see the [labels list](https://github.com/kubernetes/test-infra/blob/master/label_sync/labels.md#labels-that-apply-to-kubernetes-sigscluster-api-for-both-issues-and-prs) for possible areas.
+- missing_label: needs-triage
+  org: kubernetes
+  repo: autoscaler
+  issues: true
+  prs: true
+  regexp: ^triage/
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    If SIG Autoscaling contributors determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
 - missing_label: do-not-merge/needs-area
   org: kubernetes
   repo: autoscaler
+  issues: false
+  prs: true
+  regexp: ^area/
+  missing_comment: |
+    This PR is currently missing an area label, which is used to identify the modified component when generating release notes.
+
+    Area labels can be added by org members by writing `/area ${COMPONENT}` in a comment
+- missing_label: needs-triage
+  org: kubernetes-sigs
+  repo: cluster-autoscaler
+  issues: true
+  prs: true
+  regexp: ^triage/
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    If SIG Autoscaling contributors determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: do-not-merge/needs-area
+  org: kubernetes-sigs
+  repo: cluster-autoscaler
   issues: false
   prs: true
   regexp: ^area/
@@ -1222,6 +1280,18 @@ require_matching_label:
     This issue is currently awaiting triage.
 
     If secrets-store-sync-controller contributors determine this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: needs-triage
+  org: kubernetes-sigs
+  repo: kube-agentic-networking
+  issues: true
+  prs: true
+  regexp: ^triage/
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    If kube-agentic-networking contributors determine this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
 
     The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
 
@@ -1553,6 +1623,14 @@ plugins:
     - override
     - branchcleaner
 
+  kubernetes-sigs/dra-driver-nvidia-gpu:
+    plugins:
+    - mergecommitblocker
+    - milestone
+    - override
+    - release-note
+    - require-matching-label
+
   kubernetes-sigs/etcd-manager:
     plugins:
     - mergecommitblocker
@@ -1627,6 +1705,10 @@ plugins:
     - require-matching-label
 
   kubernetes-sigs/cluster-api-operator:
+    plugins:
+    - require-matching-label
+
+  kubernetes-sigs/cluster-autoscaler:
     plugins:
     - require-matching-label
 
@@ -1835,6 +1917,12 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes/ingress-nginx:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes/cloud-provider-gcp:
   - name: cherrypicker
     events:
     - issue_comment
@@ -2125,6 +2213,12 @@ external_plugins:
     - issue_comment
     - pull_request
     endpoint: http://cherrypicker
+  kubernetes-sigs/kube-agentic-networking:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
   containerd/containerd:
   - name: needs-rebase
     events:
@@ -2161,3 +2255,9 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes-sigs/dra-driver-nvidia-gpu:
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
+    endpoint: http://cherrypicker

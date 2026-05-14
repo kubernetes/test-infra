@@ -27,13 +27,13 @@ postsubmits:
         args:
         - -c
         - "cd dns && make push-local"
-      resources:
-        limits:
-          cpu: 1
-          memory: 512Mi
-        requests:
-          cpu: 1
-          memory: 512Mi
+        resources:
+          limits:
+            cpu: 1
+            memory: 512Mi
+          requests:
+            cpu: 1
+            memory: 512Mi
 
 periodics:
 - name: ci-k8sio-dns

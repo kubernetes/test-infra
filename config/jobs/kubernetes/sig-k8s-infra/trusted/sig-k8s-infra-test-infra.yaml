@@ -18,16 +18,19 @@ postsubmits:
         - ./triage/
         - push-static
         resources:
+          limits:
+            cpu: 2
+            memory: "4Gi"
           requests:
-            memory: "1Gi"
+            memory: "4Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-testing-maintenance, sig-k8s-infra-prow
       testgrid-tab-name: triage-update
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: Updates the html contents for go.k8s.io/triage.
-  # TODO: Remove 'canary-' once `post-test-infra-upload-testgrid-config` job is removed.
-  - name: post-test-infra-upload-testgrid-config-canary
+  - name: post-test-infra-upload-testgrid-config
     cluster: k8s-infra-prow-build-trusted
     branches:
     - ^master$
@@ -37,7 +40,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-staging-test-infra/configurator:v20260226-ccc15f6c33
+      - image: gcr.io/k8s-staging-test-infra/configurator:v20260325-0ac3b4d79f
         command:
         - configurator
         args:
@@ -50,8 +53,12 @@ postsubmits:
         - --update-description
         - --oneshot
         resources:
+          limits:
+            cpu: 1
+            memory: 1Gi
           requests:
-            memory: "1Gi"
+            cpu: 1
+            memory: 1Gi
     annotations:
       testgrid-dashboards: sig-testing-maintenance, sig-k8s-infra-prow
       testgrid-tab-name: testgrid-config-update-canary
@@ -76,8 +83,12 @@ postsubmits:
         - ./metrics/web/
         - push-static
         resources:
+          limits:
+            cpu: 1
+            memory: 1Gi
           requests:
-            memory: "256Mi"
+            cpu: 1
+            memory: 1Gi
     annotations:
       testgrid-dashboards: sig-testing-misc, sig-k8s-infra-prow
       testgrid-tab-name: metrics-dashboards-update
@@ -118,6 +129,13 @@ periodics:
       - --jq=/usr/bin/jq
       - --jobs-dir=config/jobs
       - --filter-stale-jobs
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
 
 - name: ci-test-infra-triage
   interval: 3h
@@ -186,7 +204,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260306-8c5d6f1cb
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260513-3e578e4f0
       command:
       - generic-autobumper
       args:

@@ -195,9 +195,9 @@ presubmits:
               # these are both a bit below peak usage during build
               # this is mostly for building kubernetes
               memory: "9Gi"
-              cpu: 2
+              cpu: 4
             limits:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
@@ -243,10 +243,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
             limits:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
@@ -295,10 +295,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
             limits:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
@@ -340,10 +340,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
             limits:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
@@ -385,10 +385,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
             limits:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
@@ -432,10 +432,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
             requests:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
@@ -480,10 +480,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
             limits:
-              cpu: 2
+              cpu: 4
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws

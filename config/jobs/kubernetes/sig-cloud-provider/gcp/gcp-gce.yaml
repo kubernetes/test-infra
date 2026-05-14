@@ -32,7 +32,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       name: ""
       resources:
         limits:
@@ -57,6 +57,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 1h45m0s
+    skip_cloning: true
   # Same as in other release-blocking jobs. If we want to save resources, then we should
   # run some of those less often. This job is the only one which matches a blocking presubmit,
   # so we want to know about problems as quickly as reasonably possible.
@@ -94,7 +95,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       name: ""
       resources:
         limits:
@@ -136,7 +137,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       name: ""
       resources:
         limits:
@@ -154,7 +155,7 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 3h20m0s
+    timeout: 2h20m0s
   interval: 30m
   labels:
     preset-k8s-ssh: "true"
@@ -175,11 +176,11 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
         --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0
         --minStartupPods=8
-      - --timeout=180m
+      - --timeout=120m
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       name: ""
       resources:
         limits:
@@ -219,7 +220,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       name: ""
       resources:
         limits:
@@ -254,7 +255,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       name: ""
       resources:
         limits:
@@ -273,7 +274,7 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 3h20m0s
+    timeout: 1h20m0s
   interval: 30m
   labels:
     preset-k8s-ssh: "true"
@@ -288,11 +289,11 @@ periodics:
       - --gcp-region=us-central1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      - --timeout=180m
+      - --timeout=60m
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       name: ""
       resources:
         limits:
@@ -333,7 +334,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       name: ""
       resources:
         limits:
@@ -373,7 +374,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       name: ""
       resources:
         limits:
@@ -381,159 +382,6 @@ periodics:
           memory: 6Gi
         requests:
           cpu: "1"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: google-gce
-    testgrid-tab-name: soak-gci-gce-1.15
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 23h40m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-soak-gci-gce-beta
-  spec:
-    containers:
-    - args:
-      - --down=false
-      - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
-      - --extract=ci/k8s-stable2
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
-      - --gcp-region=us-central1
-      - --provider=gce
-      - --soak
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]
-        --clean-start=true --minStartupPods=8
-      - --timeout=1400m
-      - --up=false
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
-      name: ""
-      resources:
-        limits:
-          cpu: "2"
-          memory: 6Gi
-        requests:
-          cpu: "2"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: google-gce
-    testgrid-tab-name: soak-gci-gce-1.14
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 23h40m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-soak-gci-gce-stable2
-  spec:
-    containers:
-    - args:
-      - --down=false
-      - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
-      - --extract=ci/k8s-stable2
-      - --gcp-node-image=gci
-      - --gcp-region=us-central1
-      - --provider=gce
-      - --soak
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]
-        --clean-start=true --minStartupPods=8
-      - --timeout=1400m
-      - --up=false
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
-      name: ""
-      resources:
-        limits:
-          cpu: "2"
-          memory: 6Gi
-        requests:
-          cpu: "2"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: google-gce
-    testgrid-tab-name: soak-gci-gce-1.13
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 23h40m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-soak-gci-gce-stable3
-  spec:
-    containers:
-    - args:
-      - --down=false
-      - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
-      - --extract=ci/k8s-stable3
-      - --gcp-node-image=gci
-      - --gcp-region=us-central1
-      - --provider=gce
-      - --soak
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]
-        --clean-start=true --minStartupPods=8
-      - --timeout=1400m
-      - --up=false
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
-      name: ""
-      resources:
-        limits:
-          cpu: "2"
-          memory: 6Gi
-        requests:
-          cpu: "2"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: google-gce
-    testgrid-tab-name: soak-gci-gce-1.12
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 23h40m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-soak-gci-gce-stable4
-  spec:
-    containers:
-    - args:
-      - --down=false
-      - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
-      - --extract=ci/k8s-stable4
-      - --gcp-node-image=gci
-      - --gcp-region=us-central1
-      - --provider=gce
-      - --soak
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]
-        --clean-start=true --minStartupPods=8
-      - --timeout=1400m
-      - --up=false
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
-      name: ""
-      resources:
-        limits:
-          cpu: "2"
-          memory: 6Gi
-        requests:
-          cpu: "2"
           memory: 6Gi
 postsubmits: null
 presubmits:
@@ -585,7 +433,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -638,7 +486,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -691,7 +539,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -740,7 +588,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -797,7 +645,7 @@ presubmits:
         env:
         - name: BOOTSTRAP_FETCH_TEST_INFRA
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -863,7 +711,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -929,7 +777,7 @@ presubmits:
           value: https://us-central1-docker.pkg.dev/v2/k8s-infra-e2e-scale-5k-project/k8s-5k-scale-cache/
         - name: KUBERNETES_REGISTRY_PULL_THROUGH_BASIC_AUTH_TOKEN_PATH
           value: /etc/registry-auth/token
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -995,7 +843,7 @@ presubmits:
             --parallel=30
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -1050,7 +898,7 @@ presubmits:
         - runner.sh
         - kubetest2
         - gce
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -1105,7 +953,7 @@ presubmits:
         - runner.sh
         - kubetest2
         - gce
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -1165,7 +1013,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -1226,7 +1074,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -1285,7 +1133,7 @@ presubmits:
             --parallel=1
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -1345,7 +1193,7 @@ presubmits:
             --parallel=1
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -1402,7 +1250,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:
@@ -1461,7 +1309,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         name: ""
         resources:
           limits:

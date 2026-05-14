@@ -10,7 +10,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -38,7 +38,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         resources:
           limits:
             cpu: 6
@@ -61,7 +61,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -87,7 +87,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -111,7 +111,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -139,7 +139,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         command:
           - runner.sh
         args:
@@ -177,7 +177,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -191,11 +191,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7
-            memory: 32Gi
+            cpu: 2
+            memory: 4Gi
           limits:
-            cpu: 7
-            memory: 32Gi
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-capi-e2e-main
@@ -219,7 +219,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -258,7 +258,7 @@ presubmits:
         path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"

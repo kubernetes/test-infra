@@ -35,7 +35,7 @@ periodics:
       resources:
         limits:
           cpu: 1
-          memory: 1000Mi
+          memory: 1500Mi
         requests:
           cpu: 1
           memory: 1500Mi
@@ -73,10 +73,10 @@ postsubmits:
         - run
         - --
         - --confirm
-      resources:
-        limits:
-          cpu: 1
-          memory: 1000Mi
-        requests:
-          cpu: 1
-          memory: 1500Mi
+        resources:
+          limits:
+            cpu: 1
+            memory: 1500Mi
+          requests:
+            cpu: 1
+            memory: 1500Mi

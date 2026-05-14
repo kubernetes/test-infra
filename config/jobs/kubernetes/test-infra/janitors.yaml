@@ -7,6 +7,8 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential-aws-shared-testing: "true"
   decorate: true
+  decoration_config:
+    skip_cloning: true
   extra_refs:
   - org: kubernetes
     repo: test-infra
@@ -21,7 +23,8 @@ periodics:
       - --path=s3://cloud-provider-aws-shared-e2e/objs.json
       - --exclude-tags=Shared=Ignore
       - --enable-target-group-clean=true
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260227-d48749c
+      - --clean-ecr-repositories=aws-ebs-csi-driver
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260428-2afb3ad
       resources:
         requests:
           cpu: 1
@@ -42,6 +45,8 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
   decorate: true
+  decoration_config:
+    skip_cloning: true
   extra_refs:
   - org: kubernetes
     repo: test-infra
@@ -55,7 +60,15 @@ periodics:
       - --ttl=2h30m
       - --path=s3://k8s-kops-prow/objs.json
       - --exclude-tags=Shared=Ignore
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260227-d48749c
+      - --clean-ecr-repositories=aws-ebs-csi-driver
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260428-2afb3ad
+      resources:
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
   annotations:
     testgrid-dashboards: sig-testing-maintenance
     testgrid-tab-name: ci-aws-janitor

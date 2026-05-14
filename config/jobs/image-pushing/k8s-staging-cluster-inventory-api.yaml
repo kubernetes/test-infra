@@ -1,0 +1,25 @@
+postsubmits:
+  kubernetes-sigs/cluster-inventory-api:
+    - name: post-cluster-inventory-api-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+        testgrid-tab-name: post-cluster-inventory-api-push-images
+      decorate: true
+      branches:
+        - ^main$
+        - ^release-
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
+              - .

@@ -14,17 +14,17 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
       command:
       - "runner.sh"
       - "./scripts/ci-build.sh"
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 8Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
     testgrid-tab-name: capg-build-release-1-10
@@ -45,17 +45,17 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
       args:
       - "runner.sh"
       - "./scripts/ci-test.sh"
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 8Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
     testgrid-tab-name: capg-test-release-1-10
@@ -67,6 +67,7 @@ periodics:
     preset-service-account: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
     timeout: 3h
@@ -78,7 +79,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.33
         env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"

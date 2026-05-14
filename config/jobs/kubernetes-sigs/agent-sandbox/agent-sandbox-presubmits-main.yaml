@@ -9,7 +9,7 @@ presubmits:
       preset-service-account: 'true'
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - dev/ci/presubmits/test-autogen-up-to-date
         resources:
@@ -30,7 +30,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - dev/ci/presubmits/test-unit
         resources:
@@ -49,7 +49,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - dev/ci/presubmits/lint-go
         resources:
@@ -62,6 +62,25 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
       testgrid-tab-name: presubmit-lint-go
+  - name: presubmit-agent-sandbox-lint-api
+    cluster: eks-prow-build-cluster
+    run_if_changed: "^(extensions/)?api/|^dev/(ci/presubmits|tools)/lint-api|^dev/tools/(build-kal|\\.golangci-kal\\.yml|\\.custom-gcl\\.yaml)$"
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+        command:
+        - dev/ci/presubmits/lint-api
+        resources:
+          requests:
+            cpu: 4
+            memory: 8Gi
+          limits:
+            cpu: 4
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-lint-api
   - name: presubmit-agent-sandbox-e2e-test
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^(docs|site)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$|^\\.github/workflows/"
@@ -71,7 +90,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
         - dev/ci/presubmits/test-e2e
@@ -87,3 +106,34 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
       testgrid-tab-name: presubmit-e2e-test
+  - name: presubmit-agent-sandbox-benchmarks-kops-gcp
+    cluster: k8s-infra-prow-build
+    skip_if_only_changed: "^(docs|site)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$|^\\.github/workflows/"
+    decorate: true
+    always_run: false # Require manual invocation, while we iterate
+    optional: true # Don't block merges, while we iterate
+    labels:
+      preset-dind-enabled: "true" # We use dind to build images
+      preset-service-account: "true" # We use boskos for GCE resources
+      preset-k8s-ssh: "true" # For accessing nodes
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+        env:
+        - name: "BOSKOS_HOST"
+          value: "boskos.test-pods.svc.cluster.local"
+        command:
+        - runner.sh
+        - test/benchmarks/scenarios/benchmarks-kops-gcp/run
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7
+            memory: 14Gi
+          limits:
+            cpu: 7
+            memory: 14Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-agent-sandbox-benchmarks-kops-gcp

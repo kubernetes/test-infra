@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -63,7 +63,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - make
         args:
@@ -78,49 +78,6 @@ presubmits:
             memory: 12Gi
           requests:
             cpu: 5
-            memory: 12Gi
-  - name: pull-kubernetes-verify-go-canary
-    cluster: eks-prow-build-cluster
-    always_run: false
-    skip_report: false
-    decorate: true
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
-    path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-go-canary
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/verify-dockerized.sh
-        env:
-        - name: EXCLUDE_TYPECHECK
-          value: "y"
-        - name: EXCLUDE_GODEP
-          value: "y"
-        - name: KUBE_VERIFY_GIT_BRANCH
-          value: master
-        - name: REPO_DIR
-          value: /workspace/k8s.io/kubernetes
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          # Consider reducing memory limits after govet memory usage issue is
-          # addressed in https://github.com/kubernetes/kubernetes/issues/93822
-          limits:
-            cpu: 7
-            memory: 12Gi
-          requests:
-            cpu: 7
             memory: 12Gi
 periodics:
 - interval: 1h
@@ -144,7 +101,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -192,7 +149,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
       imagePullPolicy: Always
       command:
       - runner.sh

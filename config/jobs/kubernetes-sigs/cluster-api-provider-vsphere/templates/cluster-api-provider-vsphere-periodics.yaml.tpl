@@ -98,11 +98,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
 {{ if eq $mode "supervisor" -}}
-{{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.14") (eq $.branch "release-1.15")) -}}
-{{ $vmOperatorVersions := list "v1.8.6-0-gde75746a" "v1.9.0-567-g93918c59" -}}
-{{ range $i, $vmOperatorVersion := $vmOperatorVersions -}}
-{{ $vmOperatorApiVersions := list "v1alpha2" -}}
-{{ range $j, $vmOperatorApiVersion := $vmOperatorApiVersions }}
+{{ if not (or (eq $.branch "release-1.14") (eq $.branch "release-1.15")) -}}
+{{ range $i, $matrix := $.config.Other.vmOperator -}}
+{{ $vmOperatorVersion := $matrix.version -}}
+{{ $vmOperatorApiVersion := $matrix.apiVersion }}
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-{{ printf "%.6s" (ReplaceAll $vmOperatorVersion "." "-") }}-{{ $vmOperatorApiVersion }}-{{ ReplaceAll $.branch "." "-" }}
   cluster: k8s-infra-prow-build
   labels:
@@ -162,7 +161,6 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
 {{ end }}
-{{- end }}
 {{- end }}
 {{- end }}
 - name: periodic-cluster-api-provider-vsphere-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}

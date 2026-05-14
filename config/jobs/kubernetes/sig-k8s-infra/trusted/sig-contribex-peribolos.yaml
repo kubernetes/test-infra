@@ -21,7 +21,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - ./admin/update.sh
         args:
@@ -32,6 +32,13 @@ postsubmits:
         volumeMounts:
         - name: github
           mountPath: /etc/github
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
       volumes:
       - name: github
         secret:
@@ -61,7 +68,7 @@ periodics:
     base_ref: main
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
       command:
       - ./admin/update.sh
       args:
@@ -72,6 +79,13 @@ periodics:
       volumeMounts:
       - name: github
         mountPath: /etc/github
+      resources:
+        limits:
+          cpu: 1
+          memory: 4Gi
+        requests:
+          cpu: 1
+          memory: 4Gi
     volumes:
     - name: github
       secret:

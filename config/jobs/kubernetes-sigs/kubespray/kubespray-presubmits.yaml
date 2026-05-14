@@ -22,3 +22,46 @@ presubmits:
           requests:
             cpu: 1
             memory: 4Gi
+  - name: pull-kubespray-kubevirt-image-builder-validate
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kubespray
+      testgrid-tab-name: kubevirt-image-builder-validate
+    run_if_changed: '^test-infra/image-builder/.*'
+    always_run: false
+    skip_report: false
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -ceu
+        - |
+          apt-get update
+
+          # Use Docker-in-Docker for this presubmit for now.
+          # The rootless BuildKit path is currently blocked on eks-prow-build
+          # because user namespaces are not available in that environment.
+          # Keep the Kubespray-side BuildKit support, but validate this lane with Docker for now.
+          # Tracking issue for the future rootless/userns path:
+          # https://github.com/kubernetes/k8s.io/issues/9433
+          apt-get install -y --no-install-recommends qemu-utils
+          python3 -m pip install --no-cache-dir --break-system-packages ansible-core
+          ansible-galaxy collection install community.general -p /usr/share/ansible/collections
+          make -C test-infra/image-builder validate-single-docker image_name=ubuntu-2404
+
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi

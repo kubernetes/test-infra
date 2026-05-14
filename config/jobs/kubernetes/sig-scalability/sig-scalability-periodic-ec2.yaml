@@ -7,6 +7,8 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential-boskos-scale-001-kops: "true"
   decorate: true
+  decoration_config:
+    skip_cloning: true
   extra_refs:
   - org: kubernetes
     repo: test-infra
@@ -19,7 +21,7 @@ periodics:
       args:
       - --ttl=12h
       - --path=s3://k8s-infra-kops-scale-tests/objs.json
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260227-d48749c
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260428-2afb3ad
       resources:
         requests:
           cpu: 1
@@ -76,7 +78,7 @@ periodics:
     testgrid-num-failures-to-alert: "1"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -178,7 +180,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
       imagePullPolicy: Always
       command:
       - runner.sh

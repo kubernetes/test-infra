@@ -1,0 +1,157 @@
+presets:
+- labels:
+    preset-lambda-credential: "true"
+  env:
+  - name: LAMBDA_API_KEY_FILE
+    value: /etc/lambda-cred/api-key
+  volumeMounts:
+  - name: lambda-cred
+    mountPath: /etc/lambda-cred
+    readOnly: true
+  volumes:
+  - name: lambda-cred
+    secret:
+      secretName: lambda-ai-api-key
+
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-lambda-device-plugin-gpu
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    max_concurrency: 1
+    skip_branches:
+    - release-\d+\.\d+
+    labels:
+      preset-lambda-credential: "true"
+    annotations:
+      testgrid-dashboards: sig-node-gpu, lambda-gpu-presubmits, nvidia-gpu, nvidia-device-plugin, nvidia-presubmits
+      testgrid-tab-name: pull-lambda-device-plugin-gpu
+      description: "Runs [Feature:GPUDevicePlugin] e2e tests on a Lambda Cloud GPU instance"
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+        command:
+        - runner.sh
+        env:
+        - name: GPU_TYPE
+          value: ""
+        args:
+        - bash
+        - -c
+        - |
+          exec "$(go env GOPATH)/src/k8s.io/test-infra/experiment/lambda/e2e-test.sh"
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+
+periodics:
+- name: ci-kubernetes-e2e-lambda-device-plugin-gpu
+  cluster: k8s-infra-prow-build
+  interval: 6h
+  labels:
+    preset-lambda-credential: "true"
+  annotations:
+    testgrid-dashboards: sig-node-gpu, lambda-gpu-periodics, nvidia-gpu, nvidia-device-plugin, nvidia-periodics
+    testgrid-tab-name: ci-lambda-device-plugin-gpu
+    description: "Runs [Feature:GPUDevicePlugin] e2e tests on a Lambda Cloud GPU instance"
+  decorate: true
+  decoration_config:
+    timeout: 2h
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+      command:
+      - runner.sh
+      env:
+      - name: GPU_TYPE
+        value: ""
+      args:
+      - bash
+      - -c
+      - |
+        exec "$(go env GOPATH)/src/k8s.io/test-infra/experiment/lambda/e2e-test.sh"
+      resources:
+        limits:
+          cpu: 4
+          memory: 8Gi
+        requests:
+          cpu: 4
+          memory: 8Gi
+
+# Same frequency (every 6h) as the GPU-type-agnostic periodic above, but
+# pinned to gpu_1x_gh200 (arm64) and offset via cron so the two do not run
+# at the same phase. Cron fires at 03:30, 09:30, 15:30, 21:30 UTC.
+- name: ci-kubernetes-e2e-lambda-device-plugin-gpu-gh200
+  cluster: k8s-infra-prow-build
+  cron: "30 3,9,15,21 * * *"
+  labels:
+    preset-lambda-credential: "true"
+  annotations:
+    testgrid-dashboards: sig-node-gpu, lambda-gpu-periodics, nvidia-gpu, nvidia-device-plugin, nvidia-arm64, nvidia-periodics
+    testgrid-tab-name: ci-lambda-device-plugin-gpu-gh200
+    description: "Runs [Feature:GPUDevicePlugin] e2e tests on a Lambda Cloud gpu_1x_gh200 (arm64) instance"
+  decorate: true
+  decoration_config:
+    timeout: 2h
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+      command:
+      - runner.sh
+      env:
+      - name: GPU_TYPE
+        value: "gpu_1x_gh200"
+      # test/e2e/node/gpu.go hard-codes paths that don't work on arm64:
+      #  - "Test using a Pod" -> tensorflow/tensorflow:latest-gpu (amd64-only)
+      #  - "Test using a Job" -> cupy/cupy:v13.3.0 (amd64-only)
+      #  - "Sanity test using nvidia-smi" -> apt install cuda-demo-suite-12-5
+      #    which NVIDIA only publishes for x86_64 (no package on sbsa).
+      # Skip all three on arm64 until upstream k/k fixes each.
+      - name: GINKGO_SKIP
+        value: '\[Flaky\]|Sanity test using nvidia-smi|Test using a Pod|Test using a Job'
+      args:
+      - bash
+      - -c
+      - |
+        exec "$(go env GOPATH)/src/k8s.io/test-infra/experiment/lambda/e2e-test.sh"
+      resources:
+        limits:
+          cpu: 4
+          memory: 8Gi
+        requests:
+          cpu: 4
+          memory: 8Gi

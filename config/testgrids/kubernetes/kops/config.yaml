@@ -24,19 +24,32 @@ dashboard_groups:
   - kops-distro-u2204
   - kops-distro-u2404
   - kops-distro-u2510
+  - kops-distro-u2604
   - kops-distro-umini2404
   - kops-distro-cos121
   - kops-distro-cos125
   - kops-distro-cosdev
+  - kops-network-amazonvpc
+  - kops-network-calico
+  - kops-network-cilium
+  - kops-network-cilium-etcd
+  - kops-network-cilium-eni
+  - kops-network-flannel
+  - kops-network-gce
+  - kops-network-kindnet
+  - kops-network-kopeio
+  - kops-network-kubenet
+  - kops-network-kube-router
   - kops-k8s-1.32
   - kops-k8s-1.33
   - kops-k8s-1.34
   - kops-k8s-1.35
+  - kops-k8s-1.36
   - kops-k8s-ci
   - kops-k8s-stable
-  - kops-1.32
   - kops-1.33
   - kops-1.34
+  - kops-1.35
   - kops-latest
   - kops-upgrades
   - kops-upgrades-many-addons
@@ -65,19 +78,32 @@ dashboards:
 - name: kops-distro-u2204
 - name: kops-distro-u2404
 - name: kops-distro-u2510
+- name: kops-distro-u2604
 - name: kops-distro-umini2404
 - name: kops-distro-cos121
 - name: kops-distro-cos125
 - name: kops-distro-cosdev
+- name: kops-network-amazonvpc
+- name: kops-network-calico
+- name: kops-network-cilium
+- name: kops-network-cilium-etcd
+- name: kops-network-cilium-eni
+- name: kops-network-flannel
+- name: kops-network-gce
+- name: kops-network-kindnet
+- name: kops-network-kopeio
+- name: kops-network-kubenet
+- name: kops-network-kube-router
 - name: kops-k8s-1.32
 - name: kops-k8s-1.33
 - name: kops-k8s-1.34
 - name: kops-k8s-1.35
+- name: kops-k8s-1.36
 - name: kops-k8s-ci
 - name: kops-k8s-stable
-- name: kops-1.32
 - name: kops-1.33
 - name: kops-1.34
+- name: kops-1.35
 - name: kops-latest
 - name: kops-upgrades
 - name: kops-upgrades-many-addons

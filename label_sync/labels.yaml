@@ -756,6 +756,48 @@ default:
       prowPlugin: shrug
       addedBy: humans
 repos:
+  kubernetes/autoscaler:
+    labels:
+      - color: d4c5f9
+        description: Issues or PRs related to the Cluster Autoscaler component
+        name: area/cluster-autoscaler
+        target: both
+        addedBy: label
+      - color: bfdadc
+        description: Issues or PRs related to the Vertical Pod Autoscaler component
+        name: area/vertical-pod-autoscaler
+        target: both
+        addedBy: label
+      - color: fbca04
+        description: Issues and PRs related to Vertical Pod Autoscaler history from Prometheus
+        name: area/vertical-pod-autoscaler/prometheus
+        target: both
+        addedBy: label
+      - color: "5319e7"
+        description: Issues or PRs related to the Addon Resizer component
+        name: area/addon-resizer
+        target: both
+        addedBy: label
+      - color: "631A62"
+        description: Denotes an issue that is related to the core autoscaler and is not specific to any provider.
+        name: area/core-autoscaler
+        target: both
+        addedBy: label
+      - color: D2BA67
+        description: Issues or PRs related to the Balancer component
+        name: area/balancer
+        target: both
+        addedBy: label
+      - color: ededed
+        description: Indicates that a PR should not merge because it lacks an area label.
+        name: do-not-merge/needs-area
+        target: prs
+        addedBy: prow
+      - color: 0366d6
+        description: Pull requests that update a dependency file
+        name: dependencies
+        target: prs
+        addedBy: github
   kubernetes/community:
     labels:
       - color: 0052cc
@@ -937,7 +979,7 @@ repos:
         target: issues
         prowPlugin: label
         addedBy: Release enhancements team ONLY
-      - color: 108737
+      - color: "108737"
         description: Denotes an enhancement issue is actively being tracked by the Release Team
         name: tracked/yes
         target: issues
@@ -1159,6 +1201,12 @@ repos:
         name: area/api
         target: issues
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to API validation and declarative validation
+        name: area/api-validation
+        target: both
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         name: area/apiserver
         target: both
@@ -1943,6 +1991,28 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes-sigs/cluster-autoscaler:
+    labels:
+      - color: d4c5f9
+        description: Issues or PRs related to the Cluster Autoscaler component
+        name: area/cluster-autoscaler
+        target: both
+        addedBy: label
+      - color: "631A62"
+        description: Denotes an issue that is related to the core autoscaler and is not specific to any provider.
+        name: area/core-autoscaler
+        target: both
+        addedBy: label
+      - color: ededed
+        description: Indicates that a PR should not merge because it lacks an area label.
+        name: do-not-merge/needs-area
+        target: prs
+        addedBy: prow
+      - color: 0366d6
+        description: Pull requests that update a dependency file
+        name: dependencies
+        target: prs
+        addedBy: github
   kubernetes-sigs/cluster-api:
     labels:
       - color: c7def8
@@ -2443,6 +2513,13 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+  kubernetes-sigs/provider-aws-test-infra:
+    labels:
+      - color: 0ffa16
+        description: Indicates a PR is trusted, used by tide for auto-merging PRs.
+        name: skip-review
+        target: prs
+        addedBy: provider-aws-test-infra-admins
   kubernetes-sigs/prow:
     labels:
       - color: 0052cc

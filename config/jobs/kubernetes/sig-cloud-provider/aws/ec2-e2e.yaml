@@ -27,7 +27,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -87,7 +87,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -148,7 +148,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -208,7 +208,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -248,7 +248,7 @@ presubmits:
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
       testgrid-num-failures-to-alert: "10"
-      testgrid-dashboards: presubmits-ec2
+      testgrid-dashboards: presubmits-ec2, nvidia-device-plugin, nvidia-gpu
       description: Runs presubmit tests using kubetest2-ec2 against kubernetes master on EC2 (equivalent of pull-kubernetes-e2e-gce)
     labels:
       preset-e2e-containerd-ec2: "true"
@@ -268,7 +268,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -336,7 +336,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -399,7 +399,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -407,16 +407,16 @@ presubmits:
             - -c
             - |
               cd kubetest2-ec2 && GOPROXY=direct go install .
-              VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast/latest-fast.txt)
+              VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://dl.k8s.io/ci/fast/latest-fast.txt)
               kubetest2 ec2 \
-               --stage https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast \
+               --stage https://dl.k8s.io/ci/fast \
                --version $VERSION \
                --up \
                --down \
                --test=ginkgo \
                -- \
                --parallel=30 \
-               --test-package-url=https://gcsweb.k8s.io/gcs/k8s-release-dev/ \
+               --test-package-url=https://dl.k8s.io \
                --test-package-dir=ci/fast \
                --test-package-marker=latest-fast.txt \
                --focus-regex='Pods should be submitted and removed'
@@ -454,7 +454,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -462,9 +462,9 @@ presubmits:
             - -c
             - |
               cd kubetest2-ec2 && GOPROXY=direct go install .
-              VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast/latest-fast.txt)
+              VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://dl.k8s.io/ci/fast/latest-fast.txt)
               kubetest2 ec2 \
-               --stage https://gcsweb.k8s.io/gcs/k8s-release-dev/ci/fast \
+               --stage https://dl.k8s.io/ci/fast \
                --external-cloud-provider true \
                --version $VERSION \
                --up \
@@ -472,7 +472,64 @@ presubmits:
                --test=ginkgo \
                -- \
                --parallel=30 \
-               --test-package-url=https://gcsweb.k8s.io/gcs/k8s-release-dev/ \
+               --test-package-url=https://dl.k8s.io \
+               --test-package-dir=ci/fast \
+               --test-package-marker=latest-fast.txt \
+               --focus-regex='Pods should be submitted and removed'
+          env:
+            - name: USE_DOCKERIZED_BUILD
+              value: "true"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 7
+              memory: 10Gi
+            requests:
+              cpu: 7
+              memory: 10Gi
+  - name: pull-kubernetes-e2e-ec2-cloud-provider-dual-stack-quick
+    skip_branches:
+      - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: presubmits-ec2
+    labels:
+      preset-e2e-containerd-ec2: "true"
+      preset-dind-enabled: "true"
+    path_alias: sigs.k8s.io/provider-aws-test-infra
+    always_run: true
+    optional: true
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    spec:
+      serviceAccountName: node-e2e-tests
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              cd kubetest2-ec2 && GOPROXY=direct go install .
+              VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://dl.k8s.io/ci/fast/latest-fast.txt)
+              kubetest2 ec2 \
+               --stage https://dl.k8s.io/ci/fast \
+               --external-cloud-provider true \
+               --ip-family=dual \
+               --version $VERSION \
+               --up \
+               --down \
+               --test=ginkgo \
+               -- \
+               --parallel=30 \
+               --test-package-url=https://dl.k8s.io \
                --test-package-dir=ci/fast \
                --test-package-marker=latest-fast.txt \
                --focus-regex='Pods should be submitted and removed'
@@ -515,7 +572,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -574,7 +631,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -634,7 +691,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -693,7 +750,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           command:
             - runner.sh
           args:
@@ -759,7 +816,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
           - runner.sh
         args:
@@ -817,7 +874,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
           - runner.sh
         args:
@@ -874,7 +931,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
           - runner.sh
         args:
@@ -932,7 +989,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
           - runner.sh
         args:
@@ -982,6 +1039,7 @@ periodics:
     path_alias: k8s.io/test-infra
   decoration_config:
     timeout: 4h
+    skip_cloning: true
   spec:
     serviceAccountName: node-e2e-tests
     containers:
@@ -991,7 +1049,7 @@ periodics:
         - --ttl=6h
         - --path=s3://provider-aws-test-infra/objs.json
         - --region=us-east-1
-        image: gcr.io/k8s-staging-boskos/aws-janitor:v20260227-d48749c
+        image: gcr.io/k8s-staging-boskos/aws-janitor:v20260428-2afb3ad
         resources:
           requests:
             cpu: 1

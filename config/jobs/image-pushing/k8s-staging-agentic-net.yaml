@@ -12,7 +12,7 @@ postsubmits:
     spec:
       serviceAccountName: gcb-builder
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
         command:
         - /run.sh
         args:
@@ -27,7 +27,7 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-network-kube-agentic-networking, sig-k8s-infra-gcb
     decorate: true
-    run_if_changed: '^quickstart\/adk-agent\/'
+    run_if_changed: '^site-src\/guides\/quickstart\/adk-agent\/'
     skip_branches:
     # do not run on dependabot branches, these exist prior to merge
     # only merged code should trigger these jobs
@@ -35,7 +35,7 @@ postsubmits:
     spec:
       serviceAccountName: gcb-builder
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
         command:
         - /run.sh
         args:
@@ -44,13 +44,13 @@ postsubmits:
         - --env-passthrough=PULL_BASE_REF
         - --build-dir=.
         - --with-git-dir
-        - quickstart/adk-agent
+        - site-src/guides/quickstart/adk-agent
   - name: post-agentic-net-push-everything-mcp-image
     cluster: k8s-infra-prow-build-trusted
     annotations:
       testgrid-dashboards: sig-network-kube-agentic-networking, sig-k8s-infra-gcb
     decorate: true
-    run_if_changed: '^quickstart\/mcpserver\/'
+    run_if_changed: '^site-src\/guides\/quickstart\/mcpserver\/'
     skip_branches:
     # do not run on dependabot branches, these exist prior to merge
     # only merged code should trigger these jobs
@@ -58,7 +58,7 @@ postsubmits:
     spec:
       serviceAccountName: gcb-builder
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
         command:
         - /run.sh
         args:
@@ -67,13 +67,13 @@ postsubmits:
         - --env-passthrough=PULL_BASE_REF
         - --build-dir=.
         - --with-git-dir
-        - quickstart/mcpserver
+        - site-src/guides/quickstart/mcpserver
   - name: post-agentic-net-push-langchain-agent-image
     cluster: k8s-infra-prow-build-trusted
     annotations:
       testgrid-dashboards: sig-network-kube-agentic-networking, sig-k8s-infra-gcb
     decorate: true
-    run_if_changed: '^quickstart\/additional-agent-examples\/langchain-agent\/'
+    run_if_changed: '^site-src\/guides\/quickstart\/additional-agent-examples\/langchain-agent\/'
     skip_branches:
     # do not run on dependabot branches, these exist prior to merge
     # only merged code should trigger these jobs
@@ -81,7 +81,7 @@ postsubmits:
     spec:
       serviceAccountName: gcb-builder
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
         command:
         - /run.sh
         args:
@@ -90,13 +90,13 @@ postsubmits:
         - --env-passthrough=PULL_BASE_REF
         - --build-dir=.
         - --with-git-dir
-        - quickstart/additional-agent-examples/langchain-agent
+        - site-src/guides/quickstart/additional-agent-examples/langchain-agent
   - name: post-agentic-net-push-openai-agent-image
     cluster: k8s-infra-prow-build-trusted
     annotations:
       testgrid-dashboards: sig-network-kube-agentic-networking, sig-k8s-infra-gcb
     decorate: true
-    run_if_changed: '^quickstart\/additional-agent-examples\/openai-agent\/'
+    run_if_changed: '^site-src\/guides\/quickstart\/additional-agent-examples\/openai-agent\/'
     skip_branches:
     # do not run on dependabot branches, these exist prior to merge
     # only merged code should trigger these jobs
@@ -104,7 +104,7 @@ postsubmits:
     spec:
       serviceAccountName: gcb-builder
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
         command:
         - /run.sh
         args:
@@ -113,4 +113,4 @@ postsubmits:
         - --env-passthrough=PULL_BASE_REF
         - --build-dir=.
         - --with-git-dir
-        - quickstart/additional-agent-examples/openai-agent
+        - site-src/guides/quickstart/additional-agent-examples/openai-agent

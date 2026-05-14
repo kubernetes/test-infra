@@ -14,7 +14,7 @@
 
 ARG GO_VERSION
 # Includes bash, docker, and gcloud
-FROM golang:${GO_VERSION}-alpine3.22
+FROM golang:${GO_VERSION}-alpine
 # upstream go image sets GOTOOLCHAIN=local
 # this means that we won't auto-select the appropriate go for the project being
 # built, so we set it back to auto, which is the default if GOTOOLCHAIN is not set

@@ -5,6 +5,7 @@ dashboard_groups:
     - ibm-ppc64le-node-e2e
     - ibm-ppc64le-periodics
     - ibm-ppc64le-presubmits
+    - ibm-ppc64le-postsubmits
     - ibm-ppc64le-k8s
     - ibm-ppc64le-etcd
     - ibm-cluster-api
@@ -19,6 +20,7 @@ dashboards:
 - name: ibm-ppc64le-node-e2e
 - name: ibm-ppc64le-periodics
 - name: ibm-ppc64le-presubmits
+- name: ibm-ppc64le-postsubmits
 - name: ibm-ppc64le-k8s
 - name: ibm-ppc64le-etcd
 - name: ibm-cluster-api

@@ -13,7 +13,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -43,7 +43,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         resources:
           requests:
             cpu: 6000m
@@ -68,7 +68,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -96,7 +96,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -122,7 +122,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -135,7 +135,7 @@ presubmits:
         # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
         # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
         - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
-          value: "1.32.0"
+          value: "1.33.0"
         resources:
           requests:
             cpu: 7
@@ -166,7 +166,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         args:
         - runner.sh
         - ./scripts/ci-e2e.sh
@@ -186,7 +186,7 @@ presubmits:
         # Please also make sure to refer a version where a kindest/node image exists
         # for (see https://github.com/kubernetes-sigs/kind/releases/)
         - name: KUBERNETES_VERSION_MANAGEMENT
-          value: "v1.32.8"
+          value: "v1.33.7"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -220,7 +220,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -263,7 +263,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -309,7 +309,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -335,7 +335,7 @@ presubmits:
     annotations:
       testgrid-dashboards: cluster-api-core-main
       testgrid-tab-name: capi-pr-e2e-main-gke
-  - name: pull-cluster-api-e2e-upgrade-1-35-1-36-main
+  - name: pull-cluster-api-e2e-upgrade-1-36-1-37-main
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -355,7 +355,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -363,13 +363,13 @@ presubmits:
           - name: ALWAYS_BUILD_KIND_IMAGES
             value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "stable-1.35"
+            value: "stable-1.36"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "ci/latest-1.36"
+            value: "ci/latest-1.37"
           - name: ETCD_VERSION_UPGRADE_TO
-            value: "3.6.6-0"
+            value: "3.6.8-0"
           - name: COREDNS_VERSION_UPGRADE_TO
-            value: "v1.13.1"
+            value: "v1.14.2"
           - name: GINKGO_LABEL_FILTER
             value: "(Conformance && K8s-Upgrade)"
         # we need privileged mode in order to do docker in docker
@@ -384,7 +384,7 @@ presubmits:
             memory: 6Gi
     annotations:
       testgrid-dashboards: cluster-api-core-main
-      testgrid-tab-name: capi-pr-e2e-main-1-35-1-36
+      testgrid-tab-name: capi-pr-e2e-main-1-36-1-37
   - name: pull-cluster-api-e2e-conformance-main
     cluster: eks-prow-build-cluster
     labels:
@@ -405,7 +405,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -448,7 +448,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -492,7 +492,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.36
         args:
         - runner.sh
         - ./scripts/ci-e2e.sh
@@ -506,17 +506,17 @@ presubmits:
         - name: KIND_BUILD_IMAGES
           value: "KUBERNETES_VERSION_LATEST_CI"
         - name: KUBERNETES_VERSION_MANAGEMENT
-          value: ci/latest-1.36
+          value: ci/latest-1.37
         - name: KUBERNETES_VERSION
-          value: ci/latest-1.36
+          value: ci/latest-1.37
         - name: KUBERNETES_VERSION_UPGRADE_FROM
-          value: stable-1.35
+          value: stable-1.36
         - name: KUBERNETES_VERSION_UPGRADE_TO
-          value: ci/latest-1.36
+          value: ci/latest-1.37
         - name: ETCD_VERSION_UPGRADE_TO
-          value: 3.6.6-0
+          value: 3.6.8-0
         - name: COREDNS_VERSION_UPGRADE_TO
-          value: v1.13.1
+          value: v1.14.2
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true

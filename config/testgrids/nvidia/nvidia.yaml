@@ -1,0 +1,19 @@
+# Testgrid dashboards for Kubernetes + NVIDIA GPU integration jobs.
+
+dashboards:
+- name: nvidia-gpu              # rollup: every NVIDIA GPU job opts in
+- name: nvidia-device-plugin    # classic nvidia.com/gpu stack
+- name: nvidia-dra              # DRA stack (dra-driver-nvidia-gpu, dra-gpu)
+- name: nvidia-arm64            # arm64 coverage (GH200)
+- name: nvidia-periodics
+- name: nvidia-presubmits
+
+dashboard_groups:
+- name: nvidia
+  dashboard_names:
+  - nvidia-gpu
+  - nvidia-device-plugin
+  - nvidia-dra
+  - nvidia-arm64
+  - nvidia-periodics
+  - nvidia-presubmits

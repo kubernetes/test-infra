@@ -17,7 +17,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         command:
           - runner.sh
         args:
@@ -61,7 +61,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         command:
           - runner.sh
         args:
@@ -108,7 +108,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         command:
           - runner.sh
         args:
@@ -157,7 +157,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
       command:
         - runner.sh
       args:
@@ -200,7 +200,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
         command:
           - runner.sh
         args:
@@ -209,7 +209,7 @@ periodics:
           - name: GINKGO_FOCUS
             value: "API Version Upgrade"
           - name: KUBERNETES_VERSION
-            value: "v1.30.3"
+            value: "v1.33.10"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -240,7 +240,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
       command:
         - runner.sh
       args:
@@ -283,7 +283,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
       command:
         - runner.sh
       args:
@@ -292,7 +292,9 @@ periodics:
         - name: GINKGO_FOCUS
           value: "Workload cluster creation"
         - name: GINKGO_SKIP
-          value: \[Managed Kubernetes\]|\[WINDOWS\]
+          value: \[Managed Kubernetes\]|\[WINDOWS\]|\[KubeRay\]
+        - name: KUBERNETES_VERSION
+          value: v1.35.3 # Pin to previous patch until Flatcar and RKE2 publish v1.35.4 artifacts
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -326,7 +328,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
       command:
         - runner.sh
       args:
@@ -369,7 +371,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-1.32
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-1.32
       command:
         - runner.sh
       args:

@@ -1,5 +1,8 @@
 presubmits:
   kubernetes/kubernetes:
+  # NOTE: When making changes to this job, please ensure that you also keep the copied jobs
+  # pull-kubernetes-unit-fieldsv1string and ci-kubernetes-unit-fieldsv1string
+  # in config/jobs/kubernetes/sig-api-machinery/sig-api-machinery-config.yaml in sync.
   - name: pull-kubernetes-unit
     annotations:
       fork-per-release: "true"
@@ -21,7 +24,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -55,7 +58,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -100,7 +103,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -111,49 +114,13 @@ presubmits:
             value: ""
           - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
             value: auto
-          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
               cpu: 4
-              memory: "36Gi"
+              memory: "16Gi"
             requests:
               cpu: 4
-              memory: "36Gi"
-  - name: pull-kubernetes-unit-go-canary
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
-    decorate: true
-    cluster: k8s-infra-prow-build
-    labels:
-      preset-service-account: "true"
-    always_run: false
-    skip_report: false
-    path_alias: k8s.io/kubernetes
-    spec:
-      # unit tests have no business requiring root or doing privileged operations
-      securityContext:
-        # NOTE: these are arbitrary non-root values. They don't exist in the
-        # image and don't need to, the unit tests should only write to TMPDIR
-        runAsUser: 2001
-        runAsGroup: 2010
-      containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-go-canary
-          securityContext:
-            allowPrivilegeEscalation: false
-          command:
-            - make
-            - test
-          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
-          resources:
-            limits:
-              cpu: 4
-              memory: "36Gi"
-            requests:
-              cpu: 4
-              memory: "36Gi"
+              memory: "16Gi"
 periodics:
   - interval: 1h
     name: ci-kubernetes-unit
@@ -180,7 +147,7 @@ periodics:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
           securityContext:
             allowPrivilegeEscalation: false
           command:

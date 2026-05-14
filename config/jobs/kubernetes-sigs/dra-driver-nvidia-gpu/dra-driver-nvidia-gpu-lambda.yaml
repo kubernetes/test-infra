@@ -1,0 +1,190 @@
+# Prow jobs for DRA GPU e2e tests on Lambda Cloud.
+#
+# These jobs test the dra-driver-nvidia-gpu repo by provisioning an ephemeral
+# Lambda GPU instance, setting up a single-node kubeadm cluster, building and
+# deploying the DRA driver from source, then running the BATS GPU test subset.
+#
+# The shared Lambda CI library (experiment/lambda/lib/) is checked out via
+# extra_refs and sourced by the driver repo's hack/ci/lambda/e2e-test.sh.
+#
+# All Docker and image builds happen on the Lambda instance, not the Prow pod,
+# so no DinD or privileged containers are needed.
+#
+# NOTE: preset-lambda-credential is defined in
+# config/jobs/kubernetes/sig-cloud-provider/lambda/lambda.yaml and reused here.
+
+presubmits:
+  kubernetes-sigs/dra-driver-nvidia-gpu:
+  - name: pull-dra-driver-nvidia-gpu-e2e-lambda-gpu
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: true
+    max_concurrency: 1
+    skip_branches:
+    - release-\d+\.\d+
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    labels:
+      preset-lambda-credential: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-gpu, lambda-gpu-presubmits, nvidia-gpu, nvidia-dra, nvidia-presubmits
+      testgrid-tab-name: pull-dra-driver-nvidia-gpu-lambda
+      description: "DRA GPU e2e tests on Lambda Cloud for dra-driver-nvidia-gpu PRs"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+        command:
+        - runner.sh
+        args:
+        - hack/ci/lambda/e2e-test.sh
+        env:
+        - name: GPU_TYPE
+          value: "gpu_1x_a10"
+        - name: BATS_TARGET
+          value: "tests-gpu-a10"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+
+  # Variant pinned to gpu_1x_gh200 (arm64). Runs on every PR to guarantee
+  # arm64 coverage; the GPU_TYPE="gpu_1x_a10" presubmit above picks A10 instance
+  # type Lambda has and rarely lands on gh200 in practice. Kept
+  # optional so a gh200 stockout or arm64-only flake doesn't gate merges.
+  - name: pull-dra-driver-nvidia-gpu-e2e-lambda-gpu-gh200
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: true
+    max_concurrency: 1
+    skip_branches:
+    - release-\d+\.\d+
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    labels:
+      preset-lambda-credential: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-gpu, lambda-gpu-presubmits, nvidia-gpu, nvidia-dra, nvidia-arm64, nvidia-presubmits
+      testgrid-tab-name: pull-dra-driver-nvidia-gpu-lambda-gh200
+      description: "DRA GPU e2e tests on a Lambda Cloud gpu_1x_gh200 (arm64) instance"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+        command:
+        - runner.sh
+        args:
+        - hack/ci/lambda/e2e-test.sh
+        env:
+        - name: GPU_TYPE
+          value: "gpu_1x_gh200"
+        - name: BATS_TARGET
+          value: "tests-gpu-dynmig"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+
+periodics:
+- name: ci-dra-driver-nvidia-gpu-e2e-lambda-gpu
+  cluster: k8s-infra-prow-build
+  interval: 6h
+  decorate: true
+  decoration_config:
+    timeout: 2h
+  labels:
+    preset-lambda-credential: "true"
+  annotations:
+    testgrid-dashboards: sig-node-gpu, lambda-gpu-periodics, nvidia-gpu, nvidia-dra, nvidia-periodics
+    testgrid-tab-name: ci-dra-driver-nvidia-gpu-lambda
+    description: "Periodic DRA GPU e2e tests on Lambda Cloud"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: dra-driver-nvidia-gpu
+    base_ref: main
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+      command:
+      - runner.sh
+      args:
+      - hack/ci/lambda/e2e-test.sh
+      env:
+      - name: GPU_TYPE
+        value: "gpu_1x_a10"
+      - name: BATS_TARGET
+        value: "tests-gpu-a10"
+      resources:
+        requests:
+          cpu: "4"
+          memory: "8Gi"
+        limits:
+          cpu: "4"
+          memory: "8Gi"
+
+# Same 6h cadence as the GPU_TYPE="gpu_1x_a10" periodic above, but pinned to
+# gpu_1x_gh200 (arm64). Cron fires at 00:30, 06:30, 12:30, 18:30 UTC --
+# maximally offset (3h) from ci-kubernetes-e2e-lambda-device-plugin-gpu-gh200
+# at "30 3,9,15,21 * * *" so the two gh200 periodics don't compete for Lambda
+# GH200 capacity.
+- name: ci-dra-driver-nvidia-gpu-e2e-lambda-gpu-gh200
+  cluster: k8s-infra-prow-build
+  cron: "30 0,6,12,18 * * *"
+  decorate: true
+  decoration_config:
+    timeout: 2h
+  labels:
+    preset-lambda-credential: "true"
+  annotations:
+    testgrid-dashboards: sig-node-gpu, lambda-gpu-periodics, nvidia-gpu, nvidia-dra, nvidia-arm64, nvidia-periodics
+    testgrid-tab-name: ci-dra-driver-nvidia-gpu-lambda-gh200
+    description: "Periodic DRA GPU e2e tests on a Lambda Cloud gpu_1x_gh200 (arm64) instance"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: dra-driver-nvidia-gpu
+    base_ref: main
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+      command:
+      - runner.sh
+      args:
+      - hack/ci/lambda/e2e-test.sh
+      env:
+      - name: GPU_TYPE
+        value: "gpu_1x_gh200"
+      - name: BATS_TARGET
+        value: "tests-gpu-dynmig"
+      resources:
+        requests:
+          cpu: "4"
+          memory: "8Gi"
+        limits:
+          cpu: "4"
+          memory: "8Gi"

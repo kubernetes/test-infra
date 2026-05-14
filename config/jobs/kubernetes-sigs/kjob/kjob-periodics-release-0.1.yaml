@@ -1,49 +1,9 @@
 periodics:
   - interval: 12h
-    name: periodic-kjob-test-unit-release-0-1
-    cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-apps
-      testgrid-tab-name: periodic-kjob-test-unit-release-0-1
-      testgrid-alert-email: kjob-alerts@kubernetes.io
-      testgrid-num-failures-to-alert: '1'
-      description: "Run periodic kjob unit tests"
-      testgrid-num-columns-recent: '30'
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: kjob
-        base_ref: release-0.1
-        path_alias: kubernetes-sigs/kjob
-    decorate: true
-    decoration_config:
-      timeout: 1h
-    spec:
-      containers:
-        - image: public.ecr.aws/docker/library/golang:1.25
-          env:
-            - name: GO_TEST_FLAGS
-              value: "-race -count 3"
-            - name: GOMAXPROCS
-              value: "2"
-          command:
-            - make
-          args:
-            - test-unit
-          resources:
-            requests:
-              cpu: "2"
-              memory: "4Gi"
-            limits:
-              cpu: "2"
-              memory: "4Gi"
-  - interval: 12h
     name: periodic-kjob-test-integration-release-0-1
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-apps
+      testgrid-dashboards: sig-apps-kjob-periodics
       testgrid-tab-name: periodic-kjob-test-integration-release-0-1
       testgrid-alert-email: kjob-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -81,7 +41,7 @@ periodics:
     name: periodic-kjob-test-e2e-release-0-1-1-32
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-apps
+      testgrid-dashboards: sig-apps-kjob-periodics
       testgrid-tab-name: periodic-kjob-test-e2e-release-0-1-1-32
       testgrid-alert-email: kjob-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -100,7 +60,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"

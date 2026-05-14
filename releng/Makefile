@@ -14,6 +14,7 @@
 
 REPO_ROOT:=${CURDIR}/..
 BIN_DIR:=$(REPO_ROOT)/_bin
+SHELL=bash
 
 all: prepare-release-branch
 

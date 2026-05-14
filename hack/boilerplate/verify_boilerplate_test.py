@@ -53,6 +53,7 @@ class TestBoilerplate(unittest.TestCase):
         expected = '\n'.join(verify_boilerplate.nonconforming_lines([
             './fail.go',
             './fail.py',
+            './fail_2026.go',
         ])) + '\n' # add trailing newline
 
         self.assertEqual(output, expected)

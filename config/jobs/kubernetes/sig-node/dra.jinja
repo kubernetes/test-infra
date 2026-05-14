@@ -49,7 +49,6 @@ presubmits:
       {%- endif %}
     annotations:
       testgrid-dashboards: {{testgrid_dashboards}}
-      testgrid-tab-name: {{job_name}}
       description: {{description}}
       testgrid-alert-email: {{testgrid_alert_email}}
       {%- if not canary and ( not all_features or presubmit ) %}
@@ -62,12 +61,15 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: {{timeout}}
+      {%- if ci and not need_kubernetes_repo and not need_test_infra_repo and not need_containerd_repo %}
+      skip_cloning: true
+      {%- endif %}
     {%- if not ci %}
     path_alias: k8s.io/kubernetes
     {%- endif %}
-    {%- if ci and need_kubernetes_repo or need_test_infra_repo or need_containerd_repo %}
+    {%- if ci or need_test_infra_repo or need_containerd_repo %}
     extra_refs:
-    {%- if ci and need_kubernetes_repo %}
+    {%- if ci %}
     - org: kubernetes
       repo: kubernetes
       base_ref: master
@@ -88,7 +90,7 @@ presubmits:
     {%- endif %}
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260217-29ba10ecec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
         - runner.sh
 
@@ -126,11 +128,7 @@ presubmits:
           # The full log output gets enabled to see progress while the test runs
           # and to debug potential cross-test interactions.
           make WHAT="cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
-          {%- if canary %}
           make test WHAT=./test/e2e_dra FULL_LOG=y KUBE_PRUNE_JUNIT_TESTS=false KUBE_TIMEOUT=-timeout=30m KUBETEST_IN_DOCKER=true CONTROLPLANE_SUDO= KUBELET_SUDO= PROXY_SUDO= CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir
-          {%- else %}
-          make test WHAT=./test/e2e_dra FULL_LOG=y KUBE_PRUNE_JUNIT_TESTS=false KUBE_TIMEOUT=-timeout=30m KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir
-          {%- endif %}
 
         {%- elif job_type == "e2e" %}
         args:
@@ -162,7 +160,14 @@ presubmits:
           # valid for Kubernetes 1.35+. Additional features here should not
           # affect behavior of tests that don't require them.
           if ((major >= 1 && minor - {{ kubelet_skew }} >= 35)); then
+          {%- if canary %}
+            features+=(
+              'GangScheduling'
+              'GenericWorkload'
+            )
+          {%- else %}
             features+=('GenericWorkload')
+          {%- endif %}
           fi
           : "Enabling DRA feature(s): ${features[*]}."
           {%- else %}
@@ -220,6 +225,7 @@ presubmits:
               : Treating alpha.0 like previous release because it already gets set on the master branch during code freeze and/or is too similar to the previous release to justify a change in what the jobs test against.
               previous_minor=$((previous_minor - 1))
           fi
+
           {%- if ci %}
           # Test with the most recent CI build, doesn't even need to be released yet.
           # We want to know if those are broken.
@@ -251,15 +257,18 @@ presubmits:
           worker_nodes=$(kind get nodes | grep worker)
           for n in $worker_nodes; do
               docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              # DRAExtendedResource has been available since 1.34.
+              # We can do version-skew testing against Kubernetes >= 1.36
+              # where it is on by default, but only if we enable it
+              # explicitly for older kubelets.
+              if [[ $previous_minor -ge 34 ]]; then
+                  docker exec $n sed -i -e 's/\(KUBELET_EXTRA_ARGS=.*\)/\1 --feature-gates=DRAExtendedResource=true/' /etc/default/kubelet
+                  # Verify, intentionally not with --quiet.
+                  docker exec $n cat /etc/default/kubelet | grep DRAExtendedResource=true
+                  docker exec $n systemctl daemon-reload
+              fi
               docker exec $n systemctl restart kubelet
           done
-
-          # We need support for disabling tests which need a recent kubelet.
-          # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
-          # when the deployed kubelet is 1.32. This is enforced by
-          # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
-          # including all unsupportd kubelet versions in a deny list.
-          kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
 
           # Running tests which only cover control plane behavior are not useful
           # in a kubelet version skew job. We can filter them out by including
@@ -268,7 +277,7 @@ presubmits:
           kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
           {%- endif %}
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { {% if all_features %}OffByDefault, {% endif -%} DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit {%- if all_features %} -logcheck-data-races{%endif%} &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color {%- if kubelet_skew|int > 0 %} --sem-ver-filter=kubelet=1.$previous_minor {%- endif %} --label-filter="DRA && Feature: isSubsetOf { {% if all_features %}OffByDefault, {% endif -%} DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit {%- if all_features %} -logcheck-data-races{%endif%} &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         {%- if all_features %}

@@ -23,10 +23,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20260306-8c5d6f1cb"
-        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20260306-8c5d6f1cb"
-        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20260306-8c5d6f1cb"
-        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20260306-8c5d6f1cb"
+        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20260513-3e578e4f0"
+        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20260513-3e578e4f0"
+        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20260513-3e578e4f0"
+        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20260513-3e578e4f0"
       gcs_configuration:
         bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
@@ -311,6 +311,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cri-streaming:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         csi-translation-lib:
           restrictions:
             users: []
@@ -358,6 +363,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        klog:
+          required_status_checks:
+            contexts:
+            - "lint (.)"
+            - "lint (examples)"
         kompose:
           required_pull_request_reviews:
             required_approving_review_count: 1
@@ -444,6 +454,10 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        node-problem-detector:
+          required_status_checks:
+            contexts:
+            - lint
         org:
           restrictions: # only allow admins
             users: []
@@ -464,6 +478,11 @@ branch-protection:
             teams:
             - stage-bots
         sample-controller:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        streaming:
           restrictions:
             users: []
             teams:
@@ -779,6 +798,20 @@ tide:
     - kubernetes/k8s.io
     - kubernetes/test-infra
   - repos:
+    - kubernetes-sigs/provider-aws-test-infra
+    labels: # provider-aws-test-infra-admins team gates the skip-review label via plugins.yaml restricted_labels
+    - skip-review
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+  - repos:
     - kubernetes-sigs/cloud-provider-azure
     labels:
     - lgtm
@@ -850,7 +883,9 @@ tide:
     kubernetes-sigs/kueue: squash
     kubernetes-sigs/kui: rebase
     kubernetes-sigs/lws: squash
+    kubernetes-sigs/mcp-lifecycle-operator: squash
     kubernetes-sigs/gateway-api-inference-extension: squash
+    kubernetes-sigs/resource-state-metrics: rebase
     kubernetes-sigs/security-profiles-operator: rebase
     kubernetes-sigs/service-catalog: squash
     kubernetes-sigs/gateway-api: squash
@@ -858,6 +893,7 @@ tide:
     kubernetes-sigs/minibroker: squash
     kubernetes-sigs/vsphere-csi-driver: squash
     kubernetes-sigs/cloud-provider-azure: squash
+    kubernetes/cloud-provider-gcp: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
     kubernetes/ingress-nginx: squash
@@ -1121,3 +1157,9 @@ presets:
 - env:
   - name: GOPROXY
     value: "https://proxy.golang.org"
+# enable GOTOOLCHAIN=auto by default
+# to match running locally outside of a golang container image
+# https://github.com/kubernetes/test-infra/issues/36080
+- env:
+  - name: GOTOOLCHAIN
+    value: "auto"

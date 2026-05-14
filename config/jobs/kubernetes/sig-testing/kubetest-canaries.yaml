@@ -6,6 +6,8 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  decoration_config:
+    skip_cloning: true
   extra_refs:
   - org: kubernetes
     repo: kubernetes

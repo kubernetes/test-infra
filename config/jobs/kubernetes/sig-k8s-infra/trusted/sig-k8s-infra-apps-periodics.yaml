@@ -33,6 +33,13 @@ periodics:
       - name: github
         mountPath: /etc/github-token
         readOnly: true
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: github
       secret:
