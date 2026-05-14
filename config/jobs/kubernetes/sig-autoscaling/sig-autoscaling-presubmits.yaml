@@ -645,17 +645,7 @@ presubmits:
       containers:
       - command:
           - runner.sh
-          - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --extract=ci/latest
-        - --gcp-node-image=gci
-        - --gcp-nodes=3
-        - --gcp-zone=us-central1-b
-        - --provider=gce
-        - --test=false
-        - --test-cmd=../cluster-autoscaler/hack/e2e/run-e2e.sh
-        - --test-cmd-args=--presubmit
-        - --timeout=400m
+          - ../cluster-autoscaler/hack/e2e/run-e2e-presubmit.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260622-537e33cc05-master
         resources:
           limits:
