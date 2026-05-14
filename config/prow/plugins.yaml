@@ -200,6 +200,10 @@ label:
           - pushkarj
         # This label is used to filter/tag CVEs announced by SRC
         label: official-cve-feed
+      - allowed_teams:
+          - security-response-committee
+        label:
+          - cve/wontfix
     kubernetes/enhancements:
       # Restrict setting of tracked/* labels to the enhancements team.
       - label: tracked/no
