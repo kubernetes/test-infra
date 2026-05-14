@@ -202,8 +202,7 @@ label:
         label: official-cve-feed
       - allowed_teams:
           - security-response-committee
-        label:
-          - cve/wontfix
+        label: cve/wontfix
     kubernetes/enhancements:
       # Restrict setting of tracked/* labels to the enhancements team.
       - label: tracked/no
