@@ -28,7 +28,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability

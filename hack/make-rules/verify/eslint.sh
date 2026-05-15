@@ -26,6 +26,5 @@ cd "${REPO_ROOT}"
 # TODO: move out into make dependency step?
 hack/build/ensure-node_modules.sh
 
-# TODO: make sure this matches bazel version
 hack/run-in-node-container.sh \
     node_modules/eslint/bin/eslint -c eslintrc.js --fix --ext .ts .

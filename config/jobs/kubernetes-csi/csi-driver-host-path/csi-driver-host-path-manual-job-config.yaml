@@ -71,7 +71,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -89,8 +88,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "1.28.0"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "master"
       - name: CSI_PROW_BUILD_JOB
@@ -131,7 +128,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -149,8 +145,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "master"
       - name: CSI_PROW_BUILD_JOB

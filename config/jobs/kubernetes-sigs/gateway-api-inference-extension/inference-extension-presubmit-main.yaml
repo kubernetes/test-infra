@@ -15,7 +15,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
+        # generic runner script, handles DIND for caching, etc.
         - runner.sh
         args:
         - make
@@ -44,7 +44,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260504-c27e3ff179-master
         command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
+        # generic runner script, handles DIND for caching, etc.
         - runner.sh
         args:
         - make

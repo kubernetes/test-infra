@@ -65,7 +65,7 @@ periodics:
             - name: E2E_K8S_VERSION
               value: "1.32"
           command:
-            # generic runner script, handles DIND, bazelrc for caching, etc.
+            # generic runner script, handles DIND for caching, etc.
             - runner.sh
           args:
             - make
