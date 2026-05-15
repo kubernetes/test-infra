@@ -7,13 +7,6 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential-aws-shared-testing: "true"
   decorate: true
-  decoration_config:
-    skip_cloning: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
   spec:
     containers:
     - command:
@@ -45,13 +38,6 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
   decorate: true
-  decoration_config:
-    skip_cloning: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
   spec:
     containers:
     - command:

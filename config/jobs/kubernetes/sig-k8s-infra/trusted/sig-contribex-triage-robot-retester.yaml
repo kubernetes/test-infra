@@ -3,13 +3,6 @@ periodics:
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
   cluster: k8s-infra-prow-build-trusted
   decorate: true
-  decoration_config:
-    skip_cloning: true
-  extra_refs:
-  - org: kubernetes
-    repo: org
-    base_ref: main
-    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     testgrid-tab-name: retester

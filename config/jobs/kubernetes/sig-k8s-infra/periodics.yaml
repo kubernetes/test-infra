@@ -31,13 +31,6 @@ periodics:
     cluster: k8s-infra-aks-prow-build
     interval: 2h
     decorate: true
-    decoration_config:
-      skip_cloning: true
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
     max_concurrency: 1
     path_alias: k8s.io/kubernetes
     annotations:

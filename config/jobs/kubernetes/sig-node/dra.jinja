@@ -61,15 +61,12 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: {{timeout}}
-      {%- if ci and not need_kubernetes_repo and not need_test_infra_repo and not need_containerd_repo %}
-      skip_cloning: true
-      {%- endif %}
     {%- if not ci %}
     path_alias: k8s.io/kubernetes
     {%- endif %}
-    {%- if ci or need_test_infra_repo or need_containerd_repo %}
+    {%- if ci and need_kubernetes_repo or need_test_infra_repo or need_containerd_repo %}
     extra_refs:
-    {%- if ci %}
+    {%- if ci and need_kubernetes_repo %}
     - org: kubernetes
       repo: kubernetes
       base_ref: master
