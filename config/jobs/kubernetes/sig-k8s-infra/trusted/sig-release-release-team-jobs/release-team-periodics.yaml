@@ -15,8 +15,10 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
       command:
+      - runner.sh
+      args:
       - ./release-team/hack/sync-enhancements-github-project-beta.sh
       resources:
         requests:
@@ -47,8 +49,10 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
       command:
+      - runner.sh
+      args:
       - ./release-team/hack/sync-bug-triage-github-project-beta.sh
       resources:
         requests:

@@ -23,10 +23,11 @@ periodics:
   spec:
     serviceAccountName: gsuite-groups-manager
     containers:
-    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
       command:
-      - make
+      - runner.sh
       args:
+      - make
       - -C
       - groups
       - run
@@ -64,10 +65,11 @@ postsubmits:
     spec:
       serviceAccountName: gsuite-groups-manager
       containers:
-      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - -C
         - groups
         - run
