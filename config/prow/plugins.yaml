@@ -64,6 +64,7 @@ approve:
 - repos:
   - kubernetes/cluster-registry
   - kubernetes/contrib
+  - kubernetes/contributor-site
   - kubernetes/dashboard
   - kubernetes/dns
   - kubernetes/examples
@@ -155,6 +156,17 @@ approve:
   lgtm_acts_as_approve: false
   ignore_review_state: true
 
+trigger:
+  - repos:
+    - kubernetes/contributor-site
+    events:
+      - issue_comment
+      - issues
+    require_approval: true
+    approval_restriction: >-
+      approve from approvers in OWNERS file or
+      sig-contributor-experience-leads
+
 help:
   help_guidelines_url: https://www.kubernetes.dev/docs/guide/help-wanted/
   help_guidelines_summary: |
@@ -188,6 +200,10 @@ label:
     - ci-short
     - ci-extended
     - ci-full
+    # Call for Help labels for kubernetes/contributor-site
+    - call-for-help
+    - sig-contribex-nco
+    - call-for-help-approved
 
   restricted_labels:
     kubernetes/kubernetes:

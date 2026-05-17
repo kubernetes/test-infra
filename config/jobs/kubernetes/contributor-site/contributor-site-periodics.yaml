@@ -1,0 +1,38 @@
+periodics:
+  - name: pull-contributor-site-lottery-factor
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-contribex-contributor-website
+      testgrid-tab-name: pull-contributor-site-lottery-factor
+    decorate: true
+    extra_refs:
+      - repo: kubernetes/contributor-site
+        base_ref: master
+    spec:
+      containers:
+      - image: us-docker.pkg.dev/k8s-infra-prow/images/build/go-runner:v2.1.1
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          cd hack
+          go mod init hack || true
+          go mod tidy
+          go run gen-lottery-factor.go
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-token
+              key: token
+        resources:
+          limits:
+            cpu: "2"
+            memory: 2Gi
+          requests:
+            cpu: "1"
+            memory: 1Gi
+    cron: "0 0 * * 1"  # Every Monday at midnight UTC
+    labels:
+      preset-dind-enabled: "true"
