@@ -156,17 +156,6 @@ approve:
   lgtm_acts_as_approve: false
   ignore_review_state: true
 
-trigger:
-  - repos:
-    - kubernetes/contributor-site
-    events:
-      - issue_comment
-      - issues
-    require_approval: true
-    approval_restriction: >-
-      approve from approvers in OWNERS file or
-      sig-contributor-experience-leads
-
 help:
   help_guidelines_url: https://www.kubernetes.dev/docs/guide/help-wanted/
   help_guidelines_summary: |
