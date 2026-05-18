@@ -146,10 +146,10 @@ presubmits:
               # this is mostly for building kubernetes
               memory: "9000Mi"
               # during the tests more like 3-20m is used
-              cpu: 2000m
+              cpu: 4000m
             limits:
               memory: "9000Mi"
-              cpu: 2000m
+              cpu: 4000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-e2e-test
@@ -195,10 +195,10 @@ presubmits:
               # this is mostly for building kubernetes
               memory: "9000Mi"
               # during the tests more like 3-20m is used
-              cpu: 2000m
+              cpu: 4000m
             limits:
               memory: "9000Mi"
-              cpu: 2000m
+              cpu: 4000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-conformance-ci-artifacts
@@ -234,10 +234,10 @@ presubmits:
               # this is mostly for building kubernetes
               memory: "9000Mi"
               # during the tests more like 3-20m is used
-              cpu: 2000m
+              cpu: 4000m
             limits:
               memory: "9000Mi"
-              cpu: 2000m
+              cpu: 4000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-conformance
@@ -273,10 +273,10 @@ presubmits:
           resources:
             requests:
               memory: "9000Mi"
-              cpu: 2000m
+              cpu: 4000m
             limits:
               memory: "9000Mi"
-              cpu: 2000m
+              cpu: 4000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-capi-e2e-test
@@ -311,10 +311,10 @@ presubmits:
           resources:
             limits:
               memory: "9000Mi"
-              cpu: 2000m
+              cpu: 4000m
             requests:
               memory: "9000Mi"
-              cpu: 2000m
+              cpu: 4000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-e2e-upgrade
