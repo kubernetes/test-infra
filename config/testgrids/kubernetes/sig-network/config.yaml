@@ -18,6 +18,7 @@ dashboard_groups:
     - sig-network-kindnet
     - sig-network-kube-agentic-networking
     - sig-network-dranet
+    - sig-network-userns
 
 dashboards:
 - name: sig-network-dns
@@ -94,3 +95,4 @@ dashboards:
 - name: sig-network-kindnet
 - name: sig-network-kube-agentic-networking
 - name: sig-network-dranet
+- name: sig-network-userns
