@@ -460,6 +460,8 @@ presubmits:
           value: "16Gi"
         - name: CL2_REALISTIC_POD
           value: "true"
+        - name: CL2_HEAP_PROFILE_INTERVAL
+          value: "5m"
         #  Remaining parameters should match ci-kubernetes-e2e-gce-scale-performance-5000
         - name: KUBE_SSH_KEY_PATH
           value: /etc/ssh-key-secret/ssh-private
@@ -557,6 +559,8 @@ presubmits:
         env:
         - name: CL2_RESTART_APISERVER
           value: "true"
+        - name: CL2_HEAP_PROFILE_INTERVAL
+          value: "1m"
         - name: KUBE_SSH_KEY_PATH
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
