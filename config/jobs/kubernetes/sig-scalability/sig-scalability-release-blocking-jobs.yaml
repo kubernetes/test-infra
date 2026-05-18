@@ -183,10 +183,10 @@ periodics:
       resources:
         requests:
           cpu: 7
-          memory: "27Gi"
+          memory: "32Gi"
         limits:
           cpu: 7
-          memory: "27Gi"
+          memory: "32Gi"
 
 - name: ci-kubernetes-e2e-gce-scale-performance-100
   tags:

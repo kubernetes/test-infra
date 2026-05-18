@@ -1289,10 +1289,10 @@ periodics:
       resources:
         requests:
           cpu: 7
-          memory: "27Gi"
+          memory: "32Gi"
         limits:
           cpu: 7
-          memory: "27Gi"
+          memory: "32Gi"
 
 # NOTE: When making changes to this job, please ensure that you also keep the original job
 # ci-kubernetes-e2e-gce-scale-performance-100 in sig-scalability-release-blocking-jobs.yaml
