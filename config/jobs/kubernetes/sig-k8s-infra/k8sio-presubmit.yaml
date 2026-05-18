@@ -1,6 +1,6 @@
 presubmits:
   kubernetes/k8s.io:
-    - name: pull-k8sio-groups-test
+    - name: pull-k8sio-groups
       cluster: eks-prow-build-cluster
       annotations:
         testgrid-create-test-group: "true"
@@ -12,10 +12,11 @@ presubmits:
         - ^main$
       spec:
         containers:
-          - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
             command:
-              - make
+              - runner.sh
             args:
+              - make
               - -C
               - ./groups
               - test

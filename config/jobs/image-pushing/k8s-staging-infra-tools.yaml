@@ -21,10 +21,18 @@ postsubmits:
           # images are pushed to.
           - --project=k8s-staging-images
           - --scratch-bucket=gs://k8s-staging-images-gcb
+          - --with-git-dir
           - .
           env:
           - name: LOG_TO_STDOUT
             value: "y"
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
   kubernetes-sigs/porche:
   - name: post-porche-push-images
     cluster: k8s-infra-prow-build-trusted
@@ -46,6 +54,13 @@ postsubmits:
           - --scratch-bucket=gs://k8s-staging-images-gcb
           - --with-git-dir
           - .
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
   kubernetes/k8s.io:
   # Special job to deploy the staging registry
   # this should closely match post-registry-push-images
@@ -67,7 +82,7 @@ postsubmits:
       # However they will deploy the terraform changes here
       workdir: true
     spec:
-      serviceAccountName: gcb-builder
+      serviceAccountName: infra-tools
       containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
           command:
@@ -81,6 +96,13 @@ postsubmits:
           env:
           - name: LOG_TO_STDOUT
             value: "y"
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
   # normal image pushing jobs below
   - name: post-k8sio-push-image-octodns-docker
     cluster: k8s-infra-prow-build-trusted
@@ -91,7 +113,7 @@ postsubmits:
     branches:
       - ^main$
     spec:
-      serviceAccountName: gcb-builder
+      serviceAccountName: infra-tools
       containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
           command:
@@ -103,6 +125,13 @@ postsubmits:
             - --scratch-bucket=gs://k8s-staging-images-gcb
             - --env-passthrough=PULL_BASE_REF
             - dns/octodns-docker
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
   - name: post-k8sio-push-image-k8s-infra
     cluster: k8s-infra-prow-build-trusted
     annotations:
