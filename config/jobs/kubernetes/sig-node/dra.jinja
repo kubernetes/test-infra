@@ -100,8 +100,11 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          make WHAT=test/e2e_node/e2e_node.test
-          _output/local/bin/linux/amd64/e2e_node.test remote \
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo cmd/kubelet test/e2e_node/e2e_node.test"
+          _output/bin/e2e_node.test remote \
+             --ginkgo-binary=_output/bin/ginkgo \
+             --kubelet-binary=_output/bin/kubelet \
+             --e2e-node-binary=_output/bin/e2e_node.test \
              --repo-root=. \
              --gcp-zone=us-central1-b \
              --parallelism=1 \
