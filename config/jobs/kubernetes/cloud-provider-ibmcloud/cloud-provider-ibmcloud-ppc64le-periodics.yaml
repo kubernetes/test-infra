@@ -372,7 +372,7 @@ periodics:
                 --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors\
                 --break-kubetest-on-upfail true \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
-                --test=ginkgo -- --parallel 30 --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Slow\]' --skip-regex='\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:'
+                --test=ginkgo -- --parallel 15 --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Slow\]' --skip-regex='\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:'
 
   - name: ci-kubernetes-e2e-ppc64le-serial-kubetest2
     cron: "30 9-17/8 * * *" # every 8h starting at 09:30 UTC
