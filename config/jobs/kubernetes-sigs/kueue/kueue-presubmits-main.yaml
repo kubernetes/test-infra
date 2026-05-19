@@ -858,6 +858,7 @@ presubmits:
               - importer-image
               - kueueviz-image
               - kueue-populator-image
+              - kueue-priority-booster-image
             env:
               - name: GOMAXPROCS
                 value: "2"
@@ -1047,6 +1048,64 @@ presubmits:
             # docker-in-docker needs privileged mode
             securityContext:
               privileged: true
+            resources:
+              requests:
+                cpu: "7"
+                memory: "10Gi"
+              limits:
+                cpu: "7"
+                memory: "10Gi"
+    - name: pull-kueue-priority-booster-test-unit-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-priority-booster-test-unit-main
+        description: "Run kueue-priority-booster unit tests"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.26
+            env:
+              - name: GO_TEST_FLAGS
+                value: "-race -count 3"
+              - name: GOMAXPROCS
+                value: "6"
+            command:
+              - make
+            args:
+              - kueue-priority-booster-test
+            resources:
+              requests:
+                cpu: "6"
+                memory: "6Gi"
+              limits:
+                cpu: "6"
+                memory: "6Gi"
+    - name: pull-kueue-priority-booster-test-integration-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-priority-booster-test-integration-main
+        description: "Run kueue-priority-booster integration tests"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.26
+            command:
+              - make
+            args:
+              - kueue-priority-booster-test-integration
+            env:
+              - name: GOMAXPROCS
+                value: "7"
             resources:
               requests:
                 cpu: "7"
