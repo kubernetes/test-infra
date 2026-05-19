@@ -44,6 +44,11 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     serviceAccountName: prow-build
+    nodeSelector:
+      node.kubernetes.io/instance-type: c4d-standard-16-lssd
+    tolerations:
+      - key: build
+        operator: Exists
     containers:
     - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
@@ -68,11 +73,11 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: "7"
-          memory: "24Gi"
+          cpu: 15
+          memory: 50Gi
         requests:
-          cpu: "7"
-          memory: "24Gi"
+          cpu: 15
+          memory: 50Gi
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes
@@ -120,10 +125,10 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 6
+          cpu: 7
           memory: "12Gi"
         requests:
-          cpu: 6
+          cpu: 7
           memory: "12Gi"
   rerun_auth_config:
     github_team_slugs:

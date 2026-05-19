@@ -64,6 +64,16 @@ var buildClusters = []string{
 	"k8s-infra-s390x-prow-build",
 }
 
+// These are special prowjobs that can't fit on our standard build nodes
+// They should be be configured with appropriate nodeSelectors/tolerations
+var jobsExemptFromResourceLimits = []string{
+	"ci-kubernetes-build",
+	"ci-kubernetes-e2e-gce-scale-performance-5000",
+	"ci-kubernetes-e2e-gce-scale-resource-size",
+	"pull-kubernetes-gce-master-scale-performance-5000",
+	"pull-perf-tests-gce-master-scale-performance-5000",
+}
+
 func matchesAnyRegex(job string, patterns []string) (bool, error) {
 	if job == "" || len(patterns) == 0 {
 		return false, nil
@@ -1122,7 +1132,7 @@ func allStaticJobs() []cfg.JobBase {
 	return jobs
 }
 
-func verifyPodQOSGuaranteed(spec *coreapi.PodSpec, required bool) (errs []error) {
+func verifyPodQOSGuaranteed(spec *coreapi.PodSpec, required bool, jobName string) (errs []error) {
 	should := "should"
 	if required {
 		should = "must"
@@ -1147,12 +1157,18 @@ func verifyPodQOSGuaranteed(spec *coreapi.PodSpec, required bool) (errs []error)
 			} else if limit.Cmp(request) != 0 {
 				errs = append(errs, fmt.Errorf("resources.limits[%v] (%v) %v match resources.request[%v] (%v)", r, limit.String(), should, r, request.String()))
 			} else if r == coreapi.ResourceMemory {
+				if slices.Contains(jobsExemptFromResourceLimits, jobName) {
+					continue
+				}
 				// Enforce a maximum memory limit to allow jobs to fit in an 8 core, 30G Node
 				maxMem := resource.MustParse("27Gi")
 				if limit.Cmp(maxMem) > 0 {
 					errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] (%v) %v be at most %v", c.Name, r, limit.String(), should, maxMem.String()))
 				}
 			} else if r == coreapi.ResourceCPU {
+				if slices.Contains(jobsExemptFromResourceLimits, jobName) {
+					continue
+				}
 				// Enforce a maximum CPU limit to allow jobs to fit in an 8 core, 30G Node
 				maxCPU := resource.MustParse("7")
 				if limit.Cmp(maxCPU) > 0 {
@@ -1274,7 +1290,7 @@ func TestK8sInfraProwBuildJobsCIPolicy(t *testing.T) {
 			continue
 		}
 		// job Pod must qualify for Guaranteed QoS
-		errs := verifyPodQOSGuaranteed(job.Spec, true)
+		errs := verifyPodQOSGuaranteed(job.Spec, true, job.Name)
 		if len(errs) > 0 {
 			jobsToFix++
 		}

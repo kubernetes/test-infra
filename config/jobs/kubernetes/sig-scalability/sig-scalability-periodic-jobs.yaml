@@ -1211,6 +1211,9 @@ periodics:
     description: "Exploratory tests for resource size limit as proposed in https://github.com/kubernetes/kubernetes/issues/134375"
   spec:
     serviceAccountName: prow-build
+    tolerations:
+      - key: highmem
+        operator: Exists
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
       command:
@@ -1283,10 +1286,10 @@ periodics:
       resources:
         requests:
           cpu: 7
-          memory: "27Gi"
+          memory: "40Gi"
         limits:
           cpu: 7
-          memory: "27Gi"
+          memory: "40Gi"
 
 # NOTE: When making changes to this job, please ensure that you also keep the original job
 # ci-kubernetes-e2e-gce-scale-performance-100 in sig-scalability-release-blocking-jobs.yaml

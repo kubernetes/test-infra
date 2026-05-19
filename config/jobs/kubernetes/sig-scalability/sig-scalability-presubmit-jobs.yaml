@@ -439,6 +439,9 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-master-scale-performance-5000
     spec:
       serviceAccountName: prow-build
+      tolerations:
+        - key: highmem
+          operator: Exists
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
         command:
@@ -510,10 +513,10 @@ presubmits:
         resources:
           requests:
             cpu: 7
-            memory: "27Gi"
+            memory: "40Gi"
           limits:
             cpu: 7
-            memory: "27Gi"
+            memory: "40Gi"
 
   # Mirrors pull-perf-tests-gce-master-scale-performance-100 with CL2_RESTART_APISERVER set to true.
   # TODO(Jefftree): revert after testing to be stable.
@@ -1300,6 +1303,9 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-gce-master-scale-performance-5000
     spec:
       serviceAccountName: prow-build
+      tolerations:
+        - key: highmem
+          operator: Exists
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
         command:
@@ -1370,7 +1376,7 @@ presubmits:
         resources:
           requests:
             cpu: 7
-            memory: "27Gi"
+            memory: "40Gi"
           limits:
             cpu: 7
-            memory: "27Gi"
+            memory: "40Gi"
