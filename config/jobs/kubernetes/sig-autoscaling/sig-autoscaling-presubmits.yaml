@@ -645,7 +645,7 @@ presubmits:
       containers:
       - command:
           - runner.sh
-          - ../cluster-autoscaler/hack/e2e/run-e2e-presubmit.sh
+          - ./cluster-autoscaler/hack/e2e/run-e2e-presubmit.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260622-537e33cc05-master
         resources:
           limits:
