@@ -6,14 +6,8 @@ periodics:
     testgrid-tab-name: gce-serial
   cluster: k8s-infra-prow-build
   decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 8h40m0s
-    skip_cloning: true
   interval: 12h
   labels:
     preset-k8s-ssh: "true"

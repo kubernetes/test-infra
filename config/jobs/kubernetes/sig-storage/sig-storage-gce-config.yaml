@@ -291,14 +291,8 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 150m
-    skip_cloning: true
   spec:
     containers:
     - command:
@@ -338,14 +332,8 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 150m
-    skip_cloning: true
   spec:
     containers:
     - command:

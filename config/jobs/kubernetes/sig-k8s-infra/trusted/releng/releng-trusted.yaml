@@ -255,13 +255,6 @@ periodics:
   name: ci-fast-forward
   cluster: k8s-infra-prow-build-trusted
   decorate: true
-  decoration_config:
-    skip_cloning: true
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: k8s.io/release
   spec:
     serviceAccountName: gcb-builder
     containers:
@@ -298,13 +291,6 @@ periodics:
     testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: verify-image-signatures
   decorate: true
-  decoration_config:
-    skip_cloning: true
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: promo-tools
-    base_ref: main
-    path_alias: sigs.k8s.io/promo-tools
   spec:
     containers:
     - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.5.0-0

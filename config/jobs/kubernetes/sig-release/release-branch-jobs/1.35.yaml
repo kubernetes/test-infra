@@ -1384,12 +1384,6 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 2h20m0s
-    skip_cloning: true
-  extra_refs:
-  - base_ref: release-1.35
-    org: kubernetes
-    path_alias: k8s.io/kubernetes
-    repo: kubernetes
   interval: 2h
   labels:
     preset-k8s-ssh: "true"
@@ -1432,12 +1426,6 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 2h20m0s
-    skip_cloning: true
-  extra_refs:
-  - base_ref: release-1.35
-    org: kubernetes
-    path_alias: k8s.io/kubernetes
-    repo: kubernetes
   interval: 2h
   labels:
     preset-k8s-ssh: "true"
@@ -1477,12 +1465,6 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 1h20m0s
-    skip_cloning: true
-  extra_refs:
-  - base_ref: release-1.35
-    org: kubernetes
-    path_alias: k8s.io/kubernetes
-    repo: kubernetes
   interval: 2h
   labels:
     preset-k8s-ssh: "true"
@@ -1520,12 +1502,6 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 11h20m0s
-    skip_cloning: true
-  extra_refs:
-  - base_ref: release-1.35
-    org: kubernetes
-    path_alias: k8s.io/kubernetes
-    repo: kubernetes
   interval: 2h
   labels:
     preset-k8s-ssh: "true"
@@ -1565,12 +1541,6 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 2h50m0s
-    skip_cloning: true
-  extra_refs:
-  - base_ref: release-1.35
-    org: kubernetes
-    path_alias: k8s.io/kubernetes
-    repo: kubernetes
   interval: 2h
   labels:
     preset-k8s-ssh: "true"

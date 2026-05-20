@@ -50,14 +50,8 @@ periodics:
     testgrid-tab-name: gce-ubuntu-master-containerd
   cluster: k8s-infra-prow-build
   decorate: true
-  extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 1h45m0s
-    skip_cloning: true
   # Same as in other release-blocking jobs. If we want to save resources, then we should
   # run some of those less often. This job is the only one which matches a blocking presubmit,
   # so we want to know about problems as quickly as reasonably possible.

@@ -11,15 +11,9 @@ periodics:
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
   decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
   job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
   decoration_config:
     timeout: 270m
-    skip_cloning: true
   annotations:
     testgrid-num-failures-to-alert: '2'
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
