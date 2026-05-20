@@ -419,8 +419,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-external-test-eks-oldest
     cluster: eks-prow-build-cluster
     decorate: true
-    optional: true
-    skip_report: true
+    optional: false
     skip_branches:
       - gh-pages
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
