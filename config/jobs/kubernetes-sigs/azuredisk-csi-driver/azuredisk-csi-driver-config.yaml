@@ -58,6 +58,9 @@ periodics:
           requests:
             cpu: 4
             memory: 8Gi
+        env:
+          - name: AZURE_VM_TYPE # azuredisk-csi-driver config
+            value: "standard"
   annotations:
     testgrid-dashboards: provider-azure-azuredisk-csi-driver, sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: ci-azuredisk-csi-driver-e2e-capz-windows
