@@ -88,6 +88,7 @@ approve:
   - kubernetes/cloud-provider-aws
   - kubernetes/kops
   - kubernetes/website
+  - kubernetes-sigs/ai-conformance
   - kubernetes-sigs/etcd-manager
   - kubernetes-sigs/external-dns
   - kubernetes-sigs/cluster-api-provider-openstack
