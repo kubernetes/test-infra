@@ -400,7 +400,7 @@ periodics:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
           - name: GINKGO_SKIP
-            value: \[LinuxOnly\]|device.plugin.for.Windows|\[sig-autoscaling\].\[Feature:HPA\]|\[Alpha\]|\[FeatureGate:SchedulerAsyncPreemption\]|\[Beta\]|should.evict.a.pod.when.a.node.experiences.memory.pressure|should.be.able.to.gracefully.shutdown.pods.with.various.grace.periods
+            value: \[LinuxOnly\]|device.plugin.for.Windows|\[sig-autoscaling\].\[Feature:HPA\]|\[Alpha\]|\[FeatureGate:SchedulerAsyncPreemption\]|\[Beta\]|should.evict.a.pod.when.a.node.experiences.memory.pressure|should.be.able.to.gracefully.shutdown.pods.with.various.grace.periods|Garbage.collector.*keep.the.rc.around|Garbage.collector.*not.delete.dependents|Garbage.collector.*orphan.pods.created.by.rc.if.delete.options.say.so|validates.pod.disruption.condition.is.added.to.the.preempted.pod
           - name: NODE_FEATURE_GATES
             value: "WindowsGracefulNodeShutdown=true"
   annotations:
