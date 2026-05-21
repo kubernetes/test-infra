@@ -650,7 +650,6 @@ def generate_grid():
                                 ])
                     results.append(
                         build_test(cloud="gce",
-                                   runs_per_day=2,
                                    distro=distro_short,
                                    extra_dashboards=['kops-grid'],
                                    k8s_version=k8s_version,
