@@ -108,14 +108,14 @@ periodics:
             - test-integration-baseline
           env:
             - name: GOMAXPROCS
-              value: "6"
+              value: "7"
           resources:
             requests:
-              cpu: "6"
-              memory: "9Gi"
+              cpu: "7"
+              memory: "10Gi"
             limits:
-              cpu: "6"
-              memory: "9Gi"
+              cpu: "7"
+              memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-extended-release-0-17
     cluster: eks-prow-build-cluster
@@ -146,14 +146,14 @@ periodics:
             - test-integration-extended
           env:
             - name: GOMAXPROCS
-              value: "6"
+              value: "7"
           resources:
             requests:
-              cpu: "6"
-              memory: "9Gi"
+              cpu: "7"
+              memory: "10Gi"
             limits:
-              cpu: "6"
-              memory: "9Gi"
+              cpu: "7"
+              memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-integration-multikueue-release-0-17
     cluster: eks-prow-build-cluster
