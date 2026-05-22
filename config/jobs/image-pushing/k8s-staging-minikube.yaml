@@ -7,7 +7,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
-      run_if_changed: "^(deploy/images/kubernetes-bootcamp/|hack/prow/image/kubernetes-bootcamp/|hack/prow/prow_images.mk)"
+      run_if_changed: "^(deploy/images/kubernetes-bootcamp/|hack/prow/image/kubernetes-bootcamp/|hack/prow/prow_images\.mk$)"
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -30,7 +30,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
-      run_if_changed: "^(deploy/images/gvisor/|hack/prow/image/gvisor/|hack/prow/prow_images.mk)"
+      run_if_changed: "^(deploy/images/gvisor/|hack/prow/image/gvisor/|hack/prow/prow_images\.mk$)"
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -53,7 +53,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
-      run_if_changed: "^(deploy/images/kube-registry-proxy|hack/prow/image/kube-registry-proxy/|hack/prow/prow_images.mk)"
+      run_if_changed: "^(deploy/images/kube-registry-proxy|hack/prow/image/kube-registry-proxy/|hack/prow/prow_images\.mk$)"
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -76,7 +76,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
-      run_if_changed: "^(deploy/kicbase/|hack/prow/image/kicbase/|hack/prow/prow_images.mk)"
+      run_if_changed: "^(deploy/kicbase/|hack/prow/image/kicbase/|hack/prow/prow_images\.mk$)"
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -99,7 +99,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
-      run_if_changed: "^(deploy/iso/minikube-iso/Dockerfile|hack/prow/image/buildroot-image/|hack/prow/prow_images.mk)"
+      run_if_changed: "^(deploy/iso/minikube-iso/Dockerfile|hack/prow/image/buildroot-image/|hack/prow/prow_images\.mk$)"
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -122,7 +122,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
-      run_if_changed: "^(deploy/storage-provisioner/|pkg/storage/|hack/prow/image/storage-provisioner/|hack/prow/prow_images.mk)"
+      run_if_changed: "^(deploy/storage-provisioner/|pkg/storage/|hack/prow/image/storage-provisioner/|hack/prow/prow_images\.mk$)"
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -145,7 +145,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
-      run_if_changed: "^(deploy/addons/auto-pause/|cmd/auto-pause/|hack/prow/image/auto-pause/|hack/prow/prow_images.mk)"
+      run_if_changed: "^(deploy/addons/auto-pause/|cmd/auto-pause/|hack/prow/image/auto-pause/|hack/prow/prow_images\.mk$)"
       spec:
         serviceAccountName: gcb-builder
         containers:
