@@ -53,7 +53,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
-      run_if_changed: '^(deploy/images/kube-registry-proxy|hack/prow/image/kube-registry-proxy/|hack/prow/prow_images\.mk$)'
+      run_if_changed: '^(deploy/images/kube-registry-proxy/|hack/prow/image/kube-registry-proxy/|hack/prow/prow_images\.mk$)'
       spec:
         serviceAccountName: gcb-builder
         containers:
