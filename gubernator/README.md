@@ -2,7 +2,7 @@
 
 Gubernator is a frontend for displaying Kubernetes test results stored in GCS.
 
-It runs on Google App Engine, and parses JSON and junit.xml results for display.
+It runs on Google App Engine, and parses JSON and `junit.xml` results for display.
 
 https://gubernator.k8s.io/
 
