@@ -155,7 +155,7 @@ RUN rm -f $(which kubectl) && \
 ARG GO_VERSION
 ARG K8S_BRANCH
 RUN if [ -z "${GO_VERSION}" ]; then \
-      GO_VERSION=$(curl --retry 6 --retry-connrefused -fsSL "https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/${K8S_BRANCH}/.go-version"); \
+    GO_VERSION=$(curl --retry 6 --retry-connrefused -fsSL "https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/${K8S_BRANCH}/.go-version"); \
     fi && \
     export GO_TARBALL="go${GO_VERSION}.linux-${TARGETARCH}.tar.gz" && \
     wget -q "https://go.dev/dl/${GO_TARBALL}" && \
@@ -174,6 +174,16 @@ RUN wget -q "https://get.helm.sh/helm-${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
     tar -xzf helm.tar.gz -C /tmp  && \
     mv "/tmp/linux-${TARGETARCH}/helm" /usr/local/bin/helm && \
     rm -rf helm.tar.gz "/tmp/linux-${TARGETARCH}"
+
+# install gh cli
+ARG GH_VERSION
+RUN if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ]; then \
+    wget -q "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${TARGETARCH}.tar.gz" -O gh.tar.gz && \
+    tar -xzf gh.tar.gz -C /tmp && \
+    mv "/tmp/gh_${GH_VERSION}_linux_${TARGETARCH}/bin/gh" /usr/local/bin/gh && \
+    chmod +x /usr/local/bin/gh && \
+    rm -rf gh.tar.gz "/tmp/gh_${GH_VERSION}_linux_${TARGETARCH}"; \
+    fi
 
 # install kind if a version is provided
 ARG KIND_VERSION
