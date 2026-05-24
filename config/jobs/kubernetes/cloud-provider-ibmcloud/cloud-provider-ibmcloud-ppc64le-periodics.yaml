@@ -23,7 +23,7 @@ periodics:
         runAsGroup: 2010
         runAsUser: 2001
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
           command:
             - make
             - test
@@ -62,7 +62,7 @@ periodics:
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - runner.sh
         args:
@@ -106,7 +106,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
           securityContext:
             privileged: true
           resources:
@@ -162,7 +162,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -236,7 +236,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
           securityContext:
             privileged: true
           resources:
@@ -291,7 +291,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
           resources:
             requests:
               cpu: "1500m"
@@ -343,7 +343,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
           securityContext:
             privileged: true
           resources:
@@ -395,7 +395,7 @@ periodics:
       testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
           resources:
             requests:
               cpu: 2

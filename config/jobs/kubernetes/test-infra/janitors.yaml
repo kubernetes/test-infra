@@ -17,7 +17,7 @@ periodics:
       - --exclude-tags=Shared=Ignore
       - --enable-target-group-clean=true
       - --clean-ecr-repositories=aws-ebs-csi-driver
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260514-239f15a
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260519-f0a76c5
       resources:
         requests:
           cpu: 1
@@ -47,7 +47,7 @@ periodics:
       - --path=s3://k8s-kops-prow/objs.json
       - --exclude-tags=Shared=Ignore
       - --clean-ecr-repositories=aws-ebs-csi-driver
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260514-239f15a
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260519-f0a76c5
       resources:
         requests:
           cpu: 1

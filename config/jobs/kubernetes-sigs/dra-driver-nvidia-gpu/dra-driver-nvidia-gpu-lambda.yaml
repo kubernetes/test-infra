@@ -38,7 +38,7 @@ presubmits:
       description: "DRA GPU e2e tests on Lambda Cloud for dra-driver-nvidia-gpu PRs"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - runner.sh
         args:
@@ -83,7 +83,7 @@ presubmits:
       description: "DRA GPU e2e tests on a Lambda Cloud gpu_1x_gh200 (arm64) instance"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - runner.sh
         args:
@@ -125,7 +125,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
       command:
       - runner.sh
       args:
@@ -171,7 +171,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
       command:
       - runner.sh
       args:

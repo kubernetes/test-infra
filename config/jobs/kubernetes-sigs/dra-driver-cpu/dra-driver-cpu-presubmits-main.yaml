@@ -18,7 +18,7 @@ presubmits:
       nodeSelector:
         kubernetes.io/arch: amd64
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         env:
         - name: DRACPU_E2E_CPU_DEVICE_MODE
           value: "individual"
@@ -56,7 +56,7 @@ presubmits:
       nodeSelector:
         kubernetes.io/arch: arm64
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         env:
         - name: DRACPU_E2E_CPU_DEVICE_MODE
           value: "individual"
@@ -94,7 +94,7 @@ presubmits:
       nodeSelector:
         kubernetes.io/arch: amd64
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         env:
         - name: DRACPU_E2E_CPU_DEVICE_MODE
           value: "grouped"
@@ -132,7 +132,7 @@ presubmits:
       nodeSelector:
         kubernetes.io/arch: arm64
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         env:
         - name: DRACPU_E2E_CPU_DEVICE_MODE
           value: "grouped"
