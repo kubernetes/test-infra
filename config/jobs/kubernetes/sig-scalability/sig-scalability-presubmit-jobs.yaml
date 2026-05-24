@@ -34,7 +34,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-100-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -118,7 +118,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - runner.sh
         args:
@@ -204,7 +204,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -270,7 +270,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-big
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -358,7 +358,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-scale
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -443,7 +443,7 @@ presubmits:
         - key: highmem
           operator: Exists
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - runner.sh
         args:
@@ -552,7 +552,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - runner.sh
         args:
@@ -642,7 +642,7 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -696,7 +696,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -768,7 +768,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -836,7 +836,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
         command:
         - runner.sh
         args:
@@ -885,7 +885,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-test
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - verify/test.sh
         resources:
@@ -970,7 +970,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-100
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - runner.sh
         args:
@@ -1053,7 +1053,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-500
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - runner.sh
         args:
@@ -1137,7 +1137,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-5000
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - runner.sh
         args:
@@ -1221,7 +1221,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - runner.sh
         args:
@@ -1311,7 +1311,7 @@ presubmits:
         - key: highmem
           operator: Exists
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
         command:
         - runner.sh
         args:

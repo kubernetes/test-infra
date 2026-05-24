@@ -12,7 +12,7 @@ presubmits:
     - ^release-0.27$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-1.35
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -39,7 +39,7 @@ presubmits:
     - ^release-0.27$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-1.35
         command:
         - runner.sh
         - ./scripts/ci-make.sh
@@ -69,7 +69,7 @@ presubmits:
     run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-1.35
         command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
@@ -95,7 +95,7 @@ presubmits:
     - ^release-0.27$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-1.35
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -121,7 +121,7 @@ presubmits:
     run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-1.35
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -149,7 +149,7 @@ presubmits:
     - ^release-0.27$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-1.35
         command:
           - runner.sh
         args:

@@ -49,7 +49,7 @@ periodics:
       testgrid-alert-email: markus.lehtonen@intel.com,eduardoa@nvidia.com
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
         # Need privileged mode for dind
         securityContext:
           privileged: true
