@@ -85,12 +85,16 @@ mkdir -p triage_tests
 gsutil cp -r "${TRIAGE_TEMP_GCS_PATH}/*" triage_tests/
 gzip -df triage_tests/*.gz
 
-# gsutil cp "${TRIAGE_BUCKET}/failure_data.json failure_data_previous.json
+# Seed clustering with the previous run's output. A missing file (first run
+# after a rebuild, or after the bucket is reset) is fine — /triage logs a
+# warning and falls back to a cold cluster.
+gsutil cp "${TRIAGE_GCS_PATH}/failure_data.json" failure_data_previous.json || true
 
 mkdir -p slices
 
 /triage \
   --builds triage_builds.json \
+  --previous failure_data_previous.json \
   --output failure_data.json \
   --output_slices slices/failure_data_PREFIX.json \
   ${NUM_WORKERS:+"--num_workers=${NUM_WORKERS}"} \
