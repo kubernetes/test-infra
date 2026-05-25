@@ -1,0 +1,25 @@
+presubmits:
+  kubernetes-sigs/maintainer-tools:
+    - name: pull-maintainer-tools-verify-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|^(README|LICENSE|OWNERS)$"
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-arch
+        testgrid-tab-name: pull-maintainer-tools-verify-main
+        description: "Run verify checks"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+            securityContext:
+              privileged: true
+            command:
+              - runner.sh
+            args:
+              - make
+              - verify
+
