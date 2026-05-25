@@ -32,7 +32,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
       name: ""
       resources:
         limits:
@@ -89,7 +89,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
       name: ""
       resources:
         limits:
@@ -131,7 +131,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
       name: ""
       resources:
         limits:
@@ -174,7 +174,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
       name: ""
       resources:
         limits:
@@ -214,7 +214,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
       name: ""
       resources:
         limits:
@@ -249,7 +249,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
       name: ""
       resources:
         limits:
@@ -287,7 +287,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
       name: ""
       resources:
         limits:
@@ -328,7 +328,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
       name: ""
       resources:
         limits:
@@ -368,7 +368,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
       name: ""
       resources:
         limits:
@@ -427,7 +427,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -480,7 +480,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -533,7 +533,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -582,7 +582,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -639,7 +639,7 @@ presubmits:
         env:
         - name: BOOTSTRAP_FETCH_TEST_INFRA
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -705,7 +705,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -771,7 +771,7 @@ presubmits:
           value: https://us-central1-docker.pkg.dev/v2/k8s-infra-e2e-scale-5k-project/k8s-5k-scale-cache/
         - name: KUBERNETES_REGISTRY_PULL_THROUGH_BASIC_AUTH_TOKEN_PATH
           value: /etc/registry-auth/token
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -837,7 +837,7 @@ presubmits:
             --parallel=30
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -892,7 +892,7 @@ presubmits:
         - runner.sh
         - kubetest2
         - gce
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -947,7 +947,7 @@ presubmits:
         - runner.sh
         - kubetest2
         - gce
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260524-7e4fa9c74b-master
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -1007,7 +1007,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -1068,7 +1068,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -1127,7 +1127,7 @@ presubmits:
             --parallel=1
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -1187,7 +1187,7 @@ presubmits:
             --parallel=1
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -1244,7 +1244,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
@@ -1303,7 +1303,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260518-d0f26949f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
         name: ""
         resources:
           limits:
