@@ -1229,3 +1229,38 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
+    - name: pull-kueue-test-e2e-k8s-main-was
+      cluster: eks-prow-build-cluster
+      optional: true
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-k8s-main-was
+        description: "Run e2e tests against k8s main with WAS enabled"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-k8s-main-was
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "7"
+                memory: "10Gi"
+              limits:
+                cpu: "7"
+                memory: "10Gi"
