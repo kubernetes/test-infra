@@ -1,41 +1,5 @@
 presubmits:
   kubernetes-sigs/kubetest2:
-  - name: pull-kubetest2-gce-build-up-down
-    decorate: true
-    always_run: true
-    cluster: k8s-infra-prow-build
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: cloud-provider-gcp
-      path_alias: k8s.io/cloud-provider-gcp
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260525-f8de63d82b-master
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        command:
-        - "runner.sh"
-        args:
-        - "./kubetest2-gce/ci-tests/buildupdown.sh"
-        securityContext:
-          privileged: true
-
   - name: pull-kubetest2-gce-legacy-build-up-down
     decorate: true
     always_run: true
