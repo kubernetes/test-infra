@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/image-builder:
-  - name: pull-azure-vhds
+  - name: pull-azure-sigs
     cluster: eks-prow-build-cluster
     labels:
       preset-azure-community: "true"
@@ -17,37 +17,6 @@ presubmits:
         args:
           - runner.sh
           - "./images/capi/scripts/ci-azure-e2e.sh"
-        resources:
-          requests:
-            cpu: 1000m
-            memory: 4Gi
-          limits:
-            cpu: 1000m
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-image-builder
-      testgrid-tab-name: pr-azure-vhds
-  - name: pull-azure-sigs
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-azure-community: "true"
-    decorate: true
-    run_if_changed: 'images/capi/Makefile|images/capi/scripts/ci-azure-e2e\.sh|images/capi/packer/azure/.*'
-    optional: true
-    decoration_config:
-      timeout: 90m
-    max_concurrency: 5
-    path_alias: sigs.k8s.io/image-builder
-    spec:
-      serviceAccountName: azure
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
-        args:
-          - runner.sh
-          - "./images/capi/scripts/ci-azure-e2e.sh"
-        env:
-          - name: AZURE_BUILD_FORMAT
-            value: "sig"
         resources:
           requests:
             cpu: 1000m
