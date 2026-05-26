@@ -1232,6 +1232,7 @@ presubmits:
     - name: pull-kueue-test-e2e-k8s-main-was
       cluster: eks-prow-build-cluster
       optional: true
+      always_run: false
       branches:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
