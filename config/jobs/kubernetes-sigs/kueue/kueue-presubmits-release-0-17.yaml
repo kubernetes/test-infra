@@ -965,14 +965,14 @@ presubmits:
               - test-performance-scheduler
             env:
               - name: GOMAXPROCS
-                value: "6"
+                value: "7"
             resources:
               requests:
-                cpu: "6"
-                memory: "9Gi"
+                cpu: "7"
+                memory: "10Gi"
               limits:
-                cpu: "6"
-                memory: "9Gi"
+                cpu: "7"
+                memory: "10Gi"
     - name: pull-kueue-test-tas-scheduling-perf-release-0-17
       cluster: eks-prow-build-cluster
       branches:
@@ -993,14 +993,14 @@ presubmits:
               - test-tas-performance-scheduler
             env:
               - name: GOMAXPROCS
-                value: "6"
+                value: "7"
             resources:
               requests:
-                cpu: "6"
-                memory: "9Gi"
+                cpu: "7"
+                memory: "10Gi"
               limits:
-                cpu: "6"
-                memory: "9Gi"
+                cpu: "7"
+                memory: "10Gi"
     - name: pull-kueue-populator-verify-release-0-17
       cluster: eks-prow-build-cluster
       branches:
