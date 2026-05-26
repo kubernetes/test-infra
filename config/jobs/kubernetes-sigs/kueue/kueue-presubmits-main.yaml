@@ -30,7 +30,7 @@ presubmits:
               limits:
                 cpu: "6"
                 memory: "6Gi"
-    - name: pull-kueue-test-integration-baseline-main
+    - name: pull-kueue-test-integration-shard-0-main
       cluster: eks-prow-build-cluster
       branches:
         - ^main
@@ -39,18 +39,22 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-integration-baseline-main
-        description: "Run kueue test-integration-baseline"
+        testgrid-tab-name: pull-kueue-test-integration-shard-0-main
+        description: "Run kueue test-integration shard 0"
       spec:
         containers:
           - image: public.ecr.aws/docker/library/golang:1.26
             command:
               - make
             args:
-              - test-integration-baseline
+              - test-integration
             env:
               - name: GOMAXPROCS
                 value: "7"
+              - name: INTEGRATION_SHARD_INDEX
+                value: "0"
+              - name: INTEGRATION_TOTAL_SHARDS
+                value: "3"
             resources:
               requests:
                 cpu: "7"
@@ -58,7 +62,7 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-integration-extended-main
+    - name: pull-kueue-test-integration-shard-1-main
       cluster: eks-prow-build-cluster
       branches:
         - ^main
@@ -67,18 +71,54 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-integration-extended-main
-        description: "Run kueue test-integration-extended"
+        testgrid-tab-name: pull-kueue-test-integration-shard-1-main
+        description: "Run kueue test-integration shard 1"
       spec:
         containers:
           - image: public.ecr.aws/docker/library/golang:1.26
             command:
               - make
             args:
-              - test-integration-extended
+              - test-integration
             env:
               - name: GOMAXPROCS
                 value: "7"
+              - name: INTEGRATION_SHARD_INDEX
+                value: "1"
+              - name: INTEGRATION_TOTAL_SHARDS
+                value: "3"
+            resources:
+              requests:
+                cpu: "7"
+                memory: "10Gi"
+              limits:
+                cpu: "7"
+                memory: "10Gi"
+    - name: pull-kueue-test-integration-shard-2-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-integration-shard-2-main
+        description: "Run kueue test-integration shard 2"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.26
+            command:
+              - make
+            args:
+              - test-integration
+            env:
+              - name: GOMAXPROCS
+                value: "7"
+              - name: INTEGRATION_SHARD_INDEX
+                value: "2"
+              - name: INTEGRATION_TOTAL_SHARDS
+                value: "3"
             resources:
               requests:
                 cpu: "7"
