@@ -4,7 +4,11 @@
 periodics:
 {%- else -%}
 presubmits:
+  {%- if testinfra %}
+  kubernetes/test-infra:
+  {%- else %}
   kubernetes/kubernetes:
+  {%- endif %}
 {%- endif %}
 {%- endif %}
 {%- if not ci %}
@@ -30,7 +34,9 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
-    {%- if run_if_changed and presubmit %}
+    {%- if testinfra %}
+    run_if_changed: /jobs/node_e2e/
+    {%- elif run_if_changed and presubmit %}
     run_if_changed: {{run_if_changed}}
     {%- endif %}
     optional: true
@@ -64,16 +70,15 @@ presubmits:
     {%- if not ci %}
     path_alias: k8s.io/kubernetes
     {%- endif %}
-    {%- if ci and need_kubernetes_repo or need_test_infra_repo or need_containerd_repo %}
     extra_refs:
-    {%- if ci and need_kubernetes_repo %}
+    {%- if need_kubernetes_repo and (ci or testinfra) %}
     - org: kubernetes
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
       workdir: true
     {%- endif %}
-    {%- if need_test_infra_repo %}
+    {%- if need_test_infra_repo and not testinfra %}
     - org: kubernetes
       repo: test-infra
       base_ref: master
@@ -83,7 +88,6 @@ presubmits:
     - org: containerd
       repo: containerd
       base_ref: release/2.1
-    {%- endif %}
     {%- endif %}
     spec:
       containers:
