@@ -8,7 +8,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
-    run_if_changed: /jobs/node_e2e/
+    run_if_changed: ^jobs/e2e_node/
     optional: true
     skip_report: false
     labels:
@@ -67,7 +67,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
-    run_if_changed: /jobs/node_e2e/
+    run_if_changed: ^jobs/e2e_node/
     optional: true
     skip_report: false
     labels:
@@ -119,7 +119,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
-    run_if_changed: /jobs/node_e2e/
+    run_if_changed: ^jobs/e2e_node/
     optional: true
     skip_report: false
     labels:
