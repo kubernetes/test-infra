@@ -53,4 +53,4 @@ COPY --from=build /test-infra/triage/triage /
 COPY --from=build /test-infra/triage/update_summaries.sh /
 COPY --from=build /test-infra/triage/generate_job_repos.py /
 
-ENTRYPOINT ["timeout", "10800", "/update_summaries.sh"]
+ENTRYPOINT ["timeout", "18000", "/update_summaries.sh"]
