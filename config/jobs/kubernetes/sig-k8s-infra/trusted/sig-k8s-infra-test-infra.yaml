@@ -147,7 +147,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/test-infra
   decoration_config:
-    timeout: 3h
+    timeout: 5h
   max_concurrency: 1
   annotations:
     testgrid-num-failures-to-alert: '18'
