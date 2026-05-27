@@ -515,6 +515,40 @@ presubmits:
       testgrid-tab-name: pull-external-test-arm64
       description: kubernetes/kubernetes external test on pull request with arm64 nodes and image
       testgrid-num-columns-recent: '30'
+  - name: pull-aws-ebs-csi-driver-e2e-parameters
+    cluster: eks-prow-build-cluster
+    decorate: true
+    optional: true
+    skip_report: true
+    skip_branches:
+    - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-shared-testing: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - e2e/parameters-all
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "2"
+            memory: "8Gi"
+          requests:
+            cpu: "2"
+            memory: "8Gi"
+    annotations:
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
+      testgrid-tab-name: pull-e2e-test-parameters
+      description: aws ebs csi driver helm template and e2e parameter set tests on pull request
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-image-test
     cluster: eks-prow-build-cluster
     decorate: true
