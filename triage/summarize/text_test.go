@@ -196,6 +196,65 @@ func TestNormalizeNodeNames(t *testing.T) {
 	}
 }
 
+// TestFindMatch exercises findMatch's contract:
+//   - no candidates ⇒ no match
+//   - exact match present ⇒ returns that candidate
+//   - close near-match present (within 10% edit distance) ⇒ returns it
+//   - unrelated candidates ⇒ no match
+//   - candidate set larger than the parallel cap ⇒ still finds an
+//     early-positioned match (regression guard for the parallel+capped
+//     implementation in findMatch)
+func TestFindMatch(t *testing.T) {
+	t.Run("no candidates", func(t *testing.T) {
+		if got, ok := findMatch("hello", nil); ok || got != "" {
+			t.Errorf("findMatch with no candidates = %q,%v; want \"\",false", got, ok)
+		}
+	})
+	t.Run("exact match", func(t *testing.T) {
+		key := strings.Repeat("abcdefghij", 30) // 300 chars so limit > 1
+		got, ok := findMatch(key, []string{"different entirely", key, "another"})
+		if !ok || got != key {
+			t.Errorf("findMatch(exact) = %q,%v; want key,true", got, ok)
+		}
+	})
+	t.Run("near match within 10%", func(t *testing.T) {
+		key := strings.Repeat("abcdefghij", 30)
+		// Mutate 3 chars (~1% of len) — should still match.
+		mutated := []byte(key)
+		mutated[7] = 'X'
+		mutated[50] = 'Y'
+		mutated[200] = 'Z'
+		got, ok := findMatch(string(mutated), []string{"unrelated text", key})
+		if !ok || got != key {
+			t.Errorf("findMatch(near) = %q,%v; want key,true", got, ok)
+		}
+	})
+	t.Run("no near match", func(t *testing.T) {
+		got, ok := findMatch("the quick brown fox jumps over the lazy dog",
+			[]string{"completely different content here", "wholly other text"})
+		if ok {
+			t.Errorf("findMatch(unrelated) = %q,%v; want \"\",false", got, ok)
+		}
+	})
+	t.Run("large candidate set with early match", func(t *testing.T) {
+		// Stress the parallel path: many candidates, true match present.
+		// The match should be sorted to a low position by ngramEditDist
+		// and found within the per-worker cap.
+		target := strings.Repeat("the quick brown fox ", 50) // 1000 chars
+		candidates := make([]string, 0, 500)
+		for i := 0; i < 499; i++ {
+			// Unrelated random-looking candidates of similar length.
+			candidates = append(candidates, strings.Repeat(string(rune('a'+i%26)), 1000))
+		}
+		candidates = append(candidates, target)
+		got, ok := findMatch(target, candidates)
+		if !ok || got != target {
+			t.Errorf("findMatch with %d candidates = %q,%v; want target,true",
+				len(candidates), got, ok)
+		}
+	})
+}
+
 func TestCommonSpans(t *testing.T) {
 	testCases := []struct {
 		name     string
