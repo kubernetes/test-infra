@@ -30,26 +30,7 @@ presubmits:
             - bash
             - -c
             - |
-              set -o xtrace
-
-              # Build the kubetest2 tf deployer locally and source the other dependencies.
-              OUT_DIR=/go/bin WHAT='terraform' make build-deployer-tf download-from-cos
-              make download-tf-plugins-from-cos
-              make install-ansible
-
-              K8S_BUILD_VERSION=$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
-
-              kubetest2 tf --powervs-image-name CentOS-Stream-10 \
-                --powervs-ssh-key k8s-prow-sshkey \
-                --ssh-private-key /etc/secret-volume/ssh-privatekey \
-                --build-version $K8S_BUILD_VERSION \
-                --release-marker $K8S_BUILD_VERSION \
-                --cluster-name pull-$(date +%s) \
-                --workers-count 1 \
-                --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors \
-                --break-kubetest-on-upfail true \
-                --powervs-memory 8 --powervs-processors 0.25 \
-                --test=ginkgo -- --parallel 30 --test-package-dir ci --test-package-version $K8S_BUILD_VERSION --focus-regex='Pods should be submitted and removed'
+              "./scripts/updown-ibmcloud.sh"
 
   - name: pull-provider-ibmcloud-test-infra-kubetest2-secretmanager-build
     cluster: k8s-infra-ppc64le-prow-build
