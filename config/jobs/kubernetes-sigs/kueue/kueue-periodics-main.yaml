@@ -909,26 +909,26 @@ periodics:
               cpu: "7"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-e2e-sequential-baseline-main
+    name: periodic-kueue-test-e2e-sequential-baseline-shard-0-main
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-sequential-baseline-main
+      testgrid-tab-name: periodic-kueue-test-e2e-sequential-baseline-shard-0-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
-      description: "Run periodic sequential baseline end to end tests"
+      description: "Run periodic sequential baseline end to end tests shard 0"
       testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     extra_refs:
-        - org: kubernetes-sigs
-          repo: kueue
-          base_ref: main
-          path_alias: kubernetes-sigs/kueue
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
-        timeout: 1h
+      timeout: 1h
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
@@ -943,10 +943,56 @@ periodics:
           args:
             - make
             - kind-image-build
-            - test-e2e-sequential-baseline
+            - test-e2e-sequential-baseline-shard-0
           # docker-in-docker needs privileged mode
           securityContext:
-              privileged: true
+            privileged: true
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-sequential-baseline-shard-1-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-sequential-baseline-shard-1-main
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic sequential baseline end to end tests shard 1"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
+          env:
+            - name: E2E_K8S_VERSION
+              value: "1.35"
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e-sequential-baseline-shard-1
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
           resources:
             requests:
               cpu: "7"
