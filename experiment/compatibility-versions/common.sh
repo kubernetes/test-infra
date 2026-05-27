@@ -211,31 +211,44 @@ build_test_bins() {
 }
 
 # TODO: Support Mac as a platform along with Linux https://github.com/kubernetes/test-infra/pull/34930#discussion_r2138760351
-download_release_version_bins() {
-  local version=$1
-  curl -LO https://dl.k8s.io/ci/$(curl -Ls https://dl.k8s.io/ci/latest-${version}.txt)/kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
+download_bins_for_ci_version() {
+  local ci_version=$1
+  local version_description=$2
+
+  curl -LO "https://dl.k8s.io/ci/${ci_version}/kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz"
   if [ $? -ne 0 ]; then
-    echo "failed to download previous version ${version} binaries"
+    echo "failed to download ${version_description} test binaries"
     return 1
   fi
   tar -xf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz 
   mkdir -p _output/bin
   mv kubernetes/test/bin/* _output/bin
+
+  # Also download the kubectl client binary
+  curl -LO "https://dl.k8s.io/ci/${ci_version}/kubernetes-client-$(go env GOOS)-$(go env GOARCH).tar.gz"
+  if [ $? -eq 0 ]; then
+    tar -xf kubernetes-client-$(go env GOOS)-$(go env GOARCH).tar.gz
+    mv kubernetes/client/bin/kubectl _output/bin/
+    rm -rf kubernetes-client-$(go env GOOS)-$(go env GOARCH).tar.gz kubernetes/
+  else
+    echo "failed to download ${version_description} client binaries, attempting direct kubectl download..."
+    curl -Lo _output/bin/kubectl "https://dl.k8s.io/ci/${ci_version}/bin/$(go env GOOS)/$(go env GOARCH)/kubectl"
+    chmod +x _output/bin/kubectl
+  fi
+
   export PATH="${PWD}/_output/bin:$PATH"
   return 0
 }
 
+download_release_version_bins() {
+  local version=$1
+  local ci_version=$(curl -Ls https://dl.k8s.io/ci/latest-${version}.txt)
+  download_bins_for_ci_version "${ci_version}" "previous version ${version}"
+}
+
 download_current_version_bins() {
-  curl -LO 'https://dl.k8s.io/ci/'"${1}"/'kubernetes-test-'"$(go env GOOS)-$(go env GOARCH)"'.tar.gz'
-  if [ $? -ne 0 ]; then
-    echo "failed to download current version binaries"
-    return 1
-  fi
-  tar -xf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
-  mkdir -p _output/bin
-  mv kubernetes/test/bin/* _output/bin
-  export PATH="${PWD}/_output/bin:$PATH"
-  return 0
+  local ci_version=$1
+  download_bins_for_ci_version "${ci_version}" "current version"
 }
 
 # run e2es with ginkgo-e2e.sh
@@ -307,7 +320,8 @@ run_e2e_tests() {
     --provider=skeleton \
     --num-nodes="${NUM_NODES}" \
     --report-dir="${ARTIFACTS}" \
-    --disable-log-dump=true &
+    --disable-log-dump=true \
+    --kubectl-path="${PWD}/_output/bin/kubectl" &
   GINKGO_PID=$!
   wait "$GINKGO_PID"
 }
