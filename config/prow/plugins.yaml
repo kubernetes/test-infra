@@ -233,6 +233,7 @@ label:
         - sig-cluster-lifecycle-leads
         - sig-contributor-experience-leads
         - sig-docs-leads
+        - sig-etcd-leads
         - sig-instrumentation-leads
         - sig-k8s-infra-leads
         - sig-multicluster-leads
