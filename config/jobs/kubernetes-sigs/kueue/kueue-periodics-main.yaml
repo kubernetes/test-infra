@@ -272,14 +272,14 @@ periodics:
             - test-performance-scheduler
           env:
             - name: GOMAXPROCS
-              value: "6"
+              value: "7"
           resources:
             requests:
-              cpu: "6"
-              memory: "9Gi"
+              cpu: "7"
+              memory: "10Gi"
             limits:
-              cpu: "6"
-              memory: "9Gi"
+              cpu: "7"
+              memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-tas-scheduling-perf-main
     cluster: eks-prow-build-cluster
@@ -310,14 +310,14 @@ periodics:
             - test-tas-performance-scheduler
           env:
             - name: GOMAXPROCS
-              value: "6"
+              value: "7"
           resources:
             requests:
-              cpu: "6"
-              memory: "9Gi"
+              cpu: "7"
+              memory: "10Gi"
             limits:
-              cpu: "6"
-              memory: "9Gi"
+              cpu: "7"
+              memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-large-scale-scheduling-perf-main
     cluster: eks-prow-build-cluster
