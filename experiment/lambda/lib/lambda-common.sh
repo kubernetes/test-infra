@@ -18,11 +18,13 @@
 #
 # Required env: JOB_NAME, BUILD_ID (set by Prow)
 # Optional env: GPU_TYPE (default: gpu_1x_a10, set empty to accept any)
+#               LAMBDA_TTL_HOURS (default: 4) -- janitor reap horizon
 
 set -o errexit; set -o nounset; set -o pipefail
 
 LAMBDA_SSH_OPTS=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR)
 LAMBDA_GPU_TYPE="${GPU_TYPE-gpu_1x_a10}"
+LAMBDA_TTL_HOURS="${LAMBDA_TTL_HOURS:-4}"
 LAMBDA_SSH_DIR=""
 LAMBDA_SSH_KEY=""
 LAMBDA_SSH_KEY_ID=""
@@ -51,9 +53,21 @@ lambda_launch() {
   if [ -n "${LAMBDA_GPU_TYPE}" ]; then
     gpu_args=(--gpu "${LAMBDA_GPU_TYPE}")
   fi
+  # Tags let the janitor terminate orphans when the EXIT trap is
+  # skipped (SIGKILL, OOM, pod eviction).
+  local now expires_at
+  now=$(date +%s)
+  expires_at=$(( now + LAMBDA_TTL_HOURS * 3600 ))
+  local tag_args=(
+    --tag "managed-by=prow-k8s-ci"
+    --tag "launched-at=${now}"
+    --tag "expires-at=${expires_at}"
+    --tag "prow-job=${JOB_NAME}"
+    --tag "build-id=${BUILD_ID}"
+  )
   local launch_output
   launch_output=$(lambdactl --json watch \
-    "${gpu_args[@]}" \
+    "${gpu_args[@]}" "${tag_args[@]}" \
     --ssh "${LAMBDA_SSH_KEY_NAME}" \
     --name "${LAMBDA_SSH_KEY_NAME}" \
     --interval 30 \

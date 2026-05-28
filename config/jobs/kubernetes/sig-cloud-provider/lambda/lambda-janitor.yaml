@@ -1,0 +1,36 @@
+periodics:
+- name: maintenance-ci-lambda-janitor
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  labels:
+    preset-lambda-credential: "true"
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: ci-lambda-janitor
+    description: Terminates Lambda Cloud instances tagged managed-by=prow-k8s-ci whose expires-at is in the past.
+  decorate: true
+  decoration_config:
+    timeout: 30m
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+    workdir: true
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260525-f8de63d82b-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        exec "$(go env GOPATH)/src/k8s.io/test-infra/experiment/lambda/janitor.sh"
+      resources:
+        limits:
+          cpu: 1
+          memory: 1Gi
+        requests:
+          cpu: 1
+          memory: 1Gi
