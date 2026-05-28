@@ -150,10 +150,10 @@ presubmits:
             resources:
               requests:
                 cpu: "7"
-                memory: "10Gi"
+                memory: "12Gi"
               limits:
                 cpu: "7"
-                memory: "10Gi"
+                memory: "12Gi"
     - name: pull-kueue-test-e2e-baseline-release-0-17-1-33
       cluster: eks-prow-build-cluster
       branches:
