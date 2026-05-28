@@ -1177,7 +1177,7 @@ periodics:
           cpu: 3
           memory: "8Gi"
 
-- interval: 4h
+- interval: 24h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-benchmark-list-yaml
   tags:
@@ -1249,7 +1249,7 @@ periodics:
           cpu: 3
           memory: "8Gi"
 
-- interval: 4h
+- interval: 24h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-benchmark-list-table
   tags:
@@ -1321,7 +1321,7 @@ periodics:
           cpu: 3
           memory: "8Gi"
 
-- interval: 4h
+- interval: 24h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-benchmark-list-json-pretty
   tags:
