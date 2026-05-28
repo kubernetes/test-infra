@@ -534,7 +534,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - e2e/parameters-all
+        - test-e2e-parameters
         securityContext:
           privileged: true
         resources:
