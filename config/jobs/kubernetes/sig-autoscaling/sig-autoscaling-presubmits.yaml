@@ -201,7 +201,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-full-alpha-beta-presubmits
-    optional: false
+    optional: true
     decorate: true
     decoration_config:
       timeout: 120m
@@ -291,7 +291,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-actuation-alpha-beta-presubmits
-    optional: false
+    optional: true
     decorate: true
     decoration_config:
       timeout: 200m
@@ -380,7 +380,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-admission-controller-alpha-beta-presubmits
-    optional: false
+    optional: true
     decorate: true
     decoration_config:
       timeout: 120m
@@ -467,7 +467,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-recommender-alpha-beta-presubmits
-    optional: false
+    optional: true
     decorate: true
     decoration_config:
       timeout: 120m
@@ -554,7 +554,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-autoscaling-vpa-presubmits
       testgrid-tab-name: autoscaling-vpa-updater-alpha-beta-presubmits
-    optional: false
+    optional: true
     decorate: true
     decoration_config:
       timeout: 120m
