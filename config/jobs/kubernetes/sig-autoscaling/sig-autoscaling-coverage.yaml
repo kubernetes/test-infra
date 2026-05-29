@@ -1,0 +1,38 @@
+periodics:
+- name: periodic-binary-size
+  cluster: k8s-infra-prow-build
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 80m
+  extra_refs:
+  - org: kubernetes
+    repo: autoscaler
+    base_ref: master
+    path_alias: k8s.io/autoscaler
+    workdir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
+      command:
+      - runner.sh
+      - bash
+      args:
+      - -c
+      - |
+        ./vertical-pod-autoscaler/hack/verify-deadcode-elimination.sh
+        cp vertical-pod-autoscaler/_output/junit_deadcode.xml "${ARTIFACTS}/junit_coverage.xml"
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
+  annotations:
+    testgrid-dashboards: sig-autoscaling-vpa-periodics
+    testgrid-tab-name: autoscaling-vpa-binary-size
