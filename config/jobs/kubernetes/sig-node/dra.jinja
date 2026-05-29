@@ -84,6 +84,13 @@ presubmits:
       repo: containerd
       base_ref: release/2.1
     {%- endif %}
+    {%- if job_type == "node" and canary %}
+    # This ref enables testing https://github.com/kubernetes-sigs/kubetest2/pull/338 before it gets merged.
+    - org: pohly
+      repo: kubetest2
+      base_ref: node-prebuilt-binaries
+      path_alias: sigs.k8s.io/kubetest2
+    {%- endif %}
     {%- endif %}
     spec:
       containers:
@@ -97,12 +104,17 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          make WHAT="github.com/onsi/ginkgo/v2/ginkgo cmd/kubelet test/e2e_node/e2e_node.test"
-          _output/bin/e2e_node.test remote \
-             --ginkgo-binary=_output/bin/ginkgo \
-             --kubelet-binary=_output/bin/kubelet \
-             --e2e-node-binary=_output/bin/e2e_node.test \
+          go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
+          kubetest2 noop -test=node -- \
+             {%- if all_features %}
+             --use-binaries-from-package \
+             --test-package-url=https://dl.k8s.io \
+             --test-package-dir=ci/fast \
+             --test-package-marker=latest-fast.txt \
+             {%- else %}
+             --build-binaries \
              --repo-root=. \
+             {%- endif %}
              --gcp-zone=us-central1-b \
              --parallelism=1 \
              --label-filter='DRA && Feature: isSubsetOf { {% if all_features %}OffByDefault,{% endif -%} DynamicResourceAllocation } && !Flaky {%- if not ci %} && !Slow {%- endif %}' \
