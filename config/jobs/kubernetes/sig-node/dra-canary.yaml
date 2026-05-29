@@ -782,6 +782,11 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+    # This ref enables testing https://github.com/kubernetes-sigs/kubetest2/pull/338 before it gets merged.
+    - org: pohly
+      repo: kubetest2
+      base_ref: node-prebuilt-binaries
+      path_alias: sigs.k8s.io/kubetest2
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
@@ -791,11 +796,9 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          make WHAT="github.com/onsi/ginkgo/v2/ginkgo cmd/kubelet test/e2e_node/e2e_node.test"
-          _output/bin/e2e_node.test remote \
-             --ginkgo-binary=_output/bin/ginkgo \
-             --kubelet-binary=_output/bin/kubelet \
-             --e2e-node-binary=_output/bin/e2e_node.test \
+          go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
+          kubetest2 noop -test=node -- \
+             --build-binaries \
              --repo-root=. \
              --gcp-zone=us-central1-b \
              --parallelism=1 \
@@ -841,6 +844,11 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+    # This ref enables testing https://github.com/kubernetes-sigs/kubetest2/pull/338 before it gets merged.
+    - org: pohly
+      repo: kubetest2
+      base_ref: node-prebuilt-binaries
+      path_alias: sigs.k8s.io/kubetest2
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
@@ -850,12 +858,12 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          make WHAT="github.com/onsi/ginkgo/v2/ginkgo cmd/kubelet test/e2e_node/e2e_node.test"
-          _output/bin/e2e_node.test remote \
-             --ginkgo-binary=_output/bin/ginkgo \
-             --kubelet-binary=_output/bin/kubelet \
-             --e2e-node-binary=_output/bin/e2e_node.test \
-             --repo-root=. \
+          go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
+          kubetest2 noop -test=node -- \
+             --use-binaries-from-package \
+             --test-package-url=https://dl.k8s.io \
+             --test-package-dir=ci/fast \
+             --test-package-marker=latest-fast.txt \
              --gcp-zone=us-central1-b \
              --parallelism=1 \
              --label-filter='DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow' \
@@ -900,6 +908,11 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+    # This ref enables testing https://github.com/kubernetes-sigs/kubetest2/pull/338 before it gets merged.
+    - org: pohly
+      repo: kubetest2
+      base_ref: node-prebuilt-binaries
+      path_alias: sigs.k8s.io/kubetest2
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
@@ -909,11 +922,9 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          make WHAT="github.com/onsi/ginkgo/v2/ginkgo cmd/kubelet test/e2e_node/e2e_node.test"
-          _output/bin/e2e_node.test remote \
-             --ginkgo-binary=_output/bin/ginkgo \
-             --kubelet-binary=_output/bin/kubelet \
-             --e2e-node-binary=_output/bin/e2e_node.test \
+          go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
+          kubetest2 noop -test=node -- \
+             --build-binaries \
              --repo-root=. \
              --gcp-zone=us-central1-b \
              --parallelism=1 \
@@ -955,6 +966,11 @@ presubmits:
     - org: containerd
       repo: containerd
       base_ref: release/2.1
+    # This ref enables testing https://github.com/kubernetes-sigs/kubetest2/pull/338 before it gets merged.
+    - org: pohly
+      repo: kubetest2
+      base_ref: node-prebuilt-binaries
+      path_alias: sigs.k8s.io/kubetest2
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
@@ -964,11 +980,9 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          make WHAT="github.com/onsi/ginkgo/v2/ginkgo cmd/kubelet test/e2e_node/e2e_node.test"
-          _output/bin/e2e_node.test remote \
-             --ginkgo-binary=_output/bin/ginkgo \
-             --kubelet-binary=_output/bin/kubelet \
-             --e2e-node-binary=_output/bin/e2e_node.test \
+          go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
+          kubetest2 noop -test=node -- \
+             --build-binaries \
              --repo-root=. \
              --gcp-zone=us-central1-b \
              --parallelism=1 \
@@ -1007,6 +1021,11 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+    # This ref enables testing https://github.com/kubernetes-sigs/kubetest2/pull/338 before it gets merged.
+    - org: pohly
+      repo: kubetest2
+      base_ref: node-prebuilt-binaries
+      path_alias: sigs.k8s.io/kubetest2
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
@@ -1016,12 +1035,12 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          make WHAT="github.com/onsi/ginkgo/v2/ginkgo cmd/kubelet test/e2e_node/e2e_node.test"
-          _output/bin/e2e_node.test remote \
-             --ginkgo-binary=_output/bin/ginkgo \
-             --kubelet-binary=_output/bin/kubelet \
-             --e2e-node-binary=_output/bin/e2e_node.test \
-             --repo-root=. \
+          go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
+          kubetest2 noop -test=node -- \
+             --use-binaries-from-package \
+             --test-package-url=https://dl.k8s.io \
+             --test-package-dir=ci/fast \
+             --test-package-marker=latest-fast.txt \
              --gcp-zone=us-central1-b \
              --parallelism=1 \
              --label-filter='DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow' \
@@ -1062,6 +1081,11 @@ presubmits:
     - org: containerd
       repo: containerd
       base_ref: release/2.1
+    # This ref enables testing https://github.com/kubernetes-sigs/kubetest2/pull/338 before it gets merged.
+    - org: pohly
+      repo: kubetest2
+      base_ref: node-prebuilt-binaries
+      path_alias: sigs.k8s.io/kubetest2
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
@@ -1071,12 +1095,12 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          make WHAT="github.com/onsi/ginkgo/v2/ginkgo cmd/kubelet test/e2e_node/e2e_node.test"
-          _output/bin/e2e_node.test remote \
-             --ginkgo-binary=_output/bin/ginkgo \
-             --kubelet-binary=_output/bin/kubelet \
-             --e2e-node-binary=_output/bin/e2e_node.test \
-             --repo-root=. \
+          go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
+          kubetest2 noop -test=node -- \
+             --use-binaries-from-package \
+             --test-package-url=https://dl.k8s.io \
+             --test-package-dir=ci/fast \
+             --test-package-marker=latest-fast.txt \
              --gcp-zone=us-central1-b \
              --parallelism=1 \
              --label-filter='DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow' \
