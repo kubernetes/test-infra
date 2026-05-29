@@ -2,8 +2,8 @@ presubmits:
   kubernetes-sigs/agent-sandbox:
   - name: presubmit-test-autogen-up-to-date
     cluster: eks-prow-build-cluster
-    # Skip ONLY config/metadata, docs/, md files, and GitHub workflows, but will run for site/.
-    skip_if_only_changed: "^docs/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$|^\\.github/workflows/"
+    # Skip ONLY config/metadata, docs/, md files, and GitHub files, but will run for site/.
+    skip_if_only_changed: "^docs/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$|^\\.github/"
     decorate: true
     labels:
       preset-service-account: 'true'
@@ -26,7 +26,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: presubmit-agent-sandbox-unit-test
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$|^\\.github/workflows/"
+    skip_if_only_changed: "^(docs|site)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$|^\\.github/"
     decorate: true
     spec:
       containers:
@@ -83,7 +83,7 @@ presubmits:
       testgrid-tab-name: presubmit-lint-api
   - name: presubmit-agent-sandbox-e2e-test
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$|^\\.github/workflows/"
+    skip_if_only_changed: "^(docs|site)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$|^\\.github/"
     decorate: true
     labels:
       preset-dind-enabled: "true"
