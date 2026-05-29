@@ -178,6 +178,8 @@ periodics:
         env:
           - name: HYPERV
             value: "true"
+          - name: MAX_PODS
+            value: "20"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
@@ -397,6 +399,8 @@ periodics:
         env:
           - name: HYPERV
             value: "true"
+          - name: MAX_PODS
+            value: "20"
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
           - name: GINKGO_SKIP
