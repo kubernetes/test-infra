@@ -205,14 +205,14 @@ periodics:
               cpu: "7"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-integration-multikueue-baseline-main
+    name: periodic-kueue-test-integration-multikueue-main
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-integration-multikueue-baseline-main
+      testgrid-tab-name: periodic-kueue-test-integration-multikueue-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
-      description: "Run periodic kueue test-multikueue-baseline-integration"
+      description: "Run periodic kueue test-multikueue-integration"
       testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
@@ -231,45 +231,7 @@ periodics:
           command:
             - make
           args:
-            - test-multikueue-baseline-integration
-          env:
-            - name: GOMAXPROCS
-              value: "7"
-          resources:
-            requests:
-              cpu: "7"
-              memory: "10Gi"
-            limits:
-              cpu: "7"
-              memory: "10Gi"
-  - interval: 12h
-    name: periodic-kueue-test-integration-multikueue-extended-main
-    cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-integration-multikueue-extended-main
-      testgrid-alert-email: kueue-alerts@kubernetes.io
-      testgrid-num-failures-to-alert: '1'
-      description: "Run periodic kueue test-multikueue-extended-integration"
-      testgrid-num-columns-recent: '30'
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: kueue
-        base_ref: main
-        path_alias: kubernetes-sigs/kueue
-    decorate: true
-    decoration_config:
-      timeout: 1h
-    spec:
-      containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
-          command:
-            - make
-          args:
-            - test-multikueue-extended-integration
+            - test-multikueue-integration
           env:
             - name: GOMAXPROCS
               value: "7"

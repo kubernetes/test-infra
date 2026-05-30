@@ -126,7 +126,7 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-integration-multikueue-baseline-main
+    - name: pull-kueue-test-integration-multikueue-main
       cluster: eks-prow-build-cluster
       branches:
         - ^main
@@ -135,43 +135,15 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-integration-multikueue-baseline-main
-        description: "Run kueue test-multikueue-baseline-integration"
+        testgrid-tab-name: pull-kueue-test-integration-multikueue-main
+        description: "Run kueue test-multikueue-integration"
       spec:
         containers:
           - image: public.ecr.aws/docker/library/golang:1.26
             command:
               - make
             args:
-              - test-multikueue-baseline-integration
-            env:
-              - name: GOMAXPROCS
-                value: "7"
-            resources:
-              requests:
-                cpu: "7"
-                memory: "12Gi"
-              limits:
-                cpu: "7"
-                memory: "12Gi"
-    - name: pull-kueue-test-integration-multikueue-extended-main
-      cluster: eks-prow-build-cluster
-      branches:
-        - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
-      decorate: true
-      path_alias: sigs.k8s.io/kueue
-      annotations:
-        testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-integration-multikueue-extended-main
-        description: "Run kueue test-multikueue-extended-integration"
-      spec:
-        containers:
-          - image: public.ecr.aws/docker/library/golang:1.26
-            command:
-              - make
-            args:
-              - test-multikueue-extended-integration
+              - test-multikueue-integration
             env:
               - name: GOMAXPROCS
                 value: "7"
