@@ -759,7 +759,7 @@ periodics:
           args:
             - make
             - kind-image-build
-            - test-multikueue-baseline-e2e-main
+            - test-multikueue-e2e-baseline
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -805,7 +805,7 @@ periodics:
           args:
             - make
             - kind-image-build
-            - test-multikueue-extended-e2e-main
+            - test-multikueue-e2e-extended
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
