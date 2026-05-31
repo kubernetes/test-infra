@@ -25,8 +25,6 @@ periodics:
       - -c
       - |
         ./vertical-pod-autoscaler/hack/verify-deadcode-elimination.sh
-        ls
-        cp ./vertical-pod-autoscaler/hack/../_output/junit_deadcode.xml "${ARTIFACTS}/junit_coverage.xml"
       resources:
         limits:
           cpu: 1
