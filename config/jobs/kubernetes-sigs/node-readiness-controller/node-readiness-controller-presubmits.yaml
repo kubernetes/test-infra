@@ -22,3 +22,29 @@ presubmits:
       testgrid-dashboards: sig-node-node-readiness-controller
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
+  - name: pull-node-readiness-controller-test
+    cluster: eks-prow-build-cluster
+    always_run: false
+    skip_if_only_changed: "^docs/|\\.md$|^(README|LICENSE|OWNERS|SECURITY_CONTACTS)$"
+    branches:
+    - ^main$
+    - ^release-v.*$
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260504-c27e3ff179-master
+        command:
+        - make
+        args:
+        - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-node-node-readiness-controller
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
