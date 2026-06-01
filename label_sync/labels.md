@@ -160,6 +160,7 @@ larger set of contributors to apply/remove them.
 | <a id="wg/reliability" href="#wg/reliability">`wg/reliability`</a> | Categorizes an issue or PR as relevant to WG Reliability| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="wg/serving" href="#wg/serving">`wg/serving`</a> | Categorizes an issue or PR as relevant to WG Serving.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="wg/structured-logging" href="#wg/structured-logging">`wg/structured-logging`</a> | Categorizes an issue or PR as relevant to WG Structured Logging.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="wg/workload-aware-scheduling" href="#wg/workload-aware-scheduling">`wg/workload-aware-scheduling`</a> | Categorizes issue or PR as relevant to workload-aware scheduling WG. <br><br> This was previously `area/workload-aware`, | anyone | |
 | <a id="¯\_(ツ)_/¯" href="#¯\_(ツ)_/¯">`¯\_(ツ)_/¯`</a> | ¯\\\_(ツ)_/¯| humans |  [shrug](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/shrug) |
 
 ## Labels that apply to all repos, only for issues
@@ -499,7 +500,6 @@ larger set of contributors to apply/remove them.
 | <a id="area/enhancements" href="#area/enhancements">`area/enhancements`</a> | Issues or PRs related to the Enhancements subproject| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="kind/kep" href="#kind/kep">`kind/kep`</a> | Categorizes KEP tracking issues and PRs modifying the KEP directory| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
-| <a id="wg/workload-aware-scheduling" href="#wg/workload-aware-scheduling">`wg/workload-aware-scheduling`</a> | Categorizes issue or PR as relevant to Workload-aware or Topology-aware scheduling WG.| humans | |
 
 ## Labels that apply to kubernetes/enhancements, only for issues
 
@@ -656,7 +656,6 @@ larger set of contributors to apply/remove them.
 | <a id="wg/lts" href="#wg/lts">`wg/lts`</a> | Categorizes an issue or PR as relevant to WG LTS.| humans | |
 | <a id="wg/machine-learning" href="#wg/machine-learning">`wg/machine-learning`</a> | Categorizes an issue or PR as relevant to WG Machine Learning.| humans | |
 | <a id="wg/security-audit" href="#wg/security-audit">`wg/security-audit`</a> | Categorizes an issue or PR as relevant to WG Security Audit.| humans | |
-| <a id="wg/workload-aware-scheduling" href="#wg/workload-aware-scheduling">`wg/workload-aware-scheduling`</a> | Categorizes issue or PR as relevant to Workload-aware or Topology-aware scheduling WG.| humans | |
 
 ## Labels that apply to kubernetes/kubernetes, only for issues
 
@@ -772,7 +771,6 @@ larger set of contributors to apply/remove them.
 | <a id="language/vi" href="#language/vi">`language/vi`</a> | Issues or PRs related to Vietnamese language| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="language/zh" href="#language/zh">`language/zh`</a> | Issues or PRs related to Chinese language <br><br> This was previously `language/cn`, | anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="language/zh-tw" href="#language/zh-tw">`language/zh-tw`</a> | Issues or PRs related to Traditional Chinese language| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
-| <a id="wg/workload-aware-scheduling" href="#wg/workload-aware-scheduling">`wg/workload-aware-scheduling`</a> | Categorizes issue or PR as relevant to Workload-aware or Topology-aware scheduling WG. <br><br> This was previously `area/workload-aware`, | humans | |
 
 ## Labels that apply to kubernetes/website, only for issues
 
