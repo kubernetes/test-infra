@@ -797,7 +797,7 @@ presubmits:
         - -xce
         - |
           go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
-          kubetest2 noop -test=node -- \
+          kubetest2 noop --test=node -- \
              --build-binaries \
              --repo-root=. \
              --gcp-zone=us-central1-b \
@@ -859,7 +859,7 @@ presubmits:
         - -xce
         - |
           go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
-          kubetest2 noop -test=node -- \
+          kubetest2 noop --test=node -- \
              --use-binaries-from-package \
              --test-package-url=https://dl.k8s.io \
              --test-package-dir=ci/fast \
@@ -923,7 +923,7 @@ presubmits:
         - -xce
         - |
           go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
-          kubetest2 noop -test=node -- \
+          kubetest2 noop --test=node -- \
              --build-binaries \
              --repo-root=. \
              --gcp-zone=us-central1-b \
@@ -981,7 +981,7 @@ presubmits:
         - -xce
         - |
           go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
-          kubetest2 noop -test=node -- \
+          kubetest2 noop --test=node -- \
              --build-binaries \
              --repo-root=. \
              --gcp-zone=us-central1-b \
@@ -1036,7 +1036,7 @@ presubmits:
         - -xce
         - |
           go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
-          kubetest2 noop -test=node -- \
+          kubetest2 noop --test=node -- \
              --use-binaries-from-package \
              --test-package-url=https://dl.k8s.io \
              --test-package-dir=ci/fast \
@@ -1096,7 +1096,7 @@ presubmits:
         - -xce
         - |
           go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
-          kubetest2 noop -test=node -- \
+          kubetest2 noop --test=node -- \
              --use-binaries-from-package \
              --test-package-url=https://dl.k8s.io \
              --test-package-dir=ci/fast \

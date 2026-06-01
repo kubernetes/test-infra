@@ -105,7 +105,7 @@ presubmits:
         - -xce
         - |
           go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
-          kubetest2 noop -test=node -- \
+          kubetest2 noop --test=node -- \
              {%- if all_features %}
              --use-binaries-from-package \
              --test-package-url=https://dl.k8s.io \
