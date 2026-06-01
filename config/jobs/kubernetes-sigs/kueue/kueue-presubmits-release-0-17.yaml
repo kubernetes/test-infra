@@ -485,7 +485,7 @@ presubmits:
             args:
               - make
               - kind-image-build
-              - test-multikueue-e2e-baseline-main
+              - test-multikueue-e2e-baseline
             # docker-in-docker needs privileged mode
             securityContext:
               privileged: true
@@ -523,7 +523,7 @@ presubmits:
             args:
               - make
               - kind-image-build
-              - test-multikueue-e2e-extended-main
+              - test-multikueue-e2e-extended
             # docker-in-docker needs privileged mode
             securityContext:
               privileged: true
