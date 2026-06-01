@@ -296,6 +296,13 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        contributor-site:
+          required_status_checks:
+            contexts:
+            - deploy/netlify
+            - Header rules
+            - Pages changed
+            - Redirect rules
         controller-manager:
           restrictions:
             users: []
