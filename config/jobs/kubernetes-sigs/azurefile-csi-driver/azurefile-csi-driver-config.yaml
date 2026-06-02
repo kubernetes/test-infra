@@ -187,25 +187,33 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
-      preset-azure-windows: "true"
+      preset-capz-windows-common: "true"
+      preset-capz-windows-2022: "true"
+      preset-capz-containerd-2-0-latest: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.21
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
-        workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
         base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
+      - org: kubernetes-sigs
+        repo: windows-testing
+        base_ref: master
+        path_alias: sigs.k8s.io/windows-testing
+        workdir: true
     spec:
       serviceAccountName: azure
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
           command:
             - runner.sh
-            - ./scripts/ci-entrypoint.sh
+            - env
+            - KUBERNETES_VERSION=v1.32.2
+            - ./capz/run-capz-e2e.sh
           args:
             - bash
             - -c
@@ -224,22 +232,14 @@ presubmits:
           env:
             - name: AZURE_STORAGE_DRIVER
               value: "kubernetes.io/azure-file" # In-tree Azure file storage class
-            - name: TEST_MIGRATION
-              value: "true"
             - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
-            - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.32.2"
-            - name: WINDOWS # azuredisk-csi-driver config
+            - name: TEST_MIGRATION # azurefile-csi-driver config
               value: "true"
-            - name: TEST_WINDOWS # CAPZ config
-              value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # azurefile-csi-driver config
-              value: "true"
-            - name: WINDOWS_SERVER_VERSION # CAPZ config
-              value: "windows-2022"
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # azurefile-csi-driver config
+              value: "true"
             - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -424,24 +424,33 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
+      preset-capz-windows-common: "true"
+      preset-capz-windows-2022: "true"
+      preset-capz-containerd-2-0-latest: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.21
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
-        workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
         base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
+      - org: kubernetes-sigs
+        repo: windows-testing
+        base_ref: master
+        path_alias: sigs.k8s.io/windows-testing
+        workdir: true
     spec:
       serviceAccountName: azure
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
           command:
             - runner.sh
-            - ./scripts/ci-entrypoint.sh
+            - env
+            - KUBERNETES_VERSION=v1.32.2
+            - ./capz/run-capz-e2e.sh
           args:
             - bash
             - -c
@@ -458,19 +467,11 @@ presubmits:
               cpu: 4
               memory: 8Gi
           env:
-            - name: WINDOWS # azurefile-csi-driver config
-              value: "true"
-            - name: TEST_WINDOWS # CAPZ config
-              value: "true"
-            - name: WINDOWS_SERVER_VERSION # CAPZ config
-              value: "windows-2022"
-            - name: NODE_MACHINE_TYPE # CAPZ config
-              value: "Standard_D4s_v3"
             - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
-            - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.32.2"
-            - name: WORKER_MACHINE_COUNT
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D4s_v3"
+            - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
@@ -550,24 +551,33 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
+      preset-capz-windows-common: "true"
+      preset-capz-windows-2022: "true"
+      preset-capz-containerd-2-0-latest: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.20
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
-        workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
         base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
+      - org: kubernetes-sigs
+        repo: windows-testing
+        base_ref: master
+        path_alias: sigs.k8s.io/windows-testing
+        workdir: true
     spec:
       serviceAccountName: azure
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
           command:
             - runner.sh
-            - ./scripts/ci-entrypoint.sh
+            - env
+            - KUBERNETES_VERSION=latest-1.32
+            - ./capz/run-capz-e2e.sh
           args:
             - bash
             - -c
@@ -584,22 +594,14 @@ presubmits:
               cpu: 4
               memory: 8Gi
           env:
-            - name: WINDOWS # azurefile-csi-driver config
-              value: "true"
-            - name: TEST_WINDOWS # CAPZ config
-              value: "true"
-            - name: WINDOWS_SERVER_VERSION # CAPZ config
-              value: "windows-2022"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # azurefile-csi-driver config
+            - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
-            - name: DISABLE_ZONE # azurefile-csi-driver config
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # azurefile-csi-driver config
               value: "true"
-            - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.32"
-            - name: WORKER_MACHINE_COUNT
-              value: "0" # Don't create any linux worker nodes
+            - name: WORKER_MACHINE_COUNT # CAPZ config
+              value: "0"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz-windows-2022-hostprocess
@@ -613,27 +615,34 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-capz-windows-2025: "true"
-      preset-capz-containerd-1-7-latest: "true"
       preset-azure-community: "true"
+      preset-capz-windows-common: "true"
+      preset-capz-windows-2025: "true"
+      preset-capz-containerd-2-0-latest: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.20
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
-        workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
         base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
+      - org: kubernetes-sigs
+        repo: windows-testing
+        base_ref: master
+        path_alias: sigs.k8s.io/windows-testing
+        workdir: true
     spec:
       serviceAccountName: azure
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
           command:
             - runner.sh
-            - ./scripts/ci-entrypoint.sh
+            - env
+            - KUBERNETES_VERSION=latest-1.32
+            - ./capz/run-capz-e2e.sh
           args:
             - bash
             - -c
@@ -650,21 +659,15 @@ presubmits:
               cpu: 4
               memory: 8Gi
           env:
-            - name: WINDOWS # azurefile-csi-driver config
+            - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
-            - name: TEST_WINDOWS # CAPZ config
-              value: "true"
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D4s_v3"
             - name: WINDOWS_SERVER_VERSION # CAPZ config
               value: "windows-2025"
             - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # azurefile-csi-driver config
               value: "true"
-            - name: NODE_MACHINE_TYPE # CAPZ config
-              value: "Standard_D4s_v3"
-            - name: DISABLE_ZONE # azurefile-csi-driver config
-              value: "true"
-            - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.32"
-            - name: WORKER_MACHINE_COUNT
+            - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
