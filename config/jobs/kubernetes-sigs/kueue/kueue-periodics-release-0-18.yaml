@@ -732,7 +732,7 @@ periodics:
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-baseline-release-0-18
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
-      description: "Run periodic multikueue baseline end to end tests"
+      description: "Run periodic baseline multikueue end to end tests"
       testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
@@ -778,7 +778,7 @@ periodics:
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-extended-release-0-18
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
-      description: "Run periodic multikueue extended end to end tests"
+      description: "Run periodic extended multikueue end to end tests"
       testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"

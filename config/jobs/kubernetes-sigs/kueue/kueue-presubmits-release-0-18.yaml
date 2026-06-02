@@ -468,7 +468,7 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-scheduling
         testgrid-tab-name: pull-kueue-test-e2e-multikueue-baseline-release-0-18
-        description: "Run multikueue baseline end to end tests"
+        description: "Run baseline multikueue end to end tests"
       labels:
         preset-dind-enabled: "true"
       spec:
@@ -506,7 +506,7 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-scheduling
         testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-release-0-18
-        description: "Run multikueue extended end to end tests"
+        description: "Run extended multikueue end to end tests"
       labels:
         preset-dind-enabled: "true"
       spec:
