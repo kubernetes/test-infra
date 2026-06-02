@@ -1,14 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- gyliu513
-- jichenjc
+- Amulyam24
 - mkumatag
-# - morvencao # TODO: kubernetes-sigs member, must join kubernetes org
-# - xunpan # TODO: kubernetes-sigs member, must join kubernetes org
+- Prajyot-Parab
 approvers:
-- gyliu513
-- jichenjc
+- Amulyam24
 - mkumatag
-# - morvencao # TODO: kubernetes-sigs member, must join kubernetes org
-# - xunpan # TODO: kubernetes-sigs member, must join kubernetes org
+- Prajyot-Parab
