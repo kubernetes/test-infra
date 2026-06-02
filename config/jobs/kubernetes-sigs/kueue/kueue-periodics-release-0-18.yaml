@@ -725,14 +725,14 @@ periodics:
               cpu: "7"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-e2e-multikueue-release-0-18
+    name: periodic-kueue-test-e2e-multikueue-baseline-release-0-18
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-multikueue-release-0-18
+      testgrid-tab-name: periodic-kueue-test-e2e-multikueue-baseline-release-0-18
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
-      description: "Run periodic multikueue end to end tests"
+      description: "Run periodic multikueue baseline end to end tests"
       testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
@@ -759,7 +759,53 @@ periodics:
           args:
             - make
             - kind-image-build
-            - test-multikueue-e2e-main
+            - test-multikueue-e2e-baseline
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-multikueue-extended-release-0-18
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-multikueue-extended-release-0-18
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic multikueue extended end to end tests"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: release-0.18
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
+          env:
+            - name: E2E_K8S_VERSION
+              value: "1.35"
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-multikueue-e2e-extended
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
