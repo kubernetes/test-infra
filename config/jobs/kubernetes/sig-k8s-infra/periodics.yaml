@@ -122,7 +122,7 @@ periodics:
         - runner.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-$(go env GOARCH).tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         # enable IPV6 in bootstrap image
         - name: DOCKER_IN_DOCKER_IPV6_ENABLED
