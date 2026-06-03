@@ -6,7 +6,6 @@ presubmits:
       testgrid-dashboards: sig-contribex-contributor-website
       testgrid-tab-name: pull-contributor-site-validate-hugo-modules
     decorate: true
-    always_run: true
     run_if_changed: '^(go\.mod|go\.sum|hugo\.yaml|hack/update-hugo-modules\.sh|Dockerfile|netlify\.toml)$'
     branches:
     - ^master$
