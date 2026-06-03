@@ -21,7 +21,7 @@ periodics:
       - ./hack/update-hugo-modules.sh
       env:
       - name: GITHUB_TOKEN_PATH
-        value: /etc/github-token/oauth
+        value: /etc/github-token/token
       - name: GOMODCACHE
         value: /tmp/gomod
       volumeMounts:
@@ -38,4 +38,4 @@ periodics:
     volumes:
     - name: github
       secret:
-        secretName: k8s-ci-robot-github-token
+        secretName: k8s-infra-ci-robot-github-token
