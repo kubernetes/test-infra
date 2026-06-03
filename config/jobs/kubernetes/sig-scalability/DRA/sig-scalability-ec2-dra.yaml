@@ -8,9 +8,9 @@
 # the DRA test driver + ResourceClaims are installed by testing/dra/config.yaml (same as the GCE
 # DRA jobs, which also set no feature gate).
 periodics:
-- name: ci-kubernetes-e2e-kops-aws-100-node-dra-with-workload-amazonvpc-using-cl2
+- name: ci-kubernetes-e2e-kops-aws-500-node-dra-with-workload-amazonvpc-using-cl2
   tags:
-  - "perfDashPrefix: aws-dra-100Nodes-with-workload"
+  - "perfDashPrefix: aws-dra-500Nodes-with-workload"
   - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: eks-prow-build-cluster
@@ -45,9 +45,9 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws, sig-scalability-dra
-    testgrid-tab-name: ec2-dra-with-workload-master-scalability-100
+    testgrid-tab-name: ec2-dra-with-workload-master-scalability-500
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
-    description: "Uses kops to run k8s.io/perf-tests/run-e2e.sh against a 100-node AWS cluster with DRA enabled"
+    description: "Uses kops to run k8s.io/perf-tests/run-e2e.sh against a 500-node AWS cluster with DRA enabled"
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260525-f8de63d82b-master
@@ -68,7 +68,9 @@ periodics:
       - name: CNI_PLUGIN
         value: "amazonvpc"
       - name: KUBE_NODE_COUNT
-        value: "100"
+        value: "500"
+      - name: CL2_LOAD_TEST_THROUGHPUT
+        value: "50"
       - name: CL2_MODE
         value: "Indexed"
       - name: CL2_NODES_PER_NAMESPACE
@@ -84,7 +86,7 @@ periodics:
       - name: CONTROL_PLANE_COUNT
         value: "1"
       - name: CONTROL_PLANE_SIZE
-        value: "c8a.8xlarge"
+        value: "c8a.12xlarge"
       - name: ENABLE_PROMETHEUS_SERVER
         value: "true"
       - name: TEAR_DOWN_PROMETHEUS_SERVER
@@ -111,7 +113,7 @@ periodics:
 
 presubmits:
   kubernetes/perf-tests:
-  - name: pull-perf-tests-ec2-100-node-dra-with-workload-amazonvpc-using-cl2
+  - name: pull-perf-tests-ec2-500-node-dra-with-workload-amazonvpc-using-cl2
     cluster: eks-prow-build-cluster
     optional: true # new/expensive AWS scale job: provide signal without blocking merges
     run_if_changed: '^clusterloader2/testing/dra/.*$'
@@ -136,7 +138,7 @@ presubmits:
       path_alias: k8s.io/kops
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
-      testgrid-tab-name: pull-perf-tests-ec2-100-node-dra-with-workload
+      testgrid-tab-name: pull-perf-tests-ec2-500-node-dra-with-workload
     spec:
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260525-f8de63d82b-master
@@ -156,7 +158,9 @@ presubmits:
         - name: CNI_PLUGIN
           value: "amazonvpc"
         - name: KUBE_NODE_COUNT
-          value: "100"
+          value: "500"
+        - name: CL2_LOAD_TEST_THROUGHPUT
+          value: "50"
         - name: CL2_MODE
           value: "Indexed"
         - name: CL2_NODES_PER_NAMESPACE
@@ -172,7 +176,7 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "c8a.8xlarge"
+          value: "c8a.12xlarge"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
         - name: TEAR_DOWN_PROMETHEUS_SERVER
