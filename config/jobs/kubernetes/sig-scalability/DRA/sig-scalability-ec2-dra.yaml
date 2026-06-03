@@ -1,0 +1,198 @@
+# DRA scalability jobs on AWS/EC2 (kops + ClusterLoader2).
+#
+# EC2 equivalent of ci-kubernetes-e2e-kops-gce-100-node-dra-with-workload-ipalias-using-cl2.
+# Infra (cluster/creds/instance types/networking) mirrors the AWS load-test jobs in
+# sig-scalability-periodic-ec2.yaml and sig-scalability-presubmit-jobs.yaml; the CL2 workload
+# is swapped from the load test to the DRA test via KOPS_CL2_TEST_CONFIG=testing/dra/config.yaml.
+# DRA itself needs no feature gate here: it is on-by-default in the stable k8s under test, and
+# the DRA test driver + ResourceClaims are installed by testing/dra/config.yaml (same as the GCE
+# DRA jobs, which also set no feature gate).
+periodics:
+- name: ci-kubernetes-e2e-kops-aws-100-node-dra-with-workload-amazonvpc-using-cl2
+  tags:
+  - "perfDashPrefix: aws-dra-100Nodes-with-workload"
+  - "perfDashBuildsCount: 270"
+  - "perfDashJobType: performance"
+  cluster: eks-prow-build-cluster
+  cron: '0 3 * * *' # Run every day at 03:00 UTC
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential-boskos-scale-001-kops: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 480m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    karpenter.sh/do-not-disrupt: "true"
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/networking: amazonvpc
+    testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws, sig-scalability-dra
+    testgrid-tab-name: ec2-dra-with-workload-master-scalability-100
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
+    description: "Uses kops to run k8s.io/perf-tests/run-e2e.sh against a 100-node AWS cluster with DRA enabled"
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260525-f8de63d82b-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
+      - name: GOPATH
+        value: /home/prow/go
+      - name: CNI_PLUGIN
+        value: "amazonvpc"
+      - name: KUBE_NODE_COUNT
+        value: "100"
+      - name: CL2_MODE
+        value: "Indexed"
+      - name: CL2_NODES_PER_NAMESPACE
+        value: "10"
+      - name: CL2_JOB_RUNNING_TIME
+        value: "3s"
+      - name: CL2_LONG_JOB_RUNNING_TIME
+        value: "45m"
+      - name: CL2_RATE_LIMIT_POD_CREATION
+        value: "false"
+      - name: NODE_MODE
+        value: "master"
+      - name: CONTROL_PLANE_COUNT
+        value: "1"
+      - name: CONTROL_PLANE_SIZE
+        value: "c8a.8xlarge"
+      - name: ENABLE_PROMETHEUS_SERVER
+        value: "true"
+      - name: TEAR_DOWN_PROMETHEUS_SERVER
+        value: "false"
+      - name: PROMETHEUS_SCRAPE_KUBELETS
+        value: "true"
+      - name: PROMETHEUS_PVC_STORAGE_CLASS
+        value: "io2"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: KOPS_IRSA
+        value: "true"
+      - name: NODE_PRELOAD_IMAGES
+        value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+      - name: KOPS_CL2_TEST_CONFIG
+        value: testing/dra/config.yaml
+      resources:
+        requests:
+          cpu: 7
+          memory: 24Gi
+        limits:
+          cpu: 7
+          memory: 24Gi
+
+presubmits:
+  kubernetes/perf-tests:
+  - name: pull-perf-tests-ec2-100-node-dra-with-workload-amazonvpc-using-cl2
+    cluster: eks-prow-build-cluster
+    optional: true # new/expensive AWS scale job: provide signal without blocking merges
+    run_if_changed: '^clusterloader2/testing/dra/.*$'
+    max_concurrency: 1
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential-boskos-scale-001-kops: "true"
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    path_alias: k8s.io/perf-tests
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-ec2-100-node-dra-with-workload
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260525-f8de63d82b-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: /etc/aws-ssh/aws-ssh-private
+        - name: KUBE_SSH_USER
+          value: ubuntu
+        - name: GOPATH
+          value: /home/prow/go
+        - name: CNI_PLUGIN
+          value: "amazonvpc"
+        - name: KUBE_NODE_COUNT
+          value: "100"
+        - name: CL2_MODE
+          value: "Indexed"
+        - name: CL2_NODES_PER_NAMESPACE
+          value: "10"
+        - name: CL2_JOB_RUNNING_TIME
+          value: "3s"
+        - name: CL2_LONG_JOB_RUNNING_TIME
+          value: "45m"
+        - name: CL2_RATE_LIMIT_POD_CREATION
+          value: "false"
+        - name: NODE_MODE
+          value: "master"
+        - name: CONTROL_PLANE_COUNT
+          value: "1"
+        - name: CONTROL_PLANE_SIZE
+          value: "c8a.8xlarge"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_SCRAPE_KUBELETS
+          value: "true"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "io2"
+        - name: CLOUD_PROVIDER
+          value: "aws"
+        - name: KOPS_IRSA
+          value: "true"
+        - name: NODE_PRELOAD_IMAGES
+          value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+        - name: KOPS_CL2_TEST_CONFIG
+          value: testing/dra/config.yaml
+        resources:
+          requests:
+            cpu: 7
+            memory: 24Gi
+          limits:
+            cpu: 7
+            memory: 24Gi
