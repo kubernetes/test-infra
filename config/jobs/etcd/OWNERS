@@ -3,16 +3,12 @@
 reviewers:
   - ahrtr
   - ivanvc
-  - jmhbnz
   - serathius
-  - wenjiaswe
 
 approvers:
   - ahrtr
   - ivanvc
-  - jmhbnz
   - serathius
-  - wenjiaswe
 
 labels:
   - sig/etcd
