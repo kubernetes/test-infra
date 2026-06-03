@@ -96,6 +96,16 @@ periodics:
         value: "50"
       - name: CL2_RATE_LIMIT_POD_CREATION
         value: "false"
+      - name: CL2_REALISTIC_POD
+        value: "true"
+      - name: CL2_ENABLE_INFORMER_LATENCY_TEST
+        value: "true"
+      - name: CL2_EXECSERVICE_CPU_REQUESTS
+        value: "8"
+      - name: CL2_EXECSERVICE_MEMORY_REQUESTS
+        value: "16Gi"
+      - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
+        value: "21474836480"
       - name: NODE_MODE
         value: "master"
       - name: CONTROL_PLANE_COUNT
@@ -125,10 +135,10 @@ periodics:
       resources:
         requests:
           cpu: 7
-          memory: 24Gi
+          memory: 40Gi
         limits:
           cpu: 7
-          memory: 24Gi
+          memory: 40Gi
 
 # This job is the same as above, but using 100 nodes instead of 5000
 - name: ci-kubernetes-e2e-kops-aws-small-scale-amazonvpc-using-cl2
