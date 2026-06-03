@@ -9,13 +9,13 @@ prow_ignored:
   # prowjob configuration files (presubmits, periodics)
   branches:
     main:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-1.33"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-1.33"
     release-2.11:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-1.33"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-1.33"
     release-2.10:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-1.33"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-1.33"
     release-2.9:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-1.32"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-1.32"
 
   # The generator will run each template per branch and use a the name template
   # to generate the target filename.

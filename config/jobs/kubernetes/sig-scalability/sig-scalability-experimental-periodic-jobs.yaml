@@ -28,7 +28,7 @@ periodics:
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -85,7 +85,7 @@ periodics:
     testgrid-tab-name: watchlist-off
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -149,7 +149,7 @@ periodics:
     testgrid-tab-name: watchlist-on
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
