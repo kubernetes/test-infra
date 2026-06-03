@@ -585,7 +585,7 @@ presubmits:
         - name: KUBE_PROXY_MODE
           value: "nftables"
         - name: CONTROL_PLANE_COUNT
-          value: "1"
+          value: "3"
         - name: CONTROL_PLANE_SIZE
           value: "c4-standard-32"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
