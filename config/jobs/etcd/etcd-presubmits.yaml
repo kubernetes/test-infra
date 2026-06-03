@@ -6,6 +6,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.6
     decorate: true
     annotations:
@@ -32,9 +33,9 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -63,6 +64,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
     decorate: true
@@ -95,9 +97,9 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -126,9 +128,9 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.5
     - release-3.6
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -165,9 +167,9 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -195,9 +197,9 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -227,6 +229,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
     decorate: true
@@ -257,6 +260,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.6
     decorate: true
     annotations:
@@ -288,9 +292,9 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -321,8 +325,9 @@ presubmits:
     always_run: true
     branches:
     - main
-    - release-3.5
+    - release-3.7
     - release-3.6
+    - release-3.5
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -355,9 +360,9 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -388,8 +393,9 @@ presubmits:
     always_run: true
     branches:
     - main
-    - release-3.5
+    - release-3.7
     - release-3.6
+    - release-3.5
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -422,9 +428,9 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -455,8 +461,9 @@ presubmits:
     always_run: true
     branches:
     - main
-    - release-3.5
+    - release-3.7
     - release-3.6
+    - release-3.5
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -488,6 +495,8 @@ presubmits:
     cluster: k8s-infra-prow-build
     always_run: true
     branches:
+    - release-3.7
+    - release-3.6
     - release-3.5
     decorate: true
     annotations:
@@ -520,6 +529,7 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.7
       - release-3.6
     decorate: true
     decoration_config:
@@ -567,6 +577,7 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.7
       - release-3.6
     decorate: true
     decoration_config:
@@ -616,9 +627,9 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.7
       - release-3.6
       - release-3.5
-      - release-3.4
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -654,6 +665,7 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.7
       - release-3.6
     decorate: true
     decoration_config:
@@ -684,6 +696,7 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.7
       - release-3.6
     decorate: true
     decoration_config:
@@ -719,9 +732,9 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.7
       - release-3.6
       - release-3.5
-      - release-3.4
     decorate: true
     decoration_config:
       timeout: 60m
@@ -751,9 +764,9 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.7
       - release-3.6
       - release-3.5
-      - release-3.4
     decorate: true
     decoration_config:
       timeout: 60m
@@ -783,6 +796,7 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.7
       - release-3.6
     decorate: true
     decoration_config:
@@ -815,6 +829,7 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.7
       - release-3.6
     decorate: true
     decoration_config:
@@ -847,6 +862,7 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.7
       - release-3.6
     decorate: true
     decoration_config:
