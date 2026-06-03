@@ -5,6 +5,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.7
     - release-3.6
     decorate: true
     annotations:
@@ -29,8 +30,9 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.7
     - release-3.6
-    - release-3.4
+    - release-3.5
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-postsubmits
@@ -66,9 +68,9 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-postsubmits
@@ -95,9 +97,9 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-postsubmits
@@ -125,6 +127,7 @@ postsubmits:
     cluster: k8s-infra-prow-build
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
     decorate: true
@@ -156,9 +159,9 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-postsubmits
@@ -186,9 +189,9 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-postsubmits
@@ -217,6 +220,7 @@ postsubmits:
     cluster: k8s-infra-prow-build
     branches:
     - main
+    - release-3.7
     - release-3.6
     decorate: true
     annotations:
@@ -247,6 +251,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
     decorate: true
@@ -276,9 +281,9 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
-    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-postsubmits
@@ -308,6 +313,7 @@ postsubmits:
     cluster: k8s-infra-prow-build
     branches:
     - main
+    - release-3.7
     - release-3.6
     - release-3.5
     decorate: true
@@ -341,6 +347,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.7
     - release-3.6
     decorate: true
     decoration_config:
