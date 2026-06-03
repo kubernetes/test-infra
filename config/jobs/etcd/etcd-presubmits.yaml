@@ -495,8 +495,6 @@ presubmits:
     cluster: k8s-infra-prow-build
     always_run: true
     branches:
-    - release-3.7
-    - release-3.6
     - release-3.5
     decorate: true
     annotations:
