@@ -69,6 +69,7 @@ var buildClusters = []string{
 var jobsExemptFromResourceLimits = []string{
 	"ci-kubernetes-build",
 	"ci-kubernetes-e2e-gce-scale-performance-5000",
+	"ci-kubernetes-e2e-kops-aws-scale-amazonvpc-using-cl2",
 	"ci-kubernetes-e2e-gce-scale-resource-size",
 	"pull-kubernetes-gce-master-scale-performance-5000",
 	"pull-perf-tests-gce-master-scale-performance-5000",
