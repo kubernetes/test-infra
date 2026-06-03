@@ -118,7 +118,7 @@ presubmits:
   - name: pull-perf-tests-ec2-500-node-dra-with-workload-amazonvpc-using-cl2
     cluster: eks-prow-build-cluster
     optional: true # new/expensive AWS scale job: provide signal without blocking merges
-    run_if_changed: '^clusterloader2/testing/dra/.*$'
+    always_run: false
     max_concurrency: 1
     labels:
       preset-service-account: "true"
