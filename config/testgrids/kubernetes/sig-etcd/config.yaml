@@ -7,6 +7,10 @@ dashboard_groups:
   - sig-etcd-s390x
   - sig-etcd-presubmits
   - sig-etcd-periodics
+  - sig-etcd-main-periodics
+  - sig-etcd-release-3.5-periodics
+  - sig-etcd-release-3.6-periodics
+  - sig-etcd-release-3.7-periodics
   - sig-etcd-postsubmits
   - sig-etcd-robustness
   - sig-etcd-etcd-manager
@@ -24,6 +28,10 @@ dashboards:
   - name: sig-etcd-s390x
   - name: sig-etcd-presubmits
   - name: sig-etcd-periodics
+  - name: sig-etcd-main-periodics
+  - name: sig-etcd-release-3.5-periodics
+  - name: sig-etcd-release-3.6-periodics
+  - name: sig-etcd-release-3.7-periodics
   - name: sig-etcd-postsubmits
   - name: sig-etcd-robustness
     dashboard_tab:
