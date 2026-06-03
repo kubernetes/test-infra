@@ -204,7 +204,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260602-52c1eeb13
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260602-e7f2be80c
       command:
       - generic-autobumper
       args:
