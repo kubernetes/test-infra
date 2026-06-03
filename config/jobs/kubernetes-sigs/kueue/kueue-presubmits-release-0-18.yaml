@@ -609,7 +609,7 @@ presubmits:
                 memory: "10Gi"
               limits:
                 cpu: "7"
-                memory: "10Gi"   
+                memory: "10Gi"
     - name: pull-kueue-test-e2e-multikueue-baseline-release-0-18
       cluster: eks-prow-build-cluster
       branches:
