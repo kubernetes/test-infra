@@ -93,6 +93,8 @@ periodics:
         value: "false"
       - name: PROMETHEUS_SCRAPE_KUBELETS
         value: "true"
+      - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
+        value: "false"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
         value: "io2"
       - name: CLOUD_PROVIDER
@@ -183,6 +185,8 @@ presubmits:
           value: "false"
         - name: PROMETHEUS_SCRAPE_KUBELETS
           value: "true"
+        - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
+          value: "false"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "io2"
         - name: CLOUD_PROVIDER
