@@ -33,7 +33,7 @@ periodics:
   - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: eks-prow-build-cluster
-  cron: '1 7 * * *' # Run every day at 3:01 AM EDT/12:01 AM PDT (07:01 UTC)
+  cron: '1 7 * * 0,1,3,5' # Sun/Mon/Wed/Fri 07:01 UTC; alternates with the 5k DRA job (Tue/Thu/Sat)
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
