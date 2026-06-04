@@ -18,10 +18,12 @@ presubmits:
   - name: pull-dra-driver-nvidia-gpu-e2e-lambda-gpu
     cluster: k8s-infra-prow-build
     optional: true
-    always_run: true
+    always_run: false
+    run_if_changed: '^(api/|cmd/|deployments/|hack/|scripts/|internal/|pkg/|templates/|test/|tests/|vendor/|.*\.go$|go\.mod$|go\.sum$|Makefile$|common\.mk$|versions\.mk$|VERSION$)'
     max_concurrency: 1
-    skip_branches:
-    - release-\d+\.\d+
+    branches:
+    - ^main$
+    - ^release-\d+\.\d+$
     decorate: true
     decoration_config:
       timeout: 2h
@@ -63,10 +65,12 @@ presubmits:
   - name: pull-dra-driver-nvidia-gpu-e2e-lambda-gpu-gh200
     cluster: k8s-infra-prow-build
     optional: true
-    always_run: true
+    always_run: false
+    run_if_changed: '^(api/|cmd/|deployments/|hack/|scripts/|internal/|pkg/|templates/|test/|tests/|vendor/|.*\.go$|go\.mod$|go\.sum$|Makefile$|common\.mk$|versions\.mk$|VERSION$)'
     max_concurrency: 1
-    skip_branches:
-    - release-\d+\.\d+
+    branches:
+    - ^main$
+    - ^release-\d+\.\d+$
     decorate: true
     decoration_config:
       timeout: 2h
@@ -104,7 +108,7 @@ presubmits:
 periodics:
 - name: ci-dra-driver-nvidia-gpu-e2e-lambda-gpu
   cluster: k8s-infra-prow-build
-  interval: 6h
+  interval: 24h
   decorate: true
   decoration_config:
     timeout: 2h
@@ -143,14 +147,12 @@ periodics:
           cpu: "4"
           memory: "8Gi"
 
-# Same 6h cadence as the GPU_TYPE="gpu_1x_a10" periodic above, but pinned to
-# gpu_1x_gh200 (arm64). Cron fires at 00:30, 06:30, 12:30, 18:30 UTC --
-# maximally offset (3h) from ci-kubernetes-e2e-lambda-device-plugin-gpu-gh200
-# at "30 3,9,15,21 * * *" so the two gh200 periodics don't compete for Lambda
-# GH200 capacity.
+# Once per day (arm64), pinned to gpu_1x_gh200. Cron at 06:30 UTC offsets the
+# a10 periodic (interval: 24h) and ci-kubernetes-e2e-lambda-device-plugin-gpu-gh200
+# (still on a 6h cron in lambda.yaml) to reduce Lambda GH200 contention.
 - name: ci-dra-driver-nvidia-gpu-e2e-lambda-gpu-gh200
   cluster: k8s-infra-prow-build
-  cron: "30 0,6,12,18 * * *"
+  cron: "30 6 * * *"
   decorate: true
   decoration_config:
     timeout: 2h
