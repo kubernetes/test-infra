@@ -161,8 +161,8 @@ periodics:
       - org: kubernetes
         slug: release-managers
 
-# ci-k8sio-image-promo runs daily as a backstop on top of the postsubmit
-# ~midnight pacific
+# ci-k8sio-image-promo runs daily to catch missed postsubmit promotions
+# from the last 14 days. ~midnight pacific.
 - cron: '0 7 * * *'
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
@@ -181,13 +181,14 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.0-0
+    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:latest
       command:
       - /kpromo
       args:
       - cip
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
       - --confirm
+      - --manifest-diff-since=14 days
       - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
       - --certificate-oidc-issuer=https://accounts.google.com
       env:
