@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.1-0
         command:
         - /kpromo
         args:
@@ -61,7 +61,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.1-0
         command:
         - /kpromo
         args:
@@ -137,7 +137,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.1-0
       command:
       - /kpromo
       args:
@@ -181,7 +181,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:latest
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.1-0
       command:
       - /kpromo
       args:
@@ -294,7 +294,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.5.0-0
+    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.5.1-0
       imagePullPolicy: Always
       command:
         - /kpromo
