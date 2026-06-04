@@ -1144,7 +1144,7 @@ periodics:
           export ETCD_VERIFY=all
           export JUNIT_REPORT_DIR=${ARTIFACTS}
           source ./scripts/test_lib.sh
-          run_for_module "tests" go_test "./robustness/coverage/..." "keep_going" : -timeout=60s -run="^TestInterfaceUse/"
+          run_for_module "tests" run_go_tests "./robustness/coverage/..." -timeout=60s -run="^TestInterfaceUse/"
         volumeMounts:
           - mountPath: /etcd-data
             name: tmpdir
