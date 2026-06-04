@@ -12,10 +12,12 @@ presubmits:
     cluster: k8s-infra-prow-build
     job_queue_name: gce-gpu-test
     optional: true
-    always_run: true
+    always_run: false
+    run_if_changed: '^(api/|cmd/|deployments/|hack/|scripts/|internal/|pkg/|templates/|test/|tests/|vendor/|.*\.go$|go\.mod$|go\.sum$|Makefile$|common\.mk$|versions\.mk$|VERSION$)'
     max_concurrency: 1
-    skip_branches:
-    - release-\d+\.\d+
+    branches:
+    - ^main$
+    - ^release-\d+\.\d+$
     decorate: true
     decoration_config:
       timeout: 2h
@@ -69,7 +71,7 @@ periodics:
 - name: ci-dra-driver-nvidia-gpu-e2e-gcp-nvkind
   cluster: k8s-infra-prow-build
   job_queue_name: gce-gpu-test
-  interval: 6h
+  interval: 24h
   decorate: true
   decoration_config:
     timeout: 2h
