@@ -72,7 +72,6 @@ periodics:
     - command:
       - /app
       args:
-      - --dry-run=true  # validate, then remove to enable deletion
       - --ttl=12h  # must exceed the longest job here (serial-canary ~10.5h)
       - --path=s3://k8s-kops-ci-prow/objs.json
       # managed-by=Terraform covers its TF-managed resources
