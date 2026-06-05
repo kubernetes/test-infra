@@ -72,18 +72,12 @@ periodics:
     - command:
       - /app
       args:
-      # START IN DRY-RUN. Verify the run would delete the ~546 e2e-*/pr* orphans and ZERO
-      # k8s-infra-kops-prow-build (EKS build cluster) resources, then drop this flag.
-      - --dry-run=true
-      # TTL must exceed the longest legit cluster lifetime in this account. Conformance jobs
-      # run test_timeout_minutes=200 (~3.3h); 12h leaves wide margin yet still reaps ~$45k/mo
-      # (orphans are >30d..720d old). Tighten later once max job duration is confirmed.
-      - --ttl=12h
-      - --path=s3://k8s-kops-ci-prow-state-store/objs.json
-      # Protect Terraform-managed permanent infra (EKS build cluster + its VPC/NAT/SGs/nodes).
-      # Route53 zone, the state S3 bucket, and SSH keypairs are already safe: the DNS/S3/keypair
-      # cleaners default to OFF (we do not pass --enable-dns-zone-clean / -s3-buckets / -key-pairs).
-      - --exclude-tags=managed-by=Terraform
+      - --dry-run=true  # validate, then remove to enable deletion
+      - --ttl=12h  # must exceed the longest job here (serial-canary ~10.5h)
+      - --path=s3://k8s-kops-ci-prow/objs.json
+      # managed-by=Terraform covers its TF-managed resources
+      # eks:cluster-name covers the node-group ASG (EKS tags it eks:* but not managed-by=Terraform)
+      - --exclude-tags=managed-by=Terraform,eks:cluster-name=k8s-infra-kops-prow-build
       image: gcr.io/k8s-staging-boskos/aws-janitor:v20260519-f0a76c5
       resources:
         requests:
@@ -94,5 +88,5 @@ periodics:
           memory: "2Gi"
   annotations:
     testgrid-dashboards: sig-testing-maintenance
-    testgrid-tab-name: tests-kops-aws-janitor
+    testgrid-tab-name: ci-kops-aws-janitor
     description: Deletes old AWS resources in the kops-infra-ci account (tests-kops-aws.k8s.io / 808842816990)
