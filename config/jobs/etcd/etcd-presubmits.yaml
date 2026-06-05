@@ -922,6 +922,8 @@ presubmits:
     branches:
       - main
     decorate: true
+    labels:
+      preset-dind-enabled: "true"
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
       testgrid-tab-name: pull-etcd-devcontainer-tests
