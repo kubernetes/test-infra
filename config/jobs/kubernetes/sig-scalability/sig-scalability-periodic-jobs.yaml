@@ -1395,7 +1395,7 @@ periodics:
 
 # Exploratory tests for resource size limit as proposed in https://github.com/kubernetes/kubernetes/issues/134375
 - cron: '1 5 * * 2,6' # Run twice a week at 21:01 PST (05:01 UTC)
-  name: ci-kubernetes-e2e-gce-scale-resource-size
+  name: ci-kubernetes-e2e-gce-scale-performance-5000-experimental
   tags:
   - "perfDashPrefix: gce-5000Nodes-1.5GB-pods"
   - "perfDashBuildsCount: 270"
@@ -1423,7 +1423,7 @@ periodics:
     workdir: true
   annotations:
     testgrid-dashboards: sig-scalability-gce, google-gce
-    testgrid-tab-name: gce-master-scale-resource-size
+    testgrid-tab-name: gce-master-scale-performance-5000-experimental
     description: "Exploratory tests for resource size limit as proposed in https://github.com/kubernetes/kubernetes/issues/134375"
   spec:
     serviceAccountName: prow-build
