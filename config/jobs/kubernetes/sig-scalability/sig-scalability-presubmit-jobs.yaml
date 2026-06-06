@@ -520,9 +520,8 @@ presubmits:
             cpu: 7
             memory: "40Gi"
 
-  # Mirrors pull-perf-tests-gce-master-scale-performance-100 with CL2_RESTART_APISERVER set to true.
-  # TODO(Jefftree): revert after testing to be stable.
-  - name: pull-kubernetes-gce-master-scale-performance-100-apiserver-restart
+  # Currently testing RangeStream.
+  - name: pull-kubernetes-gce-master-scale-performance-100-experimental
     cluster: k8s-infra-prow-build
     always_run: false
     optional: true
@@ -548,7 +547,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
-      testgrid-tab-name: pull-kubernetes-gce-master-scale-performance-100-apiserver-restart
+      testgrid-tab-name: pull-kubernetes-gce-master-scale-performance-100-experimental
     spec:
       serviceAccountName: prow-build
       containers:
@@ -562,6 +561,8 @@ presubmits:
         env:
         - name: CL2_RESTART_APISERVER
           value: "true"
+        - name: KUBE_FEATURE_GATES
+          value: "EtcdRangeStream"
         - name: CL2_HEAP_PROFILE_INTERVAL
           value: "1m"
         - name: KUBE_SSH_KEY_PATH
