@@ -2491,27 +2491,6 @@ def generate_presubmits_e2e():
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
         presubmit_test(
-            cloud='gce',
-            k8s_version='stable',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd',
-            networking='calico',
-            tab_name='pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd',
-            always_run=False,
-            feature_flags=['GoogleCloudBucketACL'],
-            extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
-        ),
-        # A special test for AWS Cloud-Controller-Manager
-        presubmit_test(
-            name="pull-kops-e2e-aws-cloud-controller-manager",
-            cloud="aws",
-            distro="u2404",
-            k8s_version="ci",
-            extra_flags=['--set=cluster.spec.cloudControllerManager.cloudProvider=aws'],
-            tab_name='e2e-ccm',
-        ),
-
-        presubmit_test(
             name="pull-kops-e2e-aws-load-balancer-controller",
             cloud="aws",
             distro="u2204",
