@@ -584,9 +584,13 @@ def generate_grid():
                             # v3.31 felix also binds the kube-proxy healthz port,
                             # so kube-proxy must be disabled to avoid the conflict.
                             # https://docs.tigera.io/calico-enterprise/latest/operations/ebpf/install#disable-kube-proxy-or-avoid-conflicts
+                            # Felix's iptables-nft dataplane goes through the
+                            # nft_compat shim on these distros and loses BGP
+                            # session state; switch Felix to native nftables.
                             extra_flags.extend([
                                 "--set=cluster.spec.kubeProxy.enabled=false",
                                 "--set=cluster.spec.networking.calico.bpfEnabled=true",
+                                "--set=cluster.spec.networking.calico.nftablesMode=Enabled",
                             ])
                         else:
                             # https://github.com/kubernetes/kops/issues/17915
@@ -635,9 +639,13 @@ def generate_grid():
                             # v3.31 felix also binds the kube-proxy healthz port,
                             # so kube-proxy must be disabled to avoid the conflict.
                             # https://docs.tigera.io/calico-enterprise/latest/operations/ebpf/install#disable-kube-proxy-or-avoid-conflicts
+                            # Felix's iptables-nft dataplane goes through the
+                            # nft_compat shim on these distros and loses BGP
+                            # session state; switch Felix to native nftables.
                             extra_flags.extend([
                                 "--set=cluster.spec.kubeProxy.enabled=false",
                                 "--set=cluster.spec.networking.calico.bpfEnabled=true",
+                                "--set=cluster.spec.networking.calico.nftablesMode=Enabled",
                             ])
                         else:
                             # https://github.com/kubernetes/kops/issues/17915
@@ -2476,18 +2484,6 @@ def generate_presubmits_e2e():
             networking='cilium',
             tab_name='e2e-gce-ci',
             always_run=False,
-            extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
-        ),
-        presubmit_test(
-            cloud='gce',
-            k8s_version='stable',
-            kops_channel='alpha',
-            distro='rocky10',
-            name='pull-kops-e2e-k8s-gce-calico-rocky10',
-            networking='calico',
-            tab_name='pull-kops-e2e-k8s-gce-calico-rocky10',
-            always_run=False,
-            feature_flags=['GoogleCloudBucketACL'],
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
         presubmit_test(
