@@ -2479,18 +2479,6 @@ def generate_presubmits_e2e():
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
         presubmit_test(
-            cloud='gce',
-            k8s_version='stable',
-            kops_channel='alpha',
-            distro='rocky10',
-            name='pull-kops-e2e-k8s-gce-calico-rocky10',
-            networking='calico',
-            tab_name='pull-kops-e2e-k8s-gce-calico-rocky10',
-            always_run=False,
-            feature_flags=['GoogleCloudBucketACL'],
-            extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
-        ),
-        presubmit_test(
             name="pull-kops-e2e-aws-load-balancer-controller",
             cloud="aws",
             distro="u2204",
