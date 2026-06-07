@@ -584,9 +584,13 @@ def generate_grid():
                             # v3.31 felix also binds the kube-proxy healthz port,
                             # so kube-proxy must be disabled to avoid the conflict.
                             # https://docs.tigera.io/calico-enterprise/latest/operations/ebpf/install#disable-kube-proxy-or-avoid-conflicts
+                            # Felix's iptables-nft dataplane goes through the
+                            # nft_compat shim on these distros and loses BGP
+                            # session state; switch Felix to native nftables.
                             extra_flags.extend([
                                 "--set=cluster.spec.kubeProxy.enabled=false",
                                 "--set=cluster.spec.networking.calico.bpfEnabled=true",
+                                "--set=cluster.spec.networking.calico.nftablesMode=Enabled",
                             ])
                         else:
                             # https://github.com/kubernetes/kops/issues/17915
@@ -635,9 +639,13 @@ def generate_grid():
                             # v3.31 felix also binds the kube-proxy healthz port,
                             # so kube-proxy must be disabled to avoid the conflict.
                             # https://docs.tigera.io/calico-enterprise/latest/operations/ebpf/install#disable-kube-proxy-or-avoid-conflicts
+                            # Felix's iptables-nft dataplane goes through the
+                            # nft_compat shim on these distros and loses BGP
+                            # session state; switch Felix to native nftables.
                             extra_flags.extend([
                                 "--set=cluster.spec.kubeProxy.enabled=false",
                                 "--set=cluster.spec.networking.calico.bpfEnabled=true",
+                                "--set=cluster.spec.networking.calico.nftablesMode=Enabled",
                             ])
                         else:
                             # https://github.com/kubernetes/kops/issues/17915
