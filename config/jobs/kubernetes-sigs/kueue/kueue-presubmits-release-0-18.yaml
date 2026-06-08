@@ -58,10 +58,10 @@ presubmits:
             resources:
               requests:
                 cpu: "7"
-                memory: "10Gi"
+                memory: "14Gi"
               limits:
                 cpu: "7"
-                memory: "10Gi"
+                memory: "14Gi"
     - name: pull-kueue-test-integration-shard-1-release-0-18
       cluster: eks-prow-build-cluster
       branches:
