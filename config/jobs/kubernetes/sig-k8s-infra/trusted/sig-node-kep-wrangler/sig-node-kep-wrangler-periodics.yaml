@@ -35,5 +35,5 @@ periodics:
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:
-              name: sig-node-kep-wrangler-github-token
+              name: k8s-triage-robot-github-token
               key: token
