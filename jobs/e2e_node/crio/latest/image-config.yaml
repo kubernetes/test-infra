@@ -1,3 +1,6 @@
+# In contrast to the containerd image-config.yaml, this config
+# tests only one OS. Please keep it that way, some jobs depend on it
+# to avoid running the same test multiple times per job.
 images:
   fedora:
     image_family: fedora-coreos-stable
