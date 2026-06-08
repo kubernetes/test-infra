@@ -102,7 +102,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: cypress/base:24.13.0
+      - image: cypress/base:24.15.0
         command:
         - /bin/bash
         - -c
