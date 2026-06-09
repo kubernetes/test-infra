@@ -93,6 +93,8 @@ periodics:
         value: "false"
       - name: PROMETHEUS_SCRAPE_KUBELETS
         value: "true"
+      - name: CL2_PROMETHEUS_KUBELET_KEEP_ONLY_DRA
+        value: "true"
       - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
         value: "false"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
@@ -210,6 +212,8 @@ periodics:
         value: "false"
       - name: PROMETHEUS_SCRAPE_KUBELETS
         value: "true"
+      - name: CL2_PROMETHEUS_KUBELET_KEEP_ONLY_DRA
+        value: "true"
       - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
         value: "false"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
@@ -301,6 +305,8 @@ presubmits:
         - name: TEAR_DOWN_PROMETHEUS_SERVER
           value: "false"
         - name: PROMETHEUS_SCRAPE_KUBELETS
+          value: "true"
+        - name: CL2_PROMETHEUS_KUBELET_KEEP_ONLY_DRA
           value: "true"
         - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
           value: "false"
