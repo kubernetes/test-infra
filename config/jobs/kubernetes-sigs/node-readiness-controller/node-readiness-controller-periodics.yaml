@@ -17,6 +17,8 @@ periodics:
     labels:
       preset-dind-enabled: "true"
     decorate: true
+    decoration_config:
+      timeout: 2h
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
@@ -55,6 +57,8 @@ periodics:
     labels:
       preset-dind-enabled: "true"
     decorate: true
+    decoration_config:
+      timeout: 2h
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
@@ -93,6 +97,8 @@ periodics:
     labels:
       preset-dind-enabled: "true"
     decorate: true
+    decoration_config:
+      timeout: 2h
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
@@ -131,6 +137,8 @@ periodics:
     labels:
       preset-dind-enabled: "true"
     decorate: true
+    decoration_config:
+      timeout: 2h
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260525-f8de63d82b-master
