@@ -29,9 +29,8 @@ prow_ignored:
           apiVersion: "v1alpha2"
         - version: "9.1"
           apiVersion: "v1alpha2"
-        # This version is tested by default
-        # - version: "9.1"
-        #   apiVersion: "v1alpha5"
+        - version: "9.1"
+          apiVersion: "v1alpha5"
         - version: "9.2"
           apiVersion: "v1alpha2"
         - version: "9.2"
