@@ -1,0 +1,49 @@
+postsubmits:
+  kubernetes-sigs/maintainer-tools:
+    - name: post-maintainer-tools-push-antigravity-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
+        testgrid-tab-name: post-maintainer-tools-push-antigravity-image
+      decorate: true
+      run_if_changed: '^images/antigravity/'
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-infra-tools
+              - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - images/antigravity
+
+periodics:
+  - name: periodic-maintainer-tools-push-antigravity-image
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    interval: 24h
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: maintainer-tools
+        base_ref: main
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-infra-tools
+            - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - images/antigravity
+          env:
+            - name: PULL_BASE_REF
+              value: main
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-gcb
+      testgrid-tab-name: periodic-maintainer-tools-push-antigravity-image
