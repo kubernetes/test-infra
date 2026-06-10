@@ -1397,7 +1397,7 @@ periodics:
 - cron: '1 5 * * 2,6' # Run twice a week at 21:01 PST (05:01 UTC)
   name: ci-kubernetes-e2e-gce-scale-performance-5000-experimental
   tags:
-  - "perfDashPrefix: gce-5000Nodes-1.5GB-pods"
+  - "perfDashPrefix: gce-5000Nodes-experimental"
   - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: k8s-infra-prow-build
