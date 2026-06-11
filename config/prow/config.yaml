@@ -881,6 +881,7 @@ tide:
     kubernetes-sigs/agent-sandbox: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
+    kubernetes-sigs/devops-bench: squash
     kubernetes-sigs/external-dns: squash
     kubernetes-sigs/ibm-vpc-block-csi-driver: squash
     kubernetes-sigs/ingate: squash
@@ -892,6 +893,7 @@ tide:
     kubernetes-sigs/krew: squash
     kubernetes-sigs/kro: rebase
     kubernetes-sigs/kube-agentic-networking: squash
+    kubernetes-sigs/kube-agents: squash
     kubernetes-sigs/kubespray: squash
     kubernetes-sigs/kueue: squash
     kubernetes-sigs/kui: rebase
