@@ -1825,3 +1825,43 @@ periodics:
             limits:
               cpu: "7"
               memory: "10Gi"
+  - interval: 24h
+    name: periodic-ray-project-mini-image-build-push
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-ray-mini-image-build-push
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic RayMini image build push"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260127-c1affcc8de
+          env:
+            - name: DOCKER_BUILDX_CMD
+              value: "/buildx-entrypoint"
+          args:
+            - make
+            - ray-project-mini-image-build-push
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
+              memory: "10Gi"
