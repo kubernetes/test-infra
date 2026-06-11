@@ -21,7 +21,6 @@ image = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v
 
 k8s_versions = [
     "master",
-    "1.32",
     "1.33",
     "1.34",
     "1.35",
