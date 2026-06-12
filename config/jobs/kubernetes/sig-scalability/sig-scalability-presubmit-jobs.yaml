@@ -451,6 +451,8 @@ presubmits:
         securityContext:
           privileged: true
         env:
+        - name: KUBE_FEATURE_GATES
+          value: "+EtcdRangeStream"
         - name: CL2_ENABLE_INFORMER_LATENCY_TEST
           value: "true"
         - name: CL2_RESTART_APISERVER
