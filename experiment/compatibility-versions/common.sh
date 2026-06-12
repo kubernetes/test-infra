@@ -182,8 +182,10 @@ EOF
   # actually create the cluster
   # TODO(BenTheElder): settle on verbosity for this script
   KIND_CREATE_ATTEMPTED=true
+  local node_image="kindest/node:v${PREV_VERSION}-ci"
+  kind build node-image "ci/latest-${PREV_VERSION}" --image "${node_image}"
   kind create cluster \
-    --image="kindest/node:v${PREV_VERSION}.0" \
+    --image="${node_image}" \
     --retain \
     --wait=1m \
     -v=3 \
