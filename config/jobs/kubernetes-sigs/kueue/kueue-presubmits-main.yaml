@@ -1758,3 +1758,35 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
+    - name: pull-kueue-test-large-scale-scheduling-perf-main
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^main
+      decorate: true
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-large-scale-scheduling-perf-main
+        description: "Run kueue test-large-scale-scheduling-perf on demand"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.26
+            command:
+              - make
+            args:
+              - test-large-scale-performance-scheduler
+            env:
+              - name: GOMAXPROCS
+                value: "7"
+            resources:
+              requests:
+                cpu: "7"
+                memory: "26Gi"
+              limits:
+                cpu: "7"
+                memory: "26Gi"
