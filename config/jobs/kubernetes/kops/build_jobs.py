@@ -546,9 +546,6 @@ def generate_grid():
                         continue
                     extra_flags = []
                     if 'arm64' in distro:
-                        extra_flags.extend([
-                            "--zones=eu-west-1a",
-                        ])
                         if networking in ['cilium-eni', 'amazon-vpc']:
                             extra_flags.extend([
                                 "--node-size=t4g.large",
