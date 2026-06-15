@@ -72,7 +72,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-eks-pod-identity
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-cni-cilium-k8s-ci
   cron: '5 15-23/24 * * *'
   labels:
@@ -102,7 +102,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=cilium --zones=eu-central-1a --node-size=m6g.large --control-plane-size=m6g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -131,7 +131,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --control-plane-size=m6g.large
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -208,7 +208,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-cni-cilium-k8s-ci
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --dns=public --bastion --zones=us-west-2a", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --dns=public --bastion", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-cni-calico-ipv6
   cron: '29 0-23/8 * * *'
   labels:
@@ -238,7 +238,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=calico --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=calico --ipv6 --topology=private --dns=public --bastion" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -265,7 +265,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a
+    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --dns=public --bastion
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -274,7 +274,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-calico-ipv6
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --dns=public --bastion --zones=us-west-2a", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --dns=public --bastion", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-cni-cilium-ipv6
   cron: '22 3-23/8 * * *'
   labels:
@@ -304,7 +304,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=cilium --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=cilium --ipv6 --topology=private --dns=public --bastion" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -331,7 +331,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a
+    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --dns=public --bastion
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -340,7 +340,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-cilium-ipv6
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --dns=public --bastion --zones=us-west-2a", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --dns=public --bastion", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-cni-kindnet-ipv6
   cron: '17 3-23/8 * * *'
   labels:
@@ -370,7 +370,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=kindnet --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=kindnet --ipv6 --topology=private --dns=public --bastion" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -397,7 +397,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a
+    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --dns=public --bastion
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -606,7 +606,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-warm-pool
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=us-west-1a --dns=public", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--dns=public", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-scenario-terraform
   cron: '5 13-23/24 * * *'
   labels:
@@ -636,7 +636,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=cilium --zones=us-west-1a --dns=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=cilium --dns=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --terraform-version=1.5.5 \
@@ -664,7 +664,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --zones=us-west-1a --dns=public
+    test.kops.k8s.io/extra_flags: --dns=public
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -673,7 +673,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-scenario-terraform
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-1a --dns=public", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion --dns=public", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-scenario-ipv6-terraform
   cron: '17 23-23/24 * * *'
   labels:
@@ -703,7 +703,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --zones=us-west-1a --dns=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --dns=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --terraform-version=1.5.5 \
@@ -731,7 +731,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --zones=us-west-1a --dns=public
+    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --dns=public
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -740,7 +740,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-scenario-ipv6-terraform
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--control-plane-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--control-plane-count=3", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-ha-euwest1
   cron: '10 5-23/8 * * *'
   labels:
@@ -770,7 +770,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=calico --control-plane-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=calico --control-plane-count=3" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -797,7 +797,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --control-plane-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c
+    test.kops.k8s.io/extra_flags: --control-plane-count=3
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest

@@ -266,7 +266,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-u2204
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-u2204arm64
   cron: '16 2-23/8 * * *'
   labels:
@@ -296,7 +296,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20260602' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20260602' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -323,7 +323,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -398,7 +398,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-u2404
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-u2404arm64
   cron: '7 5-23/8 * * *'
   labels:
@@ -428,7 +428,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260604' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -455,7 +455,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -530,7 +530,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-u2510
 
-# {"cloud": "aws", "distro": "u2510arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "aws", "distro": "u2510arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-u2510arm64
   cron: '51 1-23/8 * * *'
   labels:
@@ -560,7 +560,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-20260603' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-20260603' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -587,7 +587,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2510arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -662,7 +662,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-u2604
 
-# {"cloud": "aws", "distro": "u2604arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "aws", "distro": "u2604arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-u2604arm64
   cron: '38 0-23/8 * * *'
   labels:
@@ -692,7 +692,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-arm64-server-20260604' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-arm64-server-20260604' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -719,7 +719,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2604arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -794,7 +794,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-al2023
 
-# {"cloud": "aws", "distro": "al2023arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "aws", "distro": "al2023arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-al2023arm64
   cron: '55 7-23/8 * * *'
   labels:
@@ -824,7 +824,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.11.20260526.0-kernel-6.12-arm64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
+          --create-args="--image='137112412989/al2023-ami-2023.11.20260526.0-kernel-6.12-arm64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -851,7 +851,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: al2023arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -926,7 +926,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-rhel9
 
-# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-rhel10arm64
   cron: '18 2-23/8 * * *'
   labels:
@@ -956,7 +956,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-10.1.0_HVM-20260513-arm64-0-Hourly2-GP3' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
+          --create-args="--image='309956199498/RHEL-10.1.0_HVM-20260513-arm64-0-Hourly2-GP3' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -983,7 +983,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel10arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -1058,7 +1058,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-rocky9
 
-# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-rocky10arm64
   cron: '32 5-23/8 * * *'
   labels:
@@ -1088,7 +1088,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1115,7 +1115,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --zones=eu-west-1a --node-size=m6g.large --control-plane-size=m6g.large
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
