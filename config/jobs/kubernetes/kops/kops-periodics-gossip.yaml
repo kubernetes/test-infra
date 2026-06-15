@@ -49,7 +49,7 @@ periodics:
         value: "TRUE"
       - name: KOPS_DNS_DOMAIN
         value: "k8s.local"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -114,7 +114,7 @@ periodics:
         value: "TRUE"
       - name: KOPS_DNS_DOMAIN
         value: "k8s.local"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -183,7 +183,7 @@ periodics:
         value: "TRUE"
       - name: KOPS_DNS_DOMAIN
         value: "k8s.local"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -249,7 +249,7 @@ periodics:
         value: "TRUE"
       - name: KOPS_DNS_DOMAIN
         value: "k8s.local"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -317,7 +317,7 @@ periodics:
         value: "TRUE"
       - name: KOPS_DNS_DOMAIN
         value: "k8s.local"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -382,7 +382,7 @@ periodics:
         value: "TRUE"
       - name: KOPS_DNS_DOMAIN
         value: "k8s.local"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -451,7 +451,7 @@ periodics:
         value: "TRUE"
       - name: KOPS_DNS_DOMAIN
         value: "k8s.local"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -517,7 +517,7 @@ periodics:
         value: "TRUE"
       - name: KOPS_DNS_DOMAIN
         value: "k8s.local"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
       imagePullPolicy: Always
       resources:
         limits:
