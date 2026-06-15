@@ -23,7 +23,7 @@ periodics:
   spec:
     serviceAccountName: gsuite-groups-manager
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260601-2cbf4bdb47-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
       command:
       - runner.sh
       args:
@@ -65,7 +65,7 @@ postsubmits:
     spec:
       serviceAccountName: gsuite-groups-manager
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
         command:
         - runner.sh
         args:
