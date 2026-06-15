@@ -546,9 +546,6 @@ def generate_grid():
                         continue
                     extra_flags = []
                     if 'arm64' in distro:
-                        extra_flags.extend([
-                            "--zones=eu-west-1a",
-                        ])
                         if networking in ['cilium-eni', 'amazon-vpc']:
                             extra_flags.extend([
                                 "--node-size=t4g.large",
@@ -564,7 +561,7 @@ def generate_grid():
                     if networking == 'amazon-vpc':
                         extra_flags.extend(AMAZON_VPC_ENV_FLAGS)
                     # extraConfig field added in kops 1.34; older versions reject the --set.
-                    if networking == 'cilium-eni' and kops_version not in ('1.32', '1.33'):
+                    if networking == 'cilium-eni' and kops_version != '1.33':
                         extra_flags.extend(CILIUM_ENI_EXTRA_CONFIG_FLAGS)
                     if networking == 'kubenet':
                         extra_flags.extend([

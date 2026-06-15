@@ -17,7 +17,7 @@ periodics:
       - --exclude-tags=Shared=Ignore
       - --enable-target-group-clean=true
       - --clean-ecr-repositories=aws-ebs-csi-driver
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260519-f0a76c5
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260609-3563df0
       resources:
         requests:
           cpu: 1
@@ -47,7 +47,7 @@ periodics:
       - --path=s3://k8s-kops-prow/objs.json
       - --exclude-tags=Shared=Ignore
       - --clean-ecr-repositories=aws-ebs-csi-driver
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260519-f0a76c5
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260609-3563df0
       resources:
         requests:
           cpu: 1
@@ -77,7 +77,7 @@ periodics:
       # managed-by=Terraform covers its TF-managed resources
       # eks:cluster-name covers the node-group ASG (EKS tags it eks:* but not managed-by=Terraform)
       - --exclude-tags=managed-by=Terraform,eks:cluster-name=k8s-infra-kops-prow-build
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260519-f0a76c5
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260609-3563df0
       resources:
         requests:
           cpu: 1

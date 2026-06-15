@@ -36,7 +36,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
         command:
         - runner.sh
         args:
@@ -60,6 +60,8 @@ presubmits:
           value: gce
         - name: KUBE_NODE_COUNT
           value: "100"
+        - name: ETCD_VERSION
+          value: "3.7.0-rc.0"
         - name: CL2_LOAD_TEST_THROUGHPUT
           value: "50"
         - name: CL2_DELETE_TEST_THROUGHPUT

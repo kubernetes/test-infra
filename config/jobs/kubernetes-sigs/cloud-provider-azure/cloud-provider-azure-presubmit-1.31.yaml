@@ -12,7 +12,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
         command:
         - runner.sh
         args:
@@ -53,7 +53,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -118,7 +118,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -181,7 +181,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -239,7 +239,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
         command:
         - runner.sh
         args:
@@ -313,7 +313,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
         command:
         - runner.sh
         args:
@@ -374,7 +374,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
         command:
         - runner.sh
         args:
@@ -408,13 +408,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.21
+      base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
         command:
         - runner.sh
         args:
@@ -467,13 +467,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.21
+      base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
         command:
         - runner.sh
         args:
@@ -528,13 +528,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.21
+      base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -559,7 +559,7 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-ipv6.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/main/templates/test/ci/cluster-template-prow-ipv6.yaml
         resources:
           limits:
             cpu: 4
@@ -588,13 +588,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.21
+      base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -621,7 +621,7 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-dual-stack.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/main/templates/test/ci/cluster-template-prow-dual-stack.yaml
         resources:
           limits:
             cpu: 4

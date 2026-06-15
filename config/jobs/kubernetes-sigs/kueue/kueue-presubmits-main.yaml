@@ -181,7 +181,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.33"
@@ -221,7 +221,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.33"
@@ -261,7 +261,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.33"
@@ -301,7 +301,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.33"
@@ -341,7 +341,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.34"
@@ -381,7 +381,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.34"
@@ -421,7 +421,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.34"
@@ -461,7 +461,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.34"
@@ -501,7 +501,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -541,7 +541,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -581,7 +581,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -621,7 +621,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -661,7 +661,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.36"
@@ -701,7 +701,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.36"
@@ -741,7 +741,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.36"
@@ -781,7 +781,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.36"
@@ -821,7 +821,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -844,7 +844,7 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-multikueue-extended-main
+    - name: pull-kueue-test-e2e-multikueue-extended-shard-0-main
       cluster: eks-prow-build-cluster
       branches:
         - ^main
@@ -855,13 +855,13 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-main
-        description: "Run extended multikueue end to end tests"
+        testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-shard-0-main
+        description: "Run extended multikueue end to end tests shard 0"
       labels:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -873,7 +873,45 @@ presubmits:
             args:
               - make
               - kind-image-build
-              - test-multikueue-e2e-extended
+              - test-multikueue-e2e-extended-shard-0
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "7"
+                memory: "10Gi"
+              limits:
+                cpu: "7"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-multikueue-extended-shard-1-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-shard-1-main
+        description: "Run extended multikueue end to end tests shard 1"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
+            env:
+              - name: E2E_K8S_VERSION
+                value: "1.35"
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-multikueue-e2e-extended-shard-1
             # docker-in-docker needs privileged mode
             securityContext:
               privileged: true
@@ -901,7 +939,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -941,7 +979,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -981,7 +1019,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1021,7 +1059,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1061,7 +1099,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1101,7 +1139,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1141,7 +1179,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1182,7 +1220,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1222,7 +1260,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1262,7 +1300,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1302,7 +1340,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1342,7 +1380,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1382,7 +1420,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1422,7 +1460,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1462,7 +1500,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1502,7 +1540,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             securityContext:
               privileged: true
             command:
@@ -1537,7 +1575,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             securityContext:
               privileged: true
             command:
@@ -1638,7 +1676,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             securityContext:
               privileged: true
             command:
@@ -1735,7 +1773,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -1837,7 +1875,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
             env:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
@@ -1890,3 +1928,35 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "26Gi"
+    - name: pull-kueue-verify-ci-build-times-main
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^main
+      decorate: true
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-verify-ci-build-times-main
+        description: "Run kueue verify-ci-build-times on demand"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - verify-ci-build-times
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6"
+                memory: "6Gi"
+              limits:
+                cpu: "6"
+                memory: "6Gi"
