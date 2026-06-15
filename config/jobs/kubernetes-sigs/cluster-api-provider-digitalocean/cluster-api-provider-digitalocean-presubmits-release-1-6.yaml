@@ -10,7 +10,7 @@ presubmits:
         - ^release-1.6$
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
             command:
               - "./scripts/ci-test.sh"
             resources:
@@ -33,7 +33,7 @@ presubmits:
         - ^release-1.6$
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
             command:
               - "./scripts/ci-build.sh"
             resources:
@@ -56,7 +56,7 @@ presubmits:
         - ^release-1.6$
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
             command:
               - make
             args:
@@ -87,7 +87,7 @@ presubmits:
         - ^release-1.6$
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
             command:
               - "runner.sh"
               - "./scripts/ci-e2e.sh"
@@ -119,7 +119,7 @@ presubmits:
         - ^release-1.6$
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
             command:
               - "runner.sh"
               - "./scripts/ci-e2e.sh"
@@ -155,7 +155,7 @@ presubmits:
         timeout: 5h
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
             args:
               - runner.sh
               - "./scripts/ci-e2e.sh"
@@ -191,7 +191,7 @@ presubmits:
         - ^release-1.6$
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
             command:
               - "runner.sh"
               - "./scripts/ci-conformance.sh"
@@ -223,7 +223,7 @@ presubmits:
         - ^release-1.6$
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
             command:
               - "runner.sh"
               - "./scripts/ci-conformance.sh"

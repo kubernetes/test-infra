@@ -541,7 +541,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-b4199512ce-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
       command:
       - runner.sh
       args:
@@ -604,7 +604,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-3a0903c5fd-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
       command:
       - runner.sh
       args:
