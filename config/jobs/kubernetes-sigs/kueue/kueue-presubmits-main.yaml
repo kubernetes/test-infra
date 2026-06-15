@@ -6,6 +6,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -36,6 +38,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -68,6 +72,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -100,6 +106,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -132,6 +140,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -160,6 +170,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -198,6 +210,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -236,6 +250,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -274,6 +290,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -312,6 +330,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -350,6 +370,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -388,6 +410,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -426,6 +450,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -464,6 +490,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -502,6 +530,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -540,6 +570,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -578,6 +610,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -616,6 +650,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -654,6 +690,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -692,6 +730,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -730,6 +770,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -768,6 +810,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -806,6 +850,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -882,6 +928,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -920,6 +968,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -958,6 +1008,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -996,6 +1048,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1034,6 +1088,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1072,6 +1128,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1110,6 +1168,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1149,6 +1209,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1187,6 +1249,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1225,6 +1289,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1263,6 +1329,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1301,6 +1369,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1339,6 +1409,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1377,6 +1449,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1415,6 +1489,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1453,6 +1529,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|^(README|LICENSE|OWNERS)$"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1486,6 +1564,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1525,6 +1605,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1553,6 +1635,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1581,6 +1665,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1614,6 +1700,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1644,6 +1732,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1672,6 +1762,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1709,6 +1801,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1739,6 +1833,8 @@ presubmits:
         - ^main
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1768,6 +1864,8 @@ presubmits:
       branches:
         - ^main
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1803,6 +1901,8 @@ presubmits:
       branches:
         - ^main
       decorate: true
+      decoration_config:
+        pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
