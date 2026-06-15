@@ -693,8 +693,7 @@ def generate_misc():
                    k8s_version="ci",
                    networking="cilium",
                    runs_per_day=1,
-                   extra_flags=["--zones=eu-central-1a",
-                                "--node-size=m6g.large",
+                   extra_flags=["--node-size=m6g.large",
                                 "--control-plane-size=m6g.large"],
                    extra_dashboards=['kops-network-plugins']),
         build_test(name_override="kops-gce-cni-cilium-k8s-ci",
@@ -716,7 +715,6 @@ def generate_misc():
                                 '--topology=private',
                                 '--dns=public',
                                 '--bastion',
-                                '--zones=us-west-2a',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
         # A special test for IPv6 using Cilium CNI
@@ -730,7 +728,6 @@ def generate_misc():
                                 '--topology=private',
                                 '--dns=public',
                                 '--bastion',
-                                '--zones=us-west-2a',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
         # A special test for IPv6 using Kindnet CNI
@@ -744,7 +741,6 @@ def generate_misc():
                                 '--topology=private',
                                 '--dns=public',
                                 '--bastion',
-                                '--zones=us-west-2a',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
         # A special test for IPv6 on Flatcar
@@ -792,7 +788,6 @@ def generate_misc():
                    runs_per_day=1,
                    terraform_version="1.5.5",
                    extra_flags=[
-                       "--zones=us-west-1a",
                        "--dns=public",
                    ],
                    extra_dashboards=['kops-misc']),
@@ -806,7 +801,6 @@ def generate_misc():
                        '--ipv6',
                        '--topology=private',
                        '--bastion',
-                       "--zones=us-west-1a",
                        "--dns=public",
                    ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
@@ -820,7 +814,6 @@ def generate_misc():
                    runs_per_day=3,
                    extra_flags=[
                        "--control-plane-count=3",
-                       "--zones=eu-west-1a,eu-west-1b,eu-west-1c"
                    ],
                    extra_dashboards=["kops-misc"]),
 
@@ -1408,8 +1401,7 @@ def generate_conformance():
                 name_override=f"kops-aws-conformance-{version.replace('.', '-')}",
                 networking='calico',
                 distro="u2404",
-                extra_flags=["--zones=eu-central-1a",
-                             "--node-size=t3.large",
+                extra_flags=["--node-size=t3.large",
                              "--control-plane-size=t3.large"],
                 test_parallelism=1,
                 test_timeout_minutes=150,
@@ -1427,8 +1419,7 @@ def generate_conformance():
                 name_override=f"kops-aws-conformance-arm64-{version.replace('.', '-')}",
                 networking='calico',
                 distro="u2404arm64",
-                extra_flags=["--zones=eu-central-1a",
-                             "--node-size=t4g.large",
+                extra_flags=["--node-size=t4g.large",
                              "--control-plane-size=t4g.large"],
                 test_parallelism=1,
                 test_timeout_minutes=150,
@@ -1480,7 +1471,6 @@ def generate_distros():
         extra_flags = []
         if 'arm64' in distro:
             extra_flags.extend([
-                "--zones=eu-west-1a",
                 "--node-size=m6g.large",
                 "--control-plane-size=m6g.large"
             ])
@@ -1511,7 +1501,6 @@ def generate_presubmits_distros():
         extra_flags = []
         if 'arm64' in distro:
             extra_flags.extend([
-                "--zones=eu-west-1a",
                 "--node-size=m6g.large",
                 "--control-plane-size=m6g.large"
             ])
@@ -2077,7 +2066,6 @@ def generate_nftables():
         extra_flags = ["--set=cluster.spec.kubeProxy.proxyMode=nftables"]
         if 'arm64' in distro:
             extra_flags.extend([
-                "--zones=eu-west-1a",
                 "--node-size=m6g.large",
                 "--control-plane-size=m6g.large"
             ])
@@ -2299,7 +2287,6 @@ def generate_presubmits_network_plugins():
                     extra_flags=['--ipv6',
                                  '--topology=private',
                                  '--bastion',
-                                 '--zones=us-west-2a',
                                  '--dns=public',
                                  ],
                     run_if_changed=run_if_changed,
@@ -2332,8 +2319,7 @@ def generate_presubmits_e2e():
             networking='calico',
             extra_flags=[
                 "--control-plane-count=3",
-                "--node-count=6",
-                "--zones=eu-central-1a,eu-central-1b,eu-central-1c"],
+                "--node-count=6"],
             tab_name='e2e-containerd-ci-ha',
             always_run=False,
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
@@ -2559,8 +2545,7 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro="u2404arm64",
             networking="calico",
-            extra_flags=["--zones=eu-central-1a",
-                         "--node-size=m6g.large",
+            extra_flags=["--node-size=m6g.large",
                          "--control-plane-size=m6g.large"],
         ),
 
