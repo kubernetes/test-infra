@@ -1828,3 +1828,35 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "26Gi"
+    - name: pull-kueue-verify-ci-build-times-main
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^main
+      decorate: true
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-verify-ci-build-times-main
+        description: "Run kueue verify-ci-build-times on demand"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260601-2cbf4bdb47-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - verify-ci-build-times
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6"
+                memory: "6Gi"
+              limits:
+                cpu: "6"
+                memory: "6Gi"
