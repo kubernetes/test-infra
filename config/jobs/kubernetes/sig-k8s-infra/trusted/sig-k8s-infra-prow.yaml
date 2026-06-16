@@ -94,7 +94,7 @@ periodics:
       slug: test-infra-admins
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260615-351e8cfd5
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260616-0f4e9fead
       command:
       - generic-autobumper
       args:
@@ -137,7 +137,7 @@ periodics:
       slug: test-infra-admins
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260615-351e8cfd5
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260616-0f4e9fead
       command:
       - generic-autobumper
       args:
