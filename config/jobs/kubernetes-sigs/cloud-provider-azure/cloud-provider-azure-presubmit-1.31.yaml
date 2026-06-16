@@ -559,7 +559,7 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/main/templates/test/ci/cluster-template-prow-ipv6.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6.yaml
         resources:
           limits:
             cpu: 4
@@ -621,7 +621,7 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/main/templates/test/ci/cluster-template-prow-dual-stack.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack.yaml
         resources:
           limits:
             cpu: 4
