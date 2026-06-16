@@ -1587,7 +1587,6 @@ periodics:
             limits:
               cpu: "7"
               memory: "10Gi"
-
   - interval: 12h
     name: periodic-kueue-test-e2e-sequential-extended-shard-0-main
     cluster: eks-prow-build-cluster

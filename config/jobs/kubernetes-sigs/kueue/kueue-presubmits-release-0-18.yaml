@@ -7,6 +7,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -39,6 +40,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -73,6 +75,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -107,6 +110,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -141,6 +145,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -171,6 +176,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -211,6 +217,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -251,6 +258,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -291,6 +299,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -331,6 +340,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -371,6 +381,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -411,6 +422,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -451,6 +463,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -491,6 +504,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -531,6 +545,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -571,6 +586,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -611,6 +627,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -651,6 +668,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -691,6 +709,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -731,6 +750,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -771,6 +791,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -811,6 +832,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -851,6 +873,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -891,6 +914,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -931,6 +955,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -971,6 +996,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1011,6 +1037,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1051,6 +1078,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1091,6 +1119,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1131,6 +1160,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1171,6 +1201,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1211,6 +1242,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1251,6 +1283,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1291,6 +1324,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1331,6 +1365,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1371,6 +1406,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1411,6 +1447,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1451,6 +1488,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1491,6 +1529,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1531,6 +1570,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|^(README|LICENSE|OWNERS)$"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1566,6 +1606,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1607,6 +1648,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1637,6 +1679,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1667,6 +1710,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1702,6 +1746,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1734,6 +1779,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1764,6 +1810,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1803,6 +1850,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1835,6 +1883,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
@@ -1866,6 +1915,7 @@ presubmits:
         - ^release-0.18
       decorate: true
       decoration_config:
+        timeout: 1h
         pod_unscheduled_timeout: 10m
       path_alias: sigs.k8s.io/kueue
       annotations:
