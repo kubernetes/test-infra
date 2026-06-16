@@ -84,13 +84,6 @@ presubmits:
       repo: containerd
       base_ref: release/2.1
     {%- endif %}
-    {%- if job_type == "node" and canary %}
-    # This ref enables testing https://github.com/kubernetes-sigs/kubetest2/pull/338 before it gets merged.
-    - org: pohly
-      repo: kubetest2
-      base_ref: node-prebuilt-binaries
-      path_alias: sigs.k8s.io/kubetest2
-    {%- endif %}
     {%- endif %}
     spec:
       containers:
@@ -100,33 +93,21 @@ presubmits:
 
         {%- if job_type == "node" %}
         args:
-        {%- if canary %}
-        - /bin/bash
-        - -xce
-        - |
-          go install -C ${GOPATH}/src/sigs.k8s.io/kubetest2 . ./kubetest2-tester-node ./kubetest2-noop
-          kubetest2 noop --test=node -- \
-             {%- if all_features %}
-             --use-binaries-from-package \
-             --test-package-url=https://dl.k8s.io \
-             --test-package-dir=ci/fast \
-             --test-package-marker=latest-fast.txt \
-             {%- else %}
-             --build-binaries \
-             --repo-root=. \
-             {%- endif %}
-             --gcp-zone=us-central1-b \
-             --parallelism=1 \
-             --label-filter='DRA && Feature: isSubsetOf { {% if all_features %}OffByDefault,{% endif -%} DynamicResourceAllocation } && !Flaky {%- if not ci %} && !Slow {%- endif %}' \
-             --timeout={{e2e_node_timeout}} \
-             --test-args='{% if all_features -%} --feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true {% endif -%} --container-runtime-endpoint=unix:///var/run/{{runtime}}/{{runtime}}.sock --container-runtime-process-name=/usr/local/bin/{{runtime}} --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/{{runtime}}.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"{{runtime}}.log\", \"journalctl\": [\"-u\", \"{{runtime}}\"]}"' \
-             --image-config-file={{image_config_file}}
-        {%- else %}
         - kubetest2
         - noop
         - --test=node
         - --
+        {%- if not canary %}
         - --repo-root=.
+        {%- elif all_features %}
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
+        {%- else %}
+        - --build-binaries
+        - --repo-root=.
+        {%- endif %}
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { {% if all_features %}OffByDefault,{% endif -%} DynamicResourceAllocation } && !Flaky {%- if not ci %} && !Slow {%- endif %}'
@@ -134,7 +115,6 @@ presubmits:
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args={% if all_features -%} --feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true {% endif -%} --container-runtime-endpoint=unix:///var/run/{{runtime}}/{{runtime}}.sock --container-runtime-process-name=/usr/local/bin/{{runtime}} --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/{{runtime}}.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"{{runtime}}.log\", \"journalctl\": [\"-u\", \"{{runtime}}\"]}"'
         - --image-config-file={{image_config_file}}
-        {%- endif -%}
         {%- if inject_ssh_public_key %}
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
