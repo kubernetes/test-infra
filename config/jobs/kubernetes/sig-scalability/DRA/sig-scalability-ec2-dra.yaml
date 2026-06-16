@@ -50,7 +50,7 @@ periodics:
     description: "Uses kops to run k8s.io/perf-tests/run-e2e.sh against a 500-node AWS cluster with DRA enabled"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -159,7 +159,7 @@ periodics:
     description: "Uses kops to run k8s.io/perf-tests/run-e2e.sh against a 5000-node AWS cluster with DRA enabled"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -264,7 +264,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-ec2-500-node-dra-with-workload
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
         command:
         - runner.sh
         args:
