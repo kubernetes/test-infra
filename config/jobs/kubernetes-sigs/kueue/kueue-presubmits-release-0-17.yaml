@@ -62,10 +62,10 @@ presubmits:
             resources:
               requests:
                 cpu: "7"
-                memory: "10Gi"
+                memory: "12Gi"
               limits:
                 cpu: "7"
-                memory: "10Gi"
+                memory: "12Gi"
     - name: pull-kueue-test-integration-shard-1-release-0-17
       cluster: eks-prow-build-cluster
       branches:
@@ -96,10 +96,10 @@ presubmits:
             resources:
               requests:
                 cpu: "7"
-                memory: "10Gi"
+                memory: "12Gi"
               limits:
                 cpu: "7"
-                memory: "10Gi"
+                memory: "12Gi"
     - name: pull-kueue-test-integration-shard-2-release-0-17
       cluster: eks-prow-build-cluster
       branches:
@@ -130,10 +130,10 @@ presubmits:
             resources:
               requests:
                 cpu: "7"
-                memory: "10Gi"
+                memory: "12Gi"
               limits:
                 cpu: "7"
-                memory: "10Gi"
+                memory: "12Gi"
     - name: pull-kueue-test-integration-multikueue-release-0-17
       cluster: eks-prow-build-cluster
       branches:
