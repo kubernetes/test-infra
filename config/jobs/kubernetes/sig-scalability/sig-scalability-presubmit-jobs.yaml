@@ -118,7 +118,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
         command:
         - runner.sh
         args:
@@ -443,7 +443,7 @@ presubmits:
         - key: highmem
           operator: Exists
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
         command:
         - runner.sh
         args:
@@ -791,7 +791,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-test
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
         command:
         - verify/test.sh
         resources:
@@ -876,7 +876,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-100
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
         command:
         - runner.sh
         args:
@@ -959,7 +959,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-500
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
         command:
         - runner.sh
         args:
@@ -1043,7 +1043,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-5000
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
         command:
         - runner.sh
         args:
@@ -1127,7 +1127,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
         command:
         - runner.sh
         args:
@@ -1217,7 +1217,7 @@ presubmits:
         - key: highmem
           operator: Exists
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260615-ffb9a4e720-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
         command:
         - runner.sh
         args:
