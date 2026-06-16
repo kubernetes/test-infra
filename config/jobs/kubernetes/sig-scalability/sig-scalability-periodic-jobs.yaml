@@ -1439,6 +1439,8 @@ periodics:
       securityContext:
         privileged: true
       env:
+      - name: EXPERIMENT_VARIANT
+        value: "restart"
       - name: CL2_ENABLE_INFORMER_LATENCY_TEST
         value: "true"
       # Disabled: see https://github.com/kubernetes/test-infra/pull/37027
