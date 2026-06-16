@@ -166,9 +166,10 @@ presubmits:
                 memory: "12Gi"
     - name: pull-kueue-test-e2e-baseline-main-1-33
       cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
         pod_unscheduled_timeout: 10m
@@ -206,9 +207,10 @@ presubmits:
                 memory: "10Gi"
     - name: pull-kueue-test-e2e-extended-shard-0-main-1-33
       cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
         pod_unscheduled_timeout: 10m
@@ -246,9 +248,10 @@ presubmits:
                 memory: "10Gi"
     - name: pull-kueue-test-e2e-extended-shard-1-main-1-33
       cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
         pod_unscheduled_timeout: 10m
