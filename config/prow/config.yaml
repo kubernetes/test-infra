@@ -938,6 +938,9 @@ tide:
             from-branch-protection: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
+    # Disable batches: PRs fail when tested as a batch because of
+    # https://github.com/kubernetes/enhancements/blob/bf34c102c6428a56c792bbae92a5a1dc33c762d4/hack/verify-toc-vs-template.sh#L30
+    "kubernetes/enhancements": -1
   priority:
   - labels: [ "kind/flake", "priority/critical-urgent" ]
   - labels: [ "kind/failing-test", "priority/critical-urgent" ]
