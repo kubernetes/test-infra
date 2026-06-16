@@ -1232,6 +1232,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
+      pod_unscheduled_timeout: 10m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -1933,6 +1934,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
+      pod_unscheduled_timeout: 10m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
