@@ -27,3 +27,32 @@ periodics:
         limits:
           cpu: 7
           memory: 14Gi
+- name: periodic-agent-sandbox-migration-test
+  cluster: eks-prow-build-cluster
+  interval: 10m
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-apps-agent-sandbox
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: agent-sandbox
+    base_ref: feature/v1beta1-migrate
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
+      command:
+      - runner.sh
+      - dev/ci/periodics/test-migration
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7
+          memory: 14Gi
+        limits:
+          cpu: 7
+          memory: 14Gi
+
