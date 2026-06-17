@@ -5,6 +5,9 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-scheduling, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 180m
+        grace_period: 10m
       branches:
         - ^main$
         - ^release-
@@ -22,3 +25,31 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF
               - --with-git-dir
               - .
+
+periodics:
+  - interval: 24h
+    name: periodic-kueue-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-scheduling, sig-k8s-infra-gcb
+    decorate: true
+    decoration_config:
+      timeout: 180m
+      grace_period: 10m
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: sig.k8s.io/kueue
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-images
+            - --scratch-bucket=gs://k8s-staging-images-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - --with-git-dir
+            - .
