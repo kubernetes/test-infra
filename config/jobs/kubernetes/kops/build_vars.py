@@ -148,8 +148,6 @@ upgrade_versions_list = [
     ((kops34, "v1.34.7"), ("1.35", "v1.35.4")),
     ((kops35, "v1.35.4"), ("1.35", "v1.35.4")),
     # kOps 1.33 upgrade to latest
-    ((kops33, "v1.29.15"), ("latest", "v1.30.14")),
-    ((kops33, "v1.30.14"), ("latest", "v1.31.14")),
     ((kops33, "v1.31.14"), ("latest", "v1.32.13")),
     ((kops33, "v1.32.13"), ("latest", "v1.33.11")),
     # kOps 1.34 upgrade to latest
