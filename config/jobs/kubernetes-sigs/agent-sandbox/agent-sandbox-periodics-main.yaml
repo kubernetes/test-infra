@@ -55,4 +55,3 @@ periodics:
         limits:
           cpu: 7
           memory: 14Gi
-
