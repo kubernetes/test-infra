@@ -29,7 +29,7 @@ periodics:
           memory: 14Gi
 - name: periodic-agent-sandbox-migration-test
   cluster: eks-prow-build-cluster
-  interval: 10m
+  interval: 1h
   decorate: true
   annotations:
     testgrid-dashboards: sig-apps-agent-sandbox
