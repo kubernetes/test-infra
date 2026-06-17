@@ -23,6 +23,7 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kubernetes
+    extra_refs:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -112,6 +113,7 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kubernetes
+    extra_refs:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -217,6 +219,7 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kubernetes
+    extra_refs:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -323,6 +326,7 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kubernetes
+    extra_refs:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -462,6 +466,7 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kubernetes
+    extra_refs:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -601,6 +606,7 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kubernetes
+    extra_refs:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -740,6 +746,7 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kubernetes
+    extra_refs:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
