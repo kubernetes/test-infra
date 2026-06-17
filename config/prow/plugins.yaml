@@ -1765,6 +1765,7 @@ plugins:
     plugins:
     - milestone
     - milestonestatus
+    - override
     - release-note
 
   kubernetes-sigs/image-builder:
