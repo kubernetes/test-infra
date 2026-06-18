@@ -4,6 +4,8 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-scheduling, sig-k8s-infra-gcb
+        testgrid-alert-email: kueue-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
       decorate: true
       decoration_config:
         timeout: 180m
@@ -24,6 +26,7 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - --with-git-dir
+              - --gcb-config=cloudbuild.yaml
               - .
 
 periodics:
@@ -32,6 +35,8 @@ periodics:
     cluster: k8s-infra-prow-build-trusted
     annotations:
       testgrid-dashboards: sig-scheduling, sig-k8s-infra-gcb
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
     decorate: true
     decoration_config:
       timeout: 180m
@@ -52,4 +57,5 @@ periodics:
             - --scratch-bucket=gs://k8s-staging-images-gcb
             - --env-passthrough=PULL_BASE_REF
             - --with-git-dir
+            - --gcb-config=cloudbuild-periodic.yaml
             - .
