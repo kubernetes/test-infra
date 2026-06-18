@@ -200,6 +200,10 @@ optional_and_run_if_changed:
       run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     - name: pull-kubernetes-node-e2e-containerd-2-0-dra-alpha-beta-features
       run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
+    - name: pull-kubernetes-node-e2e-containerd-2-0-ubuntu-dra
+      run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
+    - name: pull-kubernetes-node-e2e-containerd-2-0-ubuntu-dra-alpha-beta-features
+      run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     - name: pull-kubernetes-node-kubelet-credential-provider
       run_if_changed: ^(pkg\/credentialprovider\/|test\/e2e_node\/plugins\/gcp-credential-provider)
     - name: pull-kubernetes-node-kubelet-serial-containerd
