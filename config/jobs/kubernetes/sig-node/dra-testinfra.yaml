@@ -24,11 +24,6 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/test-infra
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -39,7 +34,10 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
@@ -83,11 +81,6 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/test-infra
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -98,7 +91,10 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
@@ -135,11 +131,6 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/test-infra
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -150,7 +141,10 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
@@ -187,11 +181,6 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/test-infra
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -205,7 +194,10 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
@@ -242,11 +234,6 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/test-infra
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -260,7 +247,10 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'

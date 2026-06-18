@@ -783,6 +783,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -840,6 +841,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -850,10 +852,8 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --use-binaries-from-package
-        - --test-package-url=https://dl.k8s.io
-        - --test-package-dir=ci/fast
-        - --test-package-marker=latest-fast.txt
+        - --build-binaries
+        - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow'
@@ -899,6 +899,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -949,6 +950,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -999,6 +1001,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -1052,6 +1055,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -1105,6 +1109,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -1115,10 +1120,8 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --use-binaries-from-package
-        - --test-package-url=https://dl.k8s.io
-        - --test-package-dir=ci/fast
-        - --test-package-marker=latest-fast.txt
+        - --build-binaries
+        - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow'
@@ -1157,6 +1160,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -1167,10 +1171,8 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --use-binaries-from-package
-        - --test-package-url=https://dl.k8s.io
-        - --test-package-dir=ci/fast
-        - --test-package-marker=latest-fast.txt
+        - --build-binaries
+        - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow'
@@ -1209,6 +1211,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -1222,10 +1225,8 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --use-binaries-from-package
-        - --test-package-url=https://dl.k8s.io
-        - --test-package-dir=ci/fast
-        - --test-package-marker=latest-fast.txt
+        - --build-binaries
+        - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow'
@@ -1264,6 +1265,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -1277,10 +1279,8 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --use-binaries-from-package
-        - --test-package-url=https://dl.k8s.io
-        - --test-package-dir=ci/fast
-        - --test-package-marker=latest-fast.txt
+        - --build-binaries
+        - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow'

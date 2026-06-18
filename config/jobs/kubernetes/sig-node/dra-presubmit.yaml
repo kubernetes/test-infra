@@ -797,6 +797,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -807,6 +808,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --build-binaries
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
@@ -854,6 +856,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -864,6 +867,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --build-binaries
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
@@ -911,6 +915,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -921,6 +926,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --build-binaries
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
@@ -961,6 +967,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -971,6 +978,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --build-binaries
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
@@ -1012,6 +1020,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -1025,6 +1034,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --build-binaries
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
@@ -1065,6 +1075,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -1078,6 +1089,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --build-binaries
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
@@ -1118,6 +1130,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -1128,6 +1141,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --build-binaries
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
@@ -1168,6 +1182,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -1178,6 +1193,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --build-binaries
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
@@ -1219,6 +1235,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -1232,6 +1249,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --build-binaries
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
@@ -1272,6 +1290,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -1285,6 +1304,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --build-binaries
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1

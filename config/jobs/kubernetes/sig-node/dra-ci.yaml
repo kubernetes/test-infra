@@ -9,6 +9,8 @@ periodics:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-release-master-informing
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
@@ -100,6 +102,8 @@ periodics:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
       description: Runs E2E tests for Dynamic Resource Allocation alpha and beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
@@ -205,6 +209,8 @@ periodics:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the "current - 1" release.
@@ -331,6 +337,8 @@ periodics:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the "current - 2" release.
@@ -457,6 +465,8 @@ periodics:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the "current - 3" release.
@@ -583,6 +593,8 @@ periodics:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
       description: Runs integration tests for DRA which need some additional setup in the job.
@@ -631,6 +643,8 @@ periodics:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O
@@ -643,14 +657,10 @@ periodics:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -661,7 +671,10 @@ periodics:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
@@ -690,6 +703,8 @@ periodics:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o
       description: Runs all E2E node tests for Dynamic Resource Allocation features with CRI-O and with all feature gates enabled (including non-DRA feature gates)
@@ -699,14 +714,10 @@ periodics:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -717,7 +728,10 @@ periodics:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky'
@@ -746,6 +760,8 @@ periodics:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 1.7 on Ubuntu
@@ -758,14 +774,10 @@ periodics:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -776,7 +788,10 @@ periodics:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
@@ -798,6 +813,8 @@ periodics:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 1.7 on COS
@@ -810,14 +827,10 @@ periodics:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -828,7 +841,10 @@ periodics:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
@@ -850,6 +866,8 @@ periodics:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 2.1 on Ubuntu
@@ -862,14 +880,10 @@ periodics:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -883,7 +897,10 @@ periodics:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
@@ -905,6 +922,8 @@ periodics:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 2.1 on COS
@@ -917,14 +936,10 @@ periodics:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -938,7 +953,10 @@ periodics:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
@@ -960,6 +978,8 @@ periodics:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd
       description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 1.7 on Ubuntu and with all feature gates enabled (including non-DRA feature gates)
@@ -969,14 +989,10 @@ periodics:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -987,7 +1003,10 @@ periodics:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky'
@@ -1009,6 +1028,8 @@ periodics:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd
       description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 1.7 on COS and with all feature gates enabled (including non-DRA feature gates)
@@ -1018,14 +1039,10 @@ periodics:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
@@ -1036,7 +1053,10 @@ periodics:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky'
@@ -1058,6 +1078,8 @@ periodics:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd
       description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 2.1 on Ubuntu and with all feature gates enabled (including non-DRA feature gates)
@@ -1067,14 +1089,10 @@ periodics:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -1088,7 +1106,10 @@ periodics:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky'
@@ -1110,6 +1131,8 @@ periodics:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd
       description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 2.1 on COS and with all feature gates enabled (including non-DRA feature gates)
@@ -1119,14 +1142,10 @@ periodics:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     - org: containerd
       repo: containerd
       base_ref: release/2.1
@@ -1140,7 +1159,10 @@ periodics:
         - noop
         - --test=node
         - --
-        - --repo-root=.
+        - --use-binaries-from-package
+        - --test-package-url=https://dl.k8s.io
+        - --test-package-dir=ci/fast
+        - --test-package-marker=latest-fast.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky'
