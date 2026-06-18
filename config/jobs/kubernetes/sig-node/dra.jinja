@@ -68,7 +68,7 @@ presubmits:
     decoration_config:
       timeout: {{timeout}}
     {%- if not ci %}
-    path_alias: k8s.io/kubernetes
+    path_alias: {% if testinfra %}k8s.io/test-infra{% else %}k8s.io/kubernetes{% endif %}
     {%- endif %}
     extra_refs:
     {%- if need_kubernetes_repo and (ci or testinfra) %}
