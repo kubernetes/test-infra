@@ -35,7 +35,7 @@ presubmits:
     - release-\d+\.\d+  # per-release image
     always_run: false
     {%- if testinfra %}
-    run_if_changed: /jobs/node_e2e/
+    run_if_changed: ^jobs/e2e_node/
     {%- elif run_if_changed and presubmit %}
     run_if_changed: {{run_if_changed}}
     {%- endif %}
