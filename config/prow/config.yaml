@@ -707,14 +707,13 @@ branch-protection:
 tide:
   sync_period: 2m
   queries:
+  # Split into one query per org: with PAT auth (not a GitHub App) Tide does not
+  # shard a multi-org query, and the broad combined search was timing out on
+  # GitHub (502s) and stalling merges. See kubernetes/test-infra issue 37286
   - orgs:
     - kubernetes
-    - kubernetes-client
-    - kubernetes-csi
-    - kubernetes-sigs
     excludedRepos:
     - kubernetes/kubernetes # Handled with a separate Tide query below.
-    - kubernetes-sigs/lwkd # Only 2 active contributors, they've requested that Tide be disabled.
     # The following are staging repos which do not normally support merging PRs.
     # https://github.com/kubernetes/kubernetes/blob/master/staging/README.md
     # Note that k/client-go is an exception to this rule so it is not an excludedRepo.
@@ -745,9 +744,56 @@ tide:
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
+    - kubernetes/autoscaler
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+  - orgs:
+    - kubernetes-sigs
+    excludedRepos:
+    - kubernetes-sigs/lwkd # Only 2 active contributors, they've requested that Tide be disabled.
     - kubernetes-sigs/cloud-provider-azure
     - kubernetes-sigs/cluster-api
-    - kubernetes/autoscaler
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+  - orgs:
+    - kubernetes-csi
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+  - orgs:
+    - kubernetes-client
     labels:
     - lgtm
     - approved
