@@ -31,6 +31,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 1h
   decorate: true
+  decoration_config:
+    timeout: 30m
   annotations:
     testgrid-dashboards: sig-apps-agent-sandbox
   extra_refs:
