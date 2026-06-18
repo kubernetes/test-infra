@@ -455,8 +455,6 @@ presubmits:
           value: "restart"
         - name: CL2_ENABLE_INFORMER_LATENCY_TEST
           value: "true"
-        - name: CL2_INFORMER_ENABLE_WATCHLIST
-          value: "false"
         - name: CL2_RESTART_APISERVER
           value: "true"
         - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
