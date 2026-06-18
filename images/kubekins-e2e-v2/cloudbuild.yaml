@@ -25,7 +25,7 @@ substitutions:
   _GIT_TAG: '12345'
   _K8S_RELEASE: stable
   _K8S_BRANCH: master
-  _KIND_VERSION: '0.31.0'
+  _KIND_VERSION: '0.32.0'
   _KUBETEST2_VERSION: 'master'
   _YQ_VERSION: v4.49.2
   _DOCKER_VERSION: 5:29.*
