@@ -53,6 +53,10 @@ presubmits:
       {%- if job_type == "node" %}
       preset-k8s-ssh: "true"
       {%- endif %}
+      {%- if ci %}
+      prow.k8s.io/refs.org: kubernetes
+      prow.k8s.io/refs.repo: kubernetes
+      {%- endif %}
     annotations:
       testgrid-dashboards: {{testgrid_dashboards}}
       description: {{description}}
@@ -83,6 +87,7 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+      auxiliary: true
     {%- endif %}
     {%- if need_containerd_repo %}
     - org: containerd
@@ -101,9 +106,7 @@ presubmits:
         - noop
         - --test=node
         - --
-        {%- if not canary %}
-        - --repo-root=.
-        {%- elif all_features %}
+        {%- if ci or testinfra %}
         - --use-binaries-from-package
         - --test-package-url=https://dl.k8s.io
         - --test-package-dir=ci/fast

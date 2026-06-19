@@ -3384,6 +3384,9 @@ presubmits:
       org: kubernetes
       path_alias: k8s.io/test-infra
       repo: test-infra
+    annotations:
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -3438,6 +3441,9 @@ presubmits:
     - base_ref: release/2.1
       org: containerd
       repo: containerd
+    annotations:
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -3489,6 +3495,9 @@ presubmits:
       org: kubernetes
       path_alias: k8s.io/test-infra
       repo: test-infra
+    annotations:
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -3544,6 +3553,9 @@ presubmits:
     - base_ref: release/2.1
       org: containerd
       repo: containerd
+    annotations:
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
