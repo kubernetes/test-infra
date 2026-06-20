@@ -231,16 +231,16 @@ def latest_azure_image(publisher, offer, sku, arch="X86_64"):
     # az vm image show --urn Canonical:ubuntu-24_04-lts:server:latest | jq .name
     if publisher == 'Canonical' and offer == 'ubuntu-24_04-lts':
         if arch == 'arm64':
-            image_name = "Canonical:ubuntu-24_04-lts:server-arm64:24.04.202512100"
+            image_name = "Canonical:ubuntu-24_04-lts:server-arm64:24.04.202606060"
         else:
-            image_name = "Canonical:ubuntu-24_04-lts:server:24.04.202512100"
+            image_name = "Canonical:ubuntu-24_04-lts:server:24.04.202606060"
 
     # az vm image show --urn Debian:debian-13:13-gen2:latest | jq .name
     elif publisher == 'Debian' and offer == 'debian-13':
         if arch == 'arm64':
-            image_name = "Debian:debian-13:13-arm64:0.20251117.2299"
+            image_name = "Debian:debian-13:13-arm64:0.20260615.2510"
         else:
-            image_name = "Debian:debian-13:13-gen2:0.20251117.2299"
+            image_name = "Debian:debian-13:13-gen2:0.20260615.2510"
     set_pinned(pin, image_name)
     return image_name
 

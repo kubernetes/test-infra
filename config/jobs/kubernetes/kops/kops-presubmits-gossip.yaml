@@ -34,7 +34,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260604' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260610' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -172,7 +172,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260517' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -310,7 +310,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260604' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260610' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -448,7 +448,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260517' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
