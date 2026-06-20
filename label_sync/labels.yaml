@@ -164,18 +164,6 @@ default:
       previously:
         - name: committee/product-security
     - color: e11d21
-      description: Indicates the PR's author has not signed the CNCF CLA.
-      name: 'cncf-cla: no'
-      target: prs
-      prowPlugin: cla
-      addedBy: prow
-    - color: bfe5bf
-      description: Indicates the PR's author has signed the CNCF CLA.
-      name: 'cncf-cla: yes'
-      target: prs
-      prowPlugin: cla
-      addedBy: prow
-    - color: e11d21
       description: DEPRECATED. Indicates that a PR should not merge. Label can only be manually applied/removed.
       name: do-not-merge
       target: prs

@@ -177,8 +177,6 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="approved" href="#approved">`approved`</a> | Indicates a PR has been approved by an approver from all required OWNERS files.| approvers |  [approve](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/approve) |
 | <a id="cherry-pick-approved" href="#cherry-pick-approved">`cherry-pick-approved`</a> | Indicates a cherry-pick PR into a release branch has been approved by the release branch manager. <br><br> This was previously `cherrypick-approved`, | humans | |
-| <a id="cncf-cla  no" href="#cncf-cla  no">`cncf-cla: no`</a> | Indicates the PR's author has not signed the CNCF CLA.| prow |  [cla](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/cla) |
-| <a id="cncf-cla  yes" href="#cncf-cla  yes">`cncf-cla: yes`</a> | Indicates the PR's author has signed the CNCF CLA.| prow |  [cla](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/cla) |
 | <a id="do-not-merge" href="#do-not-merge">`do-not-merge`</a> | DEPRECATED. Indicates that a PR should not merge. Label can only be manually applied/removed.| humans | |
 | <a id="do-not-merge/blocked-paths" href="#do-not-merge/blocked-paths">`do-not-merge/blocked-paths`</a> | Indicates that a PR should not merge because it touches files in blocked paths.| prow |  [blockade](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/blockade) |
 | <a id="do-not-merge/cherry-pick-not-approved" href="#do-not-merge/cherry-pick-not-approved">`do-not-merge/cherry-pick-not-approved`</a> | Indicates that a PR is not yet approved to merge into a release branch.| prow |  [cherrypickunapproved](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/cherrypickunapproved) |
