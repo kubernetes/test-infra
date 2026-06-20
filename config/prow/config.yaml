@@ -61,7 +61,7 @@ deck:
   spyglass:
     size_limit: 200000000 # 200MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
-    testgrid_config: gs://k8s-testgrid/config
+    testgrid_config: gs://k8s-testgrid-config/k8s/config
     testgrid_root: https://testgrid.k8s.io/
     lenses:
     - lens:
@@ -698,7 +698,7 @@ branch-protection:
           required_linear_history: true
           restrictions:
             users:
-            - k8s-ci-robot
+            - kubernetes-prow[bot]
         sig-storage-local-static-provisioner:
           branches:
             gh-pages:

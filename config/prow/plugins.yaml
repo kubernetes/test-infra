@@ -428,20 +428,20 @@ slack:
     channels:
     - sig-contribex
     exempt_users:
-    - k8s-ci-robot
+    - kubernetes-prow[bot]
   - repos:
     - kubernetes/enhancements
     channels:
     - enhancements
     exempt_users:
-    - k8s-ci-robot
+    - kubernetes-prow[bot]
   - repos:
     - kubernetes/utils
     - kubernetes/component-helpers
     channels:
     - sig-architecture
     exempt_users:
-    - k8s-ci-robot
+    - kubernetes-prow[bot]
     - k8s-publishing-bot
   - repos:
     - kubernetes/api
@@ -477,34 +477,34 @@ slack:
     channels:
     - github-management
     exempt_users:
-    - k8s-ci-robot # merge robot ("tide")
+    - kubernetes-prow[bot] # merge robot ("tide")
     - k8s-release-robot # release automation ("krel")
   - repos:
     - kubernetes/test-infra
     channels:
     - testing-ops
     exempt_users:
-    - k8s-ci-robot
+    - kubernetes-prow[bot]
   - repos:
     - kubernetes/sig-release
     - kubernetes/release
     channels:
     - release-management
     exempt_users:
-    - k8s-ci-robot
+    - kubernetes-prow[bot]
     - dependabot[bot]
   - repos:
     - kubernetes/k8s.io
     channels:
     - sig-k8s-infra
     exempt_users:
-    - k8s-ci-robot
+    - kubernetes-prow[bot]
   - repos:
     - kubernetes/kops
     channels:
     - kops-dev
     exempt_users:
-    - k8s-ci-robot
+    - kubernetes-prow[bot]
     - dependabot[bot]
     - github-actions[bot]
   - repos:
@@ -512,7 +512,7 @@ slack:
     channels:
     - cluster-api-aws
     exempt_users:
-    - k8s-ci-robot
+    - kubernetes-prow[bot]
 
 milestone_applier:
   kubernetes/enhancements:
