@@ -164,7 +164,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=calico" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606120' --channel=alpha --networking=calico" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -425,7 +425,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=cilium" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606120' --channel=alpha --networking=cilium" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -884,7 +884,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=kindnet" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606120' --channel=alpha --networking=kindnet" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -1145,7 +1145,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=kubenet" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606120' --channel=alpha --networking=kubenet" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
