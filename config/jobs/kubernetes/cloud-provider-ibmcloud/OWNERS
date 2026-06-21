@@ -11,4 +11,4 @@ approvers:
 - kishen-v
 labels:
 - sig/cloud-provider
-- area/provider/ppc64le
+- area/provider/ibmcloud
