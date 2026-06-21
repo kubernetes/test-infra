@@ -1054,7 +1054,7 @@ periodics:
           --test=ginkgo -- --test-package-dir ci --test-package-marker $MARKER_VERSION --focus-regex='\[Conformance\]'
       command:
       - runner.sh
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-1.34
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260618-7a2e8a09f1-1.34
       name: ""
       resources:
         limits:
@@ -1089,7 +1089,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-1.34
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260618-7a2e8a09f1-1.34
       name: ""
       resources:
         limits:
@@ -1124,7 +1124,7 @@ periodics:
       - name: KUBE_TIMEOUT
         value: -timeout=300s
       - name: KUBE_RACE
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-1.34
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260618-7a2e8a09f1-1.34
       name: ""
       resources:
         limits:
