@@ -1215,7 +1215,7 @@ periodics:
       - key: highmem
         operator: Exists
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260618-7a2e8a09f1-master
       command:
       - runner.sh
       args:
@@ -1335,7 +1335,7 @@ periodics:
   spec:
     serviceAccountName: prow-build
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260616-605ef6f86b-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260618-7a2e8a09f1-master
       command:
       - runner.sh
       args:
