@@ -1137,8 +1137,8 @@ sigs.k8s.io/controller-runtime v0.21.0 h1:CYfjpEuicjUecRk+KAeyYh+ouUBn4llGyDYytI
 sigs.k8s.io/controller-runtime v0.21.0/go.mod h1:OSg14+F65eWqIu4DceX7k/+QRAbTTvxeQSNSOQpukWM=
 sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 h1:gBQPwqORJ8d8/YNZWEjoZs7npUVDpVXUUOFfW6CgAqE=
 sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8/go.mod h1:mdzfpAEoE6DHQEN0uh9ZbOCuHbLK5wOm7dK4ctXE9Tg=
-sigs.k8s.io/prow v0.0.0-20260531012246-24f6b2904e92 h1:+m4yPHy4X6KG36IX+soXW2zACZn7DUM6Pd1OwKeofFQ=
-sigs.k8s.io/prow v0.0.0-20260531012246-24f6b2904e92/go.mod h1:JOo+ySKGa5wb168yBTEljj/P+N4sYVfmQQzC3HB9eFU=
+sigs.k8s.io/prow v0.0.0-20260617174310-37d12bec7117 h1:6bKtnvSQLN4cdEpHx0adqhKM1yx/CWqDPDaS+Kqp9Yw=
+sigs.k8s.io/prow v0.0.0-20260617174310-37d12bec7117/go.mod h1:gIk9WX2TVIlkEHdZjKkcFZZMpFA0QfiX16lbcM+yyp0=
 sigs.k8s.io/randfill v0.0.0-20250304075658-069ef1bbf016/go.mod h1:XeLlZ/jmk4i1HRopwe7/aU3H5n1zNUcX6TM94b3QxOY=
 sigs.k8s.io/randfill v1.0.0 h1:JfjMILfT8A6RbawdsK2JXGBR5AQVfd+9TbzrlneTyrU=
 sigs.k8s.io/randfill v1.0.0/go.mod h1:XeLlZ/jmk4i1HRopwe7/aU3H5n1zNUcX6TM94b3QxOY=

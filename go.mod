@@ -78,7 +78,7 @@ require (
 	k8s.io/utils v0.0.0-20241210054802-24370beab758 // indirect
 	knative.dev/pkg v0.0.0-20250415155312-ed3e2158b883 // indirect
 	sigs.k8s.io/controller-runtime v0.21.0
-	sigs.k8s.io/prow v0.0.0-20260531012246-24f6b2904e92
+	sigs.k8s.io/prow v0.0.0-20260617174310-37d12bec7117
 	sigs.k8s.io/yaml v1.6.0
 )
 
