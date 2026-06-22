@@ -38,7 +38,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: agent-sandbox
-    base_ref: feature/v1beta1-migrate
+    base_ref: main
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
