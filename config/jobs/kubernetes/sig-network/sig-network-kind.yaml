@@ -145,7 +145,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|SCTPConnectivity
+          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|SCTPConnectivity|LocalhostNodePorts
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -197,7 +197,7 @@ presubmits:
               value: \[sig-network\]|\[Conformance\]
             # FIXME: AdmissionWebhooks flakes https://issues.k8s.io/128230
             - name: SKIP
-              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity
+              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity|LocalhostNodePorts
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -340,7 +340,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv4|IPv6DualStack|Internet.connection|PerformanceDNS|upstream.nameserver|SCTPConnectivity
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv4|IPv6DualStack|Internet.connection|PerformanceDNS|upstream.nameserver|SCTPConnectivity|LocalhostNodePorts
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -443,7 +443,7 @@ periodics:
         value: \[sig-network\]|\[Conformance\]
       # FIXME: AdmissionWebhooks flakes https://issues.k8s.io/128230
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity|LocalhostNodePorts
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -491,7 +491,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity|LocalhostNodePorts
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -544,7 +544,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity|LocalhostNodePorts
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -598,7 +598,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity|LocalhostNodePorts
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -690,7 +690,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity|LocalhostNodePorts
       command:
         - wrapper.sh
         - bash
