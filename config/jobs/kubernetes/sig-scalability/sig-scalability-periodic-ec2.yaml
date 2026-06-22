@@ -132,6 +132,110 @@ periodics:
           cpu: 7
           memory: 24Gi
 
+# TODO(jefftree): etcd-3.6 copy of the job above, remove in Jul 2026
+- name: ci-kubernetes-e2e-kops-aws-scale-amazonvpc-using-cl2-etcd36
+  tags:
+  - "perfDashPrefix: aws-5000Nodes-etcd36"
+  - "perfDashBuildsCount: 270"
+  - "perfDashJobType: performance"
+  cluster: eks-prow-build-cluster
+  cron: '1 19 * * 0,1,3,5' # Sun/Mon/Wed/Fri 19:01 UTC, 12h after the 3.7 arm
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential-boskos-scale-001-kops: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  job_queue_name: '5k-aws-scale-test'
+  decoration_config:
+    timeout: 480m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/networking: amazonvpc
+    testgrid-dashboards: sig-scalability-aws
+    testgrid-tab-name: ec2-master-scale-performance-etcd36
+    testgrid-days-of-results: "60"
+    testgrid-num-columns-recent: "3"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
+      - name: GOPATH
+        value: /home/prow/go
+      - name: CNI_PLUGIN
+        value: "amazonvpc"
+      - name: KUBE_NODE_COUNT
+        value: "5000"
+      - name: ETCD_VERSION
+        value: "3.6.12"
+      - name: CL2_LOAD_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_DELETE_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_RATE_LIMIT_POD_CREATION
+        value: "false"
+      - name: NODE_MODE
+        value: "master"
+      - name: CONTROL_PLANE_COUNT
+        value: "1"
+      - name: CONTROL_PLANE_SIZE
+        value: "c8i.24xlarge"
+      - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+        value: "true"
+      - name: CL2_ENABLE_DNS_PROGRAMMING
+        value: "true"
+      - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+        value: "true"
+      - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+        value: "99.5"
+      - name: CL2_ALLOWED_SLOW_API_CALLS
+        value: "1"
+      - name: ENABLE_PROMETHEUS_SERVER
+        value: "true"
+      - name: TEAR_DOWN_PROMETHEUS_SERVER
+        value: "false"
+      - name: PROMETHEUS_PVC_STORAGE_CLASS
+        value: "io2"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: KOPS_IRSA
+        value: "true"
+      resources:
+        requests:
+          cpu: 7
+          memory: 24Gi
+        limits:
+          cpu: 7
+          memory: 24Gi
+
 # This job is the same as above, but using 100 nodes instead of 5000
 - name: ci-kubernetes-e2e-kops-aws-small-scale-amazonvpc-using-cl2
   tags:
