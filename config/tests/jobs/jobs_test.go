@@ -1079,6 +1079,32 @@ func TestValidScenarioArgs(t *testing.T) {
 	}
 }
 
+func TestReRunAuthConfig(t *testing.T) {
+	for _, job := range c.AllStaticPresubmits(nil) {
+		if job.RerunAuthConfig != nil {
+			if len(job.RerunAuthConfig.GitHubTeamIDs) > 0 {
+				t.Errorf("rerun_auth_config.github_team_ids[] is not supported, please use github_team_slugs - job: %s", job.Name)
+			}
+		}
+	}
+
+	for _, job := range c.AllStaticPostsubmits(nil) {
+		if job.RerunAuthConfig != nil {
+			if len(job.RerunAuthConfig.GitHubTeamIDs) > 0 {
+				t.Errorf("rerun_auth_config.github_team_ids[] is not supported, please use github_team_slugs - job: %s", job.Name)
+			}
+		}
+	}
+
+	for _, job := range c.AllPeriodics() {
+		if job.RerunAuthConfig != nil {
+			if len(job.RerunAuthConfig.GitHubTeamIDs) > 0 {
+				t.Errorf("rerun_auth_config.github_team_ids[] is not supported, please use github_team_slugs - job: %s", job.Name)
+			}
+		}
+	}
+}
+
 func allStaticJobs() []cfg.JobBase {
 	jobs := []cfg.JobBase{}
 	for _, job := range c.AllStaticPresubmits(nil) {

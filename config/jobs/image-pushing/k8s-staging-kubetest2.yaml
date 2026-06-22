@@ -30,8 +30,9 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 3925239 # https://github.com/orgs/kubernetes-sigs/teams/kubetest2-maintainers
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kubetest2-maintainers
 
 periodics:
   - interval: 72h
@@ -66,5 +67,6 @@ periodics:
             - name: LOG_TO_STDOUT
               value: "y"
     rerun_auth_config:
-      github_team_ids:
-        - 3925239 # https://github.com/orgs/kubernetes-sigs/teams/kubetest2-maintainers
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: kubetest2-maintainers
