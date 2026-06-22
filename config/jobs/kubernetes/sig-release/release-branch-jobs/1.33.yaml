@@ -62,6 +62,8 @@ periodics:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-device-plugin-gpu-1-33
   spec:
     containers:
@@ -151,6 +153,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kind-dra-1-33
   spec:
     containers:
@@ -987,6 +991,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-cos-alphafeatures-stable3
   spec:
     containers:
@@ -1029,6 +1035,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-cos-default-stable3
   spec:
     containers:
@@ -1068,6 +1076,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-cos-reboot-stable3
   spec:
     containers:
@@ -1105,6 +1115,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-cos-serial-stable3
   spec:
     containers:
@@ -1144,6 +1156,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-cos-slow-stable3
   spec:
     containers:

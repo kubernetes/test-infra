@@ -62,6 +62,8 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:

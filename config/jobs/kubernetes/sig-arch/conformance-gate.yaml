@@ -8,6 +8,9 @@ periodics:
     test-grid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
     testgrid-num-failures-to-alert: '1'
     description: 'Uses APISnoop to check that new GA endpoints are conformance tested in latest e2e test run'
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   spec:
     containers:

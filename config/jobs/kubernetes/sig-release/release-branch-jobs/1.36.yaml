@@ -294,6 +294,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kind-dra-1-36
   spec:
     containers:
@@ -380,6 +382,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kind-dra-n-1-1-36
   spec:
     containers:
@@ -501,6 +505,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kind-dra-n-2-1-36
   spec:
     containers:
@@ -622,6 +628,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kind-dra-n-3-1-36
   spec:
     containers:
@@ -958,15 +966,12 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 2h20m0s
-  extra_refs:
-  - base_ref: release-1.36
-    org: kubernetes
-    path_alias: k8s.io/kubernetes
-    repo: kubernetes
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-cos-alphafeatures-beta
   spec:
     containers:

@@ -10,6 +10,8 @@ periodics:
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
   decoration_config:

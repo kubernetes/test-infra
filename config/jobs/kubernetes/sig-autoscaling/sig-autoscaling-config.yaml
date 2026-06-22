@@ -515,6 +515,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 260m
@@ -552,6 +554,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 260m

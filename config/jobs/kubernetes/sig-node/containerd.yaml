@@ -408,6 +408,8 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-cos-containerd: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 70m
@@ -447,6 +449,8 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-cos-containerd: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 70m
@@ -846,6 +850,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 70m

@@ -62,6 +62,8 @@ periodics:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-device-plugin-gpu-1-34
   spec:
     containers:
@@ -152,6 +154,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kind-dra-1-34
   spec:
     containers:
@@ -234,6 +238,8 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kind-dra-n-1-1-34
   spec:
     containers:
@@ -1149,6 +1155,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-cos-alphafeatures-stable2
   spec:
     containers:
@@ -1191,6 +1199,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-cos-default-stable2
   spec:
     containers:
@@ -1228,6 +1238,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-cos-reboot-stable2
   spec:
     containers:
@@ -1265,6 +1277,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-cos-serial-stable2
   spec:
     containers:
@@ -1304,6 +1318,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gce-cos-slow-stable2
   spec:
     containers:
