@@ -312,6 +312,15 @@ presubmits:
           requests:
             cpu: 2
             memory: 12Gi
+          {%- elif ci and job_type == "node" or testinfra %}
+          # E2E node jobs just control remote execution and thus
+          # need few resources, but only when using release packages.
+          limits:
+            cpu: 0.5
+            memory: 500Mi
+          requests:
+            cpu: 0.5
+            memory: 500Mi
           {%- else %}
           limits:
             cpu: 2

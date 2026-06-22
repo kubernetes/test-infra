@@ -690,12 +690,14 @@ periodics:
         - name: KUBE_SSH_USER
           value: core
         resources:
+          # E2E node jobs just control remote execution and thus
+          # need few resources, but only when using release packages.
           limits:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
           requests:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
 
   - name: ci-node-crio-dra-alpha-beta-features
     cluster: k8s-infra-prow-build
@@ -747,12 +749,14 @@ periodics:
         - name: KUBE_SSH_USER
           value: core
         resources:
+          # E2E node jobs just control remote execution and thus
+          # need few resources, but only when using release packages.
           limits:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
           requests:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
 
   - name: ci-node-e2e-containerd-1-7-ubuntu-dra
     cluster: k8s-infra-prow-build
@@ -800,12 +804,14 @@ periodics:
         - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7-ubuntu.yaml
         resources:
+          # E2E node jobs just control remote execution and thus
+          # need few resources, but only when using release packages.
           limits:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
           requests:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
 
   - name: ci-node-e2e-containerd-1-7-cos-dra
     cluster: k8s-infra-prow-build
@@ -853,12 +859,14 @@ periodics:
         - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7-cos.yaml
         resources:
+          # E2E node jobs just control remote execution and thus
+          # need few resources, but only when using release packages.
           limits:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
           requests:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
 
   - name: ci-node-e2e-containerd-2-0-ubuntu-dra
     cluster: k8s-infra-prow-build
@@ -909,12 +917,14 @@ periodics:
         - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config-ubuntu.yaml
         resources:
+          # E2E node jobs just control remote execution and thus
+          # need few resources, but only when using release packages.
           limits:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
           requests:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
 
   - name: ci-node-e2e-containerd-2-0-cos-dra
     cluster: k8s-infra-prow-build
@@ -965,12 +975,14 @@ periodics:
         - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config-cos.yaml
         resources:
+          # E2E node jobs just control remote execution and thus
+          # need few resources, but only when using release packages.
           limits:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
           requests:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
 
   - name: ci-node-e2e-containerd-1-7-ubuntu-dra-alpha-beta-features
     cluster: k8s-infra-prow-build
@@ -1015,12 +1027,14 @@ periodics:
         - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7-ubuntu.yaml
         resources:
+          # E2E node jobs just control remote execution and thus
+          # need few resources, but only when using release packages.
           limits:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
           requests:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
 
   - name: ci-node-e2e-containerd-1-7-cos-dra-alpha-beta-features
     cluster: k8s-infra-prow-build
@@ -1065,12 +1079,14 @@ periodics:
         - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7-cos.yaml
         resources:
+          # E2E node jobs just control remote execution and thus
+          # need few resources, but only when using release packages.
           limits:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
           requests:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
 
   - name: ci-node-e2e-containerd-2-0-ubuntu-dra-alpha-beta-features
     cluster: k8s-infra-prow-build
@@ -1118,12 +1134,14 @@ periodics:
         - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config-ubuntu.yaml
         resources:
+          # E2E node jobs just control remote execution and thus
+          # need few resources, but only when using release packages.
           limits:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
           requests:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
 
   - name: ci-node-e2e-containerd-2-0-cos-dra-alpha-beta-features
     cluster: k8s-infra-prow-build
@@ -1171,9 +1189,11 @@ periodics:
         - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config-cos.yaml
         resources:
+          # E2E node jobs just control remote execution and thus
+          # need few resources, but only when using release packages.
           limits:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
           requests:
-            cpu: 2
-            memory: 6Gi
+            cpu: 0.5
+            memory: 500Mi
