@@ -1139,6 +1139,12 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
+        description: Issues or PRs related to Kubernetes IBM infrastructure
+        name: area/infra/ibmcloud
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         description: Issues or PRs related to monitoring of the Kubernetes project infrastructure
         name: area/infra/monitoring
         target: both
