@@ -454,11 +454,11 @@ presubmits:
           privileged: true
         env:
         - name: EXPERIMENT_VARIANT
-          value: "restart"
+          value: "default"
         - name: CL2_ENABLE_INFORMER_LATENCY_TEST
           value: "true"
-        - name: CL2_RESTART_APISERVER
-          value: "true"
+        # - name: CL2_RESTART_APISERVER
+        #   value: "true"
         - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
           value: "21474836480"
         - name: CL2_EXECSERVICE_CPU_REQUESTS
@@ -467,8 +467,8 @@ presubmits:
           value: "16Gi"
         - name: CL2_REALISTIC_POD
           value: "true"
-        - name: CL2_HEAP_PROFILE_INTERVAL
-          value: "5m"
+        # - name: CL2_HEAP_PROFILE_INTERVAL
+        #   value: "5m"
         #  Remaining parameters should match ci-kubernetes-e2e-gce-scale-performance-5000
         - name: KUBE_SSH_KEY_PATH
           value: /etc/ssh-key-secret/ssh-private
@@ -490,8 +490,8 @@ presubmits:
           value: "false"
         - name: NODE_MODE
           value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "3"
+        # - name: CONTROL_PLANE_COUNT
+        #   value: "3"
         - name: CONTROL_PLANE_SIZE
           value: "c4-standard-96"
         - name: ADDONS_NODE_SIZE
