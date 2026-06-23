@@ -154,6 +154,7 @@ periodics:
         --gcp-node-image=gci
         --gcp-zone=us-central1-b
         --ginkgo-parallel=30
+        --pre-test-cmd=$(GOPATH)/src/k8s.io/node-problem-detector/test/e2e/manifests/deploy-npd.sh
         --test_args=--ginkgo.focus=NodeProblemDetector
         --timeout=60m
       resources:
@@ -199,6 +200,7 @@ periodics:
         --gcp-node-image=gci
         --gcp-zone=us-central1-b
         --ginkgo-parallel=30
+        --pre-test-cmd=$(GOPATH)/src/k8s.io/node-problem-detector/test/e2e/manifests/deploy-npd.sh
         --test_args=--ginkgo.focus=NodeProblemDetector
         --timeout=60m
       resources:
@@ -247,6 +249,7 @@ periodics:
         --ginkgo-parallel=30
         --image-family=ubuntu-2404-lts-amd64
         --image-project=ubuntu-os-cloud
+        --pre-test-cmd=$(GOPATH)/src/k8s.io/node-problem-detector/test/e2e/manifests/deploy-npd.sh
         --test_args=--ginkgo.focus=NodeProblemDetector
         --timeout=60m
       resources:
@@ -295,6 +298,7 @@ periodics:
         --ginkgo-parallel=30
         --image-family=ubuntu-2404-lts-amd64
         --image-project=ubuntu-os-cloud
+        --pre-test-cmd=$(GOPATH)/src/k8s.io/node-problem-detector/test/e2e/manifests/deploy-npd.sh
         --test_args=--ginkgo.focus=NodeProblemDetector
         --timeout=60m
       resources:
