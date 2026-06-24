@@ -3,9 +3,12 @@
 # See sigs.k8s.io/cluster-api-provider-openstack/OWNERS_ALIASES
 approvers:
   - sig-cluster-lifecycle-leads
-  - EmilienM
+  - emilienm
   - lentzi90
+  - mandre
+  - stephenfin
 
 reviewers:
-  - EmilienM
-  - lentzi90
+  - bnallapeta
+  - smoshiur1237
+  - nikParasyr
