@@ -12,6 +12,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260622-537e33cc05-master
         command:
+        - "runner.sh"
         - "./scripts/ci-build.sh"
         # docker-in-docker needs privileged mode
         securityContext:
