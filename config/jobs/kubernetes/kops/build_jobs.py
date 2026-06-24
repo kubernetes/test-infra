@@ -1441,7 +1441,7 @@ def generate_conformance():
                 test_parallelism=1,
                 test_timeout_minutes=150,
                 extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-azure'],
-                runs_per_day=3,
+                runs_per_day=2,
                 focus_regex=r'\[Conformance\]',
                 skip_regex=r'\[NoSkip\]'
             )
@@ -1632,7 +1632,7 @@ def generate_network_plugins():
                     name_override=f"kops-azure-cni-{plugin}",
                     networking=networking_arg,
                     extra_dashboards=['kops-network-plugins'],
-                    runs_per_day=8
+                    runs_per_day=2
                 )
             )
         if plugin in supports_gce:
@@ -1736,7 +1736,7 @@ def generate_periodics_upgrades_gossip():
                 kops_channel="alpha",
                 feature_flags=['Azure'] if cloud == 'azure' else (),
                 extra_dashboards=["kops-upgrades"],
-                runs_per_day=3,
+                runs_per_day=1 if cloud == 'azure' else 3,
                 test_timeout_minutes=120,
                 scenario="upgrade-ab-gossip",
                 env={
@@ -1773,7 +1773,7 @@ def generate_periodics_gossip():
             k8s_version='stable',
             kops_channel='alpha',
             feature_flags=['Azure'] if cloud == 'azure' else (),
-            runs_per_day=3,
+            runs_per_day=1 if cloud == 'azure' else 3,
             extra_dashboards=['kops-misc'],
             env={'KOPS_DNS_DOMAIN': 'k8s.local'},
             extra_flags=extra_flags,
@@ -1795,7 +1795,7 @@ def generate_periodics_gossip():
             k8s_version='stable',
             kops_channel='alpha',
             feature_flags=['Azure'] if cloud == 'azure' else (),
-            runs_per_day=3,
+            runs_per_day=1 if cloud == 'azure' else 3,
             extra_dashboards=['kops-misc'],
             env={'KOPS_DNS_DOMAIN': 'k8s.local'},
             extra_flags=extra_flags,
