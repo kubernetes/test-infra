@@ -456,7 +456,7 @@ presubmits:
         - name: EXPERIMENT_VARIANT
           value: "default"
         - name: CL2_ENABLE_INFORMER_LATENCY_TEST
-          value: "true"
+          value: "false"
         # - name: CL2_RESTART_APISERVER
         #   value: "true"
         - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
@@ -1232,9 +1232,9 @@ presubmits:
           privileged: true
         env:
         - name: CL2_ENABLE_INFORMER_LATENCY_TEST
-          value: "true"
-        - name: CL2_INFORMER_RUN_ON_CONTROL_PLANE
-          value: "true"
+          value: "false"
+        # - name: CL2_INFORMER_RUN_ON_CONTROL_PLANE
+        #   value: "true"
         - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
           value: "21474836480"
         - name: CL2_EXECSERVICE_CPU_REQUESTS
