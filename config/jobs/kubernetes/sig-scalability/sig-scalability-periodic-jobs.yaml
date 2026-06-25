@@ -1226,7 +1226,7 @@ periodics:
       - name: EXPERIMENT_VARIANT
         value: "restart"
       - name: CL2_ENABLE_INFORMER_LATENCY_TEST
-        value: "true"
+        value: "false"
       # Disabled: see https://github.com/kubernetes/test-infra/pull/37027
       # - name: CL2_INFORMER_RUN_ON_CONTROL_PLANE
       #   value: "true"
