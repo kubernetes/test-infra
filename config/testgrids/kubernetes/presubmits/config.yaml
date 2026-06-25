@@ -3,7 +3,6 @@ test_groups:
   gcs_prefix: kubernetes-ci-logs/pr-logs/directory/pull-kubernetes-gce-master-scale-performance-5000
   column_header:
   - configuration_value: Commit
-  - configuration_value: variant
 
 dashboard_groups:
 - name: presubmits
