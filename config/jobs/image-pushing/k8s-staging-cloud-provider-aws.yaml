@@ -48,6 +48,8 @@ postsubmits:
         # trigger another image build. Images are only built for tags that follow
         # the semver format (regex from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string).
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+        # For publishing the Helm chart to staging.
+        - ^helm-chart-
       spec:
         serviceAccountName: gcb-builder
         containers:
