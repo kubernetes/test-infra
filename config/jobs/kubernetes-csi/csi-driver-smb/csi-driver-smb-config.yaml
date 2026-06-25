@@ -298,7 +298,7 @@ presubmits:
   - name: pull-csi-driver-smb-e2e-windows-2019
     cluster: eks-prow-build-cluster
     decorate: true
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    always_run: false
     optional: true
     path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
