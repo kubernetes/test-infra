@@ -151,7 +151,7 @@ presubmits:
         - name: EXPERIMENT_VARIANT
           value: "restart"
         - name: CL2_ENABLE_INFORMER_LATENCY_TEST
-          value: "true"
+          value: "false"
         - name: CL2_RESTART_APISERVER
           value: "true"
         - name: ETCD_QUOTA_BACKEND_BYTES # 20GB

@@ -4,6 +4,11 @@ test_groups:
   column_header:
   - configuration_value: Commit
   - configuration_value: variant
+- name: pull-kubernetes-gce-master-scale-performance-5000-experimental
+  gcs_prefix: kubernetes-ci-logs/pr-logs/directory/pull-kubernetes-gce-master-scale-performance-5000-experimental
+  column_header:
+  - configuration_value: Commit
+  - configuration_value: variant
 
 dashboard_groups:
 - name: sig-scalability
