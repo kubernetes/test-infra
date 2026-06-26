@@ -2060,3 +2060,38 @@ presubmits:
               limits:
                 cpu: "6"
                 memory: "6Gi"
+    - name: pull-kueue-verify-website-links-preview-main
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^main
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 10m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-verify-website-links-preview-main
+        description: "Check links on a PR's Netlify deploy preview, on demand (non-blocking)"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260622-537e33cc05-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - verify-website-links-preview
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6"
+                memory: "6Gi"
+              limits:
+                cpu: "6"
+                memory: "6Gi"
