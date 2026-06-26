@@ -32,6 +32,8 @@
 - [Labels that apply to kubernetes/autoscaler, for both issues and PRs](#labels-that-apply-to-kubernetesautoscaler-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/autoscaler, only for PRs](#labels-that-apply-to-kubernetesautoscaler-only-for-prs)
 - [Labels that apply to kubernetes/community, for both issues and PRs](#labels-that-apply-to-kubernetescommunity-for-both-issues-and-prs)
+- [Labels that apply to kubernetes/contributor-site, for both issues and PRs](#labels-that-apply-to-kubernetescontributor-site-for-both-issues-and-prs)
+- [Labels that apply to kubernetes/contributor-site, only for PRs](#labels-that-apply-to-kubernetescontributor-site-only-for-prs)
 - [Labels that apply to kubernetes/dns, only for issues](#labels-that-apply-to-kubernetesdns-only-for-issues)
 - [Labels that apply to kubernetes/enhancements, for both issues and PRs](#labels-that-apply-to-kubernetesenhancements-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/enhancements, only for issues](#labels-that-apply-to-kubernetesenhancements-only-for-issues)
@@ -483,6 +485,21 @@ larger set of contributors to apply/remove them.
 | <a id="area/na-summit" href="#area/na-summit">`area/na-summit`</a> | Issues or PRs related to the Contributor Summit in North America| label | |
 | <a id="area/release-team" href="#area/release-team">`area/release-team`</a> | Issues or PRs related to the release-team subproject| label | |
 | <a id="area/slack-management" href="#area/slack-management">`area/slack-management`</a> | Issues or PRs related to the Slack Management subproject| label | |
+
+## Labels that apply to kubernetes/contributor-site, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/blog" href="#area/blog">`area/blog`</a> | Issues or PRs related to the Kubernetes Blog subproject| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/contributor-comms" href="#area/contributor-comms">`area/contributor-comms`</a> | Issues or PRs related to the upstream marketing team| humans | |
+| <a id="area/web-development" href="#area/web-development">`area/web-development`</a> | Issues or PRs related to the k8s.dev infrastructure, design, or build processes| humans | |
+| <a id="language/en" href="#language/en">`language/en`</a> | Issues or PRs related to English language| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+
+## Labels that apply to kubernetes/contributor-site, only for PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="refactor" href="#refactor">`refactor`</a> | Indicates a PR with large refactoring changes e.g. removes files or moves content| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 
 ## Labels that apply to kubernetes/dns, only for issues
 
