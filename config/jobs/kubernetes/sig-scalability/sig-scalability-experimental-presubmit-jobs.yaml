@@ -138,6 +138,7 @@ presubmits:
         - --check-leaked-resources
         - --env=CL2_ENABLE_WATCH_LIST_FEATURE=true
         - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1
+        - --env=ETCD_QUOTA_BACKEND_BYTES=8589934592
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
         - --extract=ci/latest
         - --gcp-node-image=gci
@@ -150,6 +151,7 @@ presubmits:
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
         - --test-cmd-args=--nodes=1
+        - --test-cmd-args=--k8s-clients-number=40
         - --test-cmd-args=--provider=gce
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/watch-list/config.yaml
