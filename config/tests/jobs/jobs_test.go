@@ -71,6 +71,7 @@ var jobsExemptFromResourceLimits = []string{
 	"ci-kubernetes-e2e-gce-scale-performance-5000",
 	"ci-kubernetes-e2e-gce-scale-performance-5000-experimental",
 	"pull-kubernetes-gce-master-scale-performance-5000",
+	"pull-kubernetes-gce-master-scale-performance-5000-experimental",
 	"pull-perf-tests-gce-master-scale-performance-5000",
 }
 
