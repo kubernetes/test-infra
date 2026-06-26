@@ -160,10 +160,10 @@ presubmits:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "8Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "8Gi"
 
   # Presubmit mirror of ci-kubernetes-e2e-gce-scale-performance-5000-experimental.
   - name: pull-kubernetes-gce-master-scale-performance-5000-experimental
