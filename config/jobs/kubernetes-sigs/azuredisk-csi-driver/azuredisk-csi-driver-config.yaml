@@ -776,7 +776,7 @@ presubmits:
             - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
               value: "true"
             - name: NODE_MACHINE_TYPE # CAPZ config
-              value: "Standard_D4s_v3"
+              value: "Standard_D8ds_v5"
             - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
