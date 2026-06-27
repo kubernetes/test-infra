@@ -285,7 +285,7 @@ presubmits:
             - name: WINDOWS_SERVER_VERSION # CAPZ config
               value: "windows-2022"
             - name: NODE_MACHINE_TYPE # CAPZ config
-              value: "Standard_D4s_v3"
+              value: "Standard_D8ds_v5"
             - name: KUBERNETES_VERSION # CAPZ config
               value: "v1.35.2"
             - name: WORKER_MACHINE_COUNT
@@ -346,7 +346,7 @@ presubmits:
             - name: WINDOWS_SERVER_VERSION # CAPZ config
               value: "windows-2019"
             - name: NODE_MACHINE_TYPE # CAPZ config
-              value: "Standard_D4s_v3"
+              value: "Standard_D8ds_v5"
             - name: KUBERNETES_VERSION # CAPZ config
               value: "v1.35.2"
             - name: WORKER_MACHINE_COUNT
@@ -408,7 +408,7 @@ presubmits:
             - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # smb-csi-driver config
               value: "true"
             - name: NODE_MACHINE_TYPE # CAPZ config
-              value: "Standard_D4s_v3"
+              value: "Standard_D8ds_v5"
             - name: DISABLE_ZONE # smb-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
@@ -472,7 +472,7 @@ presubmits:
             - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # smb-csi-driver config
               value: "true"
             - name: NODE_MACHINE_TYPE # CAPZ config
-              value: "Standard_D4s_v3"
+              value: "Standard_D8ds_v5"
             - name: DISABLE_ZONE # smb-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
