@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/kueue:
-    - name: pull-kueue-test-unit-main
+    - name: pull-kueue-test-unit-shard-0-main
       cluster: eks-prow-build-cluster
       branches:
         - ^main
@@ -12,8 +12,41 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-unit-main
-        description: "Run kueue unit tests"
+        testgrid-tab-name: pull-kueue-test-unit-shard-0-main
+        description: "Run kueue unit shard 0 tests"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.26
+            env:
+              - name: GO_TEST_FLAGS
+                value: "-race -count 3"
+              - name: GOMAXPROCS
+                value: "6"
+            command:
+              - make
+            args:
+              - test
+            resources:
+              requests:
+                cpu: "6"
+                memory: "6Gi"
+              limits:
+                cpu: "6"
+                memory: "6Gi"
+    - name: pull-kueue-test-unit-shard-1-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 10m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-unit-shard-1-main
+        description: "Run kueue unit shard 1 tests"
       spec:
         containers:
           - image: public.ecr.aws/docker/library/golang:1.26
