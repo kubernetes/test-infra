@@ -2785,3 +2785,33 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes/contributor-site:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to the Kubernetes Blog subproject
+        name: area/blog
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to the upstream marketing team
+        name: area/contributor-comms
+        target: both
+        addedBy: humans
+      - color: 0052cc
+        description: Issues or PRs related to the k8s.dev infrastructure, design, or build processes
+        name: area/web-development
+        target: both
+        addedBy: humans
+      - color: e9b3f9
+        description: Issues or PRs related to English language
+        name: language/en
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: d2918c
+        description: Indicates a PR with large refactoring changes e.g. removes files or moves content
+        name: refactor
+        target: prs
+        prowPlugin: label
+        addedBy: anyone
