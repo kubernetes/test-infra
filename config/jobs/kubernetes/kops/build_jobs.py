@@ -957,46 +957,6 @@ def generate_misc():
                    # - Driver: local: this is optimization only, the volume plugin does not
                    #   support SELinux and there are several subvariants of local volumes
                    #   that multiply nr. of tests.
-                   # - FeatureGate:SELinuxMount: the feature gate is alpha / disabled by default
-                   #   in v1.32.
-                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.nfs3\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]",
-                   # [Serial] and [Disruptive] are intentionally not skipped, therefore run
-                   # everything as serial.
-                   test_parallelism=1,
-                   # there is no "--node-os-distro=rhel", "custom" is as close as we can get here.
-                   test_args="--master-os-distro=custom --node-os-distro=custom",
-                   # Serial and Disruptive tests can be slow.
-                   test_timeout_minutes=120,
-                   runs_per_day=3,
-                   alert_email="kubernetes-sig-storage-test-failures@googlegroups.com",
-                   alert_num_failures=10),
-
-        # [sig-storage, @jsafrane] A one-off scenario testing all SELinux related feature gates enabled
-        # and opt-in selinux-warning-controller.
-        # This will need to merge with kops-aws-selinux when SELinuxMount gets enabled by default.
-        build_test(name_override="kops-aws-selinux-alpha",
-                   # RHEL8 VM image is enforcing SELinux by default.
-                   cloud="aws",
-                   distro="rhel9",
-                   networking="cilium",
-                   k8s_version="ci",
-                   kops_channel="alpha",
-                   feature_flags=['SELinuxMount'],
-                   kubernetes_feature_gates="SELinuxMount,SELinuxChangePolicy",
-                   extra_flags=[
-                       "--set=cluster.spec.containerd.selinuxEnabled=true",
-                       # Run all default controllers ("*") + selinux-warning-controller.
-                       "--set=cluster.spec.kubeControllerManager.controllers=*",
-                       "--set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller"
-                   ],
-                   focus_regex=r"\[Feature:SELinux\]",
-                   # Skip:
-                   # - Feature:Volumes: skips iSCSI and Ceph tests, they don't have client tools
-                   #   installed on nodes.
-                   # - Driver: nfs: NFS does not have client tools installed on nodes.
-                   # - Driver: local: this is optimization only, the volume plugin does not
-                   #   support SELinux and there are several subvariants of local volumes
-                   #   that multiply nr. of tests.
                    # - Feature:SELinuxMountReadWriteOncePodOnly: these tests require SELinuxMount
                    #   feature gate off.
                    skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.nfs3\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]",
