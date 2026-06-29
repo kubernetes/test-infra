@@ -39,6 +39,52 @@ periodics:
     testgrid-tab-name: windows-e2e-node-master
 
 presubmits:
+  kubernetes/kubernetes:
+    - name: pull-kubernetes-e2enode-windows-master
+      always_run: false
+      branches:
+        - master
+        - main
+      cluster: eks-prow-build-cluster
+      decorate: true
+      decoration_config:
+        timeout: 4h
+      optional: true
+      labels:
+        preset-dind-enabled: "true"
+        preset-azure-community: "true"
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: windows-testing
+          base_ref: master
+          path_alias: sigs.k8s.io/windows-testing
+          workdir: true
+      path_alias: k8s.io/kubernetes
+      run_if_changed: '.*windows\.go$'
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260615-7f7c36e951-master
+            command:
+              - "runner.sh"
+              - "./scripts/ci-k8s-e2e-node-test.sh"
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: "5Gi"
+              limits:
+                cpu: 2
+                memory: "5Gi"
+            env:
+              - name: VM_LOCATION
+                value: northeurope
+              - name: CONTAINERD_VERSION
+                value: "nightly"
+      annotations:
+        testgrid-dashboards: sig-windows-presubmit
+        testgrid-tab-name: pr-kubernetes-e2enode-windows-master
   kubernetes-sigs/windows-testing:
     - name: pull-kubernetes-e2enode-windows
       always_run: false
@@ -71,6 +117,8 @@ presubmits:
             env:
               - name: VM_LOCATION
                 value: northeurope
+              - name: CONTAINERD_VERSION
+                value: "nightly"
       annotations:
         testgrid-dashboards: sig-windows-presubmit
         testgrid-tab-name: pr-windows-e2e-node-master
