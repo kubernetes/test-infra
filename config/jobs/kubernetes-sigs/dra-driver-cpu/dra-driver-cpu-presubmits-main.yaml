@@ -1,6 +1,29 @@
 # sigs.k8s.io/dra-driver-cpu presubmits
 presubmits:
   kubernetes-sigs/dra-driver-cpu:
+  - name: pull-dra-driver-cpu-modernize
+    cluster: eks-prow-build-cluster
+    path_alias: sigs.k8s.io/dra-driver-cpu
+    run_if_changed: '\.go$|^go\.(mod|sum)$|^Makefile$'
+    optional: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-dra-driver-cpu
+      testgrid-tab-name: modernize
+      description: "Run modernize tool and report suggested code improvements"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.26
+        command:
+        - make
+        - modernize
+        resources:
+          limits:
+            cpu: 1
+            memory: 2Gi
+          requests:
+            cpu: 1
+            memory: 2Gi
   - name: pull-dra-driver-cpu-e2e-device-mode-individual-amd64
     cluster: eks-prow-build-cluster
     labels:
