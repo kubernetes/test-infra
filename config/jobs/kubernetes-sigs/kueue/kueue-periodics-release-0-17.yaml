@@ -1,13 +1,54 @@
 periodics:
   - interval: 12h
-    name: periodic-kueue-test-unit-release-0-17
+    name: periodic-kueue-test-unit-shard-0-release-0-17
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-unit-release-0-17
+      testgrid-tab-name: periodic-kueue-test-unit-shard-0-release-0-17
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
-      description: "Run periodic kueue unit tests"
+      description: "Run periodic kueue unit shard 0 tests"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: release-0.17
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 10m
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.26
+          env:
+            - name: GO_TEST_FLAGS
+              value: "-race -count 3"
+            - name: GOMAXPROCS
+              value: "6"
+          command:
+            - make
+          args:
+            - test
+          resources:
+            requests:
+              cpu: "6"
+              memory: "6Gi"
+            limits:
+              cpu: "6"
+              memory: "6Gi"
+  - interval: 12h
+    name: periodic-kueue-test-unit-shard-1-release-0-17
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-unit-shard-1-release-0-17
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kueue unit shard 1 tests"
       testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
