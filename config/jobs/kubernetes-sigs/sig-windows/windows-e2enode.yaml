@@ -71,6 +71,8 @@ presubmits:
             env:
               - name: VM_LOCATION
                 value: northeurope
+              - name: CONTAINERD_VERSION
+                value: "nightly"
       annotations:
         testgrid-dashboards: sig-windows-presubmit
         testgrid-tab-name: pr-windows-e2e-node-master
