@@ -20,10 +20,10 @@ presubmits:
         resources:
           limits:
             cpu: 1
-            memory: 2Gi
+            memory: 4Gi
           requests:
             cpu: 1
-            memory: 2Gi
+            memory: 4Gi
   - name: pull-dra-driver-cpu-e2e-device-mode-individual-amd64
     cluster: eks-prow-build-cluster
     labels:
