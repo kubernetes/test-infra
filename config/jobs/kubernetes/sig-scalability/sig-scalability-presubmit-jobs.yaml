@@ -456,6 +456,8 @@ presubmits:
         #  Remaining parameters should match ci-kubernetes-e2e-gce-scale-performance-5000
         - name: CL2_ENABLE_INFORMER_LATENCY_TEST
           value: "false"
+        - name: CL2_RESTART_APISERVER
+          value: "true"
         - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
           value: "21474836480"
         - name: CL2_EXECSERVICE_CPU_REQUESTS
@@ -484,6 +486,8 @@ presubmits:
           value: "false"
         - name: NODE_MODE
           value: "master"
+        - name: CONTROL_PLANE_COUNT
+          value: "3"
         - name: CONTROL_PLANE_SIZE
           value: "c4-standard-96"
         - name: ADDONS_NODE_SIZE
