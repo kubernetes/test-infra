@@ -47,7 +47,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.22
+      base_ref: release-1.24
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -73,7 +73,7 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.22/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
@@ -107,7 +107,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.22
+      base_ref: release-1.24
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes
@@ -175,7 +175,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.22
+      base_ref: release-1.24
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -231,7 +231,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.22
+      base_ref: release-1.24
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -257,7 +257,7 @@ presubmits:
         - name: KUBERNETES_VERSION  # CAPZ config
           value: "latest-1.36"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.22/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: ENABLE_MULTI_SLB  # cloud-provider-azure config
@@ -307,7 +307,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.22
+      base_ref: release-1.24
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -408,7 +408,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.22
+      base_ref: release-1.24
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -528,7 +528,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.22
+      base_ref: release-1.24
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -559,7 +559,7 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.22/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
         resources:
           limits:
             cpu: 4
@@ -588,7 +588,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.22
+      base_ref: release-1.24
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -621,7 +621,7 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.22/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
         resources:
           limits:
             cpu: 4
@@ -648,7 +648,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.22
+    base_ref: release-1.24
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -683,7 +683,7 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.22/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
       resources:
         limits:
           cpu: 4
@@ -709,7 +709,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.22
+    base_ref: release-1.24
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -770,7 +770,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.22
+    base_ref: release-1.24
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -807,7 +807,7 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.22/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
       resources:
         limits:
           cpu: 4
@@ -833,7 +833,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.22
+    base_ref: release-1.24
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
