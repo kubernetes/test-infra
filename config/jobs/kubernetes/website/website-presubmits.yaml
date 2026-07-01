@@ -1,0 +1,36 @@
+---
+presubmits:
+  kubernetes/website:
+  - name: pull-website-verify
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    skip_if_only_changed: '^(OWNERS|OWNERS_ALIASES|LICENSE|\.github/|\.gitignore|archetypes/)'
+    branches:
+    - main
+    decorate: true
+    decoration_config:
+      timeout: 15m
+    annotations:
+      testgrid-dashboards: sig-docs-website
+      testgrid-tab-name: pull-website-verify
+      description: "Runs make verify to check spelling and other content issues"
+    spec:
+      containers:
+      - image: golang:1.26
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          set -euo pipefail
+
+          cd /home/prow/go/src/github.com/kubernetes/website
+          make verify
+        resources:
+          requests:
+            cpu: "2"
+            memory: "2Gi"
+          limits:
+            cpu: "2"
+            memory: "2Gi"

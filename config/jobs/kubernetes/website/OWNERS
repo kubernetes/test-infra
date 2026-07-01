@@ -1,0 +1,8 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+reviewers:
+- sig-docs-leads
+approvers:
+- sig-docs-leads
+- SergeyKanzhelev # temporarily to ensure the job works and iterate on it if needed.
+labels:
+- sig/docs
