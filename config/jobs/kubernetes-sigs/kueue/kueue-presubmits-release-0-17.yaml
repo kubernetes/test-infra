@@ -23,7 +23,7 @@ presubmits:
               - name: GOMAXPROCS
                 value: "6"
               - name: UNIT_SHARD_INDEX
-                value: "0"
+                value: "1"
               - name: UNIT_TOTAL_SHARDS
                 value: "2"
             command:
@@ -60,7 +60,7 @@ presubmits:
               - name: GOMAXPROCS
                 value: "6"
               - name: UNIT_SHARD_INDEX
-                value: "0"
+                value: "1"
               - name: UNIT_TOTAL_SHARDS
                 value: "2"
             command:
