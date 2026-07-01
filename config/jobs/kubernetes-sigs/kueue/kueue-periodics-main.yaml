@@ -29,6 +29,10 @@ periodics:
               value: "-race -count 3"
             - name: GOMAXPROCS
               value: "6"
+            - name: UNIT_SHARD_INDEX
+              value: "0"
+            - name: UNIT_TOTAL_SHARDS
+              value: "2"
           command:
             - make
           args:
@@ -70,6 +74,10 @@ periodics:
               value: "-race -count 3"
             - name: GOMAXPROCS
               value: "6"
+            - name: UNIT_SHARD_INDEX
+              value: "0"
+            - name: UNIT_TOTAL_SHARDS
+              value: "2"
           command:
             - make
           args:
