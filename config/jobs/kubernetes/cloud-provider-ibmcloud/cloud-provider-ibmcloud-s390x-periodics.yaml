@@ -183,6 +183,50 @@ periodics:
               export PATH=$GOPATH/bin:$PATH
               export GO111MODULE=on
               RESOURCE_TYPE="vpc-service"
+              rc1=0
+              rc2=0
+              CLUSTER_NAME=""
+              HEART_BEAT_PID=""
+
+              # --- Cleanup function: ALWAYS runs on exit (success, failure, or signal) ---
+              cleanup() {
+                set +o errexit
+                echo "=== CLEANUP: Starting resource cleanup ==="
+
+                if [ -n "${CLUSTER_NAME}" ]; then
+                  echo "=== CLEANUP: Running terraform destroy for cluster ${CLUSTER_NAME} ==="
+                  kubetest2 tf --target-provider vpc \
+                    --vpc-region "${BOSKOS_REGION:-}" --vpc-zone "${BOSKOS_ZONE:-}" \
+                    --vpc-resource-group "${BOSKOS_RESOURCE_GROUP:-}" \
+                    --vpc-name "${BOSKOS_RESOURCE_NAME:-}" \
+                    --ignore-cluster-dir true \
+                    --cluster-name "$CLUSTER_NAME" \
+                    --down --auto-approve --ignore-destroy-errors || true
+                  echo "=== CLEANUP: terraform destroy completed ==="
+                fi
+
+                if [ -n "${HEART_BEAT_PID}" ]; then
+                  echo "=== CLEANUP: Killing heartbeat PID ${HEART_BEAT_PID} ==="
+                  kill -9 "${HEART_BEAT_PID}" 2>/dev/null || true
+                fi
+
+                if [ -n "${BOSKOS_HOST:-}" ] && [ -n "${BOSKOS_RESOURCE_NAME:-}" ]; then
+                  echo "=== CLEANUP: Releasing Boskos resource ${BOSKOS_RESOURCE_NAME} ==="
+                  local release_url="http://${BOSKOS_HOST}/release?name=${BOSKOS_RESOURCE_NAME}&dest=dirty&owner=${USER}"
+                  local release_status
+                  release_status=$(curl -s -w '%{http_code}' -X POST "${release_url}")
+                  if [[ ${release_status} != 200 ]]; then
+                    echo "WARNING: Failed to release Boskos resource: ${BOSKOS_RESOURCE_NAME} (status: ${release_status})"
+                  else
+                    echo "=== CLEANUP: Successfully released Boskos resource ==="
+                  fi
+                fi
+
+                echo "=== CLEANUP: Done ==="
+              }
+
+              # Register cleanup trap -- runs on EXIT (covers normal exit, errors, and signals)
+              trap cleanup EXIT
 
               #Call to boskos to checkout resource
               heartbeat_account(){
@@ -193,7 +237,7 @@ periodics:
                   status_code=$(curl -s -o /dev/null -w '%{http_code}' -X POST ${url})
                   if [[ ${status_code} != 200 ]]; then
                     echo "Heart beat to resource '${BOSKOS_RESOURCE_NAME}' failed due to invalid response, status code: ${status_code}"
-                    exit 1
+                    return 1
                   fi
                   count=$(( $count + 1 ))
                   sleep 60
@@ -221,8 +265,9 @@ periodics:
                   echo "Failed to acquire resource due to invalid response, status code : ${status_code}"
                   exit 1
                 fi
+                set -o xtrace
                 heartbeat_account >> "$ARTIFACTS/boskos.log" 2>&1 &
-                HEART_BEAT_PID=$(echo $!)
+                HEART_BEAT_PID=$!
               fi
 
               #Setup of kubetest2 tf deployer and ginkgo tester
@@ -247,26 +292,23 @@ periodics:
               --cluster-name $CLUSTER_NAME \
               --workers-count 2 \
               --up --auto-approve --retry-on-tf-failure 3 \
-              --break-kubetest-on-upfail true \
-              --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
               --test=ginkgo -- --parallel 10 --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Conformance\]' --skip-regex='\[Serial\]'; rc1=$?
+
+              if [ $rc1 != 0 ]; then
+                echo "WARNING: Parallel conformance tests failed with code: $rc1, continuing to serial tests..."
+              fi
+
               export KUBECONFIG="$(pwd)/$CLUSTER_NAME/kubeconfig"
               export ARTIFACTS=$ARTIFACTS/serial_tests_artifacts
               #Run Serial Conformance tests
               kubetest2 tf --target-provider vpc --vpc-region ${BOSKOS_REGION} --vpc-zone ${BOSKOS_ZONE} \
                 --ignore-cluster-dir true \
                 --cluster-name $CLUSTER_NAME \
-                --down --auto-approve --ignore-destroy-errors \
                 --test=ginkgo -- --test-package-dir ci \
                 --test-package-marker latest.txt --focus-regex='\[Serial\].*\[Conformance\]'; rc2=$?
-              if [ -n "${BOSKOS_HOST:-}" ]; then
-                url="http://${BOSKOS_HOST}/release?name=${BOSKOS_RESOURCE_NAME}&dest=dirty&owner=${USER}"
-                status_code=$(curl -w '%{http_code}' -X POST ${url})
-                if [[ ${status_code} != 200 ]]; then
-                  echo "Failed to release resource: ${BOSKOS_RESOURCE_NAME}"
-                  exit 1
-                fi
-              fi
+
+              # Cleanup (terraform destroy + heartbeat kill + boskos release) runs
+              # automatically via the EXIT trap -- no need to handle it here.
 
               if [ $rc1 != 0 ]; then
                   echo "ERROR: Non Serial k8s Conformance tests exited with code: $rc1"
