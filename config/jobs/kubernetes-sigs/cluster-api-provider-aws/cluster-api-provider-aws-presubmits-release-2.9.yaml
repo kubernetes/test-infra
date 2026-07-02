@@ -106,10 +106,10 @@ presubmits:
         resources:
           requests:
             cpu: "4"
-            memory: "8Gi"
+            memory: "12Gi"
           limits:
             cpu: "4"
-            memory: "8Gi"
+            memory: "12Gi"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
