@@ -231,9 +231,9 @@ def latest_azure_image(publisher, offer, sku, arch="X86_64"):
     # az vm image show --urn Canonical:ubuntu-24_04-lts:server:latest | jq .name
     if publisher == 'Canonical' and offer == 'ubuntu-24_04-lts':
         if arch == 'arm64':
-            image_name = "Canonical:ubuntu-24_04-lts:server-arm64:24.04.202606110"
+            image_name = "Canonical:ubuntu-24_04-lts:server-arm64:24.04.202606060"
         else:
-            image_name = "Canonical:ubuntu-24_04-lts:server:24.04.202606120"
+            image_name = "Canonical:ubuntu-24_04-lts:server:24.04.202606060"
 
     # az vm image show --urn Debian:debian-13:13-gen2:latest | jq .name
     elif publisher == 'Debian' and offer == 'debian-13':
