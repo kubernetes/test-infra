@@ -42,6 +42,7 @@ triggers:
   trigger_github_workflows: true
 - repos:
   - kubernetes-sigs/gateway-api
+  - kubernetes-sigs/gateway-api-conformance-images
   - kubernetes-sigs/gateway-api-inference-extension
   - kubernetes-sigs/kube-agentic-networking
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
@@ -149,6 +150,7 @@ approve:
   ignore_review_state: false
 - repos:
   - kubernetes-sigs/gateway-api
+  - kubernetes-sigs/gateway-api-conformance-images
   lgtm_acts_as_approve: false
 - repos:
   - kubernetes-sigs/aws-ebs-csi-driver
@@ -1768,6 +1770,13 @@ plugins:
     - milestonestatus
     - override
     - release-note
+  
+  kubernetes-sigs/gateway-api-conformance-images:
+    plugins:
+    - milestone
+    - milestonestatus
+    - override
+    - release-note
 
   kubernetes-sigs/image-builder:
     plugins:
@@ -2088,6 +2097,12 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/gateway-api:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/gateway-api-conformance-images:
   - name: cherrypicker
     events:
     - issue_comment
