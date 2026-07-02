@@ -25,7 +25,7 @@ optional_and_run_if_changed:
     - name: check-dependency-stats
       run_if_changed: ^(go.mod|go.sum|vendor)
     - name: pull-kubernetes-apidiff-client-go
-      run_if_changed: ((^staging\/src\/k8s.io\/client-go)|(^staging\/src\/k8s.io\/code-generator\/examples))/.*\.go
+      run_if_changed: ^staging\/src\/k8s.io\/client-go/.*\.go
     - name: pull-kubernetes-audit-kind-conformance
       run_if_changed: ^(test/conformance/testdata/|api/openapi-spec/)
     - name: pull-kubernetes-conformance-image-test
