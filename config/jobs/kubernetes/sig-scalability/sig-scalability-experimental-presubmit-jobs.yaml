@@ -119,6 +119,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
     extra_refs:
     - org: kubernetes
@@ -135,11 +136,11 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
+        - --build=quick
         - --check-leaked-resources
         - --env=CL2_ENABLE_WATCH_LIST_FEATURE=false
         - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
-        - --extract=ci/latest
         - --gcp-node-image=gci
         - --gcp-master-size=n2-standard-32
         - --gcp-node-size=e2-standard-16
@@ -164,6 +165,8 @@ presubmits:
           limits:
             cpu: 2
             memory: "8Gi"
+        securityContext:
+          privileged: true
 
   - name: pull-kubernetes-e2e-gce-watch-list-benchmark
     cluster: k8s-infra-prow-build
@@ -180,6 +183,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
     extra_refs:
     - org: kubernetes
@@ -196,11 +200,11 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
+        - --build=quick
         - --check-leaked-resources
         - --env=CL2_ENABLE_WATCH_LIST_FEATURE=true
         - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
-        - --extract=ci/latest
         - --gcp-node-image=gci
         - --gcp-master-size=n2-standard-32
         - --gcp-node-size=e2-standard-16
@@ -225,6 +229,8 @@ presubmits:
           limits:
             cpu: 2
             memory: "8Gi"
+        securityContext:
+          privileged: true
 
   # Presubmit mirror of ci-kubernetes-e2e-gce-scale-performance-5000-experimental.
   - name: pull-kubernetes-gce-master-scale-performance-5000-experimental
