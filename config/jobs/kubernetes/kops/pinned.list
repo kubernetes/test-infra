@@ -1,5 +1,5 @@
-azure://images/Canonical/ubuntu-24_04-lts/server:X86_64=Canonical:ubuntu-24_04-lts:server:24.04.202606120
-azure://images/Canonical/ubuntu-24_04-lts/server-arm64:arm64=Canonical:ubuntu-24_04-lts:server-arm64:24.04.202606110
+azure://images/Canonical/ubuntu-24_04-lts/server:X86_64=Canonical:ubuntu-24_04-lts:server:24.04.202606060
+azure://images/Canonical/ubuntu-24_04-lts/server-arm64:arm64=Canonical:ubuntu-24_04-lts:server-arm64:24.04.202606060
 azure://images/Debian/debian-13/13-gen2:X86_64=Debian:debian-13:13-gen2:0.20260615.2510
 gce://images/debian-cloud/debian-12:X86_64=debian-cloud/debian-12-bookworm-v20260609
 gce://images/debian-cloud/debian-12-arm64:ARM64=debian-cloud/debian-12-bookworm-arm64-v20260611
