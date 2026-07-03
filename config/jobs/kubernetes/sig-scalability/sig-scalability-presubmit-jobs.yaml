@@ -438,7 +438,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability, sig-scalability-gce
-      testgrid-tab-name: pull-kubernetes-e2e-gce-master-scale-performance-5000
+      testgrid-tab-name: pull-kubernetes-gce-master-scale-performance-5000
     spec:
       serviceAccountName: prow-build
       tolerations:
