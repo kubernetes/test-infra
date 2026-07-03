@@ -51,10 +51,12 @@ presubmits:
 
   - name: pull-kubernetes-apidiff-client-go
     cluster: eks-prow-build-cluster
-    # A job which automatically runs for changes in client-go or the generated code
+    # A job which automatically runs for changes in client-go
     # to have visibility on the changes that will impact the external projects
-    # that are using the Kubernetes golang clients
-    run_if_changed: '((^staging\/src\/k8s.io\/client-go)|(^staging\/src\/k8s.io\/code-generator\/examples))/.*\.go'
+    # that are using the Kubernetes golang clients.
+    # Breaking Go API changes cause it to fail unless the
+    # client-go/CHANGELOG.md file documents those changes.
+    run_if_changed: '^staging\/src\/k8s.io\/client-go/.*\.go'
     optional: true
     decorate: true
     annotations:
@@ -73,7 +75,7 @@ presubmits:
         - /bin/sh
         - -c
         # Base and target are detected automatically by the script based on Prow variables.
-        - "./hack/apidiff.sh ./staging/src/k8s.io/code-generator/examples ./staging/src/k8s.io/client-go"
+        - "./hack/apidiff.sh ./staging/src/k8s.io/client-go"
         resources:
           # Memory limits are derived from pull-kubernetes-verify, with less CPUs.
           limits:
