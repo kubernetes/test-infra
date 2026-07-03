@@ -14,7 +14,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.2.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.1-0
         command:
         - /kpromo
         args:
@@ -67,7 +67,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.2.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.5.1-0
         command:
         - /kpromo
         args:
