@@ -207,6 +207,42 @@ presubmits:
             requests:
               cpu: 3
               memory: 10Gi
+  - name: pull-jobset-test-e2e-main-was
+    cluster: eks-prow-build-cluster
+    optional: true
+    branches:
+    - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    decorate: true
+    path_alias: sigs.k8s.io/jobset
+    annotations:
+      testgrid-dashboards: sig-apps-jobset-presubmits
+      testgrid-tab-name: pull-jobset-test-e2e-main-was
+      description: "Run jobset end to end scheduling tests with WAS feature gates enabled"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260622-537e33cc05-master
+          env:
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.26
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - test-e2e-kind-scheduling
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 3
+              memory: 10Gi
+            requests:
+              cpu: 3
+              memory: 10Gi
   - name: pull-jobset-verify-main
     cluster: eks-prow-build-cluster
     branches:
