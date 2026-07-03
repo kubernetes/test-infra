@@ -108,7 +108,7 @@ periodics:
           -- \
           --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
-          --parallel=25
+          --parallel=20
       env:
       - name: GINKGO_NO_COLOR
         value: "TRUE"
@@ -376,7 +376,7 @@ periodics:
           -- \
           --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
-          --parallel=25
+          --parallel=20
       env:
       - name: GINKGO_NO_COLOR
         value: "TRUE"

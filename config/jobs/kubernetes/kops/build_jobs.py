@@ -158,6 +158,8 @@ def build_test(cloud='aws',
         kops_image = azure_distro_images[distro]
         kops_ssh_user = 'kops'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
+        # Azure runs at reduced parallelism; keep serial jobs (e.g. conformance) as-is.
+        test_parallelism = min(test_parallelism, 20)
         if build_cluster is None:
             build_cluster = 'k8s-infra-prow-build'
 
