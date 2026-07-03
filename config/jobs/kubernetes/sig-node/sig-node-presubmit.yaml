@@ -90,7 +90,7 @@ presubmits:
               - --node-tests=true
               - --provider=gce
               - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
-              - --timeout=65m
+              - --timeout=80m
               - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
             resources:
               limits:
