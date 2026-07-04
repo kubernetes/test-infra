@@ -199,6 +199,10 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 		args = append(args, "--worker-pool", o.workerPool)
 	}
 
+	if o.serviceAccount != "" {
+		args = append(args, "--service-account", o.serviceAccount)
+	}
+
 	if o.region != "" {
 		args = append(args, "--region", o.region)
 	}
@@ -371,6 +375,7 @@ type options struct {
 	machineType      string
 	workerPool       string
 	region           string
+	serviceAccount   string
 
 	// withGitDirectory will include the .git directory when uploading the source to GCB
 	withGitDirectory bool
@@ -404,6 +409,7 @@ func parseFlags() options {
 	flag.StringVar(&o.region, "region", "global", "If specified, use the given region for the GCB build, otherwise 'global' is used.")
 	flag.StringVar(&o.machineType, "machine-type", "", "If specified, use the given machine type for the GCB build.")
 	flag.StringVar(&o.workerPool, "worker-pool", "", "If specified, use the given worker pool for the GCB build.")
+	flag.StringVar(&o.serviceAccount, "service-account", "", "If specified, use the given service account for the GCB build.")
 
 	flag.Parse()
 

@@ -266,6 +266,7 @@ postsubmits:
           args:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
+          - --service-account=projects/k8s-staging-test-infra/serviceAccounts/gcb-image-builder@k8s-staging-test-infra.iam.gserviceaccount.com
           - images/kubekins-e2e-v2/
     - name: post-test-infra-push-alpine
       cluster: k8s-infra-prow-build-trusted
