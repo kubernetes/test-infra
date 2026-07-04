@@ -12,6 +12,7 @@ steps:
     - GO111MODULE=on
     - GOPROXY=https://proxy.golang.org
     - GOSUMDB=sum.golang.org
+    - GOTOOLCHAIN=auto
   - name: gcr.io/cloud-builders/docker
     args:
     - build
@@ -21,7 +22,7 @@ steps:
     dir: images/builder
 substitutions:
   _GIT_TAG: '12345'
-  _GO_VERSION: '1.24'
+  _GO_VERSION: '1.25'
 images:
   - 'gcr.io/$PROJECT_ID/image-builder:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/image-builder:latest'
