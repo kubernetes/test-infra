@@ -1,4 +1,21 @@
 steps:
+  - name: amazon/aws-cli
+    entrypoint: /bin/bash
+    args:
+    - -c
+    - |
+      export AWS_ROLE_ARN=$_AWS_ROLE_ARN
+      export AWS_ROLE_SESSION_NAME=cloudbuild-$BUILD_ID
+      export AWS_REGION=$_AWS_REGION
+      mkdir -p ~/.aws/
+      cat << 'EOF' >> ~/.aws/config
+      [profile cloudbuild]
+      credential_process = /workspace/images/kubekins-e2e/login.sh
+      EOF
+      
+      dnf update -y && dnf install docker -y -q > /dev/null 2>&1
+      aws sts get-caller-identity --profile cloudbuild
+      aws ecr get-login-password --profile cloudbuild | docker login --username AWS --password-stdin "$_AWS_ECR_REGISTRY"
   - name: golang:latest
     args:
     - go
@@ -13,10 +30,16 @@ steps:
     - GO111MODULE=on
     - GOPROXY=https://proxy.golang.org
     - GOSUMDB=sum.golang.org
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260205-38cfa9523f
     args:
+    - docker
+    - buildx
     - build
     - --tag=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
+    - --tag=gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG
+    - --tag=$_AWS_ECR_REGISTRY/prow/kubekins-e2e-v1:$_GIT_TAG-$_CONFIG
+    - --tag=$_AWS_ECR_REGISTRY/prow/kubekins-e2e-v1:latest-$_CONFIG
+    - --platform=linux/amd64
     - --build-arg=BAZEL_VERSION_ARG=$_BAZEL_VERSION
     - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
@@ -25,35 +48,31 @@ steps:
     - --build-arg=KIND_VERSION=$_KIND_VERSION
     - --build-arg=KUBETEST2_VERSION=$_KUBETEST2_VERSION
     - --build-arg=YQ_VERSION=$_YQ_VERSION
+    - --push
     - -f
     - images/kubekins-e2e/Dockerfile
     - .
-    dir: .
-  - name: gcr.io/cloud-builders/docker
-    args:
-    - tag
-    - gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG
     dir: .
 substitutions:
   _BAZEL_VERSION: 5.2.0
   _OLD_BAZEL_VERSION: 3.4.1
   _CFSSL_VERSION: R1.2
+  _AWS_ECR_REGISTRY: 468814281478.dkr.ecr.us-east-2.amazonaws.com
+  _AWS_REGION: us-east-2
+  _AWS_ROLE_ARN: arn:aws:iam::468814281478:role/cloudbuild
   _CONFIG: master
   _GIT_TAG: '12345'
   _K8S_RELEASE: stable
   _K8S_BRANCH: master
   _KIND_VERSION: ''
   _KUBETEST2_VERSION: 'master'
-  _YQ_VERSION: v4.47.2
+  _YQ_VERSION: v4.53.3
 timeout: 7200s
 options:
   substitution_option: ALLOW_LOOSE
   # this is a large and critical CI image, builds are slow on the default 1 core
   machineType: E2_HIGHCPU_32
-images:
-  - 'gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG'
-  - 'gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG'
+serviceAccount: projects/k8s-staging-test-infra/serviceAccounts/gcb-image-builder@k8s-staging-test-infra.iam.gserviceaccount.com
 tags:
   - kubekins-e2e
   - $_CONFIG
