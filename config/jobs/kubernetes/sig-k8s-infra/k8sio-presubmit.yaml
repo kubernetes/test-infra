@@ -12,7 +12,7 @@ presubmits:
         - ^main$
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260622-537e33cc05-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260629-f759c32706-master
             command:
               - runner.sh
             args:
