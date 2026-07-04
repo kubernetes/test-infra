@@ -193,6 +193,7 @@ periodics:
           --up --down \
           --cloud-provider=azure \
           --create-args="--channel=alpha --networking=kubenet --set=spec.assets.containerProxy=registry-sandbox.k8s.io" \
+          --env KOPS_FEATURE_FLAGS=Azure \
           --kops-version=1.35.1 \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
