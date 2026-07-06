@@ -52,7 +52,7 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-2411bf71a3-02d2d.k8s.local"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260629-f759c32706-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260706-7056f81a85-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -123,7 +123,7 @@ periodics:
         value: "kops"
       - name: CLUSTER_NAME
         value: "e2e-dbdd1a066f-0ceac.k8s.local"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260629-f759c32706-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260706-7056f81a85-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -191,7 +191,7 @@ periodics:
         value: "prow"
       - name: CLUSTER_NAME
         value: "e2e-afaccac349-a1553.k8s.local"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260629-f759c32706-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260706-7056f81a85-master
       imagePullPolicy: Always
       resources:
         limits:

@@ -38,7 +38,7 @@ periodics:
       - env
       - KUBERNETES_VERSION=latest-1.35
       - ./capz/run-capz-e2e.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260629-f759c32706-1.35
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260706-7056f81a85-1.35
       name: ""
       resources:
         limits:
@@ -81,7 +81,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260629-f759c32706-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260706-7056f81a85-1.35
         command:
           - "runner.sh"
           - "env"
