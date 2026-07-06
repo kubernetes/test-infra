@@ -130,6 +130,64 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    fork-per-release-cron: 0 5 * * *, 0 9 * * *, 0 13 * * *, 0 17 * * *
+    testgrid-alert-email: sig-cloud-provider-ibm-s390x-alerts@kubernetes.io
+    testgrid-dashboards: ibm-s390x-k8s, conformance-s390x, ibm-k8s-e2e, sig-release-job-config-errors
+    testgrid-num-failures-to-alert: "2"
+    testgrid-tab-name: ci-kubernetes-s390x-conformance-1.36
+  cluster: k8s-infra-s390x-prow-build
+  cron: 0 1 * * *
+  decorate: true
+  decoration_config:
+    timeout: 2h0m0s
+  extra_refs:
+  - base_ref: main
+    org: kubernetes-sigs
+    repo: provider-ibmcloud-test-infra
+    workdir: true
+  labels:
+    preset-ibmcloud-cred-z: "true"
+  name: ci-kubernetes-s390x-conformance-1-36
+  spec:
+    containers:
+    - args:
+      - bash
+      - -c
+      - |
+        set -o xtrace
+
+        MARKER_VERSION=latest-1.36.txt;
+        K8S_BUILD_VERSION=$(curl -Ls https://dl.k8s.io/ci/$MARKER_VERSION);
+
+        #Setup of kubetest2 tf deployer
+        make install-deployer-tf
+
+        kubetest2 tf --target-provider vpc --vpc-node-image-name ibm-ubuntu-22-04-4-minimal-s390x-3 \
+        --vpc-ssh-key k8s-s390x-ssh-key \
+        --vpc-node-profile bz2-4x16 --ssh-private-key /etc/secret-volume/ssh-privatekey \
+        --extra-vars=ansible_user:k8s-admin --extra-vars=ansible_become:true \
+        --extra-vars=ansible_become_method:sudo \
+        --extra-vars=k8s_tar_bundles:kubernetes-server-linux-s390x.tar.gz \
+        --extra-vars=pod_subnet:10.244.0.0/16 --extra-vars=cni_provider:flannel \
+        --workers-count 2 --cluster-name conformance-$(date +%s) --up --down --auto-approve \
+        --retry-on-tf-failure 3 --break-kubetest-on-upfail true --ignore-destroy-errors \
+        --build-version $K8S_BUILD_VERSION --release-marker $K8S_BUILD_VERSION \
+        --test=ginkgo -- --parallel 10 --test-package-dir ci --test-package-marker $MARKER_VERSION \
+        --focus-regex='\[Conformance\]'
+      command:
+      - runner.sh
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260629-f759c32706-1.36
+      name: ""
+      resources:
+        limits:
+          cpu: "4"
+          memory: 12Gi
+        requests:
+          cpu: "4"
+          memory: 12Gi
+      securityContext:
+        privileged: true
+- annotations:
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.36-blocking, conformance-all, conformance-gce
