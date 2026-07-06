@@ -7,7 +7,7 @@ periodics:
     preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 110m # Still lower than the 2h interval, but getting close after adding serial jobs.
   extra_refs:
   - org: kubernetes
     repo: kubernetes
