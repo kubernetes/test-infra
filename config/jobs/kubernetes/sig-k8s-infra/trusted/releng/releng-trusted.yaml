@@ -254,6 +254,9 @@ periodics:
 
 - interval: 6h
   name: ci-fast-forward
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   spec:
@@ -291,6 +294,9 @@ periodics:
     testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: verify-image-signatures
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   decorate: true
   spec:
     containers:

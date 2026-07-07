@@ -9,6 +9,9 @@ periodics:
     testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: agentic-ai
     description: Verifies that Prow can run Antigravity using k8s-infra-agentic-ai.
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     serviceAccountName: agy-agent
     containers:

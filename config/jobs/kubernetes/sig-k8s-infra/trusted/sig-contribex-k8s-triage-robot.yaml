@@ -8,6 +8,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds API review process description to kind/api-change PRs
     testgrid-tab-name: api-review-help
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -63,6 +66,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds stable metrics review documentation to area/stable-metrics PRs
     testgrid-tab-name: stable-metrics-help
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -109,6 +115,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: A sample job to make sure things work
     testgrid-tab-name: cla
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -159,6 +168,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Closes rotten issues after 30d of inactivity
     testgrid-tab-name: close-issues
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -228,6 +240,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Closes rotten PRs after 30d of inactivity
     testgrid-tab-name: close-prs
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -418,6 +433,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds lifecycle/rotten to stale issues after 30d of inactivity
     testgrid-tab-name: rotten-issues
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -487,6 +505,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds lifecycle/rotten to stale PRs after 30d of inactivity
     testgrid-tab-name: rotten-prs
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -554,6 +575,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds lifecycle/stale to issues after 90d of inactivity
     testgrid-tab-name: stale-issues
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -623,6 +647,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds lifecycle/stale to PRs after 90d of inactivity
     testgrid-tab-name: stale-prs
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -690,6 +717,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Removes lifecycle/frozen from PRs
     testgrid-tab-name: thaw-prs
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -745,6 +775,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Removes the triage/accepted label after 1 year of inactivity
     testgrid-tab-name: re-triage
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -803,6 +836,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Removes the triage/accepted label on important issues after 3 months of inactivity
     testgrid-tab-name: re-triage-important
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -862,6 +898,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Removes the triage/accepted label on critical issues after 1 month of inactivity
     testgrid-tab-name: re-triage-critical
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d
@@ -918,6 +957,8 @@ periodics:
   cluster: k8s-infra-prow-build-trusted
   labels:
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot

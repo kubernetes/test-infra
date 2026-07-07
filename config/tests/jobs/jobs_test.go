@@ -1080,19 +1080,6 @@ func TestPreSubmitPathAlias(t *testing.T) {
 // Periodic jobs without such an entry must set the labels explicitly.
 // PostSubmits and PreSubmits can omit extra_refs because they implicitly checkout the repo they are defined for.
 func TestLabelsBeingSet(t *testing.T) {
-	// Some jobs currently lack proper labels. Label them and remove their entry here,
-	// never add to it!
-	legacyJobs := []string{
-		"^ci-aws-ec2-janitor$",
-		"^ci-kubernetes-cross-canary$", // No source code?! That looks wrong. https://testgrid.k8s.io/sig-k8s-infra-canaries#ci-k8s-cross-canary
-		"^ci-fast-forward$",
-		"^periodic-release-verify-image-signatures$",
-		"^ci-k8s-triage-robot", // Several jobs with this prefix.
-		"^issue-creator$",
-		"^ci-test-infra-label-sync$",
-		"^maintenance-ci-", // Several jobs with this prefix."
-	}
-	existingLegacyJobs := sets.New[int]()
 	for _, job := range c.AllPeriodics() {
 		extraRefIndex := slices.IndexFunc(job.ExtraRefs, func(extraRef prowapi.Refs) bool { return !extraRef.Auxiliary })
 		if extraRefIndex >= 0 {
@@ -1106,21 +1093,7 @@ func TestLabelsBeingSet(t *testing.T) {
 			// Handled manually.
 			continue
 		}
-		legacyJobIndex := slices.IndexFunc(legacyJobs, func(pattern string) bool { return regexp.MustCompile(pattern).MatchString(job.Name) })
-		if legacyJobIndex >= 0 {
-			// Exempt.
-			existingLegacyJobs.Insert(legacyJobIndex)
-			continue
-		}
-
 		t.Errorf("%s: periodic job %q does not get prow.k8s.io/refs.org and prow.k8s.io/refs.repo labels from extra_refs set, they must be set manually.", findJobSourceByName(job.Name), job.Name)
-	}
-
-	// Find obsolete legacyJobs entries.
-	for legacyJobIndex, pattern := range legacyJobs {
-		if !existingLegacyJobs.Has(legacyJobIndex) {
-			t.Errorf("Legacy periodic job pattern is unused and must be removed: %s", pattern)
-		}
 	}
 }
 

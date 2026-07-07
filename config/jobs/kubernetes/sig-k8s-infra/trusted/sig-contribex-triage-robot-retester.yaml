@@ -7,6 +7,9 @@ periodics:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     testgrid-tab-name: retester
     description: Automatically /retest-required for approved PRs that are failing tests
+  labels:
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20260515-778139c32d

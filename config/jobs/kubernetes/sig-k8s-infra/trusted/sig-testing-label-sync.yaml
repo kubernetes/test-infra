@@ -4,6 +4,8 @@ periodics:
   cluster: k8s-infra-prow-build-trusted
   labels:
     app: label-sync
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   decorate: true
   spec:
     containers:
