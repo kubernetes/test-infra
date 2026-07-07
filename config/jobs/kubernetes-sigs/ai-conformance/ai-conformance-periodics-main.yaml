@@ -1,1 +1,39 @@
 periodics:
+- name: ci-ai-conformance-e2e-gcp
+  cluster: k8s-infra-prow-build
+  job_queue_name: gce-gpu-test
+  interval: 24h
+  decorate: true
+  decoration_config:
+    timeout: 1h
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: ai-conformance
+    base_ref: main
+    path_alias: github.com/kubernetes-sigs/ai-conformance
+  annotations:
+    testgrid-dashboards: sig-arch-ai-conformance
+    testgrid-tab-name: ci-ai-conformance-e2e-gcp
+    description: "Daily GPU e2e on GCP for AI Conformance main branch"
+  spec:
+    serviceAccountName: prow-build
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260622-537e33cc05-master
+      command:
+      - runner.sh
+      args:
+      - ./test/e2e/run-e2e-gcp.sh
+      env:
+      - name: BOSKOS_HOST
+        value: "http://boskos.test-pods.svc.cluster.local"
+      - name: BOSKOS_RESOURCE_TYPE
+        value: "gpu-project"
+      - name: RUN_IN_PROW
+        value: "true"
+      resources:
+        requests:
+          cpu: "4"
+          memory: "8Gi"
+        limits:
+          cpu: "4"
+          memory: "8Gi"

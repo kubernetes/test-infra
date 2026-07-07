@@ -6,6 +6,7 @@ dashboard_groups:
   - sig-arch-conformance
   - sig-arch-enhancements
   - sig-arch-code-organization
+  - sig-arch-ai-conformance
 
 # Dashboards
 #
@@ -13,3 +14,4 @@ dashboards:
 - name: sig-arch-conformance
 - name: sig-arch-enhancements
 - name: sig-arch-code-organization
+- name: sig-arch-ai-conformance
