@@ -16,10 +16,10 @@ presubmits:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260706-7056f81a85-master
         resources:
           requests:
-            memory: "2Gi"
+            memory: "4Gi"
             cpu: "2"
           limits:
-            memory: "2Gi"
+            memory: "4Gi"
             cpu: "2"
         command:
         - runner.sh
