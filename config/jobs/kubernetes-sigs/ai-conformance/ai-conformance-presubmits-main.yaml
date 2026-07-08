@@ -1,2 +1,41 @@
 presubmits:
-  kubernetes-sigs/wg-ai-conformance:
+  kubernetes-sigs/ai-conformance:
+  - name: pull-ai-conformance-e2e-gcp
+    cluster: k8s-infra-prow-build
+    job_queue_name: gce-gpu-test
+    always_run: false
+    optional: true
+    skip_report: false
+    run_if_changed: '^(test/|go\.mod$|go\.sum$)'
+    max_concurrency: 1
+    branches:
+    - ^main$
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    annotations:
+      testgrid-dashboards: sig-arch-ai-conformance
+      testgrid-tab-name: pull-ai-conformance-e2e-gcp
+      description: "On-demand GPU e2e on GCP for AI Conformance PRs"
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260622-537e33cc05-master
+        command:
+        - runner.sh
+        args:
+        - ./test/e2e/run-e2e-gcp.sh
+        env:
+        - name: BOSKOS_HOST
+          value: "http://boskos.test-pods.svc.cluster.local"
+        - name: BOSKOS_RESOURCE_TYPE
+          value: "gpu-project"
+        - name: RUN_IN_PROW
+          value: "true"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
