@@ -211,7 +211,7 @@ periodics:
       # List of features that are not in scope of emulation version and have been removed. These can pass since they are not subject to the same policies as
       # feature gates that exist in components such as KCM.
       - name: REMOVED_FEATURE_LIST
-        value: "LegacySidecarContainers"
+        value: "LegacySidecarContainers PreventStaticPodAPIReferences"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -267,7 +267,7 @@ periodics:
       # List of features that are not in scope of emulation version and have been removed. These can pass since they are not subject to the same policies as
       # feature gates that exist in components such as KCM.
       - name: REMOVED_FEATURE_LIST
-        value: "LegacySidecarContainers"
+        value: "LegacySidecarContainers PreventStaticPodAPIReferences"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
