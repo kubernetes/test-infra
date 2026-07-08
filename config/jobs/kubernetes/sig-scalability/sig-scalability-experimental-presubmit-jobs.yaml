@@ -36,7 +36,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260706-7056f81a85-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
@@ -131,7 +131,7 @@ presubmits:
       testgrid-tab-name: gce-watch-list-off-benchmark
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260706-7056f81a85-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -195,7 +195,7 @@ presubmits:
       testgrid-tab-name: gce-watch-list-benchmark
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260706-7056f81a85-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -268,7 +268,7 @@ presubmits:
         - key: highmem
           operator: Exists
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260706-7056f81a85-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:

@@ -16,7 +16,7 @@ presubmits:
     spec:
       containers:
       # specified tags are periodically updated in bulk for all prow jobs
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260706-7056f81a85-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
