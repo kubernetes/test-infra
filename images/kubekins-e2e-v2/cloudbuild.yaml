@@ -1,25 +1,59 @@
 steps:
-  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260205-38cfa9523f
-    entrypoint: /buildx-entrypoint
+  - name: amazon/aws-cli
+    entrypoint: /bin/bash
     args:
-    - build
-    - --tag=$_REGISTRY/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - --tag=$_REGISTRY/kubekins-e2e:latest-$_CONFIG
-    - --build-arg=IMAGE_ARG=$_REGISTRY/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - --platform=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
-    - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
-    - --build-arg=K8S_RELEASE=$_K8S_RELEASE
-    - --build-arg=K8S_BRANCH=$_K8S_BRANCH
-    - --build-arg=KIND_VERSION=$_KIND_VERSION
-    - --build-arg=KUBETEST2_VERSION=$_KUBETEST2_VERSION
-    - --build-arg=YQ_VERSION=$_YQ_VERSION
-    - --build-arg=DOCKER_VERSION=$_DOCKER_VERSION
-    - --build-arg=HELM_VERSION=$_HELM_VERSION
-    - --build-arg=GH_VERSION=$_GH_VERSION
-    - --push
-    - .
+    - -c
+    - |
+      if [[ "$_REGISTRY" == gcr.io/* ]]; then
+        echo "Detected a presubmit cloudbuild job, skipping AWS ECR login."
+        exit 0
+      fi
+
+      export AWS_ROLE_ARN=$_AWS_ROLE_ARN
+      export AWS_ROLE_SESSION_NAME=cloudbuild-$BUILD_ID
+      export AWS_REGION=$_AWS_REGION
+      mkdir -p ~/.aws/
+      cat << 'EOF' >> ~/.aws/config
+      [profile cloudbuild]
+      credential_process = /workspace/login.sh
+      EOF
+      
+      dnf update -y && dnf install docker -y -q > /dev/null 2>&1
+      aws sts get-caller-identity --profile cloudbuild
+      aws ecr get-login-password --profile cloudbuild | docker login --username AWS --password-stdin "$_AWS_ECR_REGISTRY"
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260205-38cfa9523f
+    args:
+    - bash
+    - -c
+    - |
+      OUTPUT="type=registry,unpack=false"
+      if [[ "$_REGISTRY" == gcr.io/* ]]; then
+        echo "Detected a presubmit cloudbuild job, skipping image push"
+        OUTPUT="type=oci,dest=path=/tmp/image.tar.gz"
+      fi
+      docker buildx build \
+        --tag=$_REGISTRY/kubekins-e2e:$_GIT_TAG-$_CONFIG \
+        --tag=$_REGISTRY/kubekins-e2e:latest-$_CONFIG \
+        --tag=$_AWS_ECR_REGISTRY/prow/kubekins-e2e:$_GIT_TAG-$_CONFIG \
+        --tag=$_AWS_ECR_REGISTRY/prow/kubekins-e2e:latest-$_CONFIG \
+        --build-arg=IMAGE_ARG=$_REGISTRY/kubekins-e2e:$_GIT_TAG-$_CONFIG \
+        --platform=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x \
+        --build-arg=CFSSL_VERSION=$_CFSSL_VERSION \
+        --build-arg=K8S_RELEASE=$_K8S_RELEASE \
+        --build-arg=K8S_BRANCH=$_K8S_BRANCH \
+        --build-arg=KIND_VERSION=$_KIND_VERSION \
+        --build-arg=KUBETEST2_VERSION=$_KUBETEST2_VERSION \
+        --build-arg=YQ_VERSION=$_YQ_VERSION \
+        --build-arg=DOCKER_VERSION=$_DOCKER_VERSION \
+        --build-arg=HELM_VERSION=$_HELM_VERSION \
+        --build-arg=GH_VERSION=$_GH_VERSION \
+        --output=$$OUTPUT \
+        .
     dir: .
 substitutions:
+  _AWS_ECR_REGISTRY: 468814281478.dkr.ecr.us-east-2.amazonaws.com
+  _AWS_REGION: us-east-2
+  _AWS_ROLE_ARN: arn:aws:iam::468814281478:role/cloudbuild
   _CFSSL_VERSION: 1.6.5
   _CONFIG: master
   _GIT_TAG: '12345'
@@ -27,10 +61,10 @@ substitutions:
   _K8S_BRANCH: master
   _KIND_VERSION: '0.32.0'
   _KUBETEST2_VERSION: 'master'
-  _YQ_VERSION: v4.49.2
+  _YQ_VERSION: v4.53.3
   _DOCKER_VERSION: 5:29.*
-  _HELM_VERSION: v4.1.0
-  _GH_VERSION: 2.92.0
+  _HELM_VERSION: v4.2.2
+  _GH_VERSION: 2.96.0
   _REGISTRY: us-central1-docker.pkg.dev/k8s-staging-test-infra/images
 timeout: 3600s
 options:

@@ -21,11 +21,11 @@ FROM gcr.io/k8s-staging-test-infra/bootstrap:v20251209-855adc2699
 ENV KUBETEST_IN_DOCKER="true"
 
 # Go standard envs
-ENV GOPATH /go
-ENV PATH /usr/local/go/bin:$PATH
+ENV GOPATH=/go
+ENV PATH=/usr/local/go/bin:$PATH
 
 RUN mkdir -p /go/bin
-ENV PATH $GOPATH/bin:$PATH
+ENV PATH=$GOPATH/bin:$PATH
 
 # setup k8s repo symlink
 RUN mkdir -p /go/src/k8s.io/kubernetes \
@@ -68,7 +68,7 @@ RUN rm -f $(which kubectl) && \
 ARG GO_VERSION
 ARG K8S_BRANCH
 RUN if [ -z "${GO_VERSION}" ]; then \
-      GO_VERSION=$(curl --retry 6 --retry-connrefused -fsSL "https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/${K8S_BRANCH}/.go-version"); \
+    GO_VERSION=$(curl --retry 6 --retry-connrefused -fsSL "https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/${K8S_BRANCH}/.go-version"); \
     fi && \
     export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz" && \
     wget -q "https://go.dev/dl/${GO_TARBALL}" && \
@@ -119,6 +119,6 @@ ADD ["images/kubekins-e2e/kops-e2e-runner.sh", \
     "logexporter/cluster/log-dump.sh", \
     "logexporter/cluster/logexporter-daemonset.yaml", \
     "/workspace/"]
-ENV LOG_DUMP_SCRIPT_PATH "/workspace/log-dump.sh"
+ENV LOG_DUMP_SCRIPT_PATH="/workspace/log-dump.sh"
 RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/log-dump.sh"]
 
