@@ -5,6 +5,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - customized-controller
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-operator-postsubmits
@@ -31,6 +32,7 @@ postsubmits:
     cluster: k8s-infra-prow-build
     branches:
     - main
+    - customized-controller
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -62,6 +64,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - customized-controller
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-operator-postsubmits

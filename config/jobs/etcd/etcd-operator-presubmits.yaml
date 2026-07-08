@@ -6,6 +6,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - customized-controller
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-operator-presubmits
@@ -33,6 +34,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - customized-controller
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -64,6 +66,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - customized-controller
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-operator-presubmits
