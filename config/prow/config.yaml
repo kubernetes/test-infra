@@ -139,6 +139,7 @@ deck:
           - • Failure
           # This highlights the start of bazel tests/runs to skip go importing noise.
           - "^INFO: Analyzed \\d+ targets"
+          - "^Successfully generated argocd diff preview" # used by pull-k8sio-argocd-diff
       required_files:
         - ^.*build-log\.txt$
     - lens:
