@@ -210,9 +210,9 @@ presubmits:
   - name: pull-jobset-test-e2e-main-was
     cluster: eks-prow-build-cluster
     optional: true
+    always_run: false
     branches:
     - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/jobset
     annotations:
