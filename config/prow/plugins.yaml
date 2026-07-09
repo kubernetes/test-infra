@@ -63,18 +63,12 @@ owners:
 
 approve:
 - repos:
-  - kubernetes/cluster-registry
-  - kubernetes/contrib
-  - kubernetes/dashboard
   - kubernetes/dns
   - kubernetes/examples
-  - kubernetes/federation
   - kubernetes/gengo
   - kubernetes/ingress-gce
-  - kubernetes/ingress-nginx
   - kubernetes/klog
   - kubernetes/kubeadm
-  - kubernetes/kubectl
   - kubernetes/kubernetes-template-project
   - kubernetes/kube-state-metrics
   - kubernetes/minikube
@@ -115,7 +109,6 @@ approve:
   require_self_approval: true
   ignore_review_state: true
 - repos:
-  - bazelbuild
   - kubernetes-sigs/bom
   - kubernetes-sigs/boskos
   - kubernetes-sigs/cluster-api-provider-digitalocean
@@ -681,9 +674,6 @@ repo_milestone:
   kubernetes/kops:
     maintainers_team: kops-maintainers
     maintainers_friendly_name: Kops Maintainers
-  kubernetes/ingress-nginx:
-    maintainers_team: ingress-nginx-maintainers
-    maintainers_friendly_name: Ingress NGINX Maintainers
   kubernetes/org:
     maintainers_team: owners
     maintainers_friendly_name: GitHub Admin Team
@@ -920,23 +910,6 @@ require_matching_label:
   repo: python
   prs: true
   regexp: ^kind/
-- missing_label: needs-kind
-  org: kubernetes-client
-  repo: python-base
-  prs: true
-  regexp: ^kind/
-- missing_label: needs-triage
-  org: kubernetes
-  repo: ingress-nginx
-  issues: true
-  prs: true
-  regexp: ^triage/
-  missing_comment: |
-    This issue is currently awaiting triage.
-
-    If Ingress contributors determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
-
-    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
 - missing_label: needs-triage
   org: kubernetes-sigs
   repo: karpenter
@@ -954,18 +927,6 @@ require_matching_label:
   repo: karpenter
   issues: true
   prs: false
-  regexp: ^priority/
-- missing_label: needs-kind
-  org: kubernetes
-  repo: ingress-nginx
-  issues: true
-  prs: true
-  regexp: ^kind/
-- missing_label: needs-priority
-  org: kubernetes
-  repo: ingress-nginx
-  issues: true
-  prs: true
   regexp: ^priority/
 - missing_label: needs-kind
   org: kubernetes-sigs
@@ -1408,22 +1369,12 @@ plugins:
     - milestone
     - require-matching-label
 
-  kubernetes/dashboard:
-    plugins:
-    - override
-
   kubernetes/enhancements:
     plugins:
     - blockade
     - milestone
     - require-matching-label
     - stage
-
-  kubernetes/ingress-nginx:
-    plugins:
-    - require-matching-label
-    - milestone
-    - project
 
   kubernetes/k8s.io:
     plugins:
@@ -1542,11 +1493,6 @@ plugins:
     - yuks
 
   kubernetes-client/python:
-    plugins:
-    - release-note
-    - require-matching-label
-
-  kubernetes-client/python-base:
     plugins:
     - release-note
     - require-matching-label
@@ -1938,12 +1884,6 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes/ingress-gce:
-  - name: cherrypicker
-    events:
-    - issue_comment
-    - pull_request
-    endpoint: http://cherrypicker
-  kubernetes/ingress-nginx:
   - name: cherrypicker
     events:
     - issue_comment
