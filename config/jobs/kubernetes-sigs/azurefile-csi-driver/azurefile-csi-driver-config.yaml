@@ -600,6 +600,10 @@ presubmits:
               value: "v1.35.2"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
+            - name: WINDOWS_WORKER_MACHINE_COUNT
+              value: "3"
+            - name: MIN_WINDOWS_WORKER_MACHINE_COUNT
+              value: "2"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz-windows-2022-hostprocess
