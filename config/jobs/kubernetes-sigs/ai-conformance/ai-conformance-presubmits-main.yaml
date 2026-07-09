@@ -3,10 +3,9 @@ presubmits:
   - name: pull-ai-conformance-e2e-gcp
     cluster: k8s-infra-prow-build
     job_queue_name: gce-gpu-test
-    always_run: false
+    always_run: true
     optional: true
     skip_report: false
-    run_if_changed: '^(test/|go\.mod$|go\.sum$)'
     max_concurrency: 1
     branches:
     - ^main$
@@ -16,7 +15,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-arch-ai-conformance
       testgrid-tab-name: pull-ai-conformance-e2e-gcp
-      description: "On-demand GPU e2e on GCP for AI Conformance PRs"
+      description: "GPU e2e on GCP for AI Conformance PRs"
     spec:
       serviceAccountName: prow-build
       containers:
