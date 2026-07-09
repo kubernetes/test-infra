@@ -144,6 +144,7 @@ presubmits:
         - --gcp-node-size=e2-standard-16
         - --gcp-nodes=1
         - --gcp-project-type=scalability-project
+        - --gcp-zone=us-east1-b
         - --provider=gce
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -208,6 +209,7 @@ presubmits:
         - --gcp-node-size=e2-standard-16
         - --gcp-nodes=1
         - --gcp-project-type=scalability-project
+        - --gcp-zone=us-east1-b
         - --provider=gce
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
