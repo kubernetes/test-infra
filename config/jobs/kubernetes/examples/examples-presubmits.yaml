@@ -1,0 +1,36 @@
+# github.com/kubernetes/examples presubmits
+presubmits:
+  kubernetes/examples:
+  - name: pull-examples-e2e-kind
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    # Run on every PR, but non-blocking for now.
+    always_run: true
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 30m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260706-7056f81a85-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - tests/e2e/e2e-kind
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+    annotations:
+      testgrid-dashboards: sig-apps-examples
+      testgrid-tab-name: pull-examples-e2e-kind
+      description: Runs the tests/e2e/e2e-kind test.

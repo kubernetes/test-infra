@@ -3,6 +3,7 @@ dashboard_groups:
   dashboard_names:
     - sig-apps-agent-sandbox
     - sig-apps-mcp-lifecycle-operator
+    - sig-apps-examples
     - sig-apps-jobset
     - sig-apps-jobset-periodics
     - sig-apps-jobset-presubmits
@@ -15,6 +16,7 @@ dashboard_groups:
 dashboards:
 - name: sig-apps-agent-sandbox
 - name: sig-apps-mcp-lifecycle-operator
+- name: sig-apps-examples
 - name: sig-apps-jobset
 - name: sig-apps-jobset-periodics
 - name: sig-apps-jobset-presubmits
