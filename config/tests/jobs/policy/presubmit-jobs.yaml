@@ -104,6 +104,8 @@ optional_and_run_if_changed:
       run_if_changed: ^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)
     - name: pull-kubernetes-e2e-storage-kind-vac
       run_if_changed: ^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)
+    - name: pull-kubernetes-e2enode-windows-master
+      run_if_changed: .*windows\.go$|.*windows/.*\.go$
     - name: pull-kubernetes-kind-dra
       branches:
         - release-1.33
