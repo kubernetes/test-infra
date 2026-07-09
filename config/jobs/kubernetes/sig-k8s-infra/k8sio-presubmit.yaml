@@ -105,7 +105,7 @@ presubmits:
                   -v $(pwd):/target-branch \
                   -v $(ARTIFACTS):/output \
                   -e TARGET_BRANCH=$PULL_PULL_SHA \
-                  -e REPO=$REPO_NAME/$REPO_OWNER \
+                  -e REPO=$REPO_OWNER/$REPO_NAME \
                   dagandersen/argocd-diff-preview:v0.2.11 \
                   --argocd-namespace=argocd-diff-preview \
                   --create-cluster=false

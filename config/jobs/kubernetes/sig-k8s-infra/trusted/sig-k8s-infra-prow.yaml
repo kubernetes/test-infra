@@ -158,3 +158,44 @@ periodics:
     - name: github
       secret:
         secretName: k8s-infra-ci-robot-github-token
+
+- name: ci-prow-autobump-base-images
+  cron: "15 14-20/5 * * 1-5"  # Run at :15 every hour between 9:15 and 6:15 PM PST Mon-Fri
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  max_concurrency: 1
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: prow
+    base_ref: main
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '3'
+    description: runs autobumper to create/update a PR that updates prow base images in k-sigs/prow
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: prow-maintainers
+  spec:
+    containers:
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260708-c1e6d502d
+      command:
+      - generic-autobumper
+      args:
+      - --config=hack/autobump.yaml
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      resources:
+        limits:
+          cpu: 100m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 512Mi
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-infra-ci-robot-github-token
