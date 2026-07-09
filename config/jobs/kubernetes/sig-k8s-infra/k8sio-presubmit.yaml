@@ -71,3 +71,52 @@ presubmits:
               requests:
                 cpu: 1
                 memory: "512Mi"
+    - name: pull-k8sio-argocd-diff
+      cluster: k8s-infra-prow-build
+      run_if_changed: "^kubernetes/"
+      annotations:
+        testgrid-dashboards: sig-k8s-infra-k8sio
+      labels:
+        preset-dind-enabled: "true"
+      decorate: true
+      path_alias: k8s.io/k8s.io
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260706-7056f81a85-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                git clone --depth 1 https://github.com/kubernetes/k8s.io /tmp/base-branch
+                kind create cluster
+                helm repo add argo https://argoproj.github.io/argo-helm
+                helm upgrade --install argocd argo/argo-cd --version 10.1.2 --create-namespace --namespace argocd-diff-preview \
+                  --set configs.cm."kustomize\.buildOptions"="--load-restrictor LoadRestrictionsNone --enable-alpha-plugins"
+                kubectl apply -n argocd-diff-preview -f kubernetes/gke-utility/argocd/clusters.yaml || true # ignore errors from missing ES
+                kubectl apply -n argocd-diff-preview -f kubernetes/gke-utility/argocd/clusters-diff.yaml # ES based clusters
+
+                docker run \
+                  --network=host \
+                  -v ~/.kube:/root/.kube \
+                  -v /var/run/docker.sock:/var/run/docker.sock \
+                  -v /tmp/base-branch:/base-branch \
+                  -v $(pwd):/target-branch \
+                  -v $(ARTIFACTS):/output \
+                  -e TARGET_BRANCH=$PULL_PULL_SHA \
+                  -e REPO=$REPO_NAME/$REPO_OWNER \
+                  dagandersen/argocd-diff-preview:v0.2.11 \
+                  --argocd-namespace=argocd-diff-preview \
+                  --create-cluster=false
+
+                echo "Successfully generated argocd diff preview at https://storage.googleapis.com/kubernetes-ci-logs/pr-logs/pull/k8s.io/$PULL_NUMBER/pull-k8sio-argocd-diff/$BUILD_ID/artifacts/diff.html"
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 2
+                memory: "1Gi"
+              requests:
+                cpu: 2
+                memory: "1Gi"
