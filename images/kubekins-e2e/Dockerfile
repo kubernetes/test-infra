@@ -101,13 +101,6 @@ RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
     cd /tmp/kubetest2 && make install-all && rm -rf /tmp/kubetest2; \
     fi
 
-# configure dockerd to use mirror.gcr.io
-# per instructions at https://cloud.google.com/container-registry/docs/pulling-cached-images
-ARG DOCKER_REGISTRY_MIRROR_URL=https://mirror.gcr.io
-RUN [ -n "${DOCKER_REGISTRY_MIRROR_URL}" ] && \
-    echo "DOCKER_OPTS=\"\${DOCKER_OPTS} --registry-mirror=${DOCKER_REGISTRY_MIRROR_URL}\"" | \
-    tee --append /etc/default/docker
-
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}

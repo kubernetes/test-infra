@@ -201,13 +201,6 @@ RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
     rm linux-${TARGETARCH}.tgz; \
     fi
 
-# configure dockerd to use mirror.gcr.io
-# per instructions at https://cloud.google.com/container-registry/docs/pulling-cached-images
-ARG DOCKER_REGISTRY_MIRROR_URL=https://mirror.gcr.io
-RUN [ -n "${DOCKER_REGISTRY_MIRROR_URL}" ] && \
-    echo "DOCKER_OPTS=\"\${DOCKER_OPTS} --registry-mirror=${DOCKER_REGISTRY_MIRROR_URL}\"" | \
-    tee --append /etc/default/docker
-
 # note the runner is also responsible for making docker in docker function if
 # env DOCKER_IN_DOCKER_ENABLED is set
 COPY ["runner.sh", \

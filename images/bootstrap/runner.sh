@@ -42,20 +42,6 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     echo "Docker in Docker enabled, initializing..."
     printf '=%.0s' {1..80}; echo
 
-    # optionally enable CDI in Docker/containerd (see https://github.com/cncf-tags/container-device-interface?tab=readme-ov-file#docker-configuration)
-    export CDI_IN_DOCKER_ENABLED=${CDI_IN_DOCKER_ENABLED:-false}
-    if [[ "${CDI_IN_DOCKER_ENABLED}" == "true" ]]; then
-        echo "Enabling CDI for Docker."
-        mkdir -p /etc/docker/
-        cat >/etc/docker/daemon.json <<EOF
-{
-  "features": {
-    "cdi": true
-  }
-}
-EOF
-    fi
-
     # docker v27+ has ipv6 by default, but not all e2e hosts have everything
     # we need enabled by default
     # enable ipv6
@@ -66,6 +52,24 @@ EOF
 
     # Fix ulimit issue
     sed -i 's|ulimit -Hn|ulimit -n|' /etc/init.d/docker || true
+
+    local docker_registry_mirror_url
+    if [[ "${PROW_CLOUD_PROVIDER:-}" == "amazon" ]]; then
+        echo "Configuring docker to use public.ecr.aws/docker/library"
+        docker_registry_mirror_url=https://public.ecr.aws/docker/library
+    else
+        echo "Configuring docker to use mirror.gcr.io"
+        docker_registry_mirror_url="https://mirror.gcr.io"
+    fi
+
+    mkdir -p /etc/docker
+    cat >/etc/docker/daemon.json <<EOF
+{
+  "registry-mirrors": ["${docker_registry_mirror_url}"],
+  "cgroup-parent": "dind",
+  "default-cgroupns-mode": "host"
+}
+EOF
 
     # start the docker daemon
     service docker start
