@@ -47,7 +47,14 @@ plank:
           requests:
             cpu: 100m
       blobless_fetch: true
+  # This is temporary while we transition to Workload Identity Federation.
   - cluster: k8s-infra-aks-prow-build
+    config:
+      gcs_credentials_secret: ""
+  - cluster: k8s-infra-ppc64le-prow-build
+    config:
+      gcs_credentials_secret: ""
+  - cluster: k8s-infra-s390x-prow-build
     config:
       gcs_credentials_secret: ""
 
