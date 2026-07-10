@@ -16,7 +16,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         command:
         - runner.sh
-        - ./scripts/ci-build.sh
+        - ./hack/scripts/ci/ci-build.sh
         resources:
           requests:
             cpu: 6000m
@@ -42,7 +42,7 @@ presubmits:
       containers:
       - command:
         - runner.sh
-        - ./scripts/ci-apidiff.sh
+        - ./hack/scripts/ci/ci-apidiff.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         resources:
           requests:
@@ -71,7 +71,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         command:
         - "runner.sh"
-        - ./scripts/ci-verify.sh
+        - ./hack/scripts/ci/ci-verify.sh
         resources:
           requests:
             cpu: 5000m
@@ -99,7 +99,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
         - runner.sh
-        - ./scripts/ci-test.sh
+        - ./hack/scripts/ci/ci-test.sh
         resources:
           requests:
             cpu: 7
@@ -125,7 +125,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
         - runner.sh
-        - ./scripts/ci-test.sh
+        - ./hack/scripts/ci/ci-test.sh
         env:
         # This value determines the minimum Kubernetes
         # supported version for Cluster API management cluster
@@ -169,7 +169,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
         - runner.sh
-        - ./scripts/ci-e2e.sh
+        - ./hack/scripts/ci/ci-e2e.sh
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -223,7 +223,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
           - runner.sh
-          - "./scripts/ci-e2e.sh"
+          - ./hack/scripts/ci/ci-e2e.sh
         env:
           - name: GINKGO_LABEL_FILTER
             value: "PR-Blocking"
@@ -266,7 +266,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
           - runner.sh
-          - "./scripts/ci-e2e.sh"
+          - ./hack/scripts/ci/ci-e2e.sh
         env:
           # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -312,7 +312,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
           - runner.sh
-          - "./scripts/ci-e2e.sh"
+          - ./hack/scripts/ci/ci-e2e.sh
         env:
           # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -358,7 +358,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
           - runner.sh
-          - "./scripts/ci-e2e.sh"
+          - ./hack/scripts/ci/ci-e2e.sh
         env:
           - name: ALWAYS_BUILD_KIND_IMAGES
             value: "true"
@@ -408,7 +408,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
         - runner.sh
-        - "./scripts/ci-e2e.sh"
+        - ./hack/scripts/ci/ci-e2e.sh
         env:
         - name: GINKGO_LABEL_FILTER
           value: "(Conformance && K8s-Install)"
@@ -451,7 +451,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
         - runner.sh
-        - "./scripts/ci-e2e.sh"
+        - ./hack/scripts/ci/ci-e2e.sh
         env:
         - name: GINKGO_LABEL_FILTER
           value: "(Conformance && K8s-Install-ci-latest)"
@@ -495,7 +495,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
         - runner.sh
-        - ./scripts/ci-e2e.sh
+        - ./hack/scripts/ci/ci-e2e.sh
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"

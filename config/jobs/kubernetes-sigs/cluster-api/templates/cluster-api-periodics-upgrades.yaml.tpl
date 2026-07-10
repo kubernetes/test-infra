@@ -27,7 +27,11 @@ periodics:
     - image: {{ $.config.TestImage }}
       args:
       - runner.sh
+      {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+      - ./hack/scripts/ci/ci-e2e.sh
+      {{- else -}}
       - "./scripts/ci-e2e.sh"
+      {{- end }}
       env:
       - name: ALWAYS_BUILD_KIND_IMAGES
         value: "true"

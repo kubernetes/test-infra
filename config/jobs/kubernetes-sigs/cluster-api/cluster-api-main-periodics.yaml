@@ -20,7 +20,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
       command:
       - runner.sh
-      - ./scripts/ci-test.sh
+      - ./hack/scripts/ci/ci-test.sh
       resources:
         requests:
           cpu: 7
@@ -53,7 +53,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
       command:
       - runner.sh
-      - ./scripts/ci-test.sh
+      - ./hack/scripts/ci/ci-test.sh
       env:
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster
@@ -103,7 +103,7 @@ periodics:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
           - runner.sh
-          - "./scripts/ci-e2e.sh"
+          - ./hack/scripts/ci/ci-e2e.sh
         env:
           # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -155,7 +155,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
       args:
       - runner.sh
-      - "./scripts/ci-e2e.sh"
+      - ./hack/scripts/ci/ci-e2e.sh
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -215,7 +215,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
       args:
       - runner.sh
-      - "./scripts/ci-e2e.sh"
+      - ./hack/scripts/ci/ci-e2e.sh
       env:
       - name: GINKGO_LABEL_FILTER
         value: "(Conformance && K8s-Install)"
@@ -264,7 +264,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
       args:
       - runner.sh
-      - "./scripts/ci-e2e.sh"
+      - ./hack/scripts/ci/ci-e2e.sh
       env:
       - name: GINKGO_LABEL_FILTER
         value: "(Conformance && K8s-Install-ci-latest)"
@@ -314,7 +314,7 @@ periodics:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
         args:
           - runner.sh
-          - "./scripts/ci-e2e.sh"
+          - ./hack/scripts/ci/ci-e2e.sh
         env:
           # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"

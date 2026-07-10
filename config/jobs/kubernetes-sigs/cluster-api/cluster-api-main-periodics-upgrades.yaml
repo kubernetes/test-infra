@@ -27,7 +27,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
       args:
       - runner.sh
-      - "./scripts/ci-e2e.sh"
+      - ./hack/scripts/ci/ci-e2e.sh
       env:
       - name: ALWAYS_BUILD_KIND_IMAGES
         value: "true"
@@ -84,7 +84,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
       args:
       - runner.sh
-      - "./scripts/ci-e2e.sh"
+      - ./hack/scripts/ci/ci-e2e.sh
       env:
       - name: ALWAYS_BUILD_KIND_IMAGES
         value: "true"
@@ -141,7 +141,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
       args:
       - runner.sh
-      - "./scripts/ci-e2e.sh"
+      - ./hack/scripts/ci/ci-e2e.sh
       env:
       - name: ALWAYS_BUILD_KIND_IMAGES
         value: "true"
@@ -198,7 +198,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
       args:
       - runner.sh
-      - "./scripts/ci-e2e.sh"
+      - ./hack/scripts/ci/ci-e2e.sh
       env:
       - name: ALWAYS_BUILD_KIND_IMAGES
         value: "true"
@@ -255,7 +255,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
       args:
       - runner.sh
-      - "./scripts/ci-e2e.sh"
+      - ./hack/scripts/ci/ci-e2e.sh
       env:
       - name: ALWAYS_BUILD_KIND_IMAGES
         value: "true"
@@ -312,7 +312,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
       args:
       - runner.sh
-      - "./scripts/ci-e2e.sh"
+      - ./hack/scripts/ci/ci-e2e.sh
       env:
       - name: ALWAYS_BUILD_KIND_IMAGES
         value: "true"

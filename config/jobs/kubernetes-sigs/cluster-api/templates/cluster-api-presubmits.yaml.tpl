@@ -15,7 +15,11 @@ presubmits:
       - image: {{ $.config.TestImage }}
         command:
         - runner.sh
+        {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+        - ./hack/scripts/ci/ci-build.sh
+        {{- else -}}
         - ./scripts/ci-build.sh
+        {{- end }}
         resources:
           requests:
             cpu: 6000m
@@ -41,7 +45,11 @@ presubmits:
       containers:
       - command:
         - runner.sh
+        {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+        - ./hack/scripts/ci/ci-apidiff.sh
+        {{- else -}}
         - ./scripts/ci-apidiff.sh
+        {{- end }}
         image: {{ $.config.TestImage }}
         resources:
           requests:
@@ -70,7 +78,11 @@ presubmits:
       - image: {{ $.config.TestImage }}
         command:
         - "runner.sh"
+        {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+        - ./hack/scripts/ci/ci-verify.sh
+        {{- else -}}
         - ./scripts/ci-verify.sh
+        {{- end }}
         resources:
           requests:
             cpu: 5000m
@@ -98,7 +110,11 @@ presubmits:
       - image: {{ $.config.TestImage }}
         args:
         - runner.sh
+        {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+        - ./hack/scripts/ci/ci-test.sh
+        {{- else -}}
         - ./scripts/ci-test.sh
+        {{- end }}
         resources:
           requests:
             cpu: 7
@@ -124,7 +140,11 @@ presubmits:
       - image: {{ $.config.TestImage }}
         args:
         - runner.sh
+        {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+        - ./hack/scripts/ci/ci-test.sh
+        {{- else -}}
         - ./scripts/ci-test.sh
+        {{- end }}
         env:
         # This value determines the minimum Kubernetes
         # supported version for Cluster API management cluster
@@ -168,7 +188,11 @@ presubmits:
       - image: {{ $.config.TestImage }}
         args:
         - runner.sh
+        {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+        - ./hack/scripts/ci/ci-e2e.sh
+        {{- else -}}
         - ./scripts/ci-e2e.sh
+        {{- end }}
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -227,7 +251,11 @@ presubmits:
       - image: {{ $.config.TestImage }}
         args:
           - runner.sh
+          {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+          - ./hack/scripts/ci/ci-e2e.sh
+          {{- else -}}
           - "./scripts/ci-e2e.sh"
+          {{- end }}
         env:
 {{- if eq $.branch "release-1.9" }}
           - name: GINKGO_FOCUS
@@ -280,7 +308,11 @@ presubmits:
       - image: {{ .config.TestImage }}
         args:
           - runner.sh
+          {{ if not (or (eq .branch "release-1.13") (eq .branch "release-1.12") (eq .branch "release-1.11")) -}}
+          - ./hack/scripts/ci/ci-e2e.sh
+          {{- else -}}
           - "./scripts/ci-e2e.sh"
+          {{- end }}
         env:
           # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -337,7 +369,11 @@ presubmits:
       - image: {{ $.config.TestImage }}
         args:
           - runner.sh
+          {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+          - ./hack/scripts/ci/ci-e2e.sh
+          {{- else -}}
           - "./scripts/ci-e2e.sh"
+          {{- end }}
         env:
           - name: ALWAYS_BUILD_KIND_IMAGES
             value: "true"
@@ -392,7 +428,11 @@ presubmits:
       - image: {{ $.config.TestImage }}
         args:
         - runner.sh
+        {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+        - ./hack/scripts/ci/ci-e2e.sh
+        {{- else -}}
         - "./scripts/ci-e2e.sh"
+        {{- end }}
         env:
 {{- if eq $.branch "release-1.9" }}
         - name: GINKGO_FOCUS
@@ -440,7 +480,11 @@ presubmits:
       - image: {{ $.config.TestImage }}
         args:
         - runner.sh
+        {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+        - ./hack/scripts/ci/ci-e2e.sh
+        {{- else -}}
         - "./scripts/ci-e2e.sh"
+        {{- end }}
         env:
 {{- if eq $.branch "release-1.9" }}
         - name: GINKGO_FOCUS
@@ -489,7 +533,11 @@ presubmits:
       - image: {{ $.config.TestImage }}
         args:
         - runner.sh
+        {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+        - ./hack/scripts/ci/ci-e2e.sh
+        {{- else -}}
         - ./scripts/ci-e2e.sh
+        {{- end }}
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
