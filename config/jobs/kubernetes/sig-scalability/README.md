@@ -45,5 +45,6 @@ track. Add new entries at the top.
 
 | Variant | Date | What it does |
 | --- | --- | --- |
+| `restart-etcd36` | 2026-07-10 | RangeStream (`+EtcdRangeStream`) with HA control plane restart, on etcd 3.6.12, to gather data on RangeStream against etcd 3.6. Presubmit only. |
 | `restart` | 2026-06-29 | HA control plane with restart, for tracking improvements with watch cache initialization. |
 | `etcd36` | 2026-06-26 | Testing the 5k job on etcd 3.6.12. |
