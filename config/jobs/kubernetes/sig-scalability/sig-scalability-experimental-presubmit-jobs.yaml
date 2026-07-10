@@ -277,11 +277,13 @@ presubmits:
           privileged: true
         env:
         - name: EXPERIMENT_VARIANT
-          value: "restart"
+          value: "restart-etcd36"
         - name: CL2_ENABLE_INFORMER_LATENCY_TEST
           value: "false"
         - name: CL2_RESTART_APISERVER
           value: "true"
+        - name: KUBE_FEATURE_GATES
+          value: "+EtcdRangeStream"
         - name: ETCD_QUOTA_BACKEND_BYTES # 20GB
           value: "21474836480"
         - name: CL2_EXECSERVICE_CPU_REQUESTS
@@ -303,6 +305,8 @@ presubmits:
           value: gce
         - name: KUBE_NODE_COUNT
           value: "5000"
+        - name: ETCD_VERSION
+          value: "3.6.12"
         - name: CL2_LOAD_TEST_THROUGHPUT
           value: "50"
         - name: CL2_DELETE_TEST_THROUGHPUT
