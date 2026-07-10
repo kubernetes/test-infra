@@ -1938,6 +1938,7 @@ presubmits:
       cluster: eks-prow-build-cluster
       optional: true
       always_run: false
+      run_if_changed: "^(site/|netlify\\.toml)"
       branches:
         - ^main
       decorate: true
