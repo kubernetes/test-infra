@@ -53,7 +53,7 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     # Fix ulimit issue
     sed -i 's|ulimit -Hn|ulimit -n|' /etc/init.d/docker || true
 
-    local docker_registry_mirror_url
+    docker_registry_mirror_url=""
     if [[ "${PROW_CLOUD_PROVIDER:-}" == "amazon" ]]; then
         echo "Configuring docker to use public.ecr.aws/docker/library"
         docker_registry_mirror_url=https://public.ecr.aws/docker/library
@@ -66,8 +66,7 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     cat >/etc/docker/daemon.json <<EOF
 {
   "registry-mirrors": ["${docker_registry_mirror_url}"],
-  "cgroup-parent": "dind",
-  "default-cgroupns-mode": "host"
+  "cgroup-parent": "$(awk -F: '$1 == "0" { print $3 }' /proc/self/cgroup)/dind"
 }
 EOF
 

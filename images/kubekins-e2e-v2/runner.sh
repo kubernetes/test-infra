@@ -48,24 +48,22 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     # Fix ulimit issue
     sed -i 's|ulimit -Hn|ulimit -n|' /etc/init.d/docker || true
 
-    local docker_registry_mirror_url
+    docker_registry_mirror_url=""
     if [[ "${PROW_CLOUD_PROVIDER:-}" == "amazon" ]]; then
         echo "Configuring docker to use public.ecr.aws/docker/library"
-        local docker_registry_mirror_url=https://public.ecr.aws/docker/library
+        docker_registry_mirror_url=https://public.ecr.aws/docker/library
     else
         echo "Configuring docker to use mirror.gcr.io"
-        local docker_registry_mirror_url="https://mirror.gcr.io"
+        docker_registry_mirror_url="https://mirror.gcr.io"
     fi
 
     mkdir -p /etc/docker
     cat >/etc/docker/daemon.json <<EOF
 {
   "registry-mirrors": ["${docker_registry_mirror_url}"],
-  "cgroup-parent": "dind",
-  "default-cgroupns-mode": "host"
+  "cgroup-parent": "$(awk -F: '$1 == "0" { print $3 }' /proc/self/cgroup)/dind"
 }
 EOF
-
     # start the docker daemon
     service docker start
     # the service can be started but the docker socket not ready, wait for ready
