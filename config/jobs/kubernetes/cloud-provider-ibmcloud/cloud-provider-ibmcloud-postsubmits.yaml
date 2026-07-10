@@ -12,7 +12,7 @@ postsubmits:
       description: Build and push kubetest2-tf binary when repo provider-ibmcloud-test-infra has merge to main
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
