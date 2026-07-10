@@ -13,7 +13,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-build
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
@@ -39,7 +39,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-verify
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - /bin/bash
         args:
@@ -77,7 +77,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-govulncheck
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
@@ -106,7 +106,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-unit-test-amd64
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
@@ -136,7 +136,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-unit-test-arm64
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
@@ -168,7 +168,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-unit-test-386
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
@@ -198,7 +198,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-e2e-amd64
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
@@ -228,7 +228,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-e2e-arm64
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
@@ -260,7 +260,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-e2e-386
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
@@ -290,7 +290,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-integration-4-cpu-amd64
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
@@ -322,7 +322,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-integration-4-cpu-arm64
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
         - runner.sh
         args:
@@ -357,7 +357,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-coverage-report
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
         command:
           - runner.sh
         args:

@@ -47,7 +47,7 @@ periodics:
         value: admin
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -113,7 +113,7 @@ periodics:
         value: admin
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -179,7 +179,7 @@ periodics:
         value: admin
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -245,7 +245,7 @@ periodics:
         value: ubuntu
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -311,7 +311,7 @@ periodics:
         value: ubuntu
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -377,7 +377,7 @@ periodics:
         value: ubuntu
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -443,7 +443,7 @@ periodics:
         value: ubuntu
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -509,7 +509,7 @@ periodics:
         value: ubuntu
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -575,7 +575,7 @@ periodics:
         value: ubuntu
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -641,7 +641,7 @@ periodics:
         value: ubuntu
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -707,7 +707,7 @@ periodics:
         value: ubuntu
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -773,7 +773,7 @@ periodics:
         value: ec2-user
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -839,7 +839,7 @@ periodics:
         value: ec2-user
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -905,7 +905,7 @@ periodics:
         value: ec2-user
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -971,7 +971,7 @@ periodics:
         value: ec2-user
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1037,7 +1037,7 @@ periodics:
         value: rocky
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1103,7 +1103,7 @@ periodics:
         value: rocky
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1170,7 +1170,7 @@ periodics:
         value: core
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1236,7 +1236,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1302,7 +1302,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1368,7 +1368,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1434,7 +1434,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1500,7 +1500,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1566,7 +1566,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1632,7 +1632,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1698,7 +1698,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1764,7 +1764,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1830,7 +1830,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1896,7 +1896,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1962,7 +1962,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2028,7 +2028,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2094,7 +2094,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2160,7 +2160,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2226,7 +2226,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2292,7 +2292,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2358,7 +2358,7 @@ periodics:
         value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
       imagePullPolicy: Always
       resources:
         limits:
