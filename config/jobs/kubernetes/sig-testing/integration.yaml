@@ -20,7 +20,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
         command:
         - runner.sh
         args:
@@ -53,7 +53,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
         command:
         - runner.sh
         env:
@@ -92,7 +92,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
         command:
         - runner.sh
         env:
@@ -129,7 +129,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
         command:
         - runner.sh
         env:
@@ -171,7 +171,7 @@ periodics:
     description: "Ends up running: make test-integration"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
       command:
       - runner.sh
       args:
@@ -211,7 +211,7 @@ periodics:
     description: "Ends up running: make test-integration on arm node"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
       command:
       - runner.sh
       args:
@@ -254,7 +254,7 @@ periodics:
     description: "Ends up running: make test-integration with race detection"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260708-267b57c4ed-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260710-47abdbf392-master
       command:
       - runner.sh
       args:

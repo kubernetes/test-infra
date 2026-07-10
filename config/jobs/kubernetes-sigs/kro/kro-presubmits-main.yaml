@@ -12,7 +12,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260710-6dab2861c0-1.33
         command:
         - scripts/ci/presubmits/unit-tests
         resources:
@@ -37,7 +37,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260710-6dab2861c0-1.33
         command:
         - scripts/ci/presubmits/lint
         resources:
@@ -62,7 +62,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260710-6dab2861c0-1.33
         command:
         - scripts/ci/presubmits/verify-codegen
         resources:
@@ -87,7 +87,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260710-6dab2861c0-1.33
         command:
         - scripts/ci/presubmits/integration-tests
         resources:
@@ -114,7 +114,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260710-6dab2861c0-1.33
         securityContext:
           privileged: true
         command:
@@ -144,7 +144,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260710-6dab2861c0-1.33
         securityContext:
           privileged: true
         command:
@@ -172,7 +172,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260710-6dab2861c0-1.33
         command:
         - scripts/ci/presubmits/build-image
         resources:
