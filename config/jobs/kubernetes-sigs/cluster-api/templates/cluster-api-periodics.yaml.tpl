@@ -19,7 +19,11 @@ periodics:
     - image: {{ $.config.TestImage }}
       command:
       - runner.sh
+      {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+      - ./hack/scripts/ci/ci-test.sh
+      {{- else -}}
       - ./scripts/ci-test.sh
+      {{- end }}
       resources:
         requests:
           cpu: 7
@@ -52,7 +56,11 @@ periodics:
     - image: {{ $.config.TestImage }}
       command:
       - runner.sh
+      {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+      - ./hack/scripts/ci/ci-test.sh
+      {{- else -}}
       - ./scripts/ci-test.sh
+      {{- end }}
       env:
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster
@@ -102,7 +110,11 @@ periodics:
       - image: {{ $.config.TestImage }}
         args:
           - runner.sh
+          {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+          - ./hack/scripts/ci/ci-e2e.sh
+          {{- else -}}
           - "./scripts/ci-e2e.sh"
+          {{- end }}
         env:
           # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -159,7 +171,11 @@ periodics:
     - image: {{ $.config.TestImage }}
       args:
       - runner.sh
+      {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+      - ./hack/scripts/ci/ci-e2e.sh
+      {{- else -}}
       - "./scripts/ci-e2e.sh"
+      {{- end }}
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -224,7 +240,11 @@ periodics:
     - image: {{ $.config.TestImage }}
       args:
       - runner.sh
+      {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+      - ./hack/scripts/ci/ci-e2e.sh
+      {{- else -}}
       - "./scripts/ci-e2e.sh"
+      {{- end }}
       env:
 {{- if eq $.branch "release-1.9" }}
       - name: GINKGO_FOCUS
@@ -278,7 +298,11 @@ periodics:
     - image: {{ $.config.TestImage }}
       args:
       - runner.sh
+      {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+      - ./hack/scripts/ci/ci-e2e.sh
+      {{- else -}}
       - "./scripts/ci-e2e.sh"
+      {{- end }}
       env:
 {{- if eq $.branch "release-1.9" }}
       - name: GINKGO_FOCUS
@@ -333,7 +357,11 @@ periodics:
       - image: {{ $.config.TestImage }}
         args:
           - runner.sh
+          {{ if not (or (eq $.branch "release-1.13") (eq $.branch "release-1.12") (eq $.branch "release-1.11")) -}}
+          - ./hack/scripts/ci/ci-e2e.sh
+          {{- else -}}
           - "./scripts/ci-e2e.sh"
+          {{- end }}
         env:
           # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
