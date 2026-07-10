@@ -9,7 +9,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.25.7
+      - image: public.ecr.aws/docker/library/golang:1.26.5
         command:
         - make
         args:
