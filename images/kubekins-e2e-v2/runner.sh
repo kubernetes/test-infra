@@ -48,6 +48,51 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     # Fix ulimit issue
     sed -i 's|ulimit -Hn|ulimit -n|' /etc/init.d/docker || true
 
+    # Nest the dind containers under our own cgroup so their resource usage is
+    # attributed to this pod's cgroup for node-level metrics (Datadog/Prometheus).
+    # Capture our cgroup now, before the delegation below relocates our processes.
+    own_cgroup="$(awk -F: '$1 == "0" { print $3 }' /proc/self/cgroup)"
+
+    # A cgroup cannot both contain processes and parent controller-enabled
+    # children (the "no internal processes" rule), and controllers must be
+    # explicitly delegated down each level via cgroup.subtree_control. Our own
+    # processes (this script, dockerd, containerd) live directly in
+    # ${own_cgroup}, and the daemon nests containers under ${own_cgroup}/dind.
+    # Without delegation, guests such as kind's node systemd receive no
+    # controllers and fail (EUCLEAN "Structure needs cleaning", or an inability
+    # to set up their own cgroup hierarchy). Evacuate our processes into a leaf
+    # and delegate controllers through both ${own_cgroup} and the
+    # ${own_cgroup}/dind parent.
+    cg="/sys/fs/cgroup${own_cgroup}"
+    read -r -a controllers < "${cg}/cgroup.controllers"
+    echo "cgroup: delegating [${controllers[*]}] under ${own_cgroup}"
+    mkdir -p "${cg}/init" "${cg}/dind"
+    # A cgroup with member processes cannot enable controllers for its children,
+    # so evacuate every process into the init leaf first. This runs before
+    # dockerd/containerd start, so only the runner shells are present. Loop
+    # because processes can appear between reads; "0" entries are processes in
+    # other pid namespaces and are left as-is.
+    for _ in 1 2 3 4 5; do
+        while read -r pid; do
+            [ "${pid}" = "0" ] && continue
+            echo "${pid}" > "${cg}/init/cgroup.procs" 2>/dev/null || true
+        done < "${cg}/cgroup.procs"
+        grep -qv '^0$' "${cg}/cgroup.procs" || break
+    done
+    if grep -qv '^0$' "${cg}/cgroup.procs"; then
+        echo "WARNING: ${own_cgroup} still has processes, delegation may fail:"
+        cat "${cg}/cgroup.procs"
+    fi
+    # Delegate controllers through the pod cgroup and the dind parent that the
+    # daemon nests containers under, so guest cgroups (e.g. kind nodes) inherit
+    # controllers and can build their own hierarchy.
+    for group in "${cg}" "${cg}/dind"; do
+        for controller in "${controllers[@]}"; do
+            echo "+${controller}" > "${group}/cgroup.subtree_control" 2>/dev/null || true
+        done
+    done
+    echo "cgroup: ${own_cgroup} subtree_control=[$(cat "${cg}/cgroup.subtree_control")], dind subtree_control=[$(cat "${cg}/dind/cgroup.subtree_control")]"
+
     docker_registry_mirror_url=""
     if [[ "${PROW_CLOUD_PROVIDER:-}" == "amazon" ]]; then
         echo "Configuring docker to use public.ecr.aws/docker/library"
@@ -61,7 +106,7 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     cat >/etc/docker/daemon.json <<EOF
 {
   "registry-mirrors": ["${docker_registry_mirror_url}"],
-  "cgroup-parent": "$(awk -F: '$1 == "0" { print $3 }' /proc/self/cgroup)/dind"
+  "cgroup-parent": "${own_cgroup}/dind"
 }
 EOF
     # start the docker daemon
