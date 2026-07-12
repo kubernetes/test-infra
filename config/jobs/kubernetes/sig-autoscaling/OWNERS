@@ -2,24 +2,20 @@
 
 reviewers:
 - mwielgus
-- kwiesmueller
-- voelzmo
-- gjtempleton
 - towca
-- raywainman
 - jackfrancis
 - adrianmoisey
 - omerap12
 approvers:
 - mwielgus
-- kwiesmueller
-- voelzmo
-- gjtempleton
 - towca
-- raywainman
 - jackfrancis
 - adrianmoisey
 - omerap12
 emeritus_approvers:
 - bskiba
 - maciekpytel
+- kwiesmueller
+- voelzmo
+- gjtempleton
+- raywainman
