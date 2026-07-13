@@ -45,7 +45,7 @@ presubmits:
         - --runtime-config=scheduling.k8s.io/v1alpha1=true
         - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=450m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -93,7 +93,7 @@ presubmits:
           --minStartupPods=8
         - --ginkgo-parallel=10
         - --timeout=300m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -143,7 +143,7 @@ presubmits:
           --minStartupPods=8
         - --ginkgo-parallel=10
         - --timeout=300m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -185,7 +185,7 @@ presubmits:
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
         - --test-cmd-args=full-vpa
         - --timeout=100m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -226,7 +226,7 @@ presubmits:
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
         - --test-cmd-args=full-vpa
         - --timeout=100m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -272,7 +272,7 @@ presubmits:
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
         - --test-cmd-args=actuation
         - --timeout=180m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -313,7 +313,7 @@ presubmits:
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
         - --test-cmd-args=actuation
         - --timeout=180m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -359,7 +359,7 @@ presubmits:
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
         - --test-cmd-args=admission-controller
         - --timeout=100m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -400,7 +400,7 @@ presubmits:
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
         - --test-cmd-args=admission-controller
         - --timeout=100m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -446,7 +446,7 @@ presubmits:
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
         - --test-cmd-args=recommender
         - --timeout=100m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -487,7 +487,7 @@ presubmits:
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
         - --test-cmd-args=recommender
         - --timeout=100m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -533,7 +533,7 @@ presubmits:
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
         - --test-cmd-args=updater
         - --timeout=100m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -574,7 +574,7 @@ presubmits:
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
         - --test-cmd-args=updater
         - --timeout=100m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -612,7 +612,7 @@ presubmits:
         - -C
         - cluster-autoscaler
         - test-build-tags
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         securityContext:
           privileged: true
         resources:
@@ -646,7 +646,7 @@ presubmits:
       - command:
           - runner.sh
           - ./cluster-autoscaler/hack/e2e/run-e2e-presubmit.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         resources:
           limits:
             cpu: 2

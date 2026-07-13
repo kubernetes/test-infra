@@ -29,7 +29,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.36
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-1.36
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -73,7 +73,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.35
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-1.35
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -117,7 +117,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.34
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-1.34
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -161,7 +161,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260708-267b57c4ed-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-1.33
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
