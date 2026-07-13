@@ -19,7 +19,7 @@ periodics:
       - --print
       - Respond with exactly "k8s-infra-agentic-ai is ready".
       env:
-      - name: GOOGLE_SERVICE_ACCOUNT_AUTH
+      - name: GOOGLE_GENAI_USE_VERTEXAI
         value: "true"
       - name: GOOGLE_CLOUD_PROJECT
         value: k8s-infra-agentic-ai
