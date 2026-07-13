@@ -25,7 +25,7 @@ periodics:
   interval: 24h
   labels:
     preset-azure-community: "true"
-    preset-capz-containerd-1-7-latest: "true"
+    preset-capz-containerd-2-0-latest: "true"
     preset-capz-windows-2022: "true"
     preset-capz-windows-common: "true"
     preset-dind-enabled: "true"
@@ -58,7 +58,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-azure-community: "true"
-    preset-capz-containerd-1-7-latest: "true"
+    preset-capz-containerd-2-0-latest: "true"
     preset-capz-serial-slow: "true"
     preset-capz-gmsa-setup: "true"
     preset-capz-windows-2022: "true"
