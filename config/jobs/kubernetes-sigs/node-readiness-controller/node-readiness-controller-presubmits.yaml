@@ -48,3 +48,36 @@ presubmits:
       testgrid-dashboards: sig-node-node-readiness-controller
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
+  - name: pull-node-readiness-controller-test-e2e
+    cluster: eks-prow-build-cluster
+    always_run: false
+    skip_if_only_changed: "^docs/|\\.md$|^(README|LICENSE|OWNERS|SECURITY_CONTACTS)$"
+    branches:
+    - ^main$
+    - ^release-v.*$
+    labels:
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
+          command:
+            - runner.sh
+          args:
+            - make
+            - test-e2e-kind
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 3
+              memory: 10Gi
+            requests:
+              cpu: 3
+              memory: 10Gi
+    annotations:
+      testgrid-dashboards: sig-node-node-readiness-controller
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
