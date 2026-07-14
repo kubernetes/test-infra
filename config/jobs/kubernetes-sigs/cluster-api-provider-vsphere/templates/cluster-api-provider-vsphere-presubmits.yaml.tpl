@@ -186,10 +186,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
           limits:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
@@ -243,10 +243,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
           limits:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-e2e-{{ $mode }}-{{ printf "%.6s" (ReplaceAll $vmOperatorVersion "." "-") }}-{{ $vmOperatorApiVersion }}-{{ ReplaceAll $.branch "." "-" }}
@@ -296,10 +296,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
           limits:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
