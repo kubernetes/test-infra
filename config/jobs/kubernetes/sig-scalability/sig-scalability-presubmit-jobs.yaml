@@ -898,6 +898,10 @@ presubmits:
           value: "1"
         - name: CONTROL_PLANE_SIZE
           value: "c8i.8xlarge"
+        - name: PROMETHEUS_SCRAPE_ETCD
+          value: "true"
+        - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
+          value: "false"
         - name: CL2_ENABLE_DNS_PROGRAMMING
           value: "true"
         - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
@@ -979,6 +983,10 @@ presubmits:
           value: "1"
         - name: CONTROL_PLANE_SIZE
           value: "c8i.12xlarge"
+        - name: PROMETHEUS_SCRAPE_ETCD
+          value: "true"
+        - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
+          value: "false"
         - name: CL2_ENABLE_DNS_PROGRAMMING
           value: "true"
         - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
@@ -1061,6 +1069,10 @@ presubmits:
           value: "1"
         - name: CONTROL_PLANE_SIZE
           value: "c8a.24xlarge"
+        - name: PROMETHEUS_SCRAPE_ETCD
+          value: "true"
+        - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
+          value: "false"
         - name: CL2_ENABLE_DNS_PROGRAMMING
           value: "true"
         - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
