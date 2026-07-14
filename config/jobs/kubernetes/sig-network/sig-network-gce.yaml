@@ -657,8 +657,7 @@ periodics:
       - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      # skip ESIPP should work from pods #97081
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|ESIPP|LoadBalancers --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\] --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
       resources:
@@ -696,8 +695,7 @@ periodics:
       - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      # skip ESIPP should work from pods #97081
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|ESIPP|LoadBalancers|SupplementalGroups --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|SupplementalGroups --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
       resources:
@@ -772,7 +770,7 @@ periodics:
       - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|LoadBalancer|DNS.+EndpointSlice --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|DNS.+EndpointSlice --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
       resources:
@@ -844,7 +842,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[sig-storage\]|\[Feature:.+\]|LoadBalancer|\[sig-cloud-provider-gcp\]  --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[sig-storage\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]  --minStartupPods=8
       - --timeout=500m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
       resources:
@@ -878,8 +876,8 @@ periodics:
       - --gcp-zone=us-central1-b
       - --provider=gce
       # Skipping snat tests probably GCE related? https://github.com/kubernetes/test-infra/issues/20321
-      # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
-      - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|KubeProxyDaemonSetMigration|ServiceCIDRs|SCTPConnectivity)\]|DualStack|Disruptive|Serial|SNAT|LoadBalancer|Alpha|Beta
+      # Skipping Cloud Provider specific tests: LoadBalancer
+      - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|PerformanceDNS|SCTPConnectivity|IPv6DualStack|LoadBalancer)\]|Disruptive|Serial|SNAT|Alpha|Beta
       - --extract=ci/latest
       - --timeout=100m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
