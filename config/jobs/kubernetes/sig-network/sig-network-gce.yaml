@@ -337,45 +337,6 @@ presubmits:
             memory: 4Gi
 periodics:
 - interval: 6h
-  name: ci-kubernetes-e2e-gce-alpha-api
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 80m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      # List GCE Alpha features we want to enable, separated by commas.
-      - --env=GCE_ALPHA_FEATURES=NetworkTiers
-      - --extract=ci/latest
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
-      - --gcp-nodes=4
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel=30
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:GCEAlphaFeature\] --minStartupPods=8
-      - --timeout=60m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
-      resources:
-        limits:
-          cpu: 2
-          memory: "6Gi"
-        requests:
-          cpu: 2
-          memory: "6Gi"
-  annotations:
-    testgrid-dashboards: google-gce, sig-network-gce
-    testgrid-tab-name: gce-alpha-api
-    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
-- interval: 6h
   name: ci-kubernetes-e2e-gce-coredns-performance
   cluster: k8s-infra-prow-build
   labels:
