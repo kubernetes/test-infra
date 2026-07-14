@@ -180,10 +180,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
           limits:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-govmomi-release-1-14
@@ -227,10 +227,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
           limits:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-vcsim-govmomi-release-1-14
@@ -460,10 +460,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
           limits:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-supervisor-release-1-14
@@ -507,10 +507,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
           limits:
             cpu: "4000m"
-            memory: "8Gi"
+            memory: "12Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-vcsim-supervisor-release-1-14
