@@ -45,14 +45,13 @@ presubmits:
         - --env=KUBE_GCE_IMAGE_FAMILY=ubuntu-2404-lts-amd64
         - --env=KUBE_GCE_IMAGE_PROJECT=ubuntu-os-cloud
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-        - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
         - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-nodes=4
         - --gcp-zone=us-central1-b
         - --provider=gce
-        - --test_args=--ginkgo.focus=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]|\[Feature:NetworkPolicy\]
+        - --test_args=--ginkgo.focus=\[Feature:LoadBalancer\] --ginkgo.skip=\[Disruptive\]|\[Feature:NetworkPolicy\]
         - --timeout=320m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
         resources:
@@ -70,7 +69,7 @@ presubmits:
       testgrid-num-failures-to-alert: '6'
       testgrid-alert-stale-results-hours: '24'
       testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
-      description: Uses kubetest to run e2e Conformance, SIG-Network or Network Ingress tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
+      description: Uses kubetest to run Feature:LoadBalancer e2e tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
 
   - name: pull-kubernetes-e2e-gce-network-policies
     cluster: k8s-infra-prow-build
@@ -615,13 +614,12 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/fast/latest-fast
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]|\[Feature:NetworkPolicy\]
+      - --test_args=--ginkgo.focus=\[Feature:LoadBalancer\] --ginkgo.skip=\[Disruptive\]|\[Feature:NetworkPolicy\]
       - --timeout=320m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
       resources:
@@ -635,7 +633,7 @@ periodics:
     testgrid-dashboards: google-gce, sig-network-gce
     testgrid-tab-name: gci-gce-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
-    description: Uses kubetest to run e2e tests (+Feature:Ingress|NEG) against a cluster created with cluster/kube-up.sh
+    description: Uses kubetest to run Feature:LoadBalancer e2e tests against a cluster created with cluster/kube-up.sh
     testgrid-alert-stale-results-hours: '24'
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-ip-alias
