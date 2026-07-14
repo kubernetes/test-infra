@@ -77,10 +77,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "8Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-govmomi-release-1-14
@@ -128,10 +128,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "3Gi"
+          memory: "8Gi"
         limits:
           cpu: "4000m"
-          memory: "3Gi"
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-vcsim-govmomi-release-1-14
@@ -283,10 +283,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "8Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-supervisor-release-1-14
@@ -334,10 +334,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "3Gi"
+          memory: "8Gi"
         limits:
           cpu: "4000m"
-          memory: "3Gi"
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: cluster-api-provider-vsphere-1.14
     testgrid-tab-name: periodic-e2e-vcsim-supervisor-release-1-14

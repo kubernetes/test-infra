@@ -87,10 +87,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "8Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: periodic-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
@@ -150,10 +150,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "8Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: periodic-e2e-{{ $mode }}-{{ printf "%.6s" (ReplaceAll $vmOperatorVersion "." "-") }}-{{ $vmOperatorApiVersion }}-{{ ReplaceAll $.branch "." "-" }}
@@ -207,10 +207,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "3Gi"
+          memory: "8Gi"
         limits:
           cpu: "4000m"
-          memory: "3Gi"
+          memory: "8Gi"
   annotations:
     testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: periodic-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}

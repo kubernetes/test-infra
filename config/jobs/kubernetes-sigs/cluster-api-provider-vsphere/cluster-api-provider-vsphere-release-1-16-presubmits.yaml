@@ -180,10 +180,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.16
       testgrid-tab-name: pr-e2e-govmomi-release-1-16
@@ -227,10 +227,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "3Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "3Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.16
       testgrid-tab-name: pr-e2e-vcsim-govmomi-release-1-16
@@ -460,10 +460,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.16
       testgrid-tab-name: pr-e2e-supervisor-release-1-16
@@ -511,10 +511,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.16
       testgrid-tab-name: pr-e2e-supervisor-8-0-v1alpha2-release-1-16
@@ -561,10 +561,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.16
       testgrid-tab-name: pr-e2e-supervisor-9-1-v1alpha2-release-1-16
@@ -607,10 +607,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "3Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "3Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-1.16
       testgrid-tab-name: pr-e2e-vcsim-supervisor-release-1-16

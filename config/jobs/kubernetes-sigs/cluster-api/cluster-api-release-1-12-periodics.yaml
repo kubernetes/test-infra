@@ -118,11 +118,11 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
           limits:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
   annotations:
     testgrid-dashboards: cluster-api-core-1.12
     testgrid-tab-name: capi-e2e-release-1-12
@@ -178,11 +178,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 3000m
-          memory: 8Gi
+          cpu: 4000m
+          memory: 12Gi
         limits:
-          cpu: 3000m
-          memory: 8Gi
+          cpu: 4000m
+          memory: 12Gi
   annotations:
     testgrid-dashboards: cluster-api-core-1.12
     testgrid-tab-name: capi-e2e-mink8s-release-1-12

@@ -134,11 +134,11 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
           limits:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
   annotations:
     testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-{{ ReplaceAll $.branch "." "-" }}
@@ -203,11 +203,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 3000m
-          memory: 8Gi
+          cpu: 4000m
+          memory: 12Gi
         limits:
-          cpu: 3000m
-          memory: 8Gi
+          cpu: 4000m
+          memory: 12Gi
   annotations:
     testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
@@ -393,11 +393,11 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
           limits:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
   annotations:
     testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}

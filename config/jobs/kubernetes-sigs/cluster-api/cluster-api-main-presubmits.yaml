@@ -192,11 +192,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
           limits:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
     annotations:
       testgrid-dashboards: cluster-api-core-main
       testgrid-tab-name: capi-pr-e2e-mink8s-main
@@ -281,11 +281,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
           limits:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
     annotations:
       testgrid-dashboards: cluster-api-core-main
       testgrid-tab-name: capi-pr-e2e-main
@@ -327,11 +327,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
           limits:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
     annotations:
       testgrid-dashboards: cluster-api-core-main
       testgrid-tab-name: capi-pr-e2e-main-gke
@@ -522,11 +522,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
           limits:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
     annotations:
       testgrid-dashboards: cluster-api-core-main
       testgrid-tab-name: capi-pr-e2e-latestk8s-main

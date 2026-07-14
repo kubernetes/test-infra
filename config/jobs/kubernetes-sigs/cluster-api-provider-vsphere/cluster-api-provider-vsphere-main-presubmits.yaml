@@ -180,10 +180,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-govmomi-main
@@ -227,10 +227,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "3Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "3Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-vcsim-govmomi-main
@@ -460,10 +460,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-supervisor-main
@@ -511,10 +511,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-supervisor-8-0-v1alpha2-main
@@ -561,10 +561,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-supervisor-9-1-v1alpha2-main
@@ -611,10 +611,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-supervisor-9-1-v1alpha5-main
@@ -661,10 +661,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-supervisor-9-2-v1alpha2-main
@@ -711,10 +711,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-supervisor-9-2-v1alpha5-main
@@ -761,10 +761,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-supervisor-9-2-v1alpha6-main
@@ -807,10 +807,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "3Gi"
+            memory: "8Gi"
           limits:
             cpu: "4000m"
-            memory: "3Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: cluster-api-provider-vsphere-main
       testgrid-tab-name: pr-e2e-vcsim-supervisor-main

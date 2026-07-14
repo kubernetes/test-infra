@@ -220,11 +220,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
           limits:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
@@ -332,11 +332,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
           limits:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix .branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll .branch "." "-" }}{{ $jobSuffix }}
@@ -569,11 +569,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
           limits:
-            cpu: 3000m
-            memory: 8Gi
+            cpu: 4000m
+            memory: 12Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}
