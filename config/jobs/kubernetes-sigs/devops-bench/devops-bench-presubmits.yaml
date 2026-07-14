@@ -16,6 +16,7 @@ presubmits:
           uv sync --frozen
           uv run ruff check .
           uv run ruff format --check .
+          uv run python hack/boilerplate.py --dry-run
         resources:
           requests:
             cpu: 1
@@ -26,7 +27,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-apps-devops-bench
       testgrid-tab-name: presubmit-verify
-      description: ruff lint and format check (ruff is pinned exactly in pyproject.toml)
+      description: ruff lint, format check, and license header check (hack/boilerplate.py)
   - name: pull-devops-bench-unit-py312
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|\\.md$|^(\\.gitignore|\\.editorconfig|LICENSE|OWNERS|SECURITY_CONTACTS)$|^\\.github/"
