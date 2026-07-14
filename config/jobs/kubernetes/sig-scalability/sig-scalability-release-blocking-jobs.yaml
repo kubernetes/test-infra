@@ -157,8 +157,6 @@ periodics:
         value: "c3-standard-44"
       - name: KUBE_PROXY_MODE
         value: "nftables"
-      - name: PROMETHEUS_SCRAPE_KUBE_PROXY
-        value: "true"
       - name: PROMETHEUS_SCRAPE_ETCD
         value: "true"
       - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -259,8 +257,6 @@ periodics:
         value: "1"
       - name: CONTROL_PLANE_SIZE
         value: "c4-standard-32"
-      - name: PROMETHEUS_SCRAPE_KUBE_PROXY
-        value: "true"
       - name: CL2_ENABLE_DNS_PROGRAMMING
         value: "true"
       - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
