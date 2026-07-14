@@ -24,6 +24,8 @@ presubmits:
             cpu: 1
             memory: 2Gi
     annotations:
+      testgrid-dashboards: sig-apps-devops-bench
+      testgrid-tab-name: presubmit-verify
       description: ruff lint and format check (ruff is pinned exactly in pyproject.toml)
   - name: pull-devops-bench-unit-py312
     cluster: eks-prow-build-cluster
@@ -54,6 +56,8 @@ presubmits:
             cpu: 2
             memory: 4Gi
     annotations:
+      testgrid-dashboards: sig-apps-devops-bench
+      testgrid-tab-name: presubmit-unit-py312
       description: unit tests on Python 3.12 (the requires-python floor)
   - name: pull-devops-bench-unit-py313
     cluster: eks-prow-build-cluster
@@ -81,6 +85,8 @@ presubmits:
             cpu: 2
             memory: 4Gi
     annotations:
+      testgrid-dashboards: sig-apps-devops-bench
+      testgrid-tab-name: presubmit-unit-py313
       description: unit tests on Python 3.13
   - name: pull-devops-bench-unit-py314
     cluster: eks-prow-build-cluster
@@ -108,4 +114,6 @@ presubmits:
             cpu: 2
             memory: 4Gi
     annotations:
+      testgrid-dashboards: sig-apps-devops-bench
+      testgrid-tab-name: presubmit-unit-py314
       description: unit tests on Python 3.14 (the .python-version dev default)

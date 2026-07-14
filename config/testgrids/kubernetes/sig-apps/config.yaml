@@ -2,6 +2,7 @@ dashboard_groups:
 - name: sig-apps
   dashboard_names:
     - sig-apps-agent-sandbox
+    - sig-apps-devops-bench
     - sig-apps-mcp-lifecycle-operator
     - sig-apps-examples
     - sig-apps-jobset
@@ -15,6 +16,7 @@ dashboard_groups:
 
 dashboards:
 - name: sig-apps-agent-sandbox
+- name: sig-apps-devops-bench
 - name: sig-apps-mcp-lifecycle-operator
 - name: sig-apps-examples
 - name: sig-apps-jobset
