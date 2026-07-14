@@ -1244,6 +1244,8 @@ presubmits:
           value: "c4-standard-32"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
+        - name: PROMETHEUS_SCRAPE_ETCD
+          value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
           value: "true"
         - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
