@@ -1,0 +1,111 @@
+presubmits:
+  kubernetes-sigs/devops-bench:
+  - name: pull-devops-bench-verify
+    cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^docs/|\\.md$|^(\\.gitignore|\\.editorconfig|LICENSE|OWNERS|SECURITY_CONTACTS)$|^\\.github/"
+    decorate: true
+    spec:
+      containers:
+      - image: python:3.14
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -euo pipefail
+          pip install --quiet uv
+          uv sync --frozen
+          uv run ruff check .
+          uv run ruff format --check .
+        resources:
+          requests:
+            cpu: 1
+            memory: 2Gi
+          limits:
+            cpu: 1
+            memory: 2Gi
+    annotations:
+      description: ruff lint and format check (ruff is pinned exactly in pyproject.toml)
+  - name: pull-devops-bench-unit-py312
+    cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^docs/|\\.md$|^(\\.gitignore|\\.editorconfig|LICENSE|OWNERS|SECURITY_CONTACTS)$|^\\.github/"
+    decorate: true
+    spec:
+      containers:
+      - image: python:3.12
+        env:
+        # Pin uv to the container interpreter; otherwise uv downloads the
+        # .python-version (3.14) default and every matrix job tests the same
+        # interpreter.
+        - name: UV_PYTHON
+          value: "3.12"
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -euo pipefail
+          pip install --quiet uv
+          uv sync --frozen
+          uv run pytest -q
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      description: unit tests on Python 3.12 (the requires-python floor)
+  - name: pull-devops-bench-unit-py313
+    cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^docs/|\\.md$|^(\\.gitignore|\\.editorconfig|LICENSE|OWNERS|SECURITY_CONTACTS)$|^\\.github/"
+    decorate: true
+    spec:
+      containers:
+      - image: python:3.13
+        env:
+        - name: UV_PYTHON
+          value: "3.13"
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -euo pipefail
+          pip install --quiet uv
+          uv sync --frozen
+          uv run pytest -q
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      description: unit tests on Python 3.13
+  - name: pull-devops-bench-unit-py314
+    cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^docs/|\\.md$|^(\\.gitignore|\\.editorconfig|LICENSE|OWNERS|SECURITY_CONTACTS)$|^\\.github/"
+    decorate: true
+    spec:
+      containers:
+      - image: python:3.14
+        env:
+        - name: UV_PYTHON
+          value: "3.14"
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -euo pipefail
+          pip install --quiet uv
+          uv sync --frozen
+          uv run pytest -q
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      description: unit tests on Python 3.14 (the .python-version dev default)
