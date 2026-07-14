@@ -152,6 +152,8 @@ presubmits:
           value: "c4-standard-32"
         - name: PROMETHEUS_SCRAPE_ETCD
           value: "true"
+        - name: PROMETHEUS_SCRAPE_NODE_EXPORTER
+          value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
           value: "true"
         - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
@@ -487,6 +489,8 @@ presubmits:
         - name: KUBE_PROXY_MODE
           value: "nftables"
         - name: PROMETHEUS_SCRAPE_ETCD
+          value: "true"
+        - name: PROMETHEUS_SCRAPE_NODE_EXPORTER
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
           value: "true"
@@ -1145,6 +1149,8 @@ presubmits:
           value: "1"
         - name: CONTROL_PLANE_SIZE
           value: "c4-standard-32"
+        - name: PROMETHEUS_SCRAPE_NODE_EXPORTER
+          value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
           value: "true"
         - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
@@ -1231,6 +1237,8 @@ presubmits:
         - name: CONTROL_PLANE_SIZE
           value: "c4-standard-32"
         - name: PROMETHEUS_SCRAPE_ETCD
+          value: "true"
+        - name: PROMETHEUS_SCRAPE_NODE_EXPORTER
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
           value: "true"
@@ -1334,6 +1342,8 @@ presubmits:
           value: "c3-standard-44"
         - name: KUBE_PROXY_MODE
           value: "nftables"
+        - name: PROMETHEUS_SCRAPE_NODE_EXPORTER
+          value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
           value: "true"
         - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
