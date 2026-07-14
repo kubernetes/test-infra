@@ -6,7 +6,6 @@ periodics:
   decoration_config:
     timeout: 4h
   labels:
-    preset-dind-enabled: "true"
     preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -20,8 +19,6 @@ periodics:
         command:
           - "runner.sh"
           - "./scripts/ci-k8s-e2e-node-test.sh"
-        securityContext:
-          privileged: true
         resources:
           requests:
             cpu: 2
@@ -40,18 +37,22 @@ periodics:
 
 presubmits:
   kubernetes/kubernetes:
-    - name: pull-kubernetes-e2enode-windows-master
+    # Prow clones k/k into the build container (the primary repo), but
+    # ci-k8s-e2e-node-test.sh ignores that checkout and only forwards the
+    # PR-coordinate env vars (PULL_NUMBER / PULL_BASE_REF / REPO_OWNER /
+    # REPO_NAME) to k8s_e2e_node_windows.ps1. That script does a fresh shallow
+    # clone + PR fetch/checkout on the Windows test VM and builds kubelet there,
+    # so this invocation can be identical to the windows-testing job below.
+    - name: pull-kubernetes-e2enode-windows
       always_run: false
-      branches:
-        - master
-        - main
+      skip_branches:
+        - release-\d+\.\d+ # per-release image
       cluster: eks-prow-build-cluster
       decorate: true
       decoration_config:
         timeout: 4h
       optional: true
       labels:
-        preset-dind-enabled: "true"
         preset-azure-community: "true"
       extra_refs:
         - org: kubernetes-sigs
@@ -68,8 +69,6 @@ presubmits:
             command:
               - "runner.sh"
               - "./scripts/ci-k8s-e2e-node-test.sh"
-            securityContext:
-              privileged: true
             resources:
               requests:
                 cpu: 2
@@ -83,10 +82,18 @@ presubmits:
               - name: CONTAINERD_VERSION
                 value: "nightly"
       annotations:
+        fork-per-release: "true"
         testgrid-dashboards: sig-windows-presubmit
-        testgrid-tab-name: pr-kubernetes-e2enode-windows-master
+        testgrid-tab-name: pr-kubernetes-e2enode-windows
   kubernetes-sigs/windows-testing:
-    - name: pull-kubernetes-e2enode-windows
+    # This job validates changes to the windows-testing scripts themselves.
+    # ci-k8s-e2e-node-test.sh provisions a Windows Azure VM and runs
+    # k8s_e2e_node_windows.ps1 on it, which clones kubernetes/kubernetes
+    # (defaulting to master) directly on the VM and builds kubelet there.
+    # The k/k source is therefore never used inside the Prow build container,
+    # so it does not need to be an extra_ref here; only this repo's scripts are
+    # needed. As a result this job always tests against kubernetes/kubernetes master.
+    - name: pull-k8s-sig-windows-e2enode
       always_run: false
       cluster: eks-prow-build-cluster
       decorate: true
@@ -94,7 +101,6 @@ presubmits:
         timeout: 4h
       optional: true
       labels:
-        preset-dind-enabled: "true"
         preset-azure-community: "true"
       path_alias: sigs.k8s.io/windows-testing
       run_if_changed: '^scripts\/.*'
@@ -105,8 +111,6 @@ presubmits:
             command:
               - "runner.sh"
               - "./scripts/ci-k8s-e2e-node-test.sh"
-            securityContext:
-              privileged: true
             resources:
               requests:
                 cpu: 2
@@ -121,4 +125,4 @@ presubmits:
                 value: "nightly"
       annotations:
         testgrid-dashboards: sig-windows-presubmit
-        testgrid-tab-name: pr-windows-e2e-node-master
+        testgrid-tab-name: pr-k8s-sig-windows-e2enode
