@@ -78,10 +78,10 @@ presubmits:
           privileged: true  # for dind
         resources:
           requests:
-            memory: 1Gi
+            memory: 2Gi
             cpu: 2
           limits:
-            memory: 1Gi
+            memory: 2Gi
             cpu: 2
         command:
         - runner.sh
