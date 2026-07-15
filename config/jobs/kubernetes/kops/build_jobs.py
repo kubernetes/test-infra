@@ -1190,24 +1190,6 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=3),
 
-        build_test(name_override="ci-kubernetes-kops-cos-gce-reboot-canary",
-                   cloud="gce",
-                   distro="cos125",
-                   networking="gce",
-                   k8s_version="ci",
-                   kops_version=marker_updown_green("master"),
-                   kops_channel="alpha",
-                   extra_flags=[
-                       "--node-count=3",
-                       "--gce-service-account=default",
-                   ],
-                   focus_regex=r'\[Feature:Reboot\]',
-                   skip_regex=r'\[FOOBAR\]',
-                   test_timeout_minutes=300,
-                   test_parallelism=1, # serial tests
-                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
-                   runs_per_day=3),
-
         build_test(name_override="ci-kubernetes-kops-al2023-aws-disruptive-canary",
                    cloud="aws",
                    distro="al2023",
