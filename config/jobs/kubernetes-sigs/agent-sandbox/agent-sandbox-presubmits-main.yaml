@@ -116,6 +116,33 @@ presubmits:
       testgrid-tab-name: presubmit-gemini-cu-sandbox-test
       description: End-to-end test for the gemini-cu-sandbox example using kind
       testgrid-num-columns-recent: '30'
+  - name: presubmit-agent-sandbox-python-runtime-sandbox-test
+    cluster: eks-prow-build-cluster
+    run_if_changed: "^examples/python-runtime-sandbox/|^dev/ci/presubmits/test-python-runtime-sandbox$"
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260622-537e33cc05-master
+        command:
+        - runner.sh
+        - dev/ci/presubmits/test-python-runtime-sandbox
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
+            memory: 8Gi
+          limits:
+            cpu: 4
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-python-runtime-sandbox-test
+      description: End-to-end test for the python-runtime-sandbox example using kind
+      testgrid-num-columns-recent: '30'
   - name: presubmit-agent-sandbox-e2e-test
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
