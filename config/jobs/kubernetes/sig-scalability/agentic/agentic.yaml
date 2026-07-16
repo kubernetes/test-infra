@@ -58,7 +58,6 @@ periodics:
         value: "2"
       - name: CL2_WARMPOOL_SIZE
         value: "3300"
-      # Variables requiring run-test.sh PR:
       - name: GCE_REGION
         value: "us-central1"
       - name: ENABLE_PROMETHEUS_SERVER
@@ -124,7 +123,6 @@ periodics:
         value: "5m"
       - name: CL2_WARMPOOL_SIZE
         value: "3700"
-      # Variables requiring run-test.sh PR:
       - name: GCE_REGION
         value: "us-central1"
       - name: ENABLE_PROMETHEUS_SERVER
