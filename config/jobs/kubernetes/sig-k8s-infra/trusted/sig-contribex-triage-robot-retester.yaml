@@ -28,11 +28,9 @@ periodics:
         -label:do-not-merge/work-in-progress
         label:lgtm
         label:approved
-        label:"cncf-cla: yes"
         status:failure
         -label:needs-rebase
         -label:needs-ok-to-test
-        -label:"cncf-cla: no"
         repo:kubernetes/kops
         repo:kubernetes/kubernetes
         repo:kubernetes/test-infra

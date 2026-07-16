@@ -1312,7 +1312,6 @@ plugins:
     - assign
     - blunderbuss
     - cat
-    - cla
     - dog
     - golint
     - goose
@@ -1469,7 +1468,6 @@ plugins:
     - assign
     - blunderbuss
     - cat
-    - cla
     - dog
     - goose
     - heart
@@ -1503,7 +1501,6 @@ plugins:
     - assign
     - blunderbuss
     - cat
-    - cla
     - dog
     - goose
     - heart
@@ -1536,7 +1533,6 @@ plugins:
     - assign
     - blunderbuss
     - cat
-    - cla
     - dog
     - goose
     - heart
@@ -1774,16 +1770,6 @@ plugins:
     - milestone
     - override
     - release-note
-
-  containerd/cri:
-    plugins:
-    - assign
-    - cla
-    - label
-    - lgtm
-    - lifecycle
-    - size
-    - trigger
 
   etcd-io:
     plugins:

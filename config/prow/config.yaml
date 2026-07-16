@@ -736,7 +736,6 @@ tide:
     labels:
     - lgtm
     - approved
-    - "cncf-cla: yes"
     missingLabels:
     - do-not-merge
     - do-not-merge/blocked-paths
@@ -751,7 +750,6 @@ tide:
     labels:
     - lgtm
     - approved
-    - "cncf-cla: yes"
     missingLabels:
     - do-not-merge
     - do-not-merge/blocked-paths
@@ -767,7 +765,6 @@ tide:
   - author: k8s-ci-robot
     labels: # k8s-ci-robot should only create autobump PR with this label
     - skip-review
-    - "cncf-cla: yes"
     missingLabels:
     - do-not-merge
     - do-not-merge/blocked-paths
@@ -782,7 +779,6 @@ tide:
   - author: k8s-infra-ci-robot
     labels: # k8s-infra-ci-robot should only create autobump PR with this label
     - skip-review
-    - "cncf-cla: yes"
     missingLabels:
     - do-not-merge
     - do-not-merge/blocked-paths
@@ -799,7 +795,6 @@ tide:
     - kubernetes-sigs/provider-aws-test-infra
     labels: # provider-aws-test-infra-admins team gates the skip-review label via plugins.yaml restricted_labels
     - skip-review
-    - "cncf-cla: yes"
     missingLabels:
     - do-not-merge
     - do-not-merge/blocked-paths
@@ -814,7 +809,6 @@ tide:
     labels:
     - lgtm
     - approved
-    - "cncf-cla: yes"
     missingLabels:
     - do-not-merge
     - do-not-merge/blocked-paths
@@ -833,7 +827,6 @@ tide:
     labels:
       - lgtm
       - approved
-      - "cncf-cla: yes"
     missingLabels:
       - do-not-merge
       - do-not-merge/blocked-paths
@@ -849,7 +842,6 @@ tide:
     labels:
     - lgtm
     - approved
-    - "cncf-cla: yes"
     missingLabels:
     - do-not-merge
     - do-not-merge/blocked-paths
