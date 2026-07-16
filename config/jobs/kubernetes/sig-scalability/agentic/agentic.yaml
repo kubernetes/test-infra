@@ -4,6 +4,7 @@ periodics:
   cluster: k8s-infra-prow-build
   labels:
     preset-k8s-ssh: "true"
+    preset-service-account: "true"
   decorate: true
   decoration_config:
     timeout: 240m
@@ -29,12 +30,20 @@ periodics:
     serviceAccountName: prow-build
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:latest-1.36
+      imagePullPolicy: Always
       command:
       - runner.sh
       args:
       - ./tests/e2e/scenarios/scalability/run-test.sh
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "6Gi"
+        limits:
+          cpu: 2
+          memory: "6Gi"
       env:
       - name: PROMETHEUS_PVC_STORAGE_CLASS
         value: "ssd"
@@ -96,12 +105,20 @@ periodics:
     serviceAccountName: prow-build
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:latest-1.36
+      imagePullPolicy: Always
       command:
       - runner.sh
       args:
       - ./tests/e2e/scenarios/scalability/run-test.sh
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "6Gi"
+        limits:
+          cpu: 2
+          memory: "6Gi"
       env:
       - name: PROMETHEUS_PVC_STORAGE_CLASS
         value: "ssd"
