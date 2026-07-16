@@ -793,6 +793,68 @@ presubmits:
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-shared-probe-capz
       description: "Runs Azure specific e2e tests with cloud controller manager and shared health probe."
       testgrid-num-columns-recent: '30'
+  # Experimental: test cloud-provider-azure on EUAP regions (50/50 centraluseuap/eastus2euap)
+  - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz-euap
+    cluster: eks-prow-build-cluster
+    optional: true
+    always_run: false
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^pkg/provider/storage/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
+    decorate: true
+    decoration_config:
+      timeout: 5h
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    branches:
+    - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: main
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    spec:
+      serviceAccountName: azure
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          export AZURE_LOCATION=$(shuf -n1 -e centraluseuap eastus2euap) &&
+          echo "Selected AZURE_LOCATION=${AZURE_LOCATION}" &&
+          ./scripts/ci-entrypoint.sh bash -c "cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure && make test-ccm-e2e"
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM  # CAPZ config
+          value: "true"
+        - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
+          value: "1"
+        - name: KUBERNETES_VERSION  # CAPZ config
+          value: "latest"
+        - name: CLUSTER_TEMPLATE  # CAPZ config
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/main/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+        - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
+          value: "Standard"
+        - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
+          value: "capz"
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
+    annotations:
+      testgrid-dashboards: provider-azure-cloud-provider-azure
+      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz-euap
+      description: "Experimental: Runs CCM e2e on vmss with random EUAP region (centraluseuap/eastus2euap 50/50)."
+      testgrid-num-columns-recent: '30'
 periodics:
 - cron: '0 16 * * *'  # Run at 16:00 UTC everyday
   # cloud-provider-azure-master-ipv6-capz runs Azure specific tests periodically using capz:main in an IPv6 single stack cluster.
