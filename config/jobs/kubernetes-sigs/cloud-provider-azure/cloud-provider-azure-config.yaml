@@ -798,7 +798,6 @@ presubmits:
     cluster: eks-prow-build-cluster
     optional: true
     always_run: false
-    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^pkg/provider/storage/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
       timeout: 5h
