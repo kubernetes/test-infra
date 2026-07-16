@@ -14,6 +14,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   # Keep the job in sync with pull-kubernetes-e2e-gci-gce.
   name: ci-kubernetes-e2e-gci-gce
   spec:
@@ -59,6 +61,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   # Keep the job in sync with pull-kubernetes-e2e-gce (yes, the name is different).
   name: ci-kubernetes-e2e-ubuntu-gce-containerd
   spec:
@@ -109,6 +113,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
   spec:
     containers:
@@ -154,6 +160,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gci-gce-alpha-features
   spec:
     containers:
@@ -196,6 +204,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gci-gce-flaky-repro
   spec:
     containers:
@@ -234,6 +244,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gci-gce-flaky
   spec:
     containers:
@@ -273,6 +285,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gci-gce-reboot
   spec:
     containers:
@@ -311,6 +325,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gci-gce-serial
   spec:
     containers:
@@ -352,6 +368,8 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   name: ci-kubernetes-e2e-gci-gce-slow
   spec:
     containers:

@@ -1031,6 +1031,8 @@ periodics:
     description: cleanup any EC2 instances older than 2 days
   labels:
     preset-e2e-containerd-ec2: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   decorate: true
   decoration_config:
     timeout: 4h

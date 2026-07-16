@@ -6,6 +6,8 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential-boskos-scale-001-kops: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   decorate: true
   spec:
     containers:

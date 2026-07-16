@@ -53,7 +53,7 @@ presubmits:
       {%- if job_type == "node" %}
       preset-k8s-ssh: "true"
       {%- endif %}
-      {%- if ci %}
+      {%- if ci and job_type != "integration" %}
       prow.k8s.io/refs.org: kubernetes
       prow.k8s.io/refs.repo: kubernetes
       {%- endif %}

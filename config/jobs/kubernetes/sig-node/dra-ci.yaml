@@ -593,8 +593,6 @@ periodics:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      prow.k8s.io/refs.org: kubernetes
-      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
       description: Runs integration tests for DRA which need some additional setup in the job.

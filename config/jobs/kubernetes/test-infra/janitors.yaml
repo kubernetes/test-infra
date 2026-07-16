@@ -6,6 +6,8 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential-aws-shared-testing: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   decorate: true
   spec:
     containers:
@@ -37,6 +39,8 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   decorate: true
   spec:
     containers:
@@ -66,6 +70,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-kops-aws-credential: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
   decorate: true
   spec:
     containers:

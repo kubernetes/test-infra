@@ -26,6 +26,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -92,6 +93,34 @@ func TestMain(m *testing.M) {
 	c = conf
 
 	os.Exit(m.Run())
+}
+
+// findJobSourceByName tries to determine where a certain job is defined.
+// We don't get the source from the Prow API.
+//
+// We rely here on the canonical formatting of the job name (no quotation marks)
+// and "name: <job name>" being unique in the job definition itself - not 100%
+// reliable, but good enough for diagonostic output. This basically replaces
+// manually looking for the job.
+func findJobSourceByName(name string) string {
+	grep := exec.Command("git", "grep", "-n", "-E", "-e", "^ *(- )?name: "+name+" *$")
+	grep.Dir = *jobConfigPath
+	output, err := grep.CombinedOutput()
+	if err != nil {
+		return "???"
+	}
+	lines := strings.Split(string(output), "\n")
+	if len(lines) > 1 && lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
+	}
+	if len(lines) != 1 {
+		return "???"
+	}
+	parts := strings.Split(lines[0], ":")
+	if len(parts) < 2 {
+		return "???"
+	}
+	return path.Join(*jobConfigPath, parts[0]) + ":" + parts[1]
 }
 
 func TestReportTemplate(t *testing.T) {
@@ -1043,6 +1072,28 @@ func TestPreSubmitPathAlias(t *testing.T) {
 		if job.PathAlias != "k8s.io/kubernetes" {
 			t.Errorf("Invalid PathAlias (%s) in job %s for kubernetes/kubernetes repository", job.Name, job.PathAlias)
 		}
+	}
+}
+
+// The prow.k8s.io/refs.org and prow.k8s.io/refs.repo labels are required for selecting jobs in the Grafana dashboards.
+// Normally Prow sets automatically them based on the first non-auxiliary extra refs entry.
+// Periodic jobs without such an entry must set the labels explicitly.
+// PostSubmits and PreSubmits can omit extra_refs because they implicitly checkout the repo they are defined for.
+func TestLabelsBeingSet(t *testing.T) {
+	for _, job := range c.AllPeriodics() {
+		extraRefIndex := slices.IndexFunc(job.ExtraRefs, func(extraRef prowapi.Refs) bool { return !extraRef.Auxiliary })
+		if extraRefIndex >= 0 {
+			// Handled automatically. Don't set manually to avoid potentially broken copy-and-paste.
+			if extraRef := job.ExtraRefs[extraRefIndex]; extraRef.Org == job.Labels["prow.k8s.io/refs.org"] || extraRef.Repo == job.Labels["prow.k8s.io/refs.repo"] {
+				t.Errorf("%s: periodic job %q gets prow.k8s.io/refs.org and prow.k8s.io/refs.repo labels from extra_refs, don't set them manually to redundant values.", findJobSourceByName(job.Name), job.Name)
+			}
+			continue
+		}
+		if job.Labels["prow.k8s.io/refs.org"] != "" && job.Labels["prow.k8s.io/refs.repo"] != "" {
+			// Handled manually.
+			continue
+		}
+		t.Errorf("%s: periodic job %q does not get prow.k8s.io/refs.org and prow.k8s.io/refs.repo labels from extra_refs set, they must be set manually.", findJobSourceByName(job.Name), job.Name)
 	}
 }
 

@@ -342,6 +342,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 60m
@@ -380,6 +382,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 80m
@@ -418,6 +422,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 170m
@@ -452,6 +458,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 80m
@@ -491,6 +499,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 80m
@@ -530,6 +540,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 170m
@@ -565,6 +577,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 340m
@@ -602,6 +616,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 70m
@@ -640,6 +656,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 170m
@@ -677,6 +695,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 170m
@@ -719,6 +739,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 170m
@@ -752,6 +774,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 170m
@@ -787,6 +811,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 520m
@@ -822,6 +848,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 520m
@@ -859,6 +887,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
   decorate: true
   decoration_config:
     timeout: 170m
