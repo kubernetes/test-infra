@@ -869,6 +869,7 @@ tide:
     kubernetes-sigs/devops-bench: squash
     kubernetes-sigs/external-dns: squash
     kubernetes-sigs/ibm-vpc-block-csi-driver: squash
+    kubernetes-sigs/inference-perf: squash
     kubernetes-sigs/jobset: squash
     kubernetes-sigs/karpenter: squash
     kubernetes-sigs/kernel-module-management: rebase
