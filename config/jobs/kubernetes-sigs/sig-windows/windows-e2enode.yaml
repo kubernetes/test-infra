@@ -29,8 +29,6 @@ periodics:
         env:
           - name: VM_LOCATION
             value: northeurope
-          - name: CONTAINERD_VERSION
-            value: "nightly"
   annotations:
     testgrid-dashboards: sig-windows-signal
     testgrid-tab-name: windows-e2e-node-master
@@ -79,8 +77,6 @@ presubmits:
             env:
               - name: VM_LOCATION
                 value: northeurope
-              - name: CONTAINERD_VERSION
-                value: "nightly"
       annotations:
         fork-per-release: "true"
         testgrid-dashboards: sig-windows-presubmit
@@ -121,8 +117,6 @@ presubmits:
             env:
               - name: VM_LOCATION
                 value: northeurope
-              - name: CONTAINERD_VERSION
-                value: "nightly"
       annotations:
         testgrid-dashboards: sig-windows-presubmit
         testgrid-tab-name: pr-k8s-sig-windows-e2enode
