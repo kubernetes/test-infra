@@ -143,6 +143,69 @@ presubmits:
       testgrid-tab-name: presubmit-python-runtime-sandbox-test
       description: End-to-end test for the python-runtime-sandbox example using kind
       testgrid-num-columns-recent: '30'
+  - name: presubmit-agent-sandbox-mcp-server-sandbox-test
+    cluster: eks-prow-build-cluster
+    run_if_changed: "^examples/mcp-server-sandbox/|^dev/ci/presubmits/test-mcp-server-sandbox$"
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260622-537e33cc05-master
+        command:
+        - dev/ci/presubmits/test-mcp-server-sandbox
+        resources:
+          requests:
+            cpu: 1
+            memory: 2Gi
+          limits:
+            cpu: 1
+            memory: 2Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-mcp-server-sandbox-test
+      description: Unit tests for the mcp-server-sandbox example
+      testgrid-num-columns-recent: '30'
+  - name: presubmit-agent-sandbox-analytics-tool-test
+    cluster: eks-prow-build-cluster
+    run_if_changed: "^examples/analytics-tool/analytics-tool/|^dev/ci/presubmits/test-analytics-tool$"
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260622-537e33cc05-master
+        command:
+        - dev/ci/presubmits/test-analytics-tool
+        resources:
+          requests:
+            cpu: 1
+            memory: 2Gi
+          limits:
+            cpu: 1
+            memory: 2Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-analytics-tool-test
+      description: Unit tests for the analytics-tool example
+      testgrid-num-columns-recent: '30'
+  - name: presubmit-agent-sandbox-langchain-test
+    cluster: eks-prow-build-cluster
+    run_if_changed: "^examples/langchain/|^dev/ci/presubmits/test-langchain$"
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260622-537e33cc05-master
+        command:
+        - dev/ci/presubmits/test-langchain
+        resources:
+          requests:
+            cpu: 1
+            memory: 2Gi
+          limits:
+            cpu: 1
+            memory: 2Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-langchain-test
+      description: Unit tests for the langchain (coding_agent) example
+      testgrid-num-columns-recent: '30'
   - name: presubmit-agent-sandbox-e2e-test
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
