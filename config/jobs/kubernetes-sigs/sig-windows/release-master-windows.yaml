@@ -184,58 +184,6 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-master-hyperv
-- name: ci-kubernetes-e2e-capz-master-windows-containerd17
-  cluster: eks-prow-build-cluster
-  interval: 24h
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-capz-windows-common: "true"
-    preset-capz-windows-2022: "true"
-    preset-capz-containerd-1-7-latest: "true"
-    preset-azure-community: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-azure
-    base_ref: main
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-    workdir: false
-  - org: kubernetes-sigs
-    repo: windows-testing
-    base_ref: master
-    path_alias: sigs.k8s.io/windows-testing
-    workdir: true
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
-    workdir: false
-  spec:
-    serviceAccountName: azure
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
-        command:
-          - "runner.sh"
-          - "env"
-          - "KUBERNETES_VERSION=latest" # fork-per-release-replacements only updates args / tags and not env vars so specify k8s-version here!
-          - "./capz/run-capz-e2e.sh"
-        securityContext:
-          privileged: true
-        resources:
-          # current recommendations are at least 1Gi /core
-          requests:
-            cpu: 2
-            memory: "9Gi"
-          limits:
-            cpu: 2
-            memory: "9Gi"
-  annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    testgrid-dashboards: sig-windows-master-release, sig-windows-signal
-    testgrid-tab-name: capz-windows-master-containerd17
 - name: ci-kubernetes-e2e-capz-master-windows-serial-slow
   cluster: eks-prow-build-cluster
   interval: 24h
@@ -307,7 +255,7 @@ periodics:
     preset-azure-community: "true"
     preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
-    preset-capz-containerd-1-7-latest: "true"
+    preset-capz-containerd-2-0-latest: "true"
     preset-capz-serial-slow: "true"
   extra_refs:
   - org: kubernetes-sigs
