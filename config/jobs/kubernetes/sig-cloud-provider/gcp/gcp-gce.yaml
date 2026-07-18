@@ -271,46 +271,6 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    description: Uses kubetest to run a subset of e2e tests (+Feature:Reboot) against
-      a cluster created with cluster/kube-up.sh
-    testgrid-alert-email: gke-node-experience-team+alerts@google.com, release-team@kubernetes.io
-    testgrid-dashboards: sig-release-master-blocking, google-gce
-    testgrid-num-failures-to-alert: "6"
-    testgrid-tab-name: gce-cos-master-reboot
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 1h20m0s
-  interval: 30m
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-    prow.k8s.io/refs.org: kubernetes
-    prow.k8s.io/refs.repo: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-reboot
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --extract=ci/fast/latest-fast
-      - --gcp-node-image=gci
-      - --gcp-region=us-central1
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      - --timeout=60m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
-      name: ""
-      resources:
-        limits:
-          cpu: "1"
-          memory: 3Gi
-        requests:
-          cpu: "1"
-          memory: 3Gi
-- annotations:
     description: Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature)
       against a cluster created with cluster/kube-up.sh
     testgrid-alert-email: release-team@kubernetes.io

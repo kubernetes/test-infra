@@ -99,49 +99,6 @@ periodics:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: "1h 2h 6h 24h"
     fork-per-release-replacements: "extract=ci/latest -> extract=ci/latest-{{.Version}}"
-    testgrid-alert-email: release-team@kubernetes.io
-    testgrid-dashboards: sig-release-master-blocking
-    testgrid-tab-name: gce-cos-reboot-master
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 1h20m0s
-  extra_refs:
-  - base_ref: master
-    org: kubernetes
-    path_alias: k8s.io/kubernetes
-    repo: kubernetes
-  interval: 1h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-cos-reboot-master
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --provider=gce
-      - --gcp-region=us-central1
-      - --gcp-node-image=gci
-      - --extract=ci/latest
-      - --timeout=60m
-      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
-      resources:
-        limits:
-          cpu: 1000m
-          memory: 3Gi
-        requests:
-          cpu: 1000m
-          memory: 3Gi
-- annotations:
-    fork-per-release: "true"
-    fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: "1h 2h 6h 24h"
-    fork-per-release-replacements: "extract=ci/latest -> extract=ci/latest-{{.Version}}"
     testgrid-dashboards: sig-release-master-informing
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-cos-serial-master
