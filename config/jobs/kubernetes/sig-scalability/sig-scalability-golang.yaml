@@ -1,7 +1,7 @@
 periodics:
 - name: ci-build-and-push-k8s-at-golang-tip
   cluster: k8s-infra-prow-build
-  interval: 4h
+  cron: "0 0 * * *"
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -50,7 +50,7 @@ periodics:
           cpu: 4
           memory: "16Gi"
 
-- interval: 24h
+- cron: "0 1 * * *"
   name: ci-golang-tip-k8s-master
   cluster: k8s-infra-prow-build
   tags:

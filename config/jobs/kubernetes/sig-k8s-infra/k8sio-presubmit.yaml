@@ -116,7 +116,7 @@ presubmits:
             resources:
               limits:
                 cpu: 2
-                memory: "1Gi"
+                memory: 6Gi
               requests:
                 cpu: 2
-                memory: "1Gi"
+                memory: 6Gi
