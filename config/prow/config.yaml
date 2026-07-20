@@ -615,6 +615,13 @@ branch-protection:
         hydrophone:
           exclude:
             - "^dependencies/" # don't protect branches created by github action that updates dependencies
+        inference-perf:
+          required_status_checks:
+            contexts:
+            - unit-test (3.13)
+            - coverage (3.13)
+            - lint (3.13)
+            - e2e-tests
         kernel-module-management:
           required_status_checks:
             contexts:
@@ -910,6 +917,8 @@ tide:
           cluster-api-provider-kubevirt:
             from-branch-protection: true
           cluster-api-provider-vsphere:
+            from-branch-protection: true
+          inference-perf:
             from-branch-protection: true
           kubespray:
             from-branch-protection: true
