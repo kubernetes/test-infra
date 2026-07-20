@@ -153,8 +153,6 @@ presubmits:
     cluster: k8s-infra-prow-build
     always_run: false
     optional: true
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-agentic-sandbox-rapid-burst)|/run-(scalability-rapid-burst|rapid-burst-scalability)(-test)?\\s*$"
-    rerun_command: "/test pull-kubernetes-e2e-gce-agentic-sandbox-rapid-burst"
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -233,8 +231,6 @@ presubmits:
     cluster: k8s-infra-prow-build
     always_run: false
     optional: true
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-agentic-sandbox-continuous-burst)|/run-(scalability-continuous-burst|continuous-burst-scalability)(-test)?\\s*$"
-    rerun_command: "/test pull-kubernetes-e2e-gce-agentic-sandbox-continuous-burst"
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
