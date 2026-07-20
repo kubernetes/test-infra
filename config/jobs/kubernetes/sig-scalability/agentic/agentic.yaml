@@ -306,5 +306,3 @@ presubmits:
           value: "true"
         - name: EXPERIMENTAL_GCP_SNAPSHOT_PROMETHEUS_DISK
           value: "true"
-
-
