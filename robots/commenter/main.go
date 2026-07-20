@@ -20,6 +20,11 @@ limitations under the License.
 // By default commenter runs in dry mode, add --confirm to make it leave comments.
 // The --updated, --include-closed, --ceiling options provide minor safeguards
 // around leaving excessive comments.
+//
+// Commenter also skips any matched issue that already has an identical comment,
+// so it is idempotent and will not repeat a comment even if the --query text
+// filter fails to exclude the issue (GitHub search does not reliably match
+// free-text phrases, especially inside existing comments).
 package main
 
 import (
@@ -153,6 +158,13 @@ func makeQuery(query string, includeArchived, includeClosed, includeLocked bool,
 type client interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+}
+
+// normalizeComment makes comment bodies comparable across GitHub round-trips,
+// which can differ in line endings and surrounding whitespace.
+func normalizeComment(s string) string {
+	return strings.TrimSpace(strings.ReplaceAll(s, "\r\n", "\n"))
 }
 
 func main() {
@@ -252,6 +264,25 @@ func run(c client, query, sort string, asc, random bool, commenter func(meta) (s
 			msg := fmt.Sprintf("Failed to create comment for %s/%s#%d: %v", org, repo, number, err)
 			log.Print(msg)
 			problems = append(problems, msg)
+			continue
+		}
+		existing, err := c.ListIssueComments(org, repo, number)
+		if err != nil {
+			msg := fmt.Sprintf("Failed to list comments for %s/%s#%d: %v", org, repo, number, err)
+			log.Print(msg)
+			problems = append(problems, msg)
+			continue
+		}
+		want := normalizeComment(comment)
+		commented := false
+		for _, ec := range existing {
+			if normalizeComment(ec.Body) == want {
+				commented = true
+				break
+			}
+		}
+		if commented {
+			log.Printf("Skipping %s: an identical comment already exists", i.HTMLURL)
 			continue
 		}
 		if err := c.CreateComment(org, repo, number, comment); err != nil {

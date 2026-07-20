@@ -210,6 +210,8 @@ func makeIssue(owner, repo string, number int, title string) github.Issue {
 type fakeClient struct {
 	comments []int
 	issues   []github.Issue
+	// existingComments maps an issue number to the comments already on it.
+	existingComments map[int][]github.IssueComment
 }
 
 // Fakes Creating a client, using the same signature as github.Client
@@ -219,6 +221,14 @@ func (c *fakeClient) CreateComment(owner, repo string, number int, comment strin
 	}
 	c.comments = append(c.comments, number)
 	return nil
+}
+
+// Fakes listing an issue's comments, using the same signature as github.Client
+func (c *fakeClient) ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error) {
+	if repo == "list-error" {
+		return nil, errors.New("list error")
+	}
+	return c.existingComments[number], nil
 }
 
 // Fakes searching for issues, using the same signature as github.Client
@@ -288,6 +298,37 @@ func TestRun(t *testing.T) {
 			client: fakeClient{issues: []github.Issue{
 				makeIssue("o", "r", 1, "problematic this should work"),
 				makeIssue("o", "error", 2, "problematic expect an error"),
+				makeIssue("o", "r", 3, "problematic works as well"),
+			}},
+			err:      true,
+			expected: []int{1, 3},
+		},
+		{
+			name:    "skip issues that already have an identical comment",
+			query:   "dup",
+			comment: "found you",
+			client: fakeClient{
+				issues: []github.Issue{
+					makeIssue("o", "r", 1, "dup one"),
+					makeIssue("o", "r", 2, "dup two"),
+					makeIssue("o", "r", 3, "dup three"),
+				},
+				existingComments: map[int][]github.IssueComment{
+					// Different line endings/whitespace must still count as a match.
+					2: {{Body: "found you\r\n"}},
+					// A non-matching comment should not prevent commenting.
+					3: {{Body: "something else"}},
+				},
+			},
+			expected: []int{1, 3},
+		},
+		{
+			name:    "list comments error",
+			query:   "problematic",
+			comment: "hey",
+			client: fakeClient{issues: []github.Issue{
+				makeIssue("o", "r", 1, "problematic this should work"),
+				makeIssue("o", "list-error", 2, "problematic expect a list error"),
 				makeIssue("o", "r", 3, "problematic works as well"),
 			}},
 			err:      true,
