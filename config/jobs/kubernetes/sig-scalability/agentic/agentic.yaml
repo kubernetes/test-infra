@@ -45,6 +45,8 @@ periodics:
           cpu: 2
           memory: "6Gi"
       env:
+      - name: CONTROL_PLANE_SIZE
+        value: "c3-standard-8"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
         value: "ssd"
       - name: CLOUD_PROVIDER
@@ -120,6 +122,8 @@ periodics:
           cpu: 2
           memory: "6Gi"
       env:
+      - name: CONTROL_PLANE_SIZE
+        value: "c3-standard-8"
       - name: PROMETHEUS_PVC_STORAGE_CLASS
         value: "ssd"
       - name: CLOUD_PROVIDER
