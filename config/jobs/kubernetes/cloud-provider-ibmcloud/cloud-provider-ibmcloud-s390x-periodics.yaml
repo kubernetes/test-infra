@@ -138,14 +138,14 @@ periodics:
             cpu: 6
             memory: 20Gi
 
-  - name: ci-kubernetes-s390x-conformance-latest-kubetest2
-    cron: "0 2-23/3 * * *" # every 3h starting at 02:00 UTC
+  - name: ci-kubernetes-s390x-conformance-master
+    cron: "0 3-23/4 * * *" # every 4h starting at 03:00 UTC
     cluster: k8s-infra-s390x-prow-build
     labels:
       preset-ibmcloud-cred-z: "true"
     decorate: true
     decoration_config:
-      timeout: 220m
+      timeout: 2h0m0s
     extra_refs:
       - base_ref: main
         org: kubernetes-sigs
@@ -153,8 +153,13 @@ periodics:
         workdir: true
     annotations:
       description: Runs conformance tests using kubetest2 against kubernetes ci latest on IBM VPC
+      fork-per-release: "true"
+      fork-per-release-cron: 0 1 * * *, 0 5 * * *, 0 9 * * *, 0 13 * * *, 0 17 * * *
+      fork-per-release-replacements: "MARKER_VERSION=latest.txt -> MARKER_VERSION=latest-{{.Version}}.txt"
       testgrid-dashboards: ibm-s390x-k8s, conformance-s390x, ibm-k8s-e2e
-      testgrid-tab-name: ci-kubernetes-s390x-conformance-latest-kubetest2
+      testgrid-tab-name: ci-kubernetes-s390x-conformance-master
+      testgrid-alert-email: sig-cloud-provider-ibm-s390x-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
         - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
@@ -163,10 +168,10 @@ periodics:
           resources:
             requests:
               cpu: 4
-              memory: "14Gi"
+              memory: "12Gi"
             limits:
               cpu: 4
-              memory: "14Gi"
+              memory: "12Gi"
           command:
             - runner.sh
           args:
