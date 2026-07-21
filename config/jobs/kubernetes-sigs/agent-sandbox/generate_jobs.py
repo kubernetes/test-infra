@@ -131,7 +131,7 @@ def presubmit_benchmarks_kops_gcp_claims(job):
     -- or the benchmark itself; anything else can still trigger it with
     /test."""
     optional_presubmit(job)
-    set_run_if_changed(job, r"^extensions/|^cmd/|^controllers/|^internal/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp")
+    set_run_if_changed(job, r"^extensions/|^cmd/|^controllers/|^internal/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp")  # pylint: disable=line-too-long
 
 
 PRESUBMIT_OVERRIDES = {
