@@ -74,14 +74,46 @@ periodics:
     base_ref: main
   labels:
     preset-dind-enabled: "true"
-    preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
+    serviceAccountName: prow-build
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
       command:
       - runner.sh
       - dev/ci/periodics/benchmarks-kops-gcp-cilium
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7
+          memory: 14Gi
+        limits:
+          cpu: 7
+          memory: 14Gi
+      env:
+      - name: BOSKOS_HOST
+        value: boskos.test-pods.svc.cluster.local
+- name: periodic-benchmarks-kops-gcp-claims
+  cluster: k8s-infra-prow-build
+  interval: 24h
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-apps-agent-sandbox
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: agent-sandbox
+    base_ref: main
+  labels:
+    preset-dind-enabled: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    serviceAccountName: prow-build
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
+      command:
+      - runner.sh
+      - dev/ci/periodics/benchmarks-kops-gcp-claims
       securityContext:
         privileged: true
       resources:
@@ -106,9 +138,9 @@ periodics:
     base_ref: main
   labels:
     preset-dind-enabled: "true"
-    preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
+    serviceAccountName: prow-build
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
       command:

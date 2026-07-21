@@ -117,9 +117,9 @@ presubmits:
     optional: true
     labels:
       preset-dind-enabled: "true"
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
         command:
@@ -140,6 +140,36 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
       testgrid-tab-name: presubmit-benchmarks-kops-gcp-cilium
+  - name: presubmit-agent-sandbox-benchmarks-kops-gcp-claims
+    cluster: k8s-infra-prow-build
+    run_if_changed: ^extensions/|^cmd/|^controllers/|^internal/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp
+    decorate: true
+    optional: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
+        command:
+        - runner.sh
+        - dev/ci/presubmits/benchmarks-kops-gcp-claims
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7
+            memory: 14Gi
+          limits:
+            cpu: 7
+            memory: 14Gi
+        env:
+        - name: BOSKOS_HOST
+          value: boskos.test-pods.svc.cluster.local
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-benchmarks-kops-gcp-claims
   - name: presubmit-agent-sandbox-benchmarks-kops-gcp-kindnet
     cluster: k8s-infra-prow-build
     skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
@@ -147,9 +177,9 @@ presubmits:
     optional: true
     labels:
       preset-dind-enabled: "true"
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
         command:
