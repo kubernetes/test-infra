@@ -2,11 +2,10 @@
 
 reviewers:
 - mborsz
-- mm4tt
 - wojtek-t
 approvers:
 - mborsz
-- mm4tt
 - wojtek-t
 emeritus_approvers:
 - shyamjvs
+- mm4tt
