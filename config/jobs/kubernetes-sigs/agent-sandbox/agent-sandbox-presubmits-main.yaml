@@ -142,7 +142,7 @@ presubmits:
       testgrid-tab-name: presubmit-benchmarks-kops-gcp-cilium
   - name: presubmit-agent-sandbox-benchmarks-kops-gcp-claims
     cluster: k8s-infra-prow-build
-    run_if_changed: ^extensions/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp
+    run_if_changed: ^extensions/|^cmd/|^controllers/|^internal/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp
     decorate: true
     optional: true
     labels:

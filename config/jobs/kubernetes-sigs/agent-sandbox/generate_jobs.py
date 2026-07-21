@@ -126,10 +126,12 @@ def optional_presubmit(job):
 
 def presubmit_benchmarks_kops_gcp_claims(job):
     """Optional, and auto-runs only on PRs that can affect warm-pool claim
-    adoption (extensions controllers/APIs) or the benchmark itself; anything
-    else can still trigger it with /test."""
+    adoption -- the extensions controllers/APIs plus the controller binary,
+    shared controllers, and internal packages the adoption path runs through
+    -- or the benchmark itself; anything else can still trigger it with
+    /test."""
     optional_presubmit(job)
-    set_run_if_changed(job, r"^extensions/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp")
+    set_run_if_changed(job, r"^extensions/|^cmd/|^controllers/|^internal/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp")
 
 
 PRESUBMIT_OVERRIDES = {
