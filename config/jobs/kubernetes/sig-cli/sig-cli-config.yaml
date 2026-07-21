@@ -29,7 +29,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -71,7 +71,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -112,7 +112,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -152,7 +152,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -199,7 +199,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -241,7 +241,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -283,7 +283,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -324,7 +324,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -364,7 +364,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -403,7 +403,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -444,7 +444,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -484,7 +484,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -524,7 +524,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:
@@ -563,7 +563,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       name: ""
       resources:
         limits:

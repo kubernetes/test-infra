@@ -12,7 +12,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-operator-test
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
         command:
         - runner.sh
         args:
@@ -42,7 +42,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-operator-test-e2e
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20260713-c0336204b2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260720-39d457d26c-master
         command:
         - wrapper.sh
         args:
@@ -71,7 +71,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-operator-verify
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
         command:
         - runner.sh
         args:
