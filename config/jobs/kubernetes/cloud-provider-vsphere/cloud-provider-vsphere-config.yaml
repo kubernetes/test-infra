@@ -401,7 +401,6 @@ presubmits:
     always_run: false
     run_if_changed: '\.go$|go.mod|hack/e2e\.sh|test/e2e/|charts/vsphere-cpi/'
     skip_report: false
-    optional: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
@@ -438,7 +437,6 @@ presubmits:
     always_run: false
     run_if_changed: '\.go$|go.mod|hack/e2e\.sh|test/e2e/|charts/vsphere-cpi/'
     skip_report: false
-    optional: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
