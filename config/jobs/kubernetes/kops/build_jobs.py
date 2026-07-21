@@ -2675,6 +2675,15 @@ def generate_presubmits_e2e():
             scenario="clusterapi",
             optional=True
         ),
+
+        presubmit_test(
+            name="pull-kops-scenario-splitkcp-gcp",
+            cloud="gce",
+            k8s_version="stable",
+            scenario="splitkcp",
+            feature_flags=["APIServerNodes", "ExperimentalRoles"],
+            optional=True
+        ),
     ]
 
     return jobs
