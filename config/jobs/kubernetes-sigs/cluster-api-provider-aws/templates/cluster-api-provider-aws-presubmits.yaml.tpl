@@ -259,8 +259,8 @@ presubmits:
     - ^{{ $.branch }}$
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     #run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|exp|feature|hack|pkg|test|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
-    always_run: {{ eq $.branch "main" }}
-    optional: {{ not (eq $.branch "main") }}
+    always_run: true
+    optional: false
     decorate: true
     decoration_config:
       timeout: {{ if has $.branch (list "release-2.8" "release-2.7") }}5h{{ else }}2h{{ end }}
