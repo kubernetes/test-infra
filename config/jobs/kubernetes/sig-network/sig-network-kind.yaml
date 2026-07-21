@@ -109,7 +109,7 @@ presubmits:
       description: Runs loadbalancer tests in kind with cloud-provider-kind
       testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
   - name: pull-kubernetes-e2e-kind-nftables
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     branches:
     - master
     - ^release-
@@ -145,7 +145,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|SCTPConnectivity|LocalhostNodePorts
+          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|LocalhostNodePorts
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -162,7 +162,7 @@ presubmits:
       description: Runs tests against a Kubernetes in Docker cluster and the nftables proxy mode
       testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
   - name: pull-kubernetes-e2e-kind-ipvs
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     branches:
       - master
     optional: true
@@ -197,7 +197,7 @@ presubmits:
               value: \[sig-network\]|\[Conformance\]
             # FIXME: AdmissionWebhooks flakes https://issues.k8s.io/128230
             - name: SKIP
-              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity|LocalhostNodePorts
+              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|LocalhostNodePorts
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -266,7 +266,7 @@ periodics:
 # network test against kubernetes master branch with `kind`
 - interval: 6h
   name: ci-kubernetes-kind-network
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -290,7 +290,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|PerformanceDNS|SCTPConnectivity
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|PerformanceDNS
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -310,7 +310,7 @@ periodics:
 # network test against kubernetes master branch with `kind` ipv6
 - interval: 6h
   name: ci-kubernetes-kind-network-ipv6
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -340,7 +340,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv4|IPv6DualStack|Internet.connection|PerformanceDNS|upstream.nameserver|SCTPConnectivity|LocalhostNodePorts
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv4|IPv6DualStack|Internet.connection|PerformanceDNS|upstream.nameserver|LocalhostNodePorts
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -360,7 +360,7 @@ periodics:
 # network test against kubernetes master branch with `kind` dual stack
 - interval: 6h
   name: ci-kubernetes-kind-network-dual
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -394,7 +394,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|SCTPConnectivity
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -414,7 +414,7 @@ periodics:
 # network test against kubernetes master branch with `kind`
 - interval: 24h
   name: ci-kubernetes-kind-network-ipvs
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -443,7 +443,7 @@ periodics:
         value: \[sig-network\]|\[Conformance\]
       # FIXME: AdmissionWebhooks flakes https://issues.k8s.io/128230
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity|LocalhostNodePorts
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|LocalhostNodePorts
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -463,7 +463,7 @@ periodics:
 # network test against kubernetes master branch with `kind` dual stack
 - interval: 24h
   name: ci-kubernetes-kind-network-nftables
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -491,7 +491,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity|LocalhostNodePorts
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|LocalhostNodePorts
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -510,7 +510,7 @@ periodics:
     testgrid-num-columns-recent: '3'
 - interval: 24h
   name: ci-kubernetes-kind-network-nftables-ipv6
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -544,7 +544,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity|LocalhostNodePorts
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|LocalhostNodePorts
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -563,7 +563,7 @@ periodics:
     testgrid-num-columns-recent: '3'
 - interval: 24h
   name: ci-kubernetes-kind-network-nftables-dual
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -598,7 +598,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity|LocalhostNodePorts
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|LocalhostNodePorts
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -619,7 +619,7 @@ periodics:
 # serial tests so it runs in ~20m
 - interval: 6h
   name: ci-kubernetes-kind-network-parallel
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -639,7 +639,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection
       command:
         - wrapper.sh
         - bash
@@ -664,7 +664,7 @@ periodics:
 # network test against kubernetes master branch with `kind` ipv6
 - interval: 6h
   name: ci-kubernetes-kind-network-parallel-ipv6
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -690,7 +690,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity|LocalhostNodePorts
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|LocalhostNodePorts
       command:
         - wrapper.sh
         - bash
@@ -918,7 +918,7 @@ periodics:
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com, kubernetes-sig-network-test-failures@googlegroups.com, release-team@kubernetes.io
     testgrid-num-columns-recent: '3'
 - interval: 6h
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   name: ci-kubernetes-network-kind-alpha-beta-features
   annotations:
     testgrid-dashboards: sig-network-kind
@@ -951,8 +951,6 @@ periodics:
         value: '{"api/all":"true"}'
       - name: LABEL_FILTER
         value: "(Conformance || sig-network ) && !Feature: containsAny {Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
-      - name: SKIP
-        value: SCTPConnectivity
       - name: PARALLEL
         value: "true"
       # we need privileged mode in order to do docker in docker
@@ -968,7 +966,7 @@ periodics:
           memory: 9Gi
           cpu: 7
 - interval: 24h
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   name: ci-kubernetes-kind-network-deprecate-endpoints
   annotations:
     testgrid-dashboards: sig-network-kind
@@ -1012,7 +1010,7 @@ periodics:
       - name: LABEL_FILTER
         value: "(Conformance || sig-network ) && !Disruptive && !Flaky"
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer.Service.without.NodePort|IPv6|SCTPConnectivity|EndpointsController|EndpointSliceMirroring
+        value: Alpha|Beta|LoadBalancer.Service.without.NodePort|IPv6|EndpointsController|EndpointSliceMirroring
       - name: PARALLEL
         value: "true"
       # we need privileged mode in order to do docker in docker
