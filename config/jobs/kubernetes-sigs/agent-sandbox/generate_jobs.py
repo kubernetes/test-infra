@@ -124,6 +124,14 @@ def optional_presubmit(job):
     job["optional"] = True
 
 
+def presubmit_benchmarks_kops_gcp_claims(job):
+    """Optional, and auto-runs only on PRs that can affect warm-pool claim
+    adoption (extensions controllers/APIs) or the benchmark itself; anything
+    else can still trigger it with /test."""
+    optional_presubmit(job)
+    set_run_if_changed(job, r"^extensions/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp")
+
+
 PRESUBMIT_OVERRIDES = {
     "test-autogen-up-to-date": presubmit_test_autogen_up_to_date,
     "test-unit": presubmit_test_unit,
@@ -132,7 +140,7 @@ PRESUBMIT_OVERRIDES = {
     "test-e2e": presubmit_test_e2e,
     # Expensive full-cluster benchmarks.
     "benchmarks-kops-gcp-cilium": optional_presubmit,
-    "benchmarks-kops-gcp-claims": optional_presubmit,
+    "benchmarks-kops-gcp-claims": presubmit_benchmarks_kops_gcp_claims,
     "benchmarks-kops-gcp-kindnet": optional_presubmit,
     # Not wired up in prow before this generator existed; keep manual until
     # its credential requirements are sorted out.
@@ -151,24 +159,16 @@ def periodic_test_migration(job):
     job["decoration_config"] = {"timeout": "30m"}
 
 
-def periodic_benchmarks_kops_gcp_cilium(job):
-    job["interval"] = "24h"
-
-
-def periodic_benchmarks_kops_gcp_claims(job):
-    job["interval"] = "24h"
-
-
-def periodic_benchmarks_kops_gcp_kindnet(job):
+def periodic_24h(job):
     job["interval"] = "24h"
 
 
 PERIODIC_OVERRIDES = {
     "test-load-test": periodic_test_load_test,
     "test-migration": periodic_test_migration,
-    "benchmarks-kops-gcp-cilium": periodic_benchmarks_kops_gcp_cilium,
-    "benchmarks-kops-gcp-claims": periodic_benchmarks_kops_gcp_claims,
-    "benchmarks-kops-gcp-kindnet": periodic_benchmarks_kops_gcp_kindnet,
+    "benchmarks-kops-gcp-cilium": periodic_24h,
+    "benchmarks-kops-gcp-claims": periodic_24h,
+    "benchmarks-kops-gcp-kindnet": periodic_24h,
 }
 
 DEFAULT_PERIODIC_INTERVAL = "24h"
@@ -235,7 +235,6 @@ def build_presubmit(script_name, override_func=None):
     if e2e:
         labels = {"preset-dind-enabled": "true"}
         if gcp:
-            labels["preset-service-account"] = "true"  # boskos GCE resources
             labels["preset-k8s-ssh"] = "true"  # node access
         else:
             labels["preset-kind-volume-mounts"] = "true"
@@ -256,7 +255,11 @@ def build_presubmit(script_name, override_func=None):
     c = container(f"dev/ci/presubmits/{script_name}", e2e, resources)
     if gcp:
         c["env"] = [{"name": "BOSKOS_HOST", "value": "boskos.test-pods.svc.cluster.local"}]
-    job["spec"] = {"containers": [c]}
+        # GCP credentials via workload identity on k8s-infra-prow-build
+        # (replaces the key-based preset-service-account preset).
+        job["spec"] = {"serviceAccountName": "prow-build", "containers": [c]}
+    else:
+        job["spec"] = {"containers": [c]}
 
     tab_name = f"presubmit-{script_name}"
     job["annotations"] = {
@@ -276,7 +279,6 @@ def build_periodic(script_name, override_func=None):
 
     labels = {"preset-dind-enabled": "true"}
     if gcp:
-        labels["preset-service-account"] = "true"
         labels["preset-k8s-ssh"] = "true"
     else:
         labels["preset-kind-volume-mounts"] = "true"
@@ -294,7 +296,11 @@ def build_periodic(script_name, override_func=None):
     c = container(f"dev/ci/periodics/{script_name}", e2e=True, resources=resources_for_e2e())
     if gcp:
         c["env"] = [{"name": "BOSKOS_HOST", "value": "boskos.test-pods.svc.cluster.local"}]
-    job["spec"] = {"containers": [c]}
+        # GCP credentials via workload identity on k8s-infra-prow-build
+        # (replaces the key-based preset-service-account preset).
+        job["spec"] = {"serviceAccountName": "prow-build", "containers": [c]}
+    else:
+        job["spec"] = {"containers": [c]}
 
     if override_func:
         override_func(job)

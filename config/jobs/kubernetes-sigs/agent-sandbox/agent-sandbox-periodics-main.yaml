@@ -74,9 +74,9 @@ periodics:
     base_ref: main
   labels:
     preset-dind-enabled: "true"
-    preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
+    serviceAccountName: prow-build
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
       command:
@@ -106,9 +106,9 @@ periodics:
     base_ref: main
   labels:
     preset-dind-enabled: "true"
-    preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
+    serviceAccountName: prow-build
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
       command:
@@ -138,9 +138,9 @@ periodics:
     base_ref: main
   labels:
     preset-dind-enabled: "true"
-    preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
+    serviceAccountName: prow-build
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
       command:
