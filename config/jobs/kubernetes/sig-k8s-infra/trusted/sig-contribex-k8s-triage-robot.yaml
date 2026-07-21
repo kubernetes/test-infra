@@ -186,7 +186,6 @@ periodics:
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/kubectl
         -repo:kubernetes/steering
-        -repo:kubernetes-sigs/ingate
         -label:lifecycle/frozen
         -label:"help wanted"
         -label:"good first issue"
@@ -256,9 +255,7 @@ periodics:
         org:kubernetes-csi
         is:pr
         -repo:kubernetes-sigs/kind
-        -repo:kubernetes/ingress-nginx
         -repo:kubernetes/steering
-        -repo:kubernetes-sigs/ingate
         -label:lifecycle/frozen
         label:lifecycle/rotten
       - --updated=720h
@@ -449,9 +446,7 @@ periodics:
         org:kubernetes-csi
         is:issue
         -repo:kubernetes-sigs/kind
-        -repo:kubernetes/ingress-nginx
         -repo:kubernetes/steering
-        -repo:kubernetes-sigs/ingate
         -label:lifecycle/frozen
         -label:lifecycle/rotten
         -label:"help wanted"
@@ -521,9 +516,7 @@ periodics:
         org:kubernetes-csi
         is:pr
         -repo:kubernetes-sigs/kind
-        -repo:kubernetes/ingress-nginx
         -repo:kubernetes/steering
-        -repo:kubernetes-sigs/ingate
         -repo:kubernetes-sigs/agent-sandbox
         -label:lifecycle/frozen
         -label:lifecycle/rotten
@@ -591,9 +584,7 @@ periodics:
         org:kubernetes-csi
         is:issue
         -repo:kubernetes-sigs/kind
-        -repo:kubernetes/ingress-nginx
         -repo:kubernetes/steering
-        -repo:kubernetes-sigs/ingate
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
@@ -663,9 +654,7 @@ periodics:
         org:kubernetes-csi
         is:pr
         -repo:kubernetes-sigs/kind
-        -repo:kubernetes/ingress-nginx
         -repo:kubernetes/steering
-        -repo:kubernetes-sigs/ingate
         -repo:kubernetes-sigs/agent-sandbox
         -label:lifecycle/frozen
         -label:lifecycle/stale
