@@ -28,7 +28,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
       - --timeout=60m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       resources:
         requests:
           cpu: 2
@@ -67,7 +67,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
       - --timeout=60m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       resources:
         requests:
           cpu: 2
@@ -101,7 +101,7 @@ periodics:
       runAsUser: 2001
       runAsGroup: 2010
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
         securityContext:
           allowPrivilegeEscalation: false
         command:
@@ -139,7 +139,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
       command:
       - runner.sh
       args:
@@ -180,7 +180,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20260713-c0336204b2-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260720-39d457d26c-master
       command:
       - wrapper.sh
       - bash
@@ -243,7 +243,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
         resources:
           requests:
             cpu: 2
@@ -293,7 +293,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
         resources:
           requests:
             cpu: 4
@@ -328,7 +328,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -365,7 +365,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
         command:
         - runner.sh
         args:
@@ -400,7 +400,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20260713-c0336204b2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260720-39d457d26c-master
         command:
         - wrapper.sh
         - bash
