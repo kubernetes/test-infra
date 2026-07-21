@@ -620,6 +620,8 @@ branch-protection:
             contexts:
               - e2e
               - e2e-hub
+              - e2e-helm
+              - e2e-helm-hub
         kubectl-validate:
           required_status_checks:
             contexts:
