@@ -132,6 +132,7 @@ PRESUBMIT_OVERRIDES = {
     "test-e2e": presubmit_test_e2e,
     # Expensive full-cluster benchmarks.
     "benchmarks-kops-gcp-cilium": optional_presubmit,
+    "benchmarks-kops-gcp-claims": optional_presubmit,
     "benchmarks-kops-gcp-kindnet": optional_presubmit,
     # Not wired up in prow before this generator existed; keep manual until
     # its credential requirements are sorted out.
@@ -154,6 +155,10 @@ def periodic_benchmarks_kops_gcp_cilium(job):
     job["interval"] = "24h"
 
 
+def periodic_benchmarks_kops_gcp_claims(job):
+    job["interval"] = "24h"
+
+
 def periodic_benchmarks_kops_gcp_kindnet(job):
     job["interval"] = "24h"
 
@@ -162,6 +167,7 @@ PERIODIC_OVERRIDES = {
     "test-load-test": periodic_test_load_test,
     "test-migration": periodic_test_migration,
     "benchmarks-kops-gcp-cilium": periodic_benchmarks_kops_gcp_cilium,
+    "benchmarks-kops-gcp-claims": periodic_benchmarks_kops_gcp_claims,
     "benchmarks-kops-gcp-kindnet": periodic_benchmarks_kops_gcp_kindnet,
 }
 
