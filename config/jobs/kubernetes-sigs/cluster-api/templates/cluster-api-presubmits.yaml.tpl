@@ -450,10 +450,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 4Gi
+            memory: 12Gi
           limits:
             cpu: 4000m
-            memory: 4Gi
+            memory: 12Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
@@ -502,10 +502,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 4Gi
+            memory: 12Gi
           limits:
             cpu: 4000m
-            memory: 4Gi
+            memory: 12Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}

@@ -421,10 +421,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 4Gi
+            memory: 12Gi
           limits:
             cpu: 4000m
-            memory: 4Gi
+            memory: 12Gi
     annotations:
       testgrid-dashboards: cluster-api-core-main
       testgrid-tab-name: capi-pr-e2e-conformance-main
@@ -464,10 +464,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 4Gi
+            memory: 12Gi
           limits:
             cpu: 4000m
-            memory: 4Gi
+            memory: 12Gi
     annotations:
       testgrid-dashboards: cluster-api-core-main
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-main

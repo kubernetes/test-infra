@@ -262,10 +262,10 @@ periodics:
       resources:
         requests:
           cpu: 4000m
-          memory: 4Gi
+          memory: 12Gi
         limits:
           cpu: 4000m
-          memory: 4Gi
+          memory: 12Gi
   annotations:
     testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
@@ -320,10 +320,10 @@ periodics:
       resources:
         requests:
           cpu: 4000m
-          memory: 4Gi
+          memory: 12Gi
         limits:
           cpu: 4000m
-          memory: 4Gi
+          memory: 12Gi
   annotations:
     testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
