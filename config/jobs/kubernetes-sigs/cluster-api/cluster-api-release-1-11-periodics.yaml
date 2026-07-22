@@ -228,10 +228,10 @@ periodics:
       resources:
         requests:
           cpu: 4000m
-          memory: 4Gi
+          memory: 12Gi
         limits:
           cpu: 4000m
-          memory: 4Gi
+          memory: 12Gi
   annotations:
     testgrid-dashboards: cluster-api-core-1.11
     testgrid-tab-name: capi-e2e-conformance-release-1-11
@@ -277,10 +277,10 @@ periodics:
       resources:
         requests:
           cpu: 4000m
-          memory: 4Gi
+          memory: 12Gi
         limits:
           cpu: 4000m
-          memory: 4Gi
+          memory: 12Gi
   annotations:
     testgrid-dashboards: cluster-api-core-1.11
     testgrid-tab-name: capi-e2e-conformance-ci-latest-release-1-11
