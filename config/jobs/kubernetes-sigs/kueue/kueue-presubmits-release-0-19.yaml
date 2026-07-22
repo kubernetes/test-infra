@@ -1,9 +1,9 @@
 presubmits:
   kubernetes-sigs/kueue:
-    - name: pull-kueue-test-unit-shard-0-release-0-17
+    - name: pull-kueue-test-unit-shard-0-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -12,7 +12,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-unit-shard-0-release-0-17
+        testgrid-tab-name: pull-kueue-test-unit-shard-0-release-0-19
         description: "Run kueue unit shard 0 tests"
       spec:
         containers:
@@ -37,10 +37,10 @@ presubmits:
               limits:
                 cpu: "6"
                 memory: "6Gi"
-    - name: pull-kueue-test-unit-shard-1-release-0-17
+    - name: pull-kueue-test-unit-shard-1-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -49,7 +49,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-unit-shard-1-release-0-17
+        testgrid-tab-name: pull-kueue-test-unit-shard-1-release-0-19
         description: "Run kueue unit shard 1 tests"
       spec:
         containers:
@@ -74,10 +74,10 @@ presubmits:
               limits:
                 cpu: "6"
                 memory: "6Gi"
-    - name: pull-kueue-test-integration-shard-0-release-0-17
+    - name: pull-kueue-test-integration-shard-0-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -86,7 +86,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-integration-shard-0-release-0-17
+        testgrid-tab-name: pull-kueue-test-integration-shard-0-release-0-19
         description: "Run kueue test-integration shard 0"
       spec:
         containers:
@@ -109,10 +109,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "14Gi"
-    - name: pull-kueue-test-integration-shard-1-release-0-17
+    - name: pull-kueue-test-integration-shard-1-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -121,7 +121,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-integration-shard-1-release-0-17
+        testgrid-tab-name: pull-kueue-test-integration-shard-1-release-0-19
         description: "Run kueue test-integration shard 1"
       spec:
         containers:
@@ -144,10 +144,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "14Gi"
-    - name: pull-kueue-test-integration-shard-2-release-0-17
+    - name: pull-kueue-test-integration-shard-2-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -156,7 +156,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-integration-shard-2-release-0-17
+        testgrid-tab-name: pull-kueue-test-integration-shard-2-release-0-19
         description: "Run kueue test-integration shard 2"
       spec:
         containers:
@@ -179,10 +179,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "14Gi"
-    - name: pull-kueue-test-integration-multikueue-release-0-17
+    - name: pull-kueue-test-integration-multikueue-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -191,7 +191,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-integration-multikueue-release-0-17
+        testgrid-tab-name: pull-kueue-test-integration-multikueue-release-0-19
         description: "Run kueue test-multikueue-integration"
       spec:
         containers:
@@ -210,10 +210,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "12Gi"
-    - name: pull-kueue-test-e2e-baseline-release-0-17-1-34
+    - name: pull-kueue-test-e2e-baseline-release-0-19-1-34
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -222,7 +222,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-baseline-release-0-17-1-34
+        testgrid-tab-name: pull-kueue-test-e2e-baseline-release-0-19-1-34
         description: "Run kueue baseline end to end tests for Kubernetes 1.34"
       labels:
         preset-dind-enabled: "true"
@@ -251,10 +251,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-extended-shard-0-release-0-17-1-34
+    - name: pull-kueue-test-e2e-extended-shard-0-release-0-19-1-34
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -263,7 +263,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-0-release-0-17-1-34
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-0-release-0-19-1-34
         description: "Run kueue extended end to end tests shard 0 for Kubernetes 1.34"
       labels:
         preset-dind-enabled: "true"
@@ -292,10 +292,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-extended-shard-1-release-0-17-1-34
+    - name: pull-kueue-test-e2e-extended-shard-1-release-0-19-1-34
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -304,7 +304,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-1-release-0-17-1-34
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-1-release-0-19-1-34
         description: "Run kueue extended end to end tests shard 1 for Kubernetes 1.34"
       labels:
         preset-dind-enabled: "true"
@@ -333,10 +333,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-extended-shard-2-release-0-17-1-34
+    - name: pull-kueue-test-e2e-extended-shard-2-release-0-19-1-34
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -345,7 +345,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-2-release-0-17-1-34
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-2-release-0-19-1-34
         description: "Run kueue extended end to end tests shard 2 for Kubernetes 1.34"
       labels:
         preset-dind-enabled: "true"
@@ -374,10 +374,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-baseline-release-0-17-1-35
+    - name: pull-kueue-test-e2e-baseline-release-0-19-1-35
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -386,7 +386,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-baseline-release-0-17-1-35
+        testgrid-tab-name: pull-kueue-test-e2e-baseline-release-0-19-1-35
         description: "Run kueue baseline end to end tests for Kubernetes 1.35"
       labels:
         preset-dind-enabled: "true"
@@ -415,10 +415,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-extended-shard-0-release-0-17-1-35
+    - name: pull-kueue-test-e2e-extended-shard-0-release-0-19-1-35
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -427,7 +427,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-0-release-0-17-1-35
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-0-release-0-19-1-35
         description: "Run kueue extended end to end tests shard 0 for Kubernetes 1.35"
       labels:
         preset-dind-enabled: "true"
@@ -456,10 +456,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-extended-shard-1-release-0-17-1-35
+    - name: pull-kueue-test-e2e-extended-shard-1-release-0-19-1-35
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -468,7 +468,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-1-release-0-17-1-35
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-1-release-0-19-1-35
         description: "Run kueue extended end to end tests shard 1 for Kubernetes 1.35"
       labels:
         preset-dind-enabled: "true"
@@ -497,10 +497,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-extended-shard-2-release-0-17-1-35
+    - name: pull-kueue-test-e2e-extended-shard-2-release-0-19-1-35
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -509,7 +509,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-2-release-0-17-1-35
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-2-release-0-19-1-35
         description: "Run kueue extended end to end tests shard 2 for Kubernetes 1.35"
       labels:
         preset-dind-enabled: "true"
@@ -538,10 +538,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-baseline-release-0-17-1-36
+    - name: pull-kueue-test-e2e-baseline-release-0-19-1-36
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -550,7 +550,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-baseline-release-0-17-1-36
+        testgrid-tab-name: pull-kueue-test-e2e-baseline-release-0-19-1-36
         description: "Run kueue baseline end to end tests for Kubernetes 1.36"
       labels:
         preset-dind-enabled: "true"
@@ -579,10 +579,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-extended-shard-0-release-0-17-1-36
+    - name: pull-kueue-test-e2e-extended-shard-0-release-0-19-1-36
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -591,7 +591,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-0-release-0-17-1-36
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-0-release-0-19-1-36
         description: "Run kueue extended end to end tests shard 0 for Kubernetes 1.36"
       labels:
         preset-dind-enabled: "true"
@@ -620,10 +620,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-extended-shard-1-release-0-17-1-36
+    - name: pull-kueue-test-e2e-extended-shard-1-release-0-19-1-36
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -632,7 +632,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-1-release-0-17-1-36
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-1-release-0-19-1-36
         description: "Run kueue extended end to end tests shard 1 for Kubernetes 1.36"
       labels:
         preset-dind-enabled: "true"
@@ -661,10 +661,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-extended-shard-2-release-0-17-1-36
+    - name: pull-kueue-test-e2e-extended-shard-2-release-0-19-1-36
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -673,7 +673,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-2-release-0-17-1-36
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-2-release-0-19-1-36
         description: "Run kueue extended end to end tests shard 2 for Kubernetes 1.36"
       labels:
         preset-dind-enabled: "true"
@@ -702,10 +702,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-multikueue-baseline-release-0-17
+    - name: pull-kueue-test-e2e-multikueue-baseline-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -714,7 +714,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-multikueue-baseline-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-multikueue-baseline-release-0-19
         description: "Run baseline multikueue end to end tests"
       labels:
         preset-dind-enabled: "true"
@@ -743,10 +743,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-multikueue-extended-shard-0-release-0-17
+    - name: pull-kueue-test-e2e-multikueue-extended-shard-0-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -755,7 +755,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-shard-0-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-shard-0-release-0-19
         description: "Run extended multikueue end to end tests shard 0"
       labels:
         preset-dind-enabled: "true"
@@ -784,10 +784,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-multikueue-extended-shard-1-release-0-17
+    - name: pull-kueue-test-e2e-multikueue-extended-shard-1-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -796,7 +796,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-shard-1-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-shard-1-release-0-19
         description: "Run extended multikueue end to end tests shard 1"
       labels:
         preset-dind-enabled: "true"
@@ -825,10 +825,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-multikueue-sequential-shard-0-release-0-17
+    - name: pull-kueue-test-e2e-multikueue-sequential-shard-0-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -837,7 +837,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-multikueue-sequential-shard-0-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-multikueue-sequential-shard-0-release-0-19
         description: "Run multikueue sequential end to end tests shard 0"
       labels:
         preset-dind-enabled: "true"
@@ -866,10 +866,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-multikueue-sequential-shard-1-release-0-17
+    - name: pull-kueue-test-e2e-multikueue-sequential-shard-1-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -878,7 +878,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-multikueue-sequential-shard-1-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-multikueue-sequential-shard-1-release-0-19
         description: "Run multikueue sequential end to end tests shard 1"
       labels:
         preset-dind-enabled: "true"
@@ -907,10 +907,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-tas-baseline-release-0-17
+    - name: pull-kueue-test-e2e-tas-baseline-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -919,7 +919,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-tas-baseline-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-tas-baseline-release-0-19
         description: "Run tas baseline end to end tests"
       labels:
         preset-dind-enabled: "true"
@@ -948,10 +948,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-tas-extended-shard-0-release-0-17
+    - name: pull-kueue-test-e2e-tas-extended-shard-0-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -960,7 +960,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-tas-extended-shard-0-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-tas-extended-shard-0-release-0-19
         description: "Run tas extended end to end tests shard 0"
       labels:
         preset-dind-enabled: "true"
@@ -989,10 +989,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-tas-extended-shard-1-release-0-17
+    - name: pull-kueue-test-e2e-tas-extended-shard-1-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1001,7 +1001,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-tas-extended-shard-1-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-tas-extended-shard-1-release-0-19
         description: "Run tas extended end to end tests shard 1"
       labels:
         preset-dind-enabled: "true"
@@ -1030,10 +1030,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-sequential-baseline-shard-0-release-0-17
+    - name: pull-kueue-test-e2e-sequential-baseline-shard-0-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1042,7 +1042,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-sequential-baseline-shard-0-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-sequential-baseline-shard-0-release-0-19
         description: "Run sequential baseline end to end tests shard 0"
       labels:
         preset-dind-enabled: "true"
@@ -1071,10 +1071,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-sequential-baseline-shard-1-release-0-17
+    - name: pull-kueue-test-e2e-sequential-baseline-shard-1-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1083,7 +1083,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-sequential-baseline-shard-1-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-sequential-baseline-shard-1-release-0-19
         description: "Run sequential baseline end to end tests shard 1"
       labels:
         preset-dind-enabled: "true"
@@ -1112,10 +1112,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-sequential-extended-shard-0-release-0-17
+    - name: pull-kueue-test-e2e-sequential-extended-shard-0-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1124,7 +1124,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-sequential-extended-shard-0-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-sequential-extended-shard-0-release-0-19
         description: "Run sequential extended end to end tests shard 0"
       labels:
         preset-dind-enabled: "true"
@@ -1153,10 +1153,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-sequential-extended-shard-1-release-0-17
+    - name: pull-kueue-test-e2e-sequential-extended-shard-1-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1165,7 +1165,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-sequential-extended-shard-1-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-sequential-extended-shard-1-release-0-19
         description: "Run sequential extended end to end tests shard 1"
       labels:
         preset-dind-enabled: "true"
@@ -1194,10 +1194,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-certmanager-release-0-17
+    - name: pull-kueue-test-e2e-certmanager-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1206,7 +1206,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-certmanager-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-certmanager-release-0-19
         description: "Run cert-manager end to end tests"
       labels:
         preset-dind-enabled: "true"
@@ -1235,10 +1235,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-dra-release-0-17
+    - name: pull-kueue-test-e2e-dra-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1247,7 +1247,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-dra-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-dra-release-0-19
         description: "Run DRA end to end tests"
       labels:
         preset-dind-enabled: "true"
@@ -1276,10 +1276,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-multikueue-dra-release-0-17
+    - name: pull-kueue-test-e2e-multikueue-dra-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1288,7 +1288,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-multikueue-dra-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-multikueue-dra-release-0-19
         description: "Run MultiKueue DRA end to end tests"
       labels:
         preset-dind-enabled: "true"
@@ -1317,10 +1317,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-kueueviz-release-0-17
+    - name: pull-kueue-test-e2e-dra-counter-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1329,7 +1329,48 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-kueueviz-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-dra-counter-release-0-19
+        description: "Run DRA counter (partitionable devices) end to end tests"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+            env:
+              - name: E2E_K8S_VERSION
+                value: "1.35"
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-dra-counter
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "7"
+                memory: "10Gi"
+              limits:
+                cpu: "7"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-kueueviz-release-0-19
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^release-0.19
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 10m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-kueueviz-release-0-19
         description: "Run kueueviz end to end tests"
       labels:
         preset-dind-enabled: "true"
@@ -1358,10 +1399,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-upgrade-release-0-17
+    - name: pull-kueue-test-e2e-upgrade-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1370,7 +1411,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-upgrade-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-upgrade-release-0-19
         description: "Run kueue upgrade end to end tests"
       labels:
         preset-dind-enabled: "true"
@@ -1399,10 +1440,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-certmanager-upgrade-release-0-17
+    - name: pull-kueue-test-e2e-certmanager-upgrade-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1411,7 +1452,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-certmanager-upgrade-release-0-17
+        testgrid-tab-name: pull-kueue-test-e2e-certmanager-upgrade-release-0-19
         description: "Run kueue upgrade with cert-manager end to end tests"
       labels:
         preset-dind-enabled: "true"
@@ -1440,10 +1481,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-verify-release-0-17
+    - name: pull-kueue-verify-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|^(README|LICENSE|OWNERS)$"
       decorate: true
       decoration_config:
@@ -1452,7 +1493,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-verify-release-0-17
+        testgrid-tab-name: pull-kueue-verify-release-0-19
         description: "Run kueue verify checks"
       labels:
         preset-dind-enabled: "true"
@@ -1476,10 +1517,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "8Gi"
-    - name: pull-kueue-build-image-release-0-17
+    - name: pull-kueue-build-image-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1488,7 +1529,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-build-image-release-0-17
+        testgrid-tab-name: pull-kueue-build-image-release-0-19
         description: "Build container image of kueue"
       labels:
         preset-dind-enabled: "true"
@@ -1505,6 +1546,7 @@ presubmits:
               - importer-image
               - kueueviz-image
               - kueue-populator-image
+              - kueue-priority-booster-image
             env:
               - name: GOMAXPROCS
                 value: "2"
@@ -1517,10 +1559,10 @@ presubmits:
               limits:
                 cpu: "2"
                 memory: "6Gi"
-    - name: pull-kueue-test-scheduling-perf-release-0-17
+    - name: pull-kueue-test-scheduling-perf-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1529,7 +1571,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-scheduling-perf-release-0-17
+        testgrid-tab-name: pull-kueue-test-scheduling-perf-release-0-19
         description: "Run kueue test-scheduling-perf"
       spec:
         containers:
@@ -1548,10 +1590,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-tas-scheduling-perf-release-0-17
+    - name: pull-kueue-test-tas-scheduling-perf-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1560,7 +1602,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-tas-scheduling-perf-release-0-17
+        testgrid-tab-name: pull-kueue-test-tas-scheduling-perf-release-0-19
         description: "Run kueue test-tas-scheduling-perf"
       spec:
         containers:
@@ -1579,10 +1621,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-populator-verify-release-0-17
+    - name: pull-kueue-populator-verify-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1591,7 +1633,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-populator-verify-release-0-17
+        testgrid-tab-name: pull-kueue-populator-verify-release-0-19
         description: "Run kueue-populator verify checks"
       labels:
         preset-dind-enabled: "true"
@@ -1615,10 +1657,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "8Gi"
-    - name: pull-kueue-populator-test-unit-release-0-17
+    - name: pull-kueue-populator-test-unit-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1627,7 +1669,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-populator-test-unit-release-0-17
+        testgrid-tab-name: pull-kueue-populator-test-unit-release-0-19
         description: "Run kueue-populator unit tests"
       spec:
         containers:
@@ -1648,10 +1690,10 @@ presubmits:
               limits:
                 cpu: "6"
                 memory: "6Gi"
-    - name: pull-kueue-populator-test-integration-release-0-17
+    - name: pull-kueue-populator-test-integration-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1660,7 +1702,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-populator-test-integration-release-0-17
+        testgrid-tab-name: pull-kueue-populator-test-integration-release-0-19
         description: "Run kueue-populator integration tests"
       spec:
         containers:
@@ -1679,10 +1721,10 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-populator-test-e2e-release-0-17
+    - name: pull-kueue-populator-test-e2e-release-0-19
       cluster: eks-prow-build-cluster
       branches:
-        - ^release-0.17
+        - ^release-0.19
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
@@ -1691,7 +1733,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-populator-test-e2e-release-0-17
+        testgrid-tab-name: pull-kueue-populator-test-e2e-release-0-19
         description: "Run kueue-populator end to end tests"
       labels:
         preset-dind-enabled: "true"
@@ -1719,3 +1761,211 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
+    - name: pull-kueue-priority-booster-test-unit-release-0-19
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^release-0.19
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 10m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-priority-booster-test-unit-release-0-19
+        description: "Run kueue-priority-booster unit tests"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.26
+            env:
+              - name: GO_TEST_FLAGS
+                value: "-race -count 3"
+              - name: GOMAXPROCS
+                value: "6"
+            command:
+              - make
+            args:
+              - kueue-priority-booster-test
+            resources:
+              requests:
+                cpu: "6"
+                memory: "6Gi"
+              limits:
+                cpu: "6"
+                memory: "6Gi"
+    - name: pull-kueue-priority-booster-test-integration-release-0-19
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^release-0.19
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 10m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-priority-booster-test-integration-release-0-19
+        description: "Run kueue-priority-booster integration tests"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.26
+            command:
+              - make
+            args:
+              - kueue-priority-booster-test-integration
+            env:
+              - name: GOMAXPROCS
+                value: "7"
+            resources:
+              requests:
+                cpu: "7"
+                memory: "10Gi"
+              limits:
+                cpu: "7"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-k8s-release-0-19-was
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^release-0.19
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 10m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-k8s-release-0-19-was
+        description: "Run e2e tests against k8s main with WAS enabled"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-k8s-main-was
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "7"
+                memory: "10Gi"
+              limits:
+                cpu: "7"
+                memory: "10Gi"
+    - name: pull-kueue-test-large-scale-scheduling-perf-release-0-19
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^release-0.19
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 10m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-large-scale-scheduling-perf-release-0-19
+        description: "Run kueue test-large-scale-scheduling-perf on demand"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.26
+            command:
+              - make
+            args:
+              - test-large-scale-performance-scheduler
+            env:
+              - name: GOMAXPROCS
+                value: "7"
+            resources:
+              requests:
+                cpu: "7"
+                memory: "26Gi"
+              limits:
+                cpu: "7"
+                memory: "26Gi"
+    - name: pull-kueue-verify-ci-build-times-release-0-19
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^release-0.19
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 10m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-verify-ci-build-times-release-0-19
+        description: "Run kueue verify-ci-build-times on demand"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - verify-ci-build-times
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6"
+                memory: "6Gi"
+              limits:
+                cpu: "6"
+                memory: "6Gi"
+    - name: pull-kueue-verify-website-links-preview-release-0-19
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      run_if_changed: "^(site/|netlify\\.toml)"
+      branches:
+        - ^release-0.19
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 10m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-verify-website-links-preview-release-0-19
+        description: "Check links on a PR's Netlify deploy preview, on demand (non-blocking)"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - verify-website-links-preview
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6"
+                memory: "6Gi"
+              limits:
+                cpu: "6"
+                memory: "6Gi"
