@@ -3,8 +3,8 @@
 presubmits:
   kubernetes/kops:
 
-  # {"cloud": "aws", "distro": "u2404", "extra_flags": "--control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-aws-gossip
+  # {"cloud": "aws", "distro": "u2404", "extra_flags": "--control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  - name: pull-kops-aws-dns-none
     cluster: k8s-infra-kops-prow-build
     branches:
     - master
@@ -34,7 +34,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260626' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260626' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -53,8 +53,6 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: KOPS_DNS_DOMAIN
-          value: "k8s.local"
         resources:
           limits:
             cpu: "4"
@@ -65,16 +63,16 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/extra_flags: --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public
+      test.kops.k8s.io/extra_flags: --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-aws-gossip
+      testgrid-tab-name: pull-kops-aws-dns-none
 
-  # {"cloud": "azure", "distro": "u2404", "extra_flags": "--control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-azure-gossip
+  # {"cloud": "azure", "distro": "u2404", "extra_flags": "--control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  - name: pull-kops-azure-dns-none
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -104,7 +102,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=azure \
-            --create-args="--channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public" \
+            --create-args="--channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public" \
             --env=KOPS_FEATURE_FLAGS=Azure \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
@@ -120,8 +118,6 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: KOPS_DNS_DOMAIN
-          value: "k8s.local"
         resources:
           limits:
             cpu: "4"
@@ -132,17 +128,17 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: azure
       test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/extra_flags: --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public
+      test.kops.k8s.io/extra_flags: --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public
       test.kops.k8s.io/feature_flags: Azure
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-azure-gossip
+      testgrid-tab-name: pull-kops-azure-dns-none
 
-  # {"cloud": "gce", "distro": "u2404", "extra_flags": "--control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-gce-gossip
+  # {"cloud": "gce", "distro": "u2404", "extra_flags": "--control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  - name: pull-kops-gce-dns-none
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -172,7 +168,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260626' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260626' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -191,8 +187,6 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: KOPS_DNS_DOMAIN
-          value: "k8s.local"
         resources:
           limits:
             cpu: "4"
@@ -203,16 +197,16 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/extra_flags: --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public --gce-service-account=default
+      test.kops.k8s.io/extra_flags: --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-gce-gossip
+      testgrid-tab-name: pull-kops-gce-dns-none
 
-  # {"cloud": "do", "distro": "u2404", "extra_flags": "--control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-do-gossip
+  # {"cloud": "do", "distro": "u2404", "extra_flags": "--control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  - name: pull-kops-do-dns-none
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -244,7 +238,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=digitalocean \
             --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
-            --create-args="--channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public" \
+            --create-args="--channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -259,8 +253,6 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: KOPS_DNS_DOMAIN
-          value: "k8s.local"
         resources:
           limits:
             cpu: "4"
@@ -271,16 +263,16 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: do
       test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/extra_flags: --control-plane-count=1 --node-count=4 --dns=private --api-loadbalancer-type=public
+      test.kops.k8s.io/extra_flags: --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-do-gossip
+      testgrid-tab-name: pull-kops-do-dns-none
 
-  # {"cloud": "aws", "distro": "u2404", "extra_flags": "--control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-aws-gossip-ha
+  # {"cloud": "aws", "distro": "u2404", "extra_flags": "--control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  - name: pull-kops-aws-dns-none-ha
     cluster: k8s-infra-kops-prow-build
     branches:
     - master
@@ -310,7 +302,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260626' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260626' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -329,8 +321,6 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: KOPS_DNS_DOMAIN
-          value: "k8s.local"
         resources:
           limits:
             cpu: "4"
@@ -341,16 +331,16 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/extra_flags: --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public
+      test.kops.k8s.io/extra_flags: --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-aws-gossip-ha
+      testgrid-tab-name: pull-kops-aws-dns-none-ha
 
-  # {"cloud": "azure", "distro": "u2404", "extra_flags": "--control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-azure-gossip-ha
+  # {"cloud": "azure", "distro": "u2404", "extra_flags": "--control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  - name: pull-kops-azure-dns-none-ha
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -380,7 +370,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=azure \
-            --create-args="--channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public" \
+            --create-args="--channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public" \
             --env=KOPS_FEATURE_FLAGS=Azure \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
@@ -396,8 +386,6 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: KOPS_DNS_DOMAIN
-          value: "k8s.local"
         resources:
           limits:
             cpu: "4"
@@ -408,17 +396,17 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: azure
       test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/extra_flags: --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public
+      test.kops.k8s.io/extra_flags: --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public
       test.kops.k8s.io/feature_flags: Azure
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-azure-gossip-ha
+      testgrid-tab-name: pull-kops-azure-dns-none-ha
 
-  # {"cloud": "gce", "distro": "u2404", "extra_flags": "--control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-gce-gossip-ha
+  # {"cloud": "gce", "distro": "u2404", "extra_flags": "--control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  - name: pull-kops-gce-dns-none-ha
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -448,7 +436,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260626' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260626' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -467,8 +455,6 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: KOPS_DNS_DOMAIN
-          value: "k8s.local"
         resources:
           limits:
             cpu: "4"
@@ -479,16 +465,16 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/extra_flags: --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public --gce-service-account=default
+      test.kops.k8s.io/extra_flags: --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-gce-gossip-ha
+      testgrid-tab-name: pull-kops-gce-dns-none-ha
 
-  # {"cloud": "do", "distro": "u2404", "extra_flags": "--control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-do-gossip-ha
+  # {"cloud": "do", "distro": "u2404", "extra_flags": "--control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  - name: pull-kops-do-dns-none-ha
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -520,7 +506,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=digitalocean \
             --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
-            --create-args="--channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public" \
+            --create-args="--channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -535,8 +521,6 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: KOPS_DNS_DOMAIN
-          value: "k8s.local"
         resources:
           limits:
             cpu: "4"
@@ -547,10 +531,10 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: do
       test.kops.k8s.io/distro: u2404
-      test.kops.k8s.io/extra_flags: --control-plane-count=3 --node-count=4 --dns=private --api-loadbalancer-type=public
+      test.kops.k8s.io/extra_flags: --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-do-gossip-ha
+      testgrid-tab-name: pull-kops-do-dns-none-ha

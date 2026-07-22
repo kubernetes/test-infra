@@ -3,8 +3,8 @@
 presubmits:
   kubernetes/kops:
 
-  # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-aws-upgrade-gossip
+  # {"cloud": "aws", "distro": "u2404", "extra_flags": "--networking=cilium --dns=none --api-loadbalancer-type=public", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  - name: pull-kops-aws-upgrade-dns-none
     cluster: k8s-infra-kops-prow-build
     branches:
     - master
@@ -27,7 +27,7 @@ presubmits:
         command:
         - runner.sh
         args:
-        - ./tests/e2e/scenarios/upgrade-ab-gossip/run-test.sh
+        - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
         securityContext:
           privileged: true
         env:
@@ -39,8 +39,6 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: KOPS_DNS_DOMAIN
-          value: "k8s.local"
         - name: KOPS_VERSION_A
           value: "1.35"
         - name: K8S_VERSION_A
@@ -55,6 +53,8 @@ presubmits:
           value: "3"
         - name: CLOUD_PROVIDER
           value: "aws"
+        - name: KOPS_EXTRA_FLAGS
+          value: "--networking=cilium --dns=none --api-loadbalancer-type=public"
         resources:
           requests:
             cpu: "6"
@@ -65,15 +65,16 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404
+      test.kops.k8s.io/extra_flags: --networking=cilium --dns=none --api-loadbalancer-type=public
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-aws-upgrade-gossip
+      testgrid-tab-name: pull-kops-aws-upgrade-dns-none
 
-  # {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-azure-upgrade-gossip
+  # {"cloud": "azure", "distro": "u2404", "extra_flags": "--networking=cilium --dns=none --api-loadbalancer-type=public", "feature_flags": "Azure", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  - name: pull-kops-azure-upgrade-dns-none
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -96,7 +97,7 @@ presubmits:
         command:
         - runner.sh
         args:
-        - ./tests/e2e/scenarios/upgrade-ab-gossip/run-test.sh
+        - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
         securityContext:
           privileged: true
         env:
@@ -106,8 +107,6 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: KOPS_DNS_DOMAIN
-          value: "k8s.local"
         - name: KOPS_VERSION_A
           value: "1.35"
         - name: K8S_VERSION_A
@@ -122,6 +121,8 @@ presubmits:
           value: "3"
         - name: CLOUD_PROVIDER
           value: "azure"
+        - name: KOPS_EXTRA_FLAGS
+          value: "--networking=cilium --dns=none --api-loadbalancer-type=public"
         resources:
           requests:
             cpu: "6"
@@ -132,16 +133,17 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: azure
       test.kops.k8s.io/distro: u2404
+      test.kops.k8s.io/extra_flags: --networking=cilium --dns=none --api-loadbalancer-type=public
       test.kops.k8s.io/feature_flags: Azure
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-azure-upgrade-gossip
+      testgrid-tab-name: pull-kops-azure-upgrade-dns-none
 
-  # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-gce-upgrade-gossip
+  # {"cloud": "gce", "distro": "u2404", "extra_flags": "--networking=cilium --dns=none --api-loadbalancer-type=public --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  - name: pull-kops-gce-upgrade-dns-none
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -163,7 +165,7 @@ presubmits:
         command:
         - runner.sh
         args:
-        - ./tests/e2e/scenarios/upgrade-ab-gossip/run-test.sh
+        - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
         securityContext:
           privileged: true
         env:
@@ -175,8 +177,6 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: KOPS_DNS_DOMAIN
-          value: "k8s.local"
         - name: KOPS_VERSION_A
           value: "1.35"
         - name: K8S_VERSION_A
@@ -191,6 +191,8 @@ presubmits:
           value: "3"
         - name: CLOUD_PROVIDER
           value: "gce"
+        - name: KOPS_EXTRA_FLAGS
+          value: "--networking=cilium --dns=none --api-loadbalancer-type=public --gce-service-account=default"
         resources:
           requests:
             cpu: "6"
@@ -201,9 +203,10 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: u2404
+      test.kops.k8s.io/extra_flags: --networking=cilium --dns=none --api-loadbalancer-type=public --gce-service-account=default
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-gce-upgrade-gossip
+      testgrid-tab-name: pull-kops-gce-upgrade-dns-none

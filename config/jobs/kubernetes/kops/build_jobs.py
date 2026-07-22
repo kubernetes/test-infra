@@ -1104,7 +1104,6 @@ def generate_misc():
                    networking="amazonvpc",
                    k8s_version="stable",
                    kops_version=marker_updown_green("master"),
-                   cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni.k8s.local",
                    kops_channel="alpha",
                    extra_flags=[
                        "--node-size=r5d.xlarge",
@@ -1128,7 +1127,6 @@ def generate_misc():
                    networking="amazonvpc",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
-                   cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni-canary.k8s.local",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
@@ -1153,7 +1151,6 @@ def generate_misc():
                    networking="cilium",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
-                   cluster_name="kubernetes-e2e-al2023-aws-conformance-cilium.k8s.local",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
@@ -1653,16 +1650,23 @@ def generate_upgrades():
         )
     return results
 
-gossip_upgrade_pairs = [
+dns_none_upgrade_pairs = [
     ("1.35", "v1.35.5", "latest", "v1.36.1"),
 ]
 
-def generate_periodics_upgrades_gossip():
+def generate_periodics_upgrades_dns_none():
     results = []
     for cloud in ("aws", "azure", "gce"):
-        for kops_a, k8s_a, kops_b, k8s_b in gossip_upgrade_pairs:
+        for kops_a, k8s_a, kops_b, k8s_b in dns_none_upgrade_pairs:
+            extra_flags = [
+                "--networking=cilium",
+                "--dns=none",
+                "--api-loadbalancer-type=public",
+            ]
+            if cloud == 'gce':
+                extra_flags.append("--gce-service-account=default")
             results.append(build_test(
-                name_override=f"kops-{cloud}-upgrade-gossip",
+                name_override=f"kops-{cloud}-upgrade-dns-none",
                 cloud=cloud,
                 distro='u2404',
                 networking="cilium",
@@ -1672,9 +1676,9 @@ def generate_periodics_upgrades_gossip():
                 extra_dashboards=["kops-upgrades"],
                 runs_per_day=1 if cloud == 'azure' else 3,
                 test_timeout_minutes=120,
-                scenario="upgrade-ab-gossip",
+                scenario="upgrade-ab",
+                extra_flags=extra_flags,
                 env={
-                    'KOPS_DNS_DOMAIN': 'k8s.local',
                     'KOPS_VERSION_A': kops_a,
                     'K8S_VERSION_A': k8s_a,
                     'KOPS_VERSION_B': kops_b,
@@ -1686,21 +1690,21 @@ def generate_periodics_upgrades_gossip():
     return results
 
 ##############################
-# kops-periodics-gossip.yaml #
+# kops-periodics-dns-none.yaml #
 ##############################
-def generate_periodics_gossip():
+def generate_periodics_dns_none():
     results = []
     for cloud in ("aws", "azure", "gce", "do"):
         extra_flags = [
             "--control-plane-count=1",
             "--node-count=4",
-            "--dns=private",
+            "--dns=none",
             "--api-loadbalancer-type=public",
         ]
         if cloud == 'gce':
             extra_flags.append("--gce-service-account=default")
         results.append(build_test(
-            name_override=f"kops-{cloud}-gossip",
+            name_override=f"kops-{cloud}-dns-none",
             cloud=cloud,
             distro='u2404',
             networking='cilium',
@@ -1709,20 +1713,19 @@ def generate_periodics_gossip():
             feature_flags=['Azure'] if cloud == 'azure' else (),
             runs_per_day=1 if cloud == 'azure' else 3,
             extra_dashboards=['kops-misc'],
-            env={'KOPS_DNS_DOMAIN': 'k8s.local'},
             extra_flags=extra_flags,
         ))
     for cloud in ("aws", "azure", "gce", "do"):
         extra_flags = [
             "--control-plane-count=3",
             "--node-count=4",
-            "--dns=private",
+            "--dns=none",
             "--api-loadbalancer-type=public",
         ]
         if cloud == 'gce':
             extra_flags.append("--gce-service-account=default")
         results.append(build_test(
-            name_override=f"kops-{cloud}-gossip-ha",
+            name_override=f"kops-{cloud}-dns-none-ha",
             cloud=cloud,
             distro='u2404',
             networking='cilium',
@@ -1731,27 +1734,26 @@ def generate_periodics_gossip():
             feature_flags=['Azure'] if cloud == 'azure' else (),
             runs_per_day=1 if cloud == 'azure' else 3,
             extra_dashboards=['kops-misc'],
-            env={'KOPS_DNS_DOMAIN': 'k8s.local'},
             extra_flags=extra_flags,
         ))
     return results
 
 ###############################
-# kops-presubmits-gossip.yaml #
+# kops-presubmits-dns-none.yaml #
 ###############################
-def generate_presubmits_gossip():
+def generate_presubmits_dns_none():
     results = []
     for cloud in ("aws", "azure", "gce", "do"):
         extra_flags = [
             "--control-plane-count=1",
             "--node-count=4",
-            "--dns=private",
+            "--dns=none",
             "--api-loadbalancer-type=public",
         ]
         if cloud == 'gce':
             extra_flags.append("--gce-service-account=default")
         results.append(presubmit_test(
-            name=f"pull-kops-{cloud}-gossip",
+            name=f"pull-kops-{cloud}-dns-none",
             cloud=cloud,
             distro='u2404',
             networking='cilium',
@@ -1759,20 +1761,19 @@ def generate_presubmits_gossip():
             kops_channel='alpha',
             feature_flags=['Azure'] if cloud == 'azure' else (),
             optional=True,
-            env={'KOPS_DNS_DOMAIN': 'k8s.local'},
             extra_flags=extra_flags,
         ))
     for cloud in ("aws", "azure", "gce", "do"):
         extra_flags = [
             "--control-plane-count=3",
             "--node-count=4",
-            "--dns=private",
+            "--dns=none",
             "--api-loadbalancer-type=public",
         ]
         if cloud == 'gce':
             extra_flags.append("--gce-service-account=default")
         results.append(presubmit_test(
-            name=f"pull-kops-{cloud}-gossip-ha",
+            name=f"pull-kops-{cloud}-dns-none-ha",
             cloud=cloud,
             distro='u2404',
             networking='cilium',
@@ -1780,17 +1781,23 @@ def generate_presubmits_gossip():
             kops_channel='alpha',
             feature_flags=['Azure'] if cloud == 'azure' else (),
             optional=True,
-            env={'KOPS_DNS_DOMAIN': 'k8s.local'},
             extra_flags=extra_flags,
         ))
     return results
 
-def generate_presubmits_upgrades_gossip():
+def generate_presubmits_upgrades_dns_none():
     results = []
     for cloud in ("aws", "azure", "gce"):
-        for kops_a, k8s_a, kops_b, k8s_b in gossip_upgrade_pairs:
+        for kops_a, k8s_a, kops_b, k8s_b in dns_none_upgrade_pairs:
+            extra_flags = [
+                "--networking=cilium",
+                "--dns=none",
+                "--api-loadbalancer-type=public",
+            ]
+            if cloud == 'gce':
+                extra_flags.append("--gce-service-account=default")
             results.append(presubmit_test(
-                name=f"pull-kops-{cloud}-upgrade-gossip",
+                name=f"pull-kops-{cloud}-upgrade-dns-none",
                 optional=True,
                 cloud=cloud,
                 distro='u2404',
@@ -1799,9 +1806,9 @@ def generate_presubmits_upgrades_gossip():
                 kops_channel='alpha',
                 feature_flags=['Azure'] if cloud == 'azure' else (),
                 test_timeout_minutes=120,
-                scenario='upgrade-ab-gossip',
+                scenario='upgrade-ab',
+                extra_flags=extra_flags,
                 env={
-                    'KOPS_DNS_DOMAIN': 'k8s.local',
                     'KOPS_VERSION_A': kops_a,
                     'K8S_VERSION_A': k8s_a,
                     'KOPS_VERSION_B': kops_b,
@@ -2701,8 +2708,8 @@ periodics_files = {
     'kops-periodics-upgrades.yaml': generate_upgrades,
     'kops-periodics-versions.yaml': generate_versions,
     'kops-periodics-pipeline.yaml': generate_pipeline,
-    'kops-periodics-gossip.yaml': generate_periodics_gossip,
-    'kops-periodics-upgrades-gossip.yaml': generate_periodics_upgrades_gossip,
+    'kops-periodics-dns-none.yaml': generate_periodics_dns_none,
+    'kops-periodics-upgrades-dns-none.yaml': generate_periodics_upgrades_dns_none,
 }
 
 presubmits_files = {
@@ -2712,8 +2719,8 @@ presubmits_files = {
     'kops-presubmits-e2e.yaml': generate_presubmits_e2e,
     'kops-presubmits-scale.yaml': generate_presubmits_scale,
     'kops-presubmits-branch.yaml': generate_presubmits_branch,
-    'kops-presubmits-gossip.yaml': generate_presubmits_gossip,
-    'kops-presubmits-upgrades-gossip.yaml': generate_presubmits_upgrades_gossip,
+    'kops-presubmits-dns-none.yaml': generate_presubmits_dns_none,
+    'kops-presubmits-upgrades-dns-none.yaml': generate_presubmits_upgrades_dns_none,
 }
 
 def output_file(filename: pathlib.Path, contents: str, verify: bool) -> str:
