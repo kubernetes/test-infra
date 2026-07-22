@@ -752,10 +752,10 @@ presubmits:
         resources:
           requests:
             cpu: "6"
-            memory: "4Gi"
+            memory: "6Gi"
           limits:
             cpu: "6"
-            memory: "4Gi"
+            memory: "6Gi"
 
   - name: pull-etcd-grpcproxy-e2e-amd64
     cluster: eks-prow-build-cluster
