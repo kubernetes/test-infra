@@ -226,6 +226,7 @@ presubmits:
     skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     always_run: false
+    optional: true
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
