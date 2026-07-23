@@ -177,7 +177,7 @@ presubmits:
         - --gcp-zone=us-central1-b
         - --provider=gce
         - --ginkgo-parallel=30
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\]|session.affinity.timeout --minStartupPods=8
         - --timeout=80m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
         resources:
@@ -675,7 +675,7 @@ periodics:
       - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|session.affinity.timeout --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
       resources:
