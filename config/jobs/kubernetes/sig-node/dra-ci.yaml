@@ -81,7 +81,7 @@ periodics:
           }
           trap atexit EXIT
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         # docker-in-docker needs privileged mode
@@ -179,7 +179,7 @@ periodics:
           }
           trap atexit EXIT
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit -logcheck-data-races &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit -logcheck-data-races &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         env:
@@ -316,7 +316,7 @@ periodics:
           # only those cover kubelet behavior.
           kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --sem-ver-filter=kubelet=1.$previous_minor --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus$kubelet_label_filter && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --sem-ver-filter=kubelet=1.$previous_minor --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation }$kubelet_label_filter && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         # docker-in-docker needs privileged mode
@@ -444,7 +444,7 @@ periodics:
           # only those cover kubelet behavior.
           kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --sem-ver-filter=kubelet=1.$previous_minor --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus$kubelet_label_filter && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --sem-ver-filter=kubelet=1.$previous_minor --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation }$kubelet_label_filter && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         # docker-in-docker needs privileged mode
@@ -572,7 +572,7 @@ periodics:
           # only those cover kubelet behavior.
           kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --sem-ver-filter=kubelet=1.$previous_minor --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus$kubelet_label_filter && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --sem-ver-filter=kubelet=1.$previous_minor --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation }$kubelet_label_filter && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         # docker-in-docker needs privileged mode
