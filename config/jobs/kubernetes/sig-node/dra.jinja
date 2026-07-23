@@ -284,7 +284,7 @@ presubmits:
           kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
           {%- endif %}
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color {%- if kubelet_skew|int > 0 %} --sem-ver-filter=kubelet=1.$previous_minor {%- endif %} --label-filter="DRA && Feature: isSubsetOf { {% if all_features %}OffByDefault, {% endif -%} DynamicResourceAllocation } {%- if not canary %} && !FeatureGate:ResourceHealthStatus{%- endif %} {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit {%- if all_features %} -logcheck-data-races{%endif%} &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color {%- if kubelet_skew|int > 0 %} --sem-ver-filter=kubelet=1.$previous_minor {%- endif %} --label-filter="DRA && Feature: isSubsetOf { {% if all_features %}OffByDefault, {% endif -%} DynamicResourceAllocation } {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit {%- if all_features %} -logcheck-data-races{%endif%} &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         {%- if all_features %}
