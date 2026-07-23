@@ -223,7 +223,8 @@ presubmits:
       testgrid-tab-name: presubmit-test-skill-eval
   - name: presubmit-agent-sandbox-test-e2e-scalability-kwok
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    # skip_if_only_changed overrides always_run: false, so we can't use both. commenting out until we merge https://github.com/kubernetes-sigs/agent-sandbox/pull/1269
+    # skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     always_run: false
     optional: true
