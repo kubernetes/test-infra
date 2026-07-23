@@ -221,3 +221,28 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
       testgrid-tab-name: presubmit-test-skill-eval
+  - name: presubmit-agent-sandbox-test-e2e-scalability-kwok
+    cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
+        command:
+        - runner.sh
+        - dev/ci/presubmits/test-e2e-scalability-kwok
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7
+            memory: 14Gi
+          limits:
+            cpu: 7
+            memory: 14Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-test-e2e-scalability-kwok
