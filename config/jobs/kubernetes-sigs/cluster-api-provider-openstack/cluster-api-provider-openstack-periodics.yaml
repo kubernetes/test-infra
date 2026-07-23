@@ -31,14 +31,13 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "3Gi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          # The kind management clusters and all CAPI/CAPO controllers run
+          # inside the pod cgroup, so this needs to cover them too.
+          memory: "6Gi"
+          cpu: 4000m
         limits:
-          memory: "3Gi"
-          cpu: 2000m
+          memory: "6Gi"
+          cpu: 4000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
     testgrid-tab-name: periodic-e2e-test-main
@@ -83,14 +82,13 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "3Gi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          # The kind management clusters and all CAPI/CAPO controllers run
+          # inside the pod cgroup, so this needs to cover them too.
+          memory: "6Gi"
+          cpu: 4000m
         limits:
-          memory: "3Gi"
-          cpu: 2000m
+          memory: "6Gi"
+          cpu: 4000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
     testgrid-tab-name: periodic-conformance-test-main
@@ -135,14 +133,13 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "3Gi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          # The kind management clusters and all CAPI/CAPO controllers run
+          # inside the pod cgroup, so this needs to cover them too.
+          memory: "6Gi"
+          cpu: 4000m
         limits:
-          memory: "3Gi"
-          cpu: 2000m
+          memory: "6Gi"
+          cpu: 4000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
     testgrid-tab-name: periodic-e2e-full-test-main
