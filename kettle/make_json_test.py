@@ -16,6 +16,7 @@
 
 import io as StringIO
 import json
+import os
 import time
 import unittest
 
@@ -616,10 +617,12 @@ class MakeJsonTest(unittest.TestCase):
         expect(['--days=30', '--assert-oldest=25'], [], [], 1)
 
 
+TESTDATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'testdata')
+
 class ParseJsonTest(unittest.TestCase):
     @parameterized.expand([
         ('Green Path',
-         'kettle/testdata/standard.xml',
+         os.path.join(TESTDATA, 'standard.xml'),
          [{'name': 'TearDown Previous', 'time': 2.065e-05},
           {'name': 'Up', 'time': 6.342e-06},
           {'name': 'test setup', 'time': 5.298e-06},
@@ -633,7 +636,7 @@ class ParseJsonTest(unittest.TestCase):
           {'name': 'Timeout', 'time': 3900.0}],
         ),
         ('No Suite Name',
-         'kettle/testdata/junit_no_suite_name.xml',
+         os.path.join(TESTDATA, 'junit_no_suite_name.xml'),
          [{'failed': True,
            'failure_text': 'simple_test.go:186: Running tests in file plumbing',
            'name': '<unspecified> TestSimpleFile',
@@ -643,25 +646,25 @@ class ParseJsonTest(unittest.TestCase):
            'time': 0.0}],
         ),
         ('Failure as Message',
-         'kettle/testdata/failure_message.xml',
+         os.path.join(TESTDATA, 'failure_message.xml'),
          [{'failed': True,
            'failure_text': 'simple_test.go:186: Running tests in file plumbing',
            'name': '<unspecified> TestSimpleFile',
            'time': 0.0}],
         ),
         ('Failure as Text',
-         'kettle/testdata/failure_text.xml',
+         os.path.join(TESTDATA, 'failure_text.xml'),
          [{'failed': True,
            'failure_text': 'simple_test.go:186: Running tests in file plumbing',
            'name': '<unspecified> TestSimpleFile',
            'time': 0.0}],
         ),
         ('Malformed XML',
-         'kettle/testdata/malformed.xml',
+         os.path.join(TESTDATA, 'malformed.xml'),
          [],
         ),
         ('Malformed Testcase',
-         'kettle/testdata/malformed_no_testcase_name.xml',
+         os.path.join(TESTDATA, 'malformed_no_testcase_name.xml'),
          [{'name': 'TearDown Previous', 'time': 2.065e-05},
           {'name': 'Up', 'time': 6.342e-06},
           {'name': 'test setup', 'time': 5.298e-06},
