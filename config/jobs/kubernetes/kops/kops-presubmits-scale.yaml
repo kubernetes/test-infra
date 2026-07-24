@@ -55,8 +55,6 @@ presubmits:
           value: "50"
         - name: CL2_RATE_LIMIT_POD_CREATION
           value: "false"
-        - name: NODE_MODE
-          value: "master"
         - name: CONTROL_PLANE_COUNT
           value: "1"
         - name: CONTROL_PLANE_SIZE
@@ -163,8 +161,6 @@ presubmits:
           value: "50"
         - name: CL2_RATE_LIMIT_POD_CREATION
           value: "false"
-        - name: NODE_MODE
-          value: "master"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -257,8 +253,6 @@ presubmits:
           value: "50"
         - name: CL2_RATE_LIMIT_POD_CREATION
           value: "false"
-        - name: NODE_MODE
-          value: "master"
         - name: CONTROL_PLANE_COUNT
           value: "1"
         - name: CONTROL_PLANE_SIZE
@@ -371,8 +365,6 @@ presubmits:
           value: "50"
         - name: CL2_RATE_LIMIT_POD_CREATION
           value: "false"
-        - name: NODE_MODE
-          value: "master"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -474,8 +466,6 @@ presubmits:
           value: "50"
         - name: CL2_RATE_LIMIT_POD_CREATION
           value: "false"
-        - name: NODE_MODE
-          value: "master"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
