@@ -20,5 +20,4 @@ postsubmits:
               - --project=k8s-staging-sig-docs
               - --scratch-bucket=gs://k8s-staging-sig-docs-gcb
               - --env-passthrough=PULL_BASE_REF
-              - --with-git-dir
               - .
