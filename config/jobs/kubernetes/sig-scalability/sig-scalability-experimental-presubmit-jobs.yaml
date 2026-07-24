@@ -224,9 +224,6 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-gce-master-scale-performance-5000-experimental
     spec:
       serviceAccountName: prow-build
-      tolerations:
-        - key: highmem
-          operator: Exists
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
         command:
@@ -241,7 +238,7 @@ presubmits:
         resources:
           requests:
             cpu: 7
-            memory: "40Gi"
+            memory: "27Gi"
           limits:
             cpu: 7
-            memory: "40Gi"
+            memory: "27Gi"
