@@ -208,6 +208,43 @@ presubmits:
             requests:
               cpu: 3
               memory: 10Gi
+  - name: pull-lws-test-e2e-upgrade-main
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 10m
+    path_alias: sigs.k8s.io/lws
+    annotations:
+      testgrid-dashboards: sig-apps-lws-presubmits
+      testgrid-tab-name: pull-lws-test-e2e-upgrade-main
+      description: "Run lws upgrade end to end tests"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260713-9909545e89-master
+          env:
+            - name: E2E_KIND_VERSION
+              value: kindest/node:v1.36.1
+          command:
+            - runner.sh
+          args:
+            - make
+            - test-e2e-upgrade
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 3
+              memory: 10Gi
+            requests:
+              cpu: 3
+              memory: 10Gi
   - name: pull-lws-test-e2e-main-gang-scheduling
     cluster: eks-prow-build-cluster
     always_run: true
