@@ -413,6 +413,8 @@ presets:
     preset-kops-scalability-gce-experimental: "true"
   env:
   - name: EXPERIMENT_VARIANT
-    value: "node-exporter"
-  - name: PROMETHEUS_SCRAPE_NODE_EXPORTER
-    value: "true"
+    value: "HA"
+  - name: CL2_RESTART_APISERVER
+    value: "false"
+  - name: CL2_HEAP_PROFILE_INTERVAL
+    value: "5m"
