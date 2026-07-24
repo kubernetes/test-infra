@@ -369,8 +369,6 @@ presets:
 - labels:
     preset-kops-scalability-common: "true"
   env:
-  - name: NODE_MODE
-    value: "master"
   - name: ENABLE_PROMETHEUS_SERVER
     value: "true"
   # - name: PROMETHEUS_SCRAPE_ETCD # temporarily broken on AWS
