@@ -18,6 +18,13 @@
 set -e
 set -o pipefail
 
+usage()
+{
+    echo "usage: kind_upgrade.sh [-n|--name <cluster_name>]"
+    echo "                       [--no-control-plane]  [--no-kubelet]"
+    echo ""
+}
+
 # Set default values
 CLUSTER_NAME=${CLUSTER_NAME:-kind}
 BUILD_MODE=${BUILD_MODE:-docker}
@@ -102,13 +109,6 @@ update_control_plane(){
       sleep 1
     done
   done
-}
-
-usage()
-{
-    echo "usage: kind_upgrade.sh [-n|--name <cluster_name>]"
-    echo "                       [--no-control-plane]  [--no-kubelet]"
-    echo ""
 }
 
 # Main
