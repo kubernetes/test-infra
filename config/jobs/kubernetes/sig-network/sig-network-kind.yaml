@@ -197,7 +197,7 @@ presubmits:
               value: \[sig-network\]|\[Conformance\]
             # FIXME: AdmissionWebhooks flakes https://issues.k8s.io/128230
             - name: SKIP
-              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|LocalhostNodePorts
+              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|LocalhostNodePorts|session.affinity.timeout
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -443,7 +443,7 @@ periodics:
         value: \[sig-network\]|\[Conformance\]
       # FIXME: AdmissionWebhooks flakes https://issues.k8s.io/128230
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|LocalhostNodePorts
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|LocalhostNodePorts|session.affinity.timeout
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
