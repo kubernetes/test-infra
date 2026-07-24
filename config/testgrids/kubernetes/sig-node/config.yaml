@@ -19,9 +19,12 @@ dashboard_groups:
     - sig-node-security-profiles-operator
     - sig-node-image-pushes
     - sig-node-node-readiness-controller
+    - sig-node-kep-wrangler
 
 dashboards:
 - name: sig-node-release-blocking # Tabs included in this group are defined in the jobs that are included.
+
+- name: sig-node-kep-wrangler # Periodic jobs that automate SIG Node KEP tracking (e.g. mirroring the release-team enhancement board).
 
 - name: sig-node-kubelet
 - name: sig-node-containerd
