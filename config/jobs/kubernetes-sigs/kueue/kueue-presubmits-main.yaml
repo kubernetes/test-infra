@@ -1965,8 +1965,8 @@ presubmits:
               privileged: true
             resources:
               requests:
-                cpu: "100m"
+                cpu: "6"
                 memory: "6Gi"
               limits:
-                cpu: "100m"
+                cpu: "6"
                 memory: "6Gi"
