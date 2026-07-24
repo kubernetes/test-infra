@@ -135,6 +135,84 @@ presubmits:
             cpu: 5
             memory: 16Gi
 
+  - name: pull-kubernetes-e2e-gce-master-scale-performance-100-kube-burner-batch
+    cluster: k8s-infra-prow-build
+    always_run: false
+    skip_report: false
+    max_concurrency: 3
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    labels:
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 120m
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-e2e-gce-master-scale-performance-100-kube-burner-batch
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260512-1f34ef0df3-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-kube-burner-test.sh
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: /etc/ssh-key-secret/ssh-private
+        - name: KUBE_SSH_USER
+          value: prow
+        - name: GOPATH
+          value: /home/prow/go
+        - name: CNI_PLUGIN
+          value: gce
+        - name: KUBE_NODE_COUNT
+          value: "100"
+        - name: NODE_MODE
+          value: "master"
+        - name: KUBE_PROXY_MODE
+          value: "nftables"
+        - name: CONTROL_PLANE_COUNT
+          value: "1"
+        - name: KUBE_BURNER_WORKLOAD
+          value: "batch"
+        - name: CONTROL_PLANE_SIZE
+          value: "c4-standard-32"
+        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+          value: "true"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: TEAR_DOWN_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "ssd-csi"
+        - name: CLOUD_PROVIDER
+          value: "gce"
+        - name: BOSKOS_RESOURCE_TYPE
+          value: "scalability-project"
+        resources:
+          requests:
+            cpu: 5
+            memory: 16Gi
+          limits:
+            cpu: 5
+            memory: 16Gi
+
   # This is an equivalent of the ci-kubernetes-e2e-gce-scale-correctness test
   # at 100 node scale. It's an optional presubmit to simplify testing changes
   # that affect the releasing blocking ci correctness tests.
