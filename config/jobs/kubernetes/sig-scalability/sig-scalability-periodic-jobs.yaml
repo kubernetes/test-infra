@@ -1228,8 +1228,6 @@ periodics:
       env:
       - name: CONTROL_PLANE_COUNT
         value: "3"
-      - name: PROMETHEUS_SCRAPE_ETCD
-        value: "true"
       resources:
         requests:
           cpu: 7

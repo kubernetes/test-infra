@@ -124,11 +124,6 @@ periodics:
       - ./tests/e2e/scenarios/scalability/run-test.sh
       securityContext:
         privileged: true
-      env:
-      - name: CONTROL_PLANE_COUNT
-        value: "1"
-      - name: PROMETHEUS_SCRAPE_ETCD
-        value: "true"
       resources:
         requests:
           cpu: 7
