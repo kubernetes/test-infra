@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"runtime"
 
@@ -110,8 +111,9 @@ func (b *buildStrategy) Build() error {
 		return control.FinishRunning(cmd)
 	}
 
-	// TODO(fejta): FIX ME
 	// The build-release script needs stdin to ask the user whether
 	// it's OK to download the docker image.
-	return control.FinishRunning(exec.Command("make", "-C", util.K8s("kubernetes"), target))
+	cmd := exec.Command("make", "-C", util.K8s("kubernetes"), target)
+	cmd.Stdin = os.Stdin
+	return control.FinishRunning(cmd)
 }
