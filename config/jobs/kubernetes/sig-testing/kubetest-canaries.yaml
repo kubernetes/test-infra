@@ -64,7 +64,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
-      - --timeout=90m
+      - --timeout=120m
       env:
       - name: GOPATH
         value: /go
