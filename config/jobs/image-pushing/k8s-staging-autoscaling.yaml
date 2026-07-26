@@ -28,6 +28,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
+        - ^vpa-release-
       run_if_changed: "^vertical-pod-autoscaler/"
       spec:
         serviceAccountName: gcb-builder
