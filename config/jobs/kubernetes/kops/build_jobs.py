@@ -783,6 +783,16 @@ def generate_misc():
                                 ],
                    extra_dashboards=['kops-misc']),
 
+        # A special test for IP-based node names
+        build_test(name_override="kops-aws-ip-based-node-names",
+                   cloud="aws",
+                   distro="u2404arm64",
+                   k8s_version="stable",
+                   runs_per_day=3,
+                   networking="cilium",
+                   extra_flags=['--set=cluster.spec.cloudProvider.aws.useIPBasedNodeNames=true'],
+                   extra_dashboards=['kops-misc']),
+
         build_test(name_override="kops-scenario-terraform",
                    cloud="aws",
                    distro="u2404arm64",
@@ -2503,6 +2513,15 @@ def generate_presubmits_e2e():
             networking="calico",
             extra_flags=["--dns=none", "--gce-service-account=default"],
             optional=True,
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-ip-based-node-names",
+            cloud="aws",
+            distro="u2404arm64",
+            networking="cilium",
+            always_run=False,
+            extra_flags=["--set=cluster.spec.cloudProvider.aws.useIPBasedNodeNames=true"],
         ),
 
         presubmit_test(
