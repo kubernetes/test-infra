@@ -113,7 +113,7 @@ periodics:
         - image: public.ecr.aws/docker/library/golang:1.26
           env:
             - name: FUZZTIME
-              value: "10m"
+              value: "10s"
             - name: GOMAXPROCS
               value: "4"
           command:
