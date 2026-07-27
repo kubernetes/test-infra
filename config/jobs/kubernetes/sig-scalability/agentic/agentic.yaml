@@ -146,3 +146,159 @@ periodics:
         value: "true"
       - name: EXPERIMENTAL_GCP_SNAPSHOT_PROMETHEUS_DISK
         value: "true"
+
+presubmits:
+  kubernetes-sigs/agent-sandbox:
+  - name: pull-kubernetes-e2e-gce-agentic-sandbox-rapid-burst
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      path_alias: k8s.io/kops
+      workdir: true
+    annotations:
+      testgrid-dashboards: sig-scalability-gce, google-gce, kops-misc
+      testgrid-tab-name: gce-agentic-sandbox-rapid-burst-presubmit
+      description: "Triggerable rapid burst scalability presubmit test for agent-sandbox PRs"
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:latest-1.36
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "6Gi"
+          limits:
+            cpu: 2
+            memory: "6Gi"
+        env:
+        - name: CONTROL_PLANE_SIZE
+          value: "c3-standard-8"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "ssd"
+        - name: CLOUD_PROVIDER
+          value: "gce"
+        - name: KUBE_NODE_COUNT
+          value: "100"
+        - name: NODE_SIZE
+          value: "e2-standard-8"
+        - name: KOPS_CL2_TEST_CONFIG
+          value: "testing/agentic-sandbox/agent-sandbox-rapid-burst.yaml"
+        - name: CL2_BURST_SIZE
+          value: "300"
+        - name: CL2_ENABLE_PSL_BY_ORDER
+          value: "false"
+        - name: CL2_QPS
+          value: "300"
+        - name: CL2_SLEEP_FOR_CLUSTER_PREP
+          value: "5m"
+        - name: CL2_TOTAL_BURSTS
+          value: "2"
+        - name: CL2_WARMPOOL_SIZE
+          value: "3300"
+        - name: GCE_REGION
+          value: "us-central1"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: EXPERIMENTAL_GCP_SNAPSHOT_PROMETHEUS_DISK
+          value: "true"
+
+  - name: pull-kubernetes-e2e-gce-agentic-sandbox-continuous-burst
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      path_alias: k8s.io/kops
+      workdir: true
+    annotations:
+      testgrid-dashboards: sig-scalability-gce, google-gce, kops-misc
+      testgrid-tab-name: gce-agentic-sandbox-continuous-burst-presubmit
+      description: "Triggerable continuous burst scalability presubmit test for agent-sandbox PRs"
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:latest-1.36
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "6Gi"
+          limits:
+            cpu: 2
+            memory: "6Gi"
+        env:
+        - name: CONTROL_PLANE_SIZE
+          value: "c3-standard-8"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "ssd"
+        - name: CLOUD_PROVIDER
+          value: "gce"
+        - name: KUBE_NODE_COUNT
+          value: "100"
+        - name: NODE_SIZE
+          value: "e2-standard-8"
+        - name: KOPS_CL2_TEST_CONFIG
+          value: "testing/agentic-sandbox/agent-sandbox-continuous-burst.yaml"
+        - name: CL2_DURATION_SECONDS
+          value: "12"
+        - name: CL2_ENABLE_PSL_BY_ORDER
+          value: "false"
+        - name: CL2_QPS
+          value: "300"
+        - name: CL2_SLEEP_FOR_CLUSTER_PREP
+          value: "5m"
+        - name: CL2_WARMPOOL_SIZE
+          value: "3700"
+        - name: GCE_REGION
+          value: "us-central1"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: EXPERIMENTAL_GCP_SNAPSHOT_PROMETHEUS_DISK
+          value: "true"
