@@ -100,6 +100,8 @@ optional_and_run_if_changed:
       run_if_changed: staging/src/k8s.io/apiserver/pkg/storage/value/|staging/src/k8s.io/kms/|staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/|test/e2e/testing-manifests/auth/encrypt/
     - name: pull-kubernetes-e2e-kind-nftables
       run_if_changed: ^(test/e2e/network/|pkg/apis/networking|pkg/proxy/nftables/)
+    - name: pull-kubernetes-e2e-kind-nftables-ipv6
+      run_if_changed: ^(test/e2e/network/|pkg/apis/networking|pkg/proxy/nftables/)
     - name: pull-kubernetes-e2e-storage-kind-disruptive
       run_if_changed: ^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)
     - name: pull-kubernetes-e2e-storage-kind-vac
