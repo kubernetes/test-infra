@@ -235,8 +235,6 @@ periodics:
         value: "50"
       - name: CL2_RATE_LIMIT_POD_CREATION
         value: "false"
-      - name: NODE_MODE
-        value: "master"
       - name: CL2_ENABLE_DNS_PROGRAMMING
         value: "true"
       - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT

@@ -346,8 +346,6 @@ presets:
     value: "gce"
   - name: KUBE_PROXY_MODE
     value: "nftables"
-  - name: NODE_MODE
-    value: "master"
   - name: ENABLE_PROMETHEUS_SERVER
     value: "true"
   - name: PROMETHEUS_PVC_STORAGE_CLASS
