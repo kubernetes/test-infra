@@ -1685,10 +1685,10 @@ presubmits:
               - kueue-populator-test
             resources:
               requests:
-                cpu: "300m"
+                cpu: "600m"
                 memory: "6Gi"
               limits:
-                cpu: "300m"
+                cpu: "600m"
                 memory: "6Gi"
     - name: pull-kueue-populator-test-integration-release-0-18
       cluster: eks-prow-build-cluster
