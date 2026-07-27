@@ -4,7 +4,7 @@ The Kubernetes Project runs 5000 node clusters to test scalability. These jobs r
 
 ## The jobs
 
-| Job Name  | Cloud | Frequency  |  Experimental |  Owners | Node Count | Notes |
+| Job Name  | Cloud | Frequency  |  Experimental |  Owners | Node Count (1 node = 2 cores) | Notes |
 |---|---|---|---|---|---|---|
 | ci-kubernetes-e2e-gce-scale-performance-5000  |  GCP  | Every other day  |  No |  #sig-scalability | 5000 | 
 | ec2-master-scale-performance |  AWS  | Every other day  |  No |  #sig-scalability | 5000 |
@@ -17,6 +17,7 @@ The Kubernetes Project runs 5000 node clusters to test scalability. These jobs r
 | gce-master-scale-performance-100 | GCP | Every 30 minutes | No | #sig-scalability | 100 |
 | azure-master-scalability-100 | Azure | Twice a day | No | #sig-cluster-lifecycle (capz) | 100 |
 | golang-tip-k8s-master | GCP | Once a day | No | #sig-scalability | 200* | This job uses the legacy kubemark harness and needs to be rebuilt |
+| gce-agentic-sandbox-continuous-burst-100 | GCP | Every other day | No | #sig-apps | 100 |
 
 In addition to these jobs, we have presubmit equivalents in kubernetes/kubernetes, kubernetes/perf-tests and kubernetes/kops to debug as needed.
 
@@ -33,7 +34,7 @@ You'll need to bring a proposal to this group explaining what you are testing an
 
 The new job must be listed in the README.md
 
-## Keepings jobs green and updated
+## Keeping jobs green and updated
 
 We expect the owners of the jobs to keep their jobs green and fix failing tests quickly.
 

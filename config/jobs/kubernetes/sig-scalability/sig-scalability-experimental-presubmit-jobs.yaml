@@ -18,6 +18,7 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
+      preset-kops-scalability-common: "true"
       preset-kops-scalability-gce-common: "true"
       preset-kops-scalability-gce-100-node: "true"
       preset-kops-scalability-gce-experimental: "true"

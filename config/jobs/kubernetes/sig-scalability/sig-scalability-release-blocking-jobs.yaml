@@ -83,6 +83,7 @@ periodics:
   cluster: k8s-infra-prow-build
   labels:
     preset-k8s-ssh: "true"
+    preset-kops-scalability-common: "true"
     preset-kops-scalability-gce-common: "true"
     preset-kops-scalability-gce-5000-node: "true"
   decorate: true
@@ -141,6 +142,7 @@ periodics:
   interval: 30m
   labels:
     preset-k8s-ssh: "true"
+    preset-kops-scalability-common: "true"
     preset-kops-scalability-gce-common: "true"
     preset-kops-scalability-gce-100-node: "true"
   decorate: true
