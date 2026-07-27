@@ -115,17 +115,17 @@ periodics:
             - name: FUZZTIME
               value: "10s"
             - name: GOMAXPROCS
-              value: "4"
+              value: "1"
           command:
             - make
           args:
             - test-fuzz
           resources:
             requests:
-              cpu: "4000m"
+              cpu: "1"
               memory: "6Gi"
             limits:
-              cpu: "4000m"
+              cpu: "1"
               memory: "6Gi"
   - interval: 24h
     name: periodic-kueue-verify-website-links-main

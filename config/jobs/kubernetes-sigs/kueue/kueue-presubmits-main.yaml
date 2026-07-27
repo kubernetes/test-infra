@@ -94,17 +94,17 @@ presubmits:
           - image: public.ecr.aws/docker/library/golang:1.26
             env:
               - name: GOMAXPROCS
-                value: "4"
+                value: "1"
             command:
               - make
             args:
               - test-fuzz
             resources:
               requests:
-                cpu: "4000m"
+                cpu: "1"
                 memory: "6Gi"
               limits:
-                cpu: "4000m"
+                cpu: "1"
                 memory: "6Gi"
     - name: pull-kueue-test-integration-shard-0-main
       cluster: eks-prow-build-cluster
