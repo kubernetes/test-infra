@@ -198,6 +198,8 @@ optional_and_run_if_changed:
       run_if_changed: ^(pkg\/credentialprovider\/|test\/e2e_node\/plugins\/gcp-credential-provider)
     - name: pull-kubernetes-node-kubelet-serial-containerd
       run_if_changed: ^test/e2e_node/
+    - name: pull-kubernetes-node-kubelet-serial-containerd-slow
+      run_if_changed: ^test/e2e_node/
     - name: pull-kubernetes-unit-windows-master
       run_if_changed: .*windows\.go$|pkg/kubelet/.*
     - name: pull-publishing-bot-validate
