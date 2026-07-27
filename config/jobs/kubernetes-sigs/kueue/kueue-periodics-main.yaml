@@ -90,6 +90,44 @@ periodics:
               cpu: "1800m"
               memory: "6Gi"
   - interval: 24h
+    name: periodic-kueue-test-fuzz-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-fuzz-main
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kueue fuzz tests with a longer fuzzing budget"
+      testgrid-num-columns-recent: '30'
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 10m
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.26
+          env:
+            - name: FUZZTIME
+              value: "10m"
+            - name: GOMAXPROCS
+              value: "4"
+          command:
+            - make
+          args:
+            - test-fuzz
+          resources:
+            requests:
+              cpu: "4000m"
+              memory: "6Gi"
+            limits:
+              cpu: "4000m"
+              memory: "6Gi"
+  - interval: 24h
     name: periodic-kueue-verify-website-links-main
     cluster: eks-prow-build-cluster
     annotations:

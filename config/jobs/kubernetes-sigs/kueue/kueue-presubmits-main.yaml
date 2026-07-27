@@ -74,6 +74,38 @@ presubmits:
               limits:
                 cpu: "1800m"
                 memory: "6Gi"
+    - name: pull-kueue-test-fuzz-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      optional: true
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 10m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-fuzz-main
+        description: "Run kueue fuzz tests with fuzzing enabled"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.26
+            env:
+              - name: GOMAXPROCS
+                value: "4"
+            command:
+              - make
+            args:
+              - test-fuzz
+            resources:
+              requests:
+                cpu: "4000m"
+                memory: "6Gi"
+              limits:
+                cpu: "4000m"
+                memory: "6Gi"
     - name: pull-kueue-test-integration-shard-0-main
       cluster: eks-prow-build-cluster
       branches:
