@@ -376,6 +376,10 @@ presets:
     value: "1"
   - name: TEAR_DOWN_PROMETHEUS_SERVER
     value: "false"
+  - name: EXPERIMENT_VARIANT
+    value: "node-exporter"
+  - name: PROMETHEUS_SCRAPE_NODE_EXPORTER
+    value: "true"
 
 - labels:
     preset-kops-scalability-gce-100-node: "true"
@@ -411,8 +415,4 @@ presets:
 
 - labels:
     preset-kops-scalability-gce-experimental: "true"
-  env:
-  - name: EXPERIMENT_VARIANT
-    value: "node-exporter"
-  - name: PROMETHEUS_SCRAPE_NODE_EXPORTER
-    value: "true"
+  env: []
