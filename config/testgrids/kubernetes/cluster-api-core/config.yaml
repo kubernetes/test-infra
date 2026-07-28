@@ -5,9 +5,11 @@ dashboard_groups:
     - cluster-api-core-1.11
     - cluster-api-core-1.12
     - cluster-api-core-1.13
+    - cluster-api-core-1.14
 
 dashboards:
 - name: cluster-api-core-main
 - name: cluster-api-core-1.11
 - name: cluster-api-core-1.12
 - name: cluster-api-core-1.13
+- name: cluster-api-core-1.14
