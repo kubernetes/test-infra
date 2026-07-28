@@ -90,7 +90,7 @@ class HelperTest(unittest.TestCase):
             ('//pkg/foo/bar:go_default_test',
             'bazel test //pkg/foo/bar:go_default_test'),
             ('verify typecheck', 'make verify WHAT=typecheck')):
-            print 'test name:', name
+            print('test name:', name)
             self.assertEqual(filters.do_testcmd(name), expected)
 
     def test_classify_size(self):
