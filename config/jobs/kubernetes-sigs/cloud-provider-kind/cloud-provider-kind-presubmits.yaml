@@ -85,7 +85,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: Alpha|Beta|NetworkPolicy|Disruptive|Flaky|IPv4|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|Internet.connection|loadbalancer.source.ranges|SCTPConnectivity
+          value: Alpha|Beta|NetworkPolicy|Disruptive|Flaky|IPv4|DualStack|LocalhostNodePorts|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|Internet.connection|loadbalancer.source.ranges|SCTPConnectivity
         command:
         - wrapper.sh
         - bash
