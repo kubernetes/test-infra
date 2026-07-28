@@ -344,14 +344,28 @@ presets:
     value: "gce"
   - name: CNI_PLUGIN
     value: "gce"
+  - name: PROMETHEUS_PVC_STORAGE_CLASS
+    value: "ssd-csi"
+
+- labels:
+    preset-kops-scalability-aws-common: "true"
+  env:
+  - name: CLOUD_PROVIDER
+    value: "aws"
+  - name: CNI_PLUGIN
+    value: "amazonvpc"
+  - name: PROMETHEUS_PVC_STORAGE_CLASS
+    value: "io2"
+
+- labels:
+    preset-kops-scalability-common: "true"
+  env:
   - name: KUBE_PROXY_MODE
     value: "nftables"
   - name: NODE_MODE
     value: "master"
   - name: ENABLE_PROMETHEUS_SERVER
     value: "true"
-  - name: PROMETHEUS_PVC_STORAGE_CLASS
-    value: "ssd-csi"
   - name: PROMETHEUS_SCRAPE_ETCD
     value: "true"
   - name: KUBE_SSH_KEY_PATH
