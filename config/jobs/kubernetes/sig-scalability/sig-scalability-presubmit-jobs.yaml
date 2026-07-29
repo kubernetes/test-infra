@@ -76,7 +76,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260727-e41b93b47b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-42b6d98837-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -189,7 +189,7 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260727-e41b93b47b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-42b6d98837-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -243,7 +243,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260727-e41b93b47b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-42b6d98837-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -306,7 +306,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260727-e41b93b47b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-42b6d98837-master
         command:
         - runner.sh
         args:
@@ -824,7 +824,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-benchmark-list-proto
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260727-e41b93b47b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-42b6d98837-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
