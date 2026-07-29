@@ -1,6 +1,6 @@
 timeout: 1800s
 steps:
-  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260205-38cfa9523f
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260729-0b834bafc6
     entrypoint: /buildx-entrypoint
     args:
     - build
