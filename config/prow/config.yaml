@@ -103,7 +103,7 @@ deck:
           - FAILED. See logs
           - failed to acquire k8s binaries
           - failed to solve
-          - (FAIL|Failure \[)\b
+          - (FAIL|FAILED|Failure \[)\b
           - fatal error
           - flag provided but not defined
           - Full Stack Trace
