@@ -30,7 +30,7 @@ set +o errexit
 if [ -z "${BUILDX_NO_DEFAULT_ATTESTATIONS}" ]; then
     export BUILDX_NO_DEFAULT_ATTESTATIONS=1
 fi
-docker run --privileged --rm tonistiigi/binfmt:qemu-v10.0.4 --install all
+docker run --privileged --rm tonistiigi/binfmt:qemu-v10.2.3 --install all
 
 docker buildx create \
     --name multiarch-multiplatform-builder \
