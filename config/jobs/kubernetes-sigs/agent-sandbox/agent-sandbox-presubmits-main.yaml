@@ -87,7 +87,7 @@ presubmits:
       testgrid-tab-name: presubmit-lint-api
   - name: presubmit-agent-sandbox-gemini-cu-sandbox-test
     cluster: eks-prow-build-cluster
-    run_if_changed: "^examples/gemini-cu-sandbox/|^dev/ci/presubmits/test-gemini-cu-sandbox$"
+    run_if_changed: "^examples/gemini-cu-sandbox/|^dev/ci/presubmits/test-e2e-gemini-cu-sandbox$"
     decorate: true
     always_run: false
     optional: true
@@ -99,7 +99,7 @@ presubmits:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260622-537e33cc05-master
         command:
         - runner.sh
-        - dev/ci/presubmits/test-gemini-cu-sandbox
+        - dev/ci/presubmits/test-e2e-gemini-cu-sandbox
         env:
         - name: GEMINI_API_KEY
           valueFrom:
@@ -122,7 +122,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: presubmit-agent-sandbox-python-runtime-sandbox-test
     cluster: eks-prow-build-cluster
-    run_if_changed: "^examples/python-runtime-sandbox/|^dev/ci/presubmits/test-python-runtime-sandbox$"
+    run_if_changed: "^examples/python-runtime-sandbox/|^dev/ci/presubmits/test-e2e-python-runtime-sandbox$"
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -132,7 +132,7 @@ presubmits:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260622-537e33cc05-master
         command:
         - runner.sh
-        - dev/ci/presubmits/test-python-runtime-sandbox
+        - dev/ci/presubmits/test-e2e-python-runtime-sandbox
         securityContext:
           privileged: true
         resources:
