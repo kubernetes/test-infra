@@ -16,7 +16,7 @@ periodics:
       args:
       - --ttl=12h
       - --path=s3://k8s-infra-kops-scale-tests/objs.json
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260609-3563df0
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260722-15454ea
       resources:
         requests:
           cpu: 1
@@ -73,7 +73,7 @@ periodics:
     testgrid-num-failures-to-alert: "1"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260727-e41b93b47b-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -173,7 +173,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-master
       imagePullPolicy: Always
       command:
       - runner.sh

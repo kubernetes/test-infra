@@ -60,7 +60,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260727-e41b93b47b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"
