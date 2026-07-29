@@ -22,6 +22,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
           env:
@@ -67,6 +68,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
           env:
@@ -109,6 +111,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
           env:
@@ -148,6 +151,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           command:
@@ -188,6 +192,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
           command:
@@ -231,6 +236,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
           command:
@@ -274,6 +280,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
           command:
@@ -317,6 +324,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
           command:
@@ -356,6 +364,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
           command:
@@ -395,6 +404,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
           command:
@@ -434,6 +444,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
           command:
@@ -473,6 +484,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -520,6 +532,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -567,6 +580,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -614,6 +628,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -661,6 +676,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -708,6 +724,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -755,6 +772,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -802,6 +820,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -849,6 +868,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -896,6 +916,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -943,6 +964,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -990,6 +1012,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1037,6 +1060,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1084,6 +1108,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1131,6 +1156,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1178,6 +1204,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1225,6 +1252,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1272,6 +1300,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1319,6 +1348,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1366,6 +1396,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1413,6 +1444,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1460,6 +1492,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1507,6 +1540,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1554,6 +1588,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1601,6 +1636,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1648,6 +1684,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1695,6 +1732,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1742,6 +1780,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1789,6 +1828,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1832,6 +1872,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           env:
@@ -1879,6 +1920,7 @@ periodics:
       timeout: 1h
       pod_unscheduled_timeout: 10m
     spec:
+      schedulerName: most-allocated-scheduler
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
           command:
