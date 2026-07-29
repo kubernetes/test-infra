@@ -1,4 +1,84 @@
 test_groups:
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-powervs-ovn
+  name: 4.23-powervs
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-kubevirt-aws-ovn-csi
+  name: 4.23-kubevirt-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-aws-ovn-proxy-conformance
+  name: 4.23-aws-ovn-proxy-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-aws-ovn-conformance-serial
+  name: 4.23-aws-ovn-conformance-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-aws-ovn-conformance
+  name: 4.23-aws-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-aws-ovn
+  name: 4.23-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-aws-multi
+  name: 4.23-aws-multi
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-aws-upgrade
+  name: 4.23-aws-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-aks
+  name: 4.23-aks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-azure-aks-ovn-conformance
+  name: 4.23-aks-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-openstack-aws
+  name: 4.23-openstack-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-openstack-aws-conformance
+  name: 4.23-openstack-aws-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-openstack-aws-csi-cinder
+  name: 4.23-openstack-aws-csi-cinder
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-openstack-aws-csi-manila
+  name: 4.23-openstack-aws-csi-manila
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-azure-v2-self-managed
+  name: 4.23-azure-v2-self-managed
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-v2-gke
+  name: 4.23-v2-gke
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-v2-aws
+  name: 4.23-v2-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-aws-autonode
+  name: 4.23-aws-autonode
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.23-periodics-e2e-aws-ovn-conformance-fips
+  name: 4.23-aws-ovn-conformance-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-powervs-ovn
+  name: 5.0-powervs
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-kubevirt-aws-ovn-csi
+  name: 5.0-kubevirt-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-aws-ovn-proxy-conformance
+  name: 5.0-aws-ovn-proxy-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-aws-ovn-conformance-serial
+  name: 5.0-aws-ovn-conformance-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-aws-ovn-conformance
+  name: 5.0-aws-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-aws-ovn
+  name: 5.0-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-aws-multi
+  name: 5.0-aws-multi
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-aws-upgrade
+  name: 5.0-aws-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-aks
+  name: 5.0-aks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-azure-aks-ovn-conformance
+  name: 5.0-aks-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-openstack-aws
+  name: 5.0-openstack-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-openstack-aws-conformance
+  name: 5.0-openstack-aws-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-openstack-aws-csi-cinder
+  name: 5.0-openstack-aws-csi-cinder
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-openstack-aws-csi-manila
+  name: 5.0-openstack-aws-csi-manila
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-azure-v2-self-managed
+  name: 5.0-azure-v2-self-managed
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-v2-gke
+  name: 5.0-v2-gke
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-v2-aws
+  name: 5.0-v2-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-aws-autonode
+  name: 5.0-aws-autonode
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-aws-ovn-conformance-fips
+  name: 5.0-aws-ovn-conformance-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-aws-ovn-conformance-ccm
+  name: 5.0-aws-ovn-conformance-ccm
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-5.0-periodics-e2e-aws-ovn-conformance-techpreview
+  name: 5.0-aws-ovn-conformance-techpreview
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.22-periodics-e2e-powervs
   name: 4.22-powervs
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.22-periodics-e2e-kubevirt-conformance
@@ -183,6 +263,246 @@ test_groups:
 dashboards:
 - name: redhat-hypershift
   dashboard_tab:
+  - name: 4.23-powervs
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-powervs
+  - name: 4.23-kubevirt-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-kubevirt-conformance
+  - name: 4.23-aws-ovn-proxy-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-aws-ovn-proxy-conformance
+  - name: 4.23-aws-ovn-conformance-serial
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-aws-ovn-conformance-serial
+  - name: 4.23-aws-ovn-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-aws-ovn-conformance
+  - name: 4.23-aws-ovn
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-aws-ovn
+  - name: 4.23-aws-multi
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-aws-multi
+  - name: 4.23-aws-upgrade
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-aws-upgrade
+  - name: 4.23-aks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-aks
+  - name: 4.23-aks-ovn-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-aks-ovn-conformance
+  - name: 4.23-openstack-aws
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-openstack-aws
+  - name: 4.23-openstack-aws-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-openstack-aws-conformance
+  - name: 4.23-openstack-aws-csi-cinder
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-openstack-aws-csi-cinder
+  - name: 4.23-openstack-aws-csi-manila
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-openstack-aws-csi-manila
+  - name: 4.23-azure-v2-self-managed
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-azure-v2-self-managed
+  - name: 4.23-v2-gke
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-v2-gke
+  - name: 4.23-v2-aws
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-v2-aws
+  - name: 4.23-aws-autonode
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-aws-autonode
+  - name: 4.23-aws-ovn-conformance-fips
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.23-aws-ovn-conformance-fips
+  - name: 5.0-powervs
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-powervs
+  - name: 5.0-kubevirt-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-kubevirt-conformance
+  - name: 5.0-aws-ovn-proxy-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aws-ovn-proxy-conformance
+  - name: 5.0-aws-ovn-conformance-serial
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aws-ovn-conformance-serial
+  - name: 5.0-aws-ovn-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aws-ovn-conformance
+  - name: 5.0-aws-ovn
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aws-ovn
+  - name: 5.0-aws-multi
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aws-multi
+  - name: 5.0-aws-upgrade
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aws-upgrade
+  - name: 5.0-aks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aks
+  - name: 5.0-aks-ovn-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aks-ovn-conformance
+  - name: 5.0-openstack-aws
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-openstack-aws
+  - name: 5.0-openstack-aws-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-openstack-aws-conformance
+  - name: 5.0-openstack-aws-csi-cinder
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-openstack-aws-csi-cinder
+  - name: 5.0-openstack-aws-csi-manila
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-openstack-aws-csi-manila
+  - name: 5.0-azure-v2-self-managed
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-azure-v2-self-managed
+  - name: 5.0-v2-gke
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-v2-gke
+  - name: 5.0-v2-aws
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-v2-aws
+  - name: 5.0-aws-autonode
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aws-autonode
+  - name: 5.0-aws-ovn-conformance-fips
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aws-ovn-conformance-fips
+  - name: 5.0-aws-ovn-conformance-ccm
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aws-ovn-conformance-ccm
+  - name: 5.0-aws-ovn-conformance-techpreview
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 5.0-aws-ovn-conformance-techpreview
   - name: 4.22-powervs
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
