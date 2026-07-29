@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG GO_VERSION
+ARG GO_VERSION=1
 # Includes bash, docker, and gcloud
 FROM golang:${GO_VERSION}-alpine
 # upstream go image sets GOTOOLCHAIN=local
