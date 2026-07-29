@@ -40,7 +40,8 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^{{ $.branch }}$
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - command:
@@ -104,7 +105,8 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^{{ $.branch }}$
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - image: {{ $.config.TestImage }}
@@ -245,7 +247,8 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^{{ $.branch }}$
     path_alias: sigs.k8s.io/cluster-api
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - image: {{ $.config.TestImage }}

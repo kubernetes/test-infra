@@ -37,7 +37,8 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.13$
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - command:
@@ -93,7 +94,8 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.13$
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
@@ -217,7 +219,8 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^release-1.13$
     path_alias: sigs.k8s.io/cluster-api
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
