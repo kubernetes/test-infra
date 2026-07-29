@@ -23,7 +23,7 @@ periodics:
       - name: KUBE_TIMEOUT
         value: -timeout=300s
       - name: KUBE_RACE
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       name: ""
       resources:
         limits:
@@ -61,7 +61,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       name: ""
       resources:
         limits:
@@ -118,7 +118,7 @@ periodics:
           --test=ginkgo -- --test-package-dir ci --test-package-marker $MARKER_VERSION --focus-regex='\[Conformance\]'
       command:
       - runner.sh
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       name: ""
       resources:
         limits:
@@ -176,7 +176,7 @@ periodics:
         --focus-regex='\[Conformance\]'
       command:
       - runner.sh
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       name: ""
       resources:
         limits:
@@ -220,7 +220,7 @@ periodics:
         \; --test-package-marker=$MARKER_VERSION \; --focus-regex='\[Conformance\]'
       command:
       - runner.sh
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       name: ""
       resources:
         limits:
@@ -281,7 +281,7 @@ periodics:
       - runner.sh
       - kubetest2
       - gce
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       name: ""
       resources:
         limits:
@@ -1368,7 +1368,7 @@ periodics:
         value: gce
       - name: BOSKOS_RESOURCE_TYPE
         value: scalability-project
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       name: ""
       resources:
         limits:
@@ -1410,7 +1410,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       name: ""
       resources:
         limits:
@@ -1447,7 +1447,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       name: ""
       resources:
         limits:
@@ -1485,7 +1485,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       name: ""
       resources:
         limits:
@@ -1609,7 +1609,7 @@ periodics:
     - command:
       - make
       - test
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       name: ""
       resources:
         limits:
@@ -1656,7 +1656,7 @@ periodics:
         value: /workspace/k8s.io/kubernetes
       - name: TYPECHECK_SERIAL
         value: "true"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
       imagePullPolicy: Always
       name: ""
       resources:
@@ -1741,7 +1741,7 @@ presubmits:
         env:
         - name: GOFLAGS
           value: -tags=fieldsv1string
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
@@ -1776,7 +1776,7 @@ presubmits:
         env:
         - name: GOFLAGS
           value: -tags=fieldsv1string
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
@@ -2509,7 +2509,7 @@ presubmits:
         - runner.sh
         - kubetest2
         - gce
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
@@ -4102,7 +4102,7 @@ presubmits:
           value: gce
         - name: BOSKOS_RESOURCE_TYPE
           value: scalability-project
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
@@ -4191,7 +4191,7 @@ presubmits:
           value: "8"
         - name: KUBE_TIMEOUT
           value: -timeout=30m
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
@@ -4224,7 +4224,7 @@ presubmits:
           value: 1.26.2
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
@@ -4295,7 +4295,7 @@ presubmits:
         env:
         - name: WHAT
           value: external-dependencies-version vendor vendor-licenses
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: main
         resources:
           limits:
@@ -4323,7 +4323,7 @@ presubmits:
         - ./hack/jenkins/test-integration-dockerized.sh
         command:
         - runner.sh
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
@@ -4359,7 +4359,7 @@ presubmits:
           value: -timeout=30m
         - name: KUBE_RACE
           value: -race
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
@@ -4392,7 +4392,7 @@ presubmits:
           value: 1.26.2
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
@@ -4890,7 +4890,7 @@ presubmits:
       - command:
         - make
         - test
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
@@ -4924,7 +4924,7 @@ presubmits:
           value: 1.26.2
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
@@ -5028,7 +5028,7 @@ presubmits:
           value: release-1.36
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         imagePullPolicy: Always
         name: ""
         resources:
@@ -5056,7 +5056,7 @@ presubmits:
         - WHAT=golangci-lint-pr-hints
         command:
         - make
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260727-e41b93b47b-1.36
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-42b6d98837-1.36
         name: ""
         resources:
           limits:
