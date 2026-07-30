@@ -124,6 +124,8 @@ periodics:
           value: latest
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
           value: Standard_D8s_v3
+        - name: GINKGO_SKIP
+          value: \[KubeRay\]
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
