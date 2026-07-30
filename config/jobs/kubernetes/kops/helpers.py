@@ -14,7 +14,7 @@
 
 import os
 import zlib
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor # pylint: disable=no-name-in-module
 
 # We support rapid focus on a few tests of high concern
 # This should be used for temporary tests we are evaluating,
