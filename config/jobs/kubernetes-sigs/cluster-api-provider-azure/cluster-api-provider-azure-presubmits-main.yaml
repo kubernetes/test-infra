@@ -875,6 +875,8 @@ presubmits:
             value: ""
           - name: MGMT_CLUSTER_TYPE
             value: "aks"
+          - name: AKS_MGMT_KUBERNETES_VERSION
+            value: "1.36"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
