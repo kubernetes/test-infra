@@ -6424,7 +6424,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -6492,7 +6492,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -6560,7 +6560,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -6628,7 +6628,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -6696,7 +6696,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -6764,7 +6764,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -6832,7 +6832,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -6900,7 +6900,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -6968,7 +6968,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=amazonvpc --node-size=t3.large --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -15742,7 +15742,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=calico" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -15809,7 +15809,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=calico" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -15876,7 +15876,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=calico" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -15943,7 +15943,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=calico" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -16010,7 +16010,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=calico" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -16077,7 +16077,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=calico" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -16144,7 +16144,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=calico" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -16211,7 +16211,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=calico" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -16278,7 +16278,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=calico" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -16345,7 +16345,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -16413,7 +16413,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -16481,7 +16481,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -16549,7 +16549,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -16617,7 +16617,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -16685,7 +16685,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -25450,7 +25450,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -25517,7 +25517,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -25584,7 +25584,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -25651,7 +25651,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -25718,7 +25718,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -25785,7 +25785,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -25852,7 +25852,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -25919,7 +25919,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -25986,7 +25986,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -26053,7 +26053,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -26121,7 +26121,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -26189,7 +26189,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -26257,7 +26257,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -26325,7 +26325,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -26393,7 +26393,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -34485,7 +34485,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -34552,7 +34552,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -34619,7 +34619,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -34686,7 +34686,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -34753,7 +34753,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -34820,7 +34820,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -34887,7 +34887,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -34954,7 +34954,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -35021,7 +35021,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -35089,7 +35089,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -35157,7 +35157,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -35225,7 +35225,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -35293,7 +35293,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -35361,7 +35361,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-etcd --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -41753,7 +41753,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -41821,7 +41821,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -41889,7 +41889,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -41957,7 +41957,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -42025,7 +42025,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -42093,7 +42093,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -42161,7 +42161,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -42229,7 +42229,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -42297,7 +42297,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -42365,7 +42365,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -42433,7 +42433,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -42501,7 +42501,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -42569,7 +42569,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -42637,7 +42637,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -42705,7 +42705,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium-eni --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10 --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -51479,7 +51479,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=flannel" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -51546,7 +51546,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=flannel" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -51613,7 +51613,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=flannel" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -51680,7 +51680,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=flannel" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -51747,7 +51747,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=flannel" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -51814,7 +51814,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=flannel" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -51881,7 +51881,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=flannel" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -51948,7 +51948,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=flannel" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -52015,7 +52015,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=flannel" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -52082,7 +52082,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -52150,7 +52150,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -52218,7 +52218,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -52286,7 +52286,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -52354,7 +52354,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -52422,7 +52422,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=flannel --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -61120,7 +61120,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kindnet" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kindnet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -61187,7 +61187,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kindnet" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kindnet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -61254,7 +61254,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kindnet" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kindnet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -61321,7 +61321,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kindnet" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kindnet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -61388,7 +61388,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kindnet" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kindnet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -61455,7 +61455,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kindnet" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kindnet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -61522,7 +61522,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kindnet" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kindnet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -61589,7 +61589,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kindnet" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kindnet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -61656,7 +61656,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kindnet" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kindnet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -61723,7 +61723,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -61791,7 +61791,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -61859,7 +61859,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -61927,7 +61927,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -61995,7 +61995,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -62063,7 +62063,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -67768,7 +67768,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kopeio" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -67835,7 +67835,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kopeio" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -67902,7 +67902,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kopeio" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -67969,7 +67969,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kopeio" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -68036,7 +68036,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kopeio" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -68103,7 +68103,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kopeio" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -68170,7 +68170,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kopeio" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -68237,7 +68237,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kopeio" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -68304,7 +68304,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kopeio" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -76531,7 +76531,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kubenet --topology=public" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kubenet --topology=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -76599,7 +76599,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kubenet --topology=public" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kubenet --topology=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -76667,7 +76667,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kubenet --topology=public" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kubenet --topology=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -76735,7 +76735,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kubenet --topology=public" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kubenet --topology=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -76803,7 +76803,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kubenet --topology=public" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kubenet --topology=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -76871,7 +76871,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kubenet --topology=public" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kubenet --topology=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -76939,7 +76939,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kubenet --topology=public" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kubenet --topology=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -77007,7 +77007,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kubenet --topology=public" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kubenet --topology=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -77075,7 +77075,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kubenet --topology=public" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kubenet --topology=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -77143,7 +77143,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -77211,7 +77211,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -77279,7 +77279,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -77347,7 +77347,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -77415,7 +77415,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -77483,7 +77483,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kubenet --node-size=m6g.large --control-plane-size=m6g.large --topology=public --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -85580,7 +85580,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kube-router" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kube-router" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -85647,7 +85647,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kube-router" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kube-router" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -85714,7 +85714,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kube-router" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kube-router" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -85781,7 +85781,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kube-router" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kube-router" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
           --test=kops \
@@ -85848,7 +85848,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kube-router" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kube-router" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -85915,7 +85915,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kube-router" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kube-router" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -85982,7 +85982,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kube-router" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kube-router" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -86049,7 +86049,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kube-router" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kube-router" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -86116,7 +86116,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kube-router" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kube-router" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \

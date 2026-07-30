@@ -1022,7 +1022,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1088,7 +1088,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large --control-plane-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \

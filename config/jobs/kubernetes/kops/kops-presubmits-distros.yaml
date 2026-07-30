@@ -2056,7 +2056,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=cilium" \
+            --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=cilium" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2123,7 +2123,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='792107900819/Rocky-9-EC2-Base-9.8-20260525.0.x86_64' --channel=alpha --networking=kindnet" \
+            --create-args="--image='792107900819/Rocky-9-EC2-Base-9.7-20251123.2.x86_64' --channel=alpha --networking=kindnet" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2190,7 +2190,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
+            --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=cilium --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.networking.cilium.enableBPFMasquerade=true" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2258,7 +2258,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large" \
+            --create-args="--image='792107900819/Rocky-10-EC2-Base-10.1-20251116.0.aarch64' --channel=alpha --networking=kindnet --node-size=m6g.large --control-plane-size=m6g.large" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
