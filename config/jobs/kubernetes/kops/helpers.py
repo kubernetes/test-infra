@@ -14,6 +14,7 @@
 
 import os
 import zlib
+from concurrent.futures import ThreadPoolExecutor
 
 # We support rapid focus on a few tests of high concern
 # This should be used for temporary tests we are evaluating,
@@ -162,29 +163,82 @@ def latest_aws_image(owner, name, arch='x86_64'):
 
     import boto3 # pylint: disable=import-error, import-outside-toplevel
 
-    client = boto3.client('ec2', region_name='us-east-1')
-    response = client.describe_images(
-        Owners=[owner],
-        Filters=[
-            {
-                'Name': 'name',
-                'Values': [
-                    name,
-                ],
-            },
-            {
-                'Name': 'architecture',
-                'Values': [
-                    arch
-                ],
-            },
-        ],
-    )
-    images = []
-    for image in response['Images']:
-        images.append(image['ImageLocation'].replace('amazon', owner))
-    images.sort(reverse=True)
-    image = images[0]
+    # Some AMIs are present in some regions but not others (e.g. not yet
+    # replicated everywhere), so prefer images that exist in every region
+    # jobs may run in. These are the regions used by the AWS zone picker in
+    # kops/tests/e2e/kubetest2-kops/aws/zones.go — keep the two in sync.
+    regions = [
+        'ap-northeast-1',
+        'ap-northeast-2',
+        'ap-south-1',
+        'ap-southeast-1',
+        'ap-southeast-2',
+        'ca-central-1',
+        'eu-central-1',
+        'eu-west-1',
+        'eu-west-2',
+        'eu-west-3',
+        'sa-east-1',
+        'us-east-1',
+        'us-east-2',
+        'us-west-2',
+    ]
+    def region_images(region):
+        # boto3 sessions are not thread-safe, so each worker gets its own
+        client = boto3.session.Session().client('ec2', region_name=region)
+        response = client.describe_images(
+            Owners=[owner],
+            Filters=[
+                {
+                    'Name': 'name',
+                    'Values': [
+                        name,
+                    ],
+                },
+                {
+                    'Name': 'architecture',
+                    'Values': [
+                        arch
+                    ],
+                },
+            ],
+        )
+        return {
+            image['ImageLocation'].replace('amazon', owner)
+            for image in response['Images']
+        }
+
+    with ThreadPoolExecutor(max_workers=len(regions)) as executor:
+        images_by_region = dict(zip(regions, executor.map(region_images, regions)))
+
+    all_images = set.union(*images_by_region.values())
+    if not all_images:
+        raise Exception(f"no image matching {name} ({arch}) found in any region: {regions}")
+    common_images = set.intersection(*images_by_region.values())
+    if common_images:
+        image = sorted(common_images, reverse=True)[0]
+    else:
+        # Fall back to the latest image from the regions that have one
+        empty_regions = [
+            region for region, region_images in images_by_region.items()
+            if not region_images
+        ]
+        print(f"WARNING: no image matching {name} ({arch}) is present in all regions, "
+              f"missing from: {empty_regions}")
+        image = sorted(all_images, reverse=True)[0]
+
+    for newer in sorted((i for i in all_images if i > image), reverse=True):
+        missing_regions = [
+            region for region, region_images in images_by_region.items()
+            if newer not in region_images
+        ]
+        print(f"WARNING: newer image {newer} not present in regions: {missing_regions}")
+    missing_regions = [
+        region for region, region_images in images_by_region.items()
+        if image not in region_images
+    ]
+    if missing_regions:
+        print(f"WARNING: image {image} not found in regions: {missing_regions}")
     set_pinned(pin, image)
     return image
 
