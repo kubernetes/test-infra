@@ -10,7 +10,7 @@ images:
     image_regex: ".*[^-cgroupsv1]$"
     machine: e2-standard-2 # These tests need a lot of memory
   cos:
-    image_family: cos-125-lts # keep in sync with jobs/e2e_node/containerd/image-config.yaml
+    image_family: cos-129-lts # keep in sync with jobs/e2e_node/containerd/image-config.yaml
     project: cos-cloud
     machine: e2-standard-2 # These tests need a lot of memory
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
