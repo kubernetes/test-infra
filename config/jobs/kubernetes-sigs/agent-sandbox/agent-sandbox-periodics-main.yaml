@@ -40,10 +40,11 @@ periodics:
     timeout: 30m
   annotations:
     testgrid-dashboards: sig-apps-agent-sandbox
+    description: Pinned to v0.5.3; see kubernetes-sigs/agent-sandbox#1307.
   extra_refs:
   - org: kubernetes-sigs
     repo: agent-sandbox
-    base_ref: main
+    base_ref: v0.5.3
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"

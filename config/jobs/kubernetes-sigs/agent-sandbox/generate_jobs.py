@@ -42,7 +42,7 @@ import sys
 
 import yaml
 
-IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master"  # pylint: disable=line-too-long
+IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master"  # pylint: disable=line-too-long
 DASHBOARD = "sig-apps-agent-sandbox"
 REPO_ORG = "kubernetes-sigs"
 REPO_NAME = "agent-sandbox"
@@ -157,6 +157,10 @@ PRESUBMIT_OVERRIDES = {
     # its credential requirements are sorted out.
     "test-skill-eval": manual_presubmit,
     "test-e2e-scalability-kwok": presubmit_test_e2e_scalability_kwok,
+    # Added to prow by hand in #37569 without matching generator entries, so
+    # regenerating silently dropped their optional flag. Keep them non-blocking.
+    "lint-olm": optional_presubmit,
+    "test-olm-unit": optional_presubmit,
 }
 
 
@@ -167,6 +171,8 @@ def periodic_test_load_test(job):
 
 def periodic_test_migration(job):
     rename_job(job, "periodic-agent-sandbox-migration-test")
+    # Runs against a fixed ref (see PINNED_PERIODICS). Kept hourly to burn in
+    # the pinned configuration; drop to 24h once it is reliably green.
     job["interval"] = "1h"
     job["decoration_config"] = {"timeout": "30m"}
 
@@ -184,6 +190,26 @@ PERIODIC_OVERRIDES = {
 }
 
 DEFAULT_PERIODIC_INTERVAL = "24h"
+
+# Periodics emitted against a fixed ref instead of the checkout.
+#
+# kubernetes-sigs/agent-sandbox#1307 removes the v1alpha1 -> v1beta1 migration
+# harness from main: dev/ci/periodics/test-migration, dev/tools/migrate.sh,
+# dev/tools/test-migration.py and test/migration/testdata/v0.4.6. The test
+# upgrades a v1alpha1 install to a controller built from the checkout and
+# blocks on the conversion webhook, so it can only pass against a ref whose
+# controller still serves v1alpha1. Pinning the ref pins the harness, the
+# fixtures and the controller under test together; v0.5.3 is the last release
+# carrying all three.
+#
+# Users still migrating need this path covered, so keep it until the drop
+# v1alpha1 epic (kubernetes-sigs/agent-sandbox#1265) closes, then delete the
+# entry. Emitted unconditionally rather than keyed off the script's absence,
+# so the output does not depend on which checkout the generator was run
+# against and this job can land before #1307 merges.
+PINNED_PERIODICS = {
+    "test-migration": "v0.5.3",
+}
 
 
 def is_e2e(script_name, periodic):
@@ -203,6 +229,14 @@ LEGACY_PRESUBMIT_ORDER = ["test-autogen-up-to-date", "test-unit", "lint-go", "li
 LEGACY_PERIODIC_ORDER = ["test-load-test", "test-migration"]
 
 
+def sort_key_for(legacy_order):
+    def sort_key(name):
+        if name in legacy_order:
+            return (0, legacy_order.index(name))
+        return (1, name)
+    return sort_key
+
+
 def discover(srcdir, legacy_order):
     if not srcdir.is_dir():
         return []
@@ -210,11 +244,7 @@ def discover(srcdir, legacy_order):
         p.name for p in srcdir.iterdir()
         if p.is_file() and p.stat().st_mode & 0o111
     ]
-    def sort_key(name):
-        if name in legacy_order:
-            return (0, legacy_order.index(name))
-        return (1, name)
-    return sorted(names, key=sort_key)
+    return sorted(names, key=sort_key_for(legacy_order))
 
 
 def container(script_path, e2e, resources):
@@ -283,6 +313,15 @@ def build_presubmit(script_name, override_func=None):
         override_func(job)
 
     return ordered(job, PRESUBMIT_KEY_ORDER)
+
+
+def build_pinned_periodic(script_name, ref):
+    job = build_periodic(script_name, PERIODIC_OVERRIDES.get(script_name))
+    job["extra_refs"][0]["base_ref"] = ref
+    job["annotations"]["description"] = (
+        f"Pinned to {ref}; see kubernetes-sigs/agent-sandbox#1307."
+    )
+    return job
 
 
 def build_periodic(script_name, override_func=None):
@@ -401,10 +440,17 @@ def main():
             ]
         }
     }
+    # Pinned periodics come from the table, not the checkout, so they are
+    # emitted whether or not the script is still present.
+    periodic_names = sorted(
+        set(periodic_scripts) | set(PINNED_PERIODICS),
+        key=sort_key_for(LEGACY_PERIODIC_ORDER),
+    )
     periodics = {
         "periodics": [
-            build_periodic(s, PERIODIC_OVERRIDES.get(s))
-            for s in periodic_scripts
+            build_pinned_periodic(s, PINNED_PERIODICS[s]) if s in PINNED_PERIODICS
+            else build_periodic(s, PERIODIC_OVERRIDES.get(s))
+            for s in periodic_names
         ]
     }
 
