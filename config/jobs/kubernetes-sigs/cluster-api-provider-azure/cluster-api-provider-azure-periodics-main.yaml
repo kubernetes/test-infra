@@ -385,6 +385,8 @@ periodics:
           value: ""
         - name: MGMT_CLUSTER_TYPE
           value: "aks"
+        - name: AKS_MGMT_KUBERNETES_VERSION
+          value: "1.36"
       securityContext:
         privileged: true
       resources:
