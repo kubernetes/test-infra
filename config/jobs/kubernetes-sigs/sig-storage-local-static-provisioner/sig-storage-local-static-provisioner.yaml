@@ -89,6 +89,21 @@ presubmits:
         args:
         - make
         - e2e
+        # Workaround: kubetest's kube-up (cluster/gce/util.sh) resolves the COS
+        # image family via `gcloud compute images list --filter=family:...`,
+        # which currently returns multiple images and gets its output line-split
+        # by kube-up. Pin the master/node image explicitly so kube-up skips the
+        # buggy lookup. Track fix: kubernetes/kubernetes#141067. Remove once
+        # that fix is present in ci/latest.
+        env:
+        - name: KUBE_GCE_MASTER_IMAGE
+          value: cos-129-19506-299-61
+        - name: KUBE_GCE_MASTER_PROJECT
+          value: cos-cloud
+        - name: KUBE_GCE_NODE_IMAGE
+          value: cos-129-19506-299-61
+        - name: KUBE_GCE_NODE_PROJECT
+          value: cos-cloud
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
