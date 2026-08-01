@@ -28,7 +28,7 @@ periodics:
               cpu: 100m
               memory: 512Mi
   - name: ci-kubernetes-cross-canary
-    cluster: k8s-infra-aks-prow-build
+    cluster: eks-prow-build-cluster
     interval: 2h
     decorate: true
     max_concurrency: 1
