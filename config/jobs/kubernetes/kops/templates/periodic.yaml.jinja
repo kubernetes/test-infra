@@ -22,6 +22,9 @@
     {%- if storage_e2e_cred %}
     preset-storage-e2e-service-account: "true"
     {%- endif %}
+    {%- for preset in presets or [] %}
+    {{ preset }}: "true"
+    {%- endfor %}
   cluster: {{build_cluster}}
   decorate: true
   decoration_config:

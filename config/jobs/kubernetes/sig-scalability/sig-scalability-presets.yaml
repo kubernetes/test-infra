@@ -334,10 +334,6 @@ presets:
     value: true
 
 - labels:
-    preset-e2e-scalability-periodics-master: "true"
-  env:
-
-- labels:
     preset-kops-scalability-gce-common: "true"
   env:
   - name: CLOUD_PROVIDER
@@ -346,9 +342,15 @@ presets:
     value: "gce"
   - name: PROMETHEUS_PVC_STORAGE_CLASS
     value: "ssd-csi"
+  - name: KUBE_PROXY_MODE
+    value: "nftables"
+  - name: KUBE_SSH_USER
+    value: "prow"
+  - name: KUBE_SSH_KEY_PATH
+    value: "/etc/ssh-key-secret/ssh-private"
 
 - labels:
-    preset-kops-scalability-aws-common: "true"
+    preset-kops-scalability-ec2-common: "true"
   env:
   - name: CLOUD_PROVIDER
     value: "aws"
@@ -356,22 +358,24 @@ presets:
     value: "amazonvpc"
   - name: PROMETHEUS_PVC_STORAGE_CLASS
     value: "io2"
+  - name: KOPS_IRSA
+    value: "true"
+  - name: KUBE_PROXY_MODE
+    value: "iptables" # iptables is still supported so we test it in AWS but nftables in GCE
+  - name: KUBE_SSH_USER
+    value: "ubuntu"
+  - name: KUBE_SSH_KEY_PATH
+    value: "/etc/aws-ssh/aws-ssh-private"
 
 - labels:
     preset-kops-scalability-common: "true"
   env:
-  - name: KUBE_PROXY_MODE
-    value: "nftables"
   - name: NODE_MODE
     value: "master"
   - name: ENABLE_PROMETHEUS_SERVER
     value: "true"
   - name: PROMETHEUS_SCRAPE_ETCD
     value: "true"
-  - name: KUBE_SSH_KEY_PATH
-    value: "/etc/ssh-key-secret/ssh-private"
-  - name: KUBE_SSH_USER
-    value: "prow"
   - name: GOPATH
     value: "/home/prow/go"
   - name: CL2_LOAD_TEST_THROUGHPUT
@@ -406,6 +410,14 @@ presets:
     value: "scalability-project"
 
 - labels:
+    preset-kops-scalability-ec2-100-node: "true"
+  env:
+  - name: KUBE_NODE_COUNT
+    value: "100"
+  - name: CONTROL_PLANE_SIZE
+    value: "c8a.8xlarge"
+
+- labels:
     preset-kops-scalability-gce-5000-node: "true"
   env:
   - name: KUBE_NODE_COUNT
@@ -426,6 +438,28 @@ presets:
     value: "16Gi"
   - name: CL2_REALISTIC_POD
     value: "true"
+
+- labels:
+    preset-kops-scalability-ec2-5000-node: "true"
+  env:
+  - name: KUBE_NODE_COUNT
+    value: "5000"
+  - name: CONTROL_PLANE_SIZE
+    value: "c8i.24xlarge"
+  # - name: ADDONS_NODE_SIZE
+  #   value: "c3-standard-44"
+  - name: CL2_ENABLE_INFORMER_LATENCY_TEST
+    value: "false"
+  - name: ETCD_QUOTA_BACKEND_BYTES
+    value: "21474836480"
+  # Test them before applying it to EC2 scale jobs
+  # - name: CL2_EXECSERVICE_CPU_REQUESTS
+  #   value: "8"
+  # - name: CL2_EXECSERVICE_MEMORY_REQUESTS
+  #   value: "16Gi"
+  # - name: CL2_REALISTIC_POD
+  #   value: "true"
+
 
 - labels:
     preset-kops-scalability-gce-experimental: "true"

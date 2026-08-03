@@ -416,10 +416,11 @@ presubmits:
     cluster: eks-prow-build-cluster
     run_if_changed: ^clusterloader2/.*$
     labels:
-      preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential-boskos-scale-001-kops: "true"
-      preset-dind-enabled: "true"
+      preset-kops-scalability-common: "true"
+      preset-kops-scalability-ec2-common: "true"
+      preset-kops-scalability-ec2-100-node: "true"
     decorate: true
     max_concurrency: 3
     decoration_config:
@@ -447,128 +448,6 @@ presubmits:
         - ./tests/e2e/scenarios/scalability/run-test.sh
         securityContext:
           privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        - name: CNI_PLUGIN
-          value: "amazonvpc"
-        - name: KUBE_NODE_COUNT
-          value: "100"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_DELETE_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: CONTROL_PLANE_SIZE
-          value: "c8i.8xlarge"
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        - name: CL2_ALLOWED_SLOW_API_CALLS
-          value: "1"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: TEAR_DOWN_PROMETHEUS_SERVER
-          value: "false"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
-        - name: CLOUD_PROVIDER
-          value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
-        resources:
-          requests:
-            cpu: 5
-            memory: 16Gi
-          limits:
-            cpu: 5
-            memory: 16Gi
-
-  - name: pull-perf-tests-ec2-master-scale-performance-500
-    cluster: eks-prow-build-cluster
-    always_run: false
-    labels:
-      preset-aws-ssh: "true"
-      preset-aws-credential-boskos-scale-001-kops: "true"
-    decorate: true
-    decoration_config:
-      timeout: 100m
-    path_alias: k8s.io/perf-tests
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
-    annotations:
-      testgrid-dashboards: presubmits-kubernetes-scalability
-      testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-500
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-f0c41ad0b9-master
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        - name: CNI_PLUGIN
-          value: "amazonvpc"
-        - name: KUBE_NODE_COUNT
-          value: "500"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_DELETE_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: CONTROL_PLANE_SIZE
-          value: "c8i.12xlarge"
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        - name: CL2_ALLOWED_SLOW_API_CALLS
-          value: "1"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: TEAR_DOWN_PROMETHEUS_SERVER
-          value: "false"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
-        - name: CLOUD_PROVIDER
-          value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: 5
@@ -584,6 +463,9 @@ presubmits:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential-boskos-scale-001-kops: "true"
+      preset-kops-scalability-common: "true"
+      preset-kops-scalability-ec2-common: "true"
+      preset-kops-scalability-ec2-5000-node: "true"
     decorate: true
     decoration_config:
       timeout: 480m
@@ -610,47 +492,6 @@ presubmits:
         - ./tests/e2e/scenarios/scalability/run-test.sh
         securityContext:
           privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        - name: CNI_PLUGIN
-          value: "amazonvpc"
-        - name: KUBE_NODE_COUNT
-          value: "5000"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_DELETE_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: CONTROL_PLANE_SIZE
-          value: "c8a.24xlarge"
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        - name: CL2_ALLOWED_SLOW_API_CALLS
-          value: "1"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: TEAR_DOWN_PROMETHEUS_SERVER
-          value: "false"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
-        - name: CLOUD_PROVIDER
-          value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: 5
@@ -664,6 +505,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     labels:
       preset-k8s-ssh: "true"
+      preset-kops-scalability-common: "true"
       preset-kops-scalability-gce-common: "true"
       preset-kops-scalability-gce-100-node: "true"
     decorate: true
@@ -755,6 +597,7 @@ presubmits:
     always_run: false
     labels:
       preset-k8s-ssh: "true"
+      preset-kops-scalability-common: "true"
       preset-kops-scalability-gce-common: "true"
       preset-kops-scalability-gce-5000-node: "true"
     decorate: true
