@@ -11,8 +11,10 @@ presubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
       containers:
-      - image: golang
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-f0c41ad0b9-master
         command:
+        - runner.sh
+        args:
         - make
         - verify
         # shellcheck has its own job so we don't need docker
@@ -20,10 +22,10 @@ presubmits:
         resources:
           limits:
             cpu: 4
-            memory: 8Gi
+            memory: 16Gi
           requests:
             cpu: 4
-            memory: 8Gi
+            memory: 16Gi
   - name: pull-registry-shellcheck
     cluster: k8s-infra-prow-build
     decorate: true
@@ -35,8 +37,10 @@ presubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
       containers:
-      - image: golang
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-f0c41ad0b9-master
         command:
+        - runner.sh
+        args:
         - make
         - shellcheck
         resources:
@@ -57,17 +61,19 @@ presubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
       containers:
-      - image: golang
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-f0c41ad0b9-master
         command:
+        - runner.sh
+        args:
         - make
         - test
         resources:
           limits:
             cpu: 4
-            memory: 8Gi
+            memory: 16Gi
           requests:
             cpu: 4
-            memory: 8Gi
+            memory: 16Gi
   - name: pull-registry-e2e
     cluster: k8s-infra-prow-build
     decorate: true
@@ -79,8 +85,10 @@ presubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
       containers:
-      - image: golang
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-f0c41ad0b9-master
         command:
+        - runner.sh
+        args:
         - make
         - e2e-test-local
         resources:
@@ -101,8 +109,10 @@ presubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
       containers:
-      - image: golang
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-f0c41ad0b9-master
         command:
+        - runner.sh
+        args:
         - make
         - images
         - build
