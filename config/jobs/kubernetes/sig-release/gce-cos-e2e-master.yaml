@@ -2,7 +2,7 @@ periodics:
 - annotations:
     fork-per-release: "true"
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: "1h 2h 6h 24h"
+    fork-per-release-periodic-interval: "6h 8h 12h 24h"
     fork-per-release-replacements: "extract=ci/latest -> extract=ci/latest-{{.Version}}"
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-blocking
@@ -16,7 +16,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -51,7 +51,7 @@ periodics:
 - annotations:
     fork-per-release: "true"
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: "1h 2h 6h 24h"
+    fork-per-release-periodic-interval: "6h 8h 12h 24h"
     fork-per-release-replacements: "extract=ci/latest -> extract=ci/latest-{{.Version}}"
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-blocking
@@ -65,7 +65,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -97,7 +97,7 @@ periodics:
 - annotations:
     fork-per-release: "true"
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: "1h 2h 6h 24h"
+    fork-per-release-periodic-interval: "6h 8h 12h 24h"
     fork-per-release-replacements: "extract=ci/latest -> extract=ci/latest-{{.Version}}"
     testgrid-dashboards: sig-release-master-informing
     testgrid-num-failures-to-alert: "6"
@@ -111,7 +111,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -142,7 +142,7 @@ periodics:
 - annotations:
     fork-per-release: "true"
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: "1h 2h 6h 24h"
+    fork-per-release-periodic-interval: "6h 8h 12h 24h"
     fork-per-release-replacements: "extract=ci/latest -> extract=ci/latest-{{.Version}}"
     testgrid-dashboards: sig-release-master-informing
     testgrid-num-failures-to-alert: "6"
@@ -156,7 +156,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
