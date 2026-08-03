@@ -1016,7 +1016,7 @@ periodics:
           memory: 6Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 8h 12h 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.36-blocking
     testgrid-tab-name: gce-cos-alphafeatures-1.36
@@ -1024,7 +1024,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 2h20m0s
-  interval: 1h
+  interval: 6h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -1061,7 +1061,7 @@ periodics:
           memory: 3Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 8h 12h 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.36-blocking
     testgrid-tab-name: gce-cos-default-1.36
@@ -1074,7 +1074,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 6h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -1148,7 +1148,7 @@ periodics:
           memory: 3Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 8h 12h 24h
     testgrid-dashboards: sig-release-1.36-informing
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-cos-serial-1.36
@@ -1161,7 +1161,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 6h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -1192,7 +1192,7 @@ periodics:
           memory: 3Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 8h 12h 24h
     testgrid-dashboards: sig-release-1.36-informing
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-cos-slow-1.36
@@ -1205,7 +1205,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 6h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"

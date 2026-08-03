@@ -1131,7 +1131,7 @@ periodics:
     testgrid-tab-name: gce-cos-alphafeatures-1.34
   cluster: k8s-infra-prow-build
   decorate: true
-  interval: 6h
+  interval: 12h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -1175,7 +1175,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 2h20m0s
-  interval: 6h
+  interval: 12h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -1253,7 +1253,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 11h20m0s
-  interval: 6h
+  interval: 12h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -1294,7 +1294,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 2h50m0s
-  interval: 6h
+  interval: 12h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
