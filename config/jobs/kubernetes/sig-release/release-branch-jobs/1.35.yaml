@@ -1250,14 +1250,14 @@ periodics:
       runAsUser: 2001
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 12h 24h
     testgrid-dashboards: sig-release-1.35-blocking
     testgrid-tab-name: gce-cos-alphafeatures-1.35
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 2h20m0s
-  interval: 2h
+  interval: 8h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -1294,14 +1294,14 @@ periodics:
           memory: 3Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 12h 24h
     testgrid-dashboards: sig-release-1.35-blocking
     testgrid-tab-name: gce-cos-default-1.35
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 2h20m0s
-  interval: 2h
+  interval: 8h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -1373,7 +1373,7 @@ periodics:
           memory: 3Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 12h 24h
     testgrid-dashboards: sig-release-1.35-informing
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-cos-serial-1.35
@@ -1381,7 +1381,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 11h20m0s
-  interval: 2h
+  interval: 8h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -1414,7 +1414,7 @@ periodics:
           memory: 3Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 12h 24h
     testgrid-dashboards: sig-release-1.35-informing
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-cos-slow-1.35
@@ -1422,7 +1422,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 2h50m0s
-  interval: 2h
+  interval: 8h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
