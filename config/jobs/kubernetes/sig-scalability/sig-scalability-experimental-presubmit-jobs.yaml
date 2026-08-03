@@ -50,8 +50,6 @@ presubmits:
         env:
         - name: KUBE_FEATURE_GATES
           value: "+EtcdRangeStream"
-        - name: CONTROL_PLANE_COUNT
-          value: "3"
         resources:
           requests:
             cpu: 5
@@ -236,9 +234,6 @@ presubmits:
         - ./tests/e2e/scenarios/scalability/run-test.sh
         securityContext:
           privileged: true
-        env:
-        - name: CONTROL_PLANE_COUNT
-          value: "3"
         resources:
           requests:
             cpu: 7

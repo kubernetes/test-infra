@@ -390,8 +390,6 @@ presets:
     value: "1"
   - name: TEAR_DOWN_PROMETHEUS_SERVER
     value: "false"
-  - name: EXPERIMENT_VARIANT
-    value: "node-exporter"
   - name: PROMETHEUS_SCRAPE_NODE_EXPORTER
     value: "true"
 
@@ -429,4 +427,8 @@ presets:
 
 - labels:
     preset-kops-scalability-gce-experimental: "true"
-  env: []
+  env:
+  - name: EXPERIMENT_VARIANT
+    value: "HA"
+  - name: CONTROL_PLANE_COUNT
+    value: "3"
