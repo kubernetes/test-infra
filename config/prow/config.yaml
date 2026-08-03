@@ -936,6 +936,12 @@ tide:
             from-branch-protection: true
           cluster-api-provider-vsphere:
             from-branch-protection: true
+          kueue:
+            optional-contexts:
+            - deploy/netlify
+            - Header rules
+            - Pages changed
+            - Redirect rules
           kubespray:
             from-branch-protection: true
   batch_size_limit:

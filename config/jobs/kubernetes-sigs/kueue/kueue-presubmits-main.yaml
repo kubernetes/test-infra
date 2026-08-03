@@ -1968,7 +1968,6 @@ presubmits:
                 memory: "6Gi"
     - name: pull-kueue-verify-website-links-preview-main
       cluster: eks-prow-build-cluster
-      optional: true
       always_run: false
       run_if_changed: "^(site/|netlify\\.toml)"
       branches:
@@ -1981,7 +1980,7 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-scheduling
         testgrid-tab-name: pull-kueue-verify-website-links-preview-main
-        description: "Check links on a PR's Netlify deploy preview, on demand (non-blocking)"
+        description: "Check links on a PR's Netlify deploy preview"
       labels:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
