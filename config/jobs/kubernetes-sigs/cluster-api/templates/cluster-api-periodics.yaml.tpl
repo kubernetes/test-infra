@@ -135,10 +135,10 @@ periodics:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
   annotations:
     testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-{{ ReplaceAll $.branch "." "-" }}
@@ -204,10 +204,10 @@ periodics:
       resources:
         requests:
           cpu: 4000m
-          memory: 12Gi
+          memory: 16Gi
         limits:
           cpu: 4000m
-          memory: 12Gi
+          memory: 16Gi
   annotations:
     testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
@@ -262,10 +262,10 @@ periodics:
       resources:
         requests:
           cpu: 4000m
-          memory: 12Gi
+          memory: 16Gi
         limits:
           cpu: 4000m
-          memory: 12Gi
+          memory: 16Gi
   annotations:
     testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
@@ -320,10 +320,10 @@ periodics:
       resources:
         requests:
           cpu: 4000m
-          memory: 12Gi
+          memory: 16Gi
         limits:
           cpu: 4000m
-          memory: 12Gi
+          memory: 16Gi
   annotations:
     testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
@@ -394,10 +394,10 @@ periodics:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
   annotations:
     testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}
