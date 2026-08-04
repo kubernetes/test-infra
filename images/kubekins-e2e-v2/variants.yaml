@@ -23,9 +23,3 @@ variants:
     K8S_BRANCH: release-1.34
     BAZEL_VERSION: 3.4.1
     DOCKER_VERSION: 5:28.*
-  '1.33':
-    CONFIG: '1.33'
-    K8S_RELEASE: latest-1.33
-    K8S_BRANCH: release-1.33
-    BAZEL_VERSION: 3.4.1
-    DOCKER_VERSION: 5:28.*
