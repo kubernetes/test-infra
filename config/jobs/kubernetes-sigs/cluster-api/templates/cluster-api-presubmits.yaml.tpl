@@ -223,10 +223,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
@@ -336,10 +336,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix .branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll .branch "." "-" }}{{ $jobSuffix }}
@@ -453,10 +453,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
@@ -505,10 +505,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
@@ -573,10 +573,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}

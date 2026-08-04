@@ -195,10 +195,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-1.14
       testgrid-tab-name: capi-pr-e2e-mink8s-release-1-14
@@ -285,10 +285,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-1.14
       testgrid-tab-name: capi-pr-e2e-release-1-14
@@ -378,10 +378,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-1.14
       testgrid-tab-name: capi-pr-e2e-conformance-release-1-14
@@ -421,10 +421,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-1.14
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-release-1-14
