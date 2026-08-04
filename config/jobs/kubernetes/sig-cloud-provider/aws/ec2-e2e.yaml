@@ -605,6 +605,68 @@ presubmits:
             requests:
               cpu: 7
               memory: 10Gi
+  - name: pull-kubernetes-e2e-ec2-alpha-canary
+    skip_branches:
+      - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: presubmits-ec2
+      description: duplicate of ci-kubernetes-e2e-ec2-alpha-features that builds kubetest2-ec2 from the PR
+    labels:
+      preset-e2e-containerd-ec2: "true"
+      preset-dind-enabled: "true"
+    path_alias: sigs.k8s.io/provider-aws-test-infra
+    # Run automatically when the deployer or its build inputs change; stay non-blocking.
+    run_if_changed: '^(kubetest2-ec2/|go\.mod|go\.sum|vendor/)'
+    optional: true
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    spec:
+      serviceAccountName: node-e2e-tests
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
+              cd kubetest2-ec2 && GOPROXY=direct go install .
+              VERSION=$(curl -Ls --retry 5 --retry-delay 10 --retry-all-errors https://dl.k8s.io/ci/fast/latest-fast.txt)
+              kubetest2 ec2 \
+               --stage https://dl.k8s.io/ci/fast \
+               --version $VERSION \
+               --feature-gates="AllAlpha=true,AllBeta=true,EventedPLEG=false" \
+               --runtime-config="api/all=true" \
+               --up \
+               --down \
+               --test=ginkgo \
+               -- \
+               --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
+               --test-package-url=https://dl.k8s.io \
+               --test-package-dir=ci/fast \
+               --test-package-marker=latest-fast.txt \
+               --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
+               --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0" \
+               --parallel=25
+          env:
+            - name: USE_DOCKERIZED_BUILD
+              value: "true"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 7
+              memory: 10Gi
+            requests:
+              cpu: 7
+              memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-cloud-provider-canary
     skip_branches:
       - release-\d+\.\d+  # per-release image
