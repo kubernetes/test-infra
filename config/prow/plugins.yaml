@@ -671,6 +671,9 @@ repo_milestone:
   kubernetes/autoscaler:
     maintainers_team: sig-autoscaling-milestone-maintainers
     maintainers_friendly_name: Autoscaler milestone maintainers
+  kubernetes-sigs/cluster-autoscaler:
+    maintainers_team: cluster-autoscaler-maintainers
+    maintainers_friendly_name: Cluster Autoscaler Maintainers
   kubernetes/community:
     maintainers_team: community-milestone-maintainers
     maintainers_friendly_name: Community Milestone Maintainers
@@ -1006,16 +1009,6 @@ require_matching_label:
     If SIG Autoscaling contributors determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
 
     The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
-- missing_label: do-not-merge/needs-area
-  org: kubernetes-sigs
-  repo: cluster-autoscaler
-  issues: false
-  prs: true
-  regexp: ^area/
-  missing_comment: |
-    This PR is currently missing an area label, which is used to identify the modified component when generating release notes.
-
-    Area labels can be added by org members by writing `/area ${COMPONENT}` in a comment
 - missing_label: needs-priority
   org: kubernetes-sigs
   repo: cluster-api
@@ -1668,6 +1661,8 @@ plugins:
 
   kubernetes-sigs/cluster-autoscaler:
     plugins:
+    - milestone
+    - release-note
     - require-matching-label
 
   kubernetes-sigs/cluster-api-provider-aws:
@@ -1998,6 +1993,12 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/cluster-api-operator:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-autoscaler:
   - name: cherrypicker
     events:
     - issue_comment
