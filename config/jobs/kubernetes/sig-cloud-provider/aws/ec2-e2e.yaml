@@ -27,7 +27,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -87,7 +87,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -148,7 +148,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -208,7 +208,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -268,7 +268,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -336,7 +336,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -399,7 +399,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -454,7 +454,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -510,7 +510,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -572,7 +572,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -628,7 +628,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -693,7 +693,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -753,7 +753,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -812,7 +812,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
           command:
             - runner.sh
           args:
@@ -878,7 +878,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
         command:
           - runner.sh
         args:
@@ -936,7 +936,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
         command:
           - runner.sh
         args:
@@ -993,7 +993,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
         command:
           - runner.sh
         args:
@@ -1051,7 +1051,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
         command:
           - runner.sh
         args:
@@ -1107,7 +1107,7 @@ periodics:
         - --ttl=6h
         - --path=s3://provider-aws-test-infra/objs.json
         - --region=us-east-1
-        image: gcr.io/k8s-staging-boskos/aws-janitor:v20260729-2dd50af
+        image: gcr.io/k8s-staging-boskos/aws-janitor:v20260730-11fb0c8
         resources:
           requests:
             cpu: 1
