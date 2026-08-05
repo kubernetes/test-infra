@@ -115,6 +115,7 @@ def build_test(cloud='aws',
                alert_email=None,
                alert_num_failures=None,
                job_queue_name=None,
+               presets=None,
                extra_refs=None):
     # pylint: disable=too-many-statements,too-many-arguments
     if kops_version is None:
@@ -215,8 +216,9 @@ def build_test(cloud='aws',
             env['KOPS_STATE_STORE'] = "s3://k8s-kops-ci-prow-state-store"
             if 'KOPS_DNS_DOMAIN' not in env:
                 env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
-        env['CLOUD_PROVIDER'] = cloud
-        env['KUBE_SSH_USER'] = kops_ssh_user
+        if scenario != "scalability":
+            env['CLOUD_PROVIDER'] = cloud
+            env['KUBE_SSH_USER'] = kops_ssh_user
         if not cluster_name:
             # scenario scripts often need to reference the cluster name outside of kubetest2-kops.
             # Since kubetest2-kops defaults to generating one automatically, the easiest way to
@@ -266,6 +268,7 @@ def build_test(cloud='aws',
         storage_e2e_cred=storage_e2e_cred,
         instance_groups_overrides=instance_groups_overrides,
         extra_refs=extra_refs,
+        presets=presets,
         job_queue_name=job_queue_name,
     )
 
@@ -357,6 +360,7 @@ def presubmit_test(branch='master',
                    alert_num_failures=None,
                    instance_groups_overrides=None,
                    job_queue_name=None,
+                   presets=None,
                    extra_refs=None):
     # pylint: disable=too-many-statements,too-many-arguments
     kops_image = None
@@ -419,7 +423,8 @@ def presubmit_test(branch='master',
     tmpl_file = "presubmit.yaml.jinja"
     if scenario is not None:
         tmpl_file = "presubmit-scenario.yaml.jinja"
-        env['CLOUD_PROVIDER'] = cloud
+        if scenario != "scalability":
+            env['CLOUD_PROVIDER'] = cloud
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
 
@@ -453,6 +458,7 @@ def presubmit_test(branch='master',
         template_path=template_path,
         boskos_resource_type=boskos_resource_type,
         use_preset_for_account_creds=use_preset_for_account_creds,
+        presets=presets,
         build_cluster=build_cluster,
         test_args=test_args,
         cluster_name=cluster_name,
@@ -1845,29 +1851,11 @@ def generate_presubmits_scale():
             test_timeout_minutes=450,
             job_queue_name="5k-aws-scale-test",
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
-            env={
-                'CNI_PLUGIN': "amazonvpc",
-                'KUBE_NODE_COUNT': "5000",
-                'CL2_LOAD_TEST_THROUGHPUT': "50",
-                'CL2_DELETE_TEST_THROUGHPUT': "50",
-                'CL2_RATE_LIMIT_POD_CREATION': "false",
-                'NODE_MODE': "master",
-                'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "c8i.24xlarge",
-                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
-                'CL2_ENABLE_DNS_PROGRAMMING': "true",
-                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
-                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
-                'CL2_ALLOWED_SLOW_API_CALLS': "1",
-                'ENABLE_PROMETHEUS_SERVER': "true",
-                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "io2",
-                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
-                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
-                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
-                'CL2_ENABLE_DNSTESTS': "false",
-                'CL2_USE_ADVANCED_DNSTEST': "false",
-            }
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-ec2-common',
+                'preset-kops-scalability-ec2-5000-node',
+            ]
         ),
         presubmit_test(
             name='pull-kops-ec2-master-scale-performance-100',
@@ -1878,28 +1866,11 @@ def generate_presubmits_scale():
             always_run=False,
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
-            env={
-                'CNI_PLUGIN': "amazonvpc",
-                'KUBE_NODE_COUNT': "100",
-                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
-                'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "c8i.8xlarge",
-                'CL2_LOAD_TEST_THROUGHPUT': "50",
-                'CL2_DELETE_TEST_THROUGHPUT': "50",
-                'CL2_RATE_LIMIT_POD_CREATION': "false",
-                'NODE_MODE': "master",
-                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
-                'CL2_ENABLE_DNS_PROGRAMMING': "true",
-                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
-                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
-                'CL2_ALLOWED_SLOW_API_CALLS': "1",
-                'ENABLE_PROMETHEUS_SERVER': "true",
-                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "io2",
-                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
-                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
-                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
-            }
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-ec2-common',
+                'preset-kops-scalability-ec2-100-node',
+            ]
         ),
         presubmit_test(
             name='pull-kops-gce-master-scale-performance-5000',
@@ -1910,31 +1881,11 @@ def generate_presubmits_scale():
             always_run=False,
             job_queue_name="5k-gce-scale-test",
             test_timeout_minutes=450,
-            env={
-                'CNI_PLUGIN': "gce",
-                'KUBE_NODE_COUNT': "5000",
-                'CL2_LOAD_TEST_THROUGHPUT': "50",
-                'CL2_DELETE_TEST_THROUGHPUT': "50",
-                'CL2_RATE_LIMIT_POD_CREATION': "false",
-                'NODE_MODE': "master",
-                'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "c4-standard-96",
-                'KUBE_PROXY_MODE': 'nftables',
-                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
-                'CL2_ENABLE_DNS_PROGRAMMING': "true",
-                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
-                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
-                'CL2_ALLOWED_SLOW_API_CALLS': "1",
-                'ENABLE_PROMETHEUS_SERVER': "true",
-                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
-                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
-                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
-                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
-                'CL2_ENABLE_DNSTESTS': "false",
-                'CL2_USE_ADVANCED_DNSTEST': "false",
-                'BOSKOS_RESOURCE_TYPE': "scalability-scale-project",
-            }
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-gce-common',
+                'preset-kops-scalability-gce-5000-node',
+            ]
         ),
         presubmit_test(
             name='pull-kops-gce-master-scale-performance-100',
@@ -1945,63 +1896,12 @@ def generate_presubmits_scale():
             always_run=False,
             run_if_changed=r'^tests\/e2e\/scenarios\/scalability\/run-test.sh',
             test_timeout_minutes=450,
-            env={
-                'CNI_PLUGIN': "gce",
-                'KUBE_NODE_COUNT': "100",
-                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
-                'CONTROL_PLANE_COUNT': "1",
-                'KUBE_PROXY_MODE': 'nftables',
-                'CONTROL_PLANE_SIZE': "c4-standard-32",
-                'CL2_LOAD_TEST_THROUGHPUT': "50",
-                'CL2_DELETE_TEST_THROUGHPUT': "50",
-                'CL2_RATE_LIMIT_POD_CREATION': "false",
-                'NODE_MODE': "master",
-                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
-                'CL2_ENABLE_DNS_PROGRAMMING': "true",
-                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
-                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
-                'CL2_ALLOWED_SLOW_API_CALLS': "1",
-                'ENABLE_PROMETHEUS_SERVER': "true",
-                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
-                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
-                'BOSKOS_RESOURCE_TYPE': "scalability-scale-project",
-                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
-                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
-            }
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-gce-common',
+                'preset-kops-scalability-gce-5000-node',
+            ]
         ),
-        presubmit_test(
-            name='pull-kops-gce-master-scale-kindnet-performance-100',
-            scenario='scalability',
-            # only helps with setting the right anotation test.kops.k8s.io/networking
-            networking='gce',
-            cloud="gce",
-            always_run=False,
-            test_timeout_minutes=450,
-            env={
-                'CNI_PLUGIN': "kindnet",
-                'KUBE_PROXY_MODE': 'nftables',
-                'KUBE_NODE_COUNT': "100",
-                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
-                'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "c3-standard-88",
-                'CL2_LOAD_TEST_THROUGHPUT': "50",
-                'CL2_DELETE_TEST_THROUGHPUT': "50",
-                'CL2_RATE_LIMIT_POD_CREATION': "false",
-                'NODE_MODE': "master",
-                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
-                'CL2_ENABLE_DNS_PROGRAMMING': "true",
-                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
-                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
-                'CL2_ALLOWED_SLOW_API_CALLS': "1",
-                'ENABLE_PROMETHEUS_SERVER': "true",
-                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
-                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
-                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
-                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
-            }
-        )
     ]
     return results
 

@@ -27,6 +27,9 @@
       {%- else %}
       preset-k8s-ssh: "true"
       {%- endif %}
+      {%- for preset in presets or [] %}
+      {{ preset }}: "true"
+      {%- endfor %}
     max_concurrency: 1
     decorate: true
     decoration_config:
@@ -70,7 +73,7 @@
         - name: KOPS_FEATURE_FLAGS
           value: "{{kops_feature_flags}}"
         {%- endif %}
-        {%- if cloud != "azure" %}
+        {%- if cloud != "azure" and scenario != 'scalability' %}
         - name: KUBE_SSH_KEY_PATH
           value: {{kops_ssh_key_path}}
         - name: KUBE_SSH_USER
@@ -78,8 +81,10 @@
         {%- endif %}
         - name: GINKGO_NO_COLOR
           value: "TRUE"
+        {%- if scenario != 'scalability' %}
         - name: GOPATH
           value: /home/prow/go
+        {%- endif %}
         {%- if artifacts %}
         - name: ARTIFACTS
           value: {{artifacts}}

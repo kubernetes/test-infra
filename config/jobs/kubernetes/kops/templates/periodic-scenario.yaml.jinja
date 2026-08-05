@@ -13,6 +13,9 @@
     preset-service-account: "true"
     preset-kops-azure-cred-wi: "true"
     {%- endif %}
+    {%- for preset in presets or [] %}
+    {{ preset }}: "true"
+    {%- endfor %}
   max_concurrency: 1
   decorate: true
   decoration_config:
