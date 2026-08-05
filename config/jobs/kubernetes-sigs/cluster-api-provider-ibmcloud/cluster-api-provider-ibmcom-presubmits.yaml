@@ -15,7 +15,7 @@ presubmits:
       containers:
       - command:
         - "runner.sh"
-        - "./scripts/ci-make.sh"
+        - "./hack/scripts/ci/ci-make.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -46,7 +46,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-1.35
         imagePullPolicy: Always
         command:
-        - "./scripts/ci-test.sh"
+        - "./hack/scripts/ci/ci-test.sh"
         resources:
           limits:
             cpu: "2"
@@ -78,7 +78,7 @@ presubmits:
           value: "dummyApiKey"
         command:
         - "runner.sh"
-        - "./scripts/ci-smoke-test.sh"
+        - "./hack/scripts/ci/ci-smoke-test.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -105,7 +105,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-1.35
         command:
-        - "./scripts/ci-build.sh"
+        - "./hack/scripts/ci/ci-build.sh"
         resources:
           limits:
             memory: "6Gi"
@@ -169,7 +169,7 @@ presubmits:
           - -c
           - |
             result=0
-            ./scripts/ci-test-coverage.sh || result=$?
+            ./hack/scripts/ci/ci-test-coverage.sh || result=$?
             cp cover.* ${ARTIFACTS}
             cd ../../k8s.io/test-infra/gopherage
             GO111MODULE=on go build .
@@ -200,7 +200,7 @@ presubmits:
         command:
           - runner.sh
         args:
-          - ./scripts/ci-apidiff.sh
+          - ./hack/scripts/ci/ci-apidiff.sh
         resources:
           limits:
             cpu: "2"
