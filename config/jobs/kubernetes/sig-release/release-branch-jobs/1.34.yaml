@@ -3040,7 +3040,7 @@ presubmits:
         - runner.sh
         env:
         - name: GO_VERSION
-          value: 1.24.5
+          value: 1.25.4
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-1.34
@@ -3209,7 +3209,7 @@ presubmits:
         - runner.sh
         env:
         - name: GO_VERSION
-          value: 1.24.5
+          value: 1.25.4
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-1.34
@@ -3387,7 +3387,7 @@ presubmits:
         - test
         env:
         - name: GO_VERSION
-          value: 1.24.5
+          value: 1.25.4
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-1.34
