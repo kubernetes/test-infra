@@ -115,7 +115,6 @@ postsubmits:
             args:
               - --project=k8s-staging-releng
               - --scratch-bucket=gs://k8s-staging-releng-gcb
-              - --env-passthrough=PULL_BASE_REF,REGISTRY
               - --build-dir=.
               - images/releng/gcb-docker-gcloud
             env:
