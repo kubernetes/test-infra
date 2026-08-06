@@ -5,6 +5,12 @@ variants:
     K8S_BRANCH: master
     BAZEL_VERSION: 3.4.1
     DOCKER_VERSION: 5:29.*
+  '1.37':
+    CONFIG: '1.37'
+    K8S_RELEASE: latest-1.37
+    K8S_BRANCH: release-1.37
+    BAZEL_VERSION: 3.4.1
+    DOCKER_VERSION: 5:28.*
   '1.36':
     CONFIG: '1.36'
     K8S_RELEASE: latest-1.36
