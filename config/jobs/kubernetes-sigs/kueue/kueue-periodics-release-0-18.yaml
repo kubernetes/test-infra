@@ -20,7 +20,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -65,7 +65,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -110,7 +110,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -153,7 +153,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -196,7 +196,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -239,7 +239,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -278,7 +278,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -317,7 +317,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -356,7 +356,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -395,7 +395,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -442,7 +442,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -489,7 +489,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -536,7 +536,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -583,7 +583,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -630,7 +630,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -677,7 +677,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -724,7 +724,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -771,7 +771,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -818,7 +818,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -865,7 +865,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -912,7 +912,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -959,7 +959,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1006,7 +1006,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1053,7 +1053,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1100,7 +1100,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1147,7 +1147,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1194,7 +1194,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1241,7 +1241,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1288,7 +1288,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1335,7 +1335,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1382,7 +1382,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1429,7 +1429,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1476,7 +1476,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1523,7 +1523,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1570,7 +1570,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1617,7 +1617,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1664,7 +1664,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1711,7 +1711,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
@@ -1754,7 +1754,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
