@@ -32,6 +32,72 @@ periodics:
         limits:
           cpu: 7
           memory: 14Gi
+- name: periodic-agent-sandbox-gemini-cu-sandbox-test
+  cluster: eks-prow-build-cluster
+  interval: 24h
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-apps-agent-sandbox
+    testgrid-tab-name: periodic-gemini-cu-sandbox-test
+    description: Nightly end-to-end test for the gemini-cu-sandbox example using kind
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: agent-sandbox
+    base_ref: main
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260622-537e33cc05-master
+      command:
+      - runner.sh
+      - dev/ci/presubmits/test-e2e-gemini-cu-sandbox
+      env:
+      - name: GEMINI_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: gemini-api-key
+            key: key
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+          memory: 8Gi
+        limits:
+          cpu: 4
+          memory: 8Gi
+- name: periodic-agent-sandbox-python-runtime-sandbox-test
+  cluster: eks-prow-build-cluster
+  interval: 24h
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-apps-agent-sandbox
+    testgrid-tab-name: periodic-python-runtime-sandbox-test
+    description: Nightly end-to-end test for the python-runtime-sandbox example using kind
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: agent-sandbox
+    base_ref: main
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260622-537e33cc05-master
+      command:
+      - runner.sh
+      - dev/ci/presubmits/test-e2e-python-runtime-sandbox
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+          memory: 8Gi
+        limits:
+          cpu: 4
+          memory: 8Gi
 - name: periodic-agent-sandbox-migration-test
   cluster: eks-prow-build-cluster
   interval: 1h
