@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:18.04
+FROM python:3.13-slim
 
 ENV KETTLE_DB=/data/build.db TZ=America/Los_Angeles
 
@@ -25,22 +25,19 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
     pv \
     time \
     sqlite3 \
-    python \
-    python3 \
-    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir --upgrade pip && \
-    pip3 install --no-cache-dir requests google-cloud-pubsub==2.3.0 google-cloud-bigquery==2.11.0 ruamel.yaml==0.16
-
-RUN curl -fsSL https://downloads.python.org/pypy/pypy3.6-v7.3.1-linux64.tar.bz2 | tar xj -C opt  && \
-    ln -s /opt/pypy*/bin/pypy3 /usr/bin
-
-RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-320.0.0-linux-x86_64.tar.gz | tar xfz - -C . && \
+RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz | tar xfz - -C . && \
     ./google-cloud-sdk/install.sh -q && \
-    ln -s /google-cloud-sdk/bin/* /bin/
+    ln -s /google-cloud-sdk/bin/* /usr/local/bin/
 
-ADD *.py schema.json runner.sh buckets.yaml /kettle/
+WORKDIR /kettle
+
+ADD *.py pyproject.toml uv.lock schema.json runner.sh buckets.yaml /kettle/
+
+RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
+    uv sync --locked --no-install-project --no-dev 
+ENV PATH="/kettle/.venv/bin:$PATH"
 
 VOLUME ["/data"]
 

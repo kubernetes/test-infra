@@ -19,11 +19,6 @@ set -o pipefail
 
 # A wrapper script for running kettle
 
-# Authenticate gcloud
-if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
-  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
-fi
-
 bq show <<< $'\n' > /dev/null  # create initial bq config
 
 while true; do
