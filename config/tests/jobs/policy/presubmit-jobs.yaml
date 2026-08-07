@@ -7,7 +7,6 @@ always_run:
     - name: pull-kubernetes-dependencies
     - name: pull-kubernetes-e2e-gce
     - name: pull-kubernetes-e2e-kind
-    - name: pull-kubernetes-e2e-kind-ipv6
     - name: pull-kubernetes-integration
     - name: pull-kubernetes-integration-go-compatibility
     - name: pull-kubernetes-linter-hints
@@ -110,10 +109,6 @@ optional_and_run_if_changed:
       run_if_changed: .*windows\.go$|.*windows/.*\.go$
     - name: pull-kubernetes-kind-dra
       branches:
-        - release-1.33
-      run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
-    - name: pull-kubernetes-kind-dra
-      branches:
         - release-1.34
       run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     - name: pull-kubernetes-kind-dra
@@ -128,10 +123,6 @@ optional_and_run_if_changed:
       skip_branches:
         - release-\d+\.\d+
       run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
-    - name: pull-kubernetes-kind-dra-all
-      branches:
-        - release-1.33
-      run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     - name: pull-kubernetes-kind-dra-all
       branches:
         - release-1.34
