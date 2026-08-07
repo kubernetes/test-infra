@@ -1,0 +1,56 @@
+presubmits:
+  kubernetes/sig-security:
+  - name: pull-sig-security-srctl-unit-tests
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-security-srctl
+      testgrid-create-test-group: "true"
+      description: Run srctl unit tests when sig-security-tooling/srctl changes
+    run_if_changed: "^sig-security-tooling/srctl/"
+    branches:
+    - main
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-f0c41ad0b9-master
+        command: ['runner.sh']
+        args:
+        - bash
+        - -ec
+        - |
+          cd sig-security-tooling/srctl
+          go test -v -cover ./...
+        resources:
+          limits:
+            cpu: 2
+            memory: "2Gi"
+          requests:
+            cpu: 2
+            memory: "2Gi"
+
+  - name: pull-sig-security-srctl-golangci-lint
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-security-srctl
+      testgrid-create-test-group: "true"
+      description: Run golangci-lint on srctl when sig-security-tooling/srctl changes
+    run_if_changed: "^sig-security-tooling/srctl/"
+    branches:
+    - main
+    decorate: true
+    spec:
+      containers:
+      - image: golangci/golangci-lint:v2.12.1
+        command:
+        - bash
+        - -ec
+        - |
+          cd sig-security-tooling/srctl
+          golangci-lint run ./...
+        resources:
+          limits:
+            cpu: 2
+            memory: "2Gi"
+          requests:
+            cpu: 2
+            memory: "2Gi"
