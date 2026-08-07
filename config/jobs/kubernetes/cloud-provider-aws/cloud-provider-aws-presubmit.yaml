@@ -15,7 +15,7 @@ presubmits:
     spec:
       serviceAccountName: aws-shared-testing-role
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-e16bbc2ef7-master
         resources:
           limits:
             cpu: 2
@@ -64,7 +64,7 @@ presubmits:
     spec:
       serviceAccountName: aws-shared-testing-role
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-e16bbc2ef7-master
           command:
             - runner.sh
           args:
@@ -147,7 +147,7 @@ presubmits:
     spec:
       serviceAccountName: aws-shared-testing-role
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260803-75cc24a334-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-e16bbc2ef7-master
           command:
             - runner.sh
           args:

@@ -13,7 +13,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - dev/ci/presubmits/test-autogen-up-to-date
         resources:
@@ -34,7 +34,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - dev/ci/presubmits/test-unit
         resources:
@@ -53,7 +53,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - dev/ci/presubmits/lint-go
         resources:
@@ -72,7 +72,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - dev/ci/presubmits/lint-api
         resources:
@@ -94,7 +94,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - runner.sh
         - dev/ci/presubmits/test-e2e
@@ -121,7 +121,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - runner.sh
         - dev/ci/presubmits/benchmarks-kops-gcp-cilium
@@ -151,7 +151,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - runner.sh
         - dev/ci/presubmits/benchmarks-kops-gcp-claims
@@ -181,7 +181,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - runner.sh
         - dev/ci/presubmits/benchmarks-kops-gcp-kindnet
@@ -208,7 +208,7 @@ presubmits:
     optional: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - dev/ci/presubmits/test-skill-eval
         resources:
@@ -231,7 +231,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - runner.sh
         - dev/ci/presubmits/test-e2e-scalability-kwok
@@ -254,7 +254,7 @@ presubmits:
     optional: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - dev/ci/presubmits/lint-olm
         resources:
@@ -274,7 +274,7 @@ presubmits:
     optional: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - dev/ci/presubmits/test-olm-unit
         resources:

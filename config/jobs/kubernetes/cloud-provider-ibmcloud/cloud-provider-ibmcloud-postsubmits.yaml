@@ -12,7 +12,7 @@ postsubmits:
       description: Build and push kubetest2-tf binary when repo provider-ibmcloud-test-infra has merge to main
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260803-75cc24a334-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - runner.sh
         args:
@@ -60,7 +60,7 @@ postsubmits:
       description: Build and push Terraform binary and plugins tarball to IBM Cloud COS when terraform_versions.env changes
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260729-f0c41ad0b9-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
         command:
         - runner.sh
         args:
