@@ -67,13 +67,23 @@ var buildClusters = []string{
 
 // These are special prowjobs that can't fit on our standard build nodes
 // They should be be configured with appropriate nodeSelectors/tolerations
-var jobsExemptFromResourceLimits = []string{
-	"ci-kubernetes-build",
-	"ci-kubernetes-e2e-gce-scale-performance-5000",
-	"ci-kubernetes-e2e-gce-scale-performance-5000-experimental",
-	"pull-kubernetes-gce-master-scale-performance-5000",
-	"pull-kubernetes-gce-master-scale-performance-5000-experimental",
-	"pull-perf-tests-gce-master-scale-performance-5000",
+// Each entry must match the whole job name. Use a pattern for a job that
+// is forked per release, so a new branch does not need a new entry.
+var jobsExemptFromResourceLimits = []*regexp.Regexp{
+	// Also matches the release forks, such as ci-kubernetes-build-1-37.
+	regexp.MustCompile(`^ci-kubernetes-build(-1-\d+)?$`),
+	regexp.MustCompile(`^ci-kubernetes-e2e-gce-scale-performance-5000$`),
+	regexp.MustCompile(`^ci-kubernetes-e2e-gce-scale-performance-5000-experimental$`),
+	regexp.MustCompile(`^pull-kubernetes-gce-master-scale-performance-5000$`),
+	regexp.MustCompile(`^pull-kubernetes-gce-master-scale-performance-5000-experimental$`),
+	regexp.MustCompile(`^pull-perf-tests-gce-master-scale-performance-5000$`),
+}
+
+func isExemptFromResourceLimits(jobName string) bool {
+	return slices.ContainsFunc(
+		jobsExemptFromResourceLimits,
+		func(re *regexp.Regexp) bool { return re.MatchString(jobName) },
+	)
 }
 
 func TestMain(m *testing.M) {
@@ -1201,7 +1211,7 @@ func verifyPodQOSGuaranteed(spec *coreapi.PodSpec, required bool, jobName string
 			} else if limit.Cmp(request) != 0 {
 				errs = append(errs, fmt.Errorf("resources.limits[%v] (%v) %v match resources.request[%v] (%v)", r, limit.String(), should, r, request.String()))
 			} else if r == coreapi.ResourceMemory {
-				if slices.Contains(jobsExemptFromResourceLimits, jobName) {
+				if isExemptFromResourceLimits(jobName) {
 					continue
 				}
 				// Enforce a maximum memory limit to allow jobs to fit in an 8 core, 30G Node
@@ -1210,7 +1220,7 @@ func verifyPodQOSGuaranteed(spec *coreapi.PodSpec, required bool, jobName string
 					errs = append(errs, fmt.Errorf("container '%v' resources.limits[%v] (%v) %v be at most %v", c.Name, r, limit.String(), should, maxMem.String()))
 				}
 			} else if r == coreapi.ResourceCPU {
-				if slices.Contains(jobsExemptFromResourceLimits, jobName) {
+				if isExemptFromResourceLimits(jobName) {
 					continue
 				}
 				// Enforce a maximum CPU limit to allow jobs to fit in an 8 core, 30G Node
