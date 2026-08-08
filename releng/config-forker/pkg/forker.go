@@ -323,9 +323,15 @@ func generatePresubmits(
 			job.SkipBranches = nil
 			job.Branches = []string{"release-" + vars.Version}
 
-			job.Context = generatePresubmitContextVariant(
-				job.Name, job.Context, vars.Version,
-			)
+			// Presubmits keep their master name, so the default context
+			// has to keep it too. An explicit context is versioned.
+			if job.Context == "" {
+				job.Context = job.Name
+			} else {
+				job.Context = replaceAllMaster(
+					job.Context, "-"+vars.Version,
+				)
+			}
 
 			if err := processContainers(
 				ctx, job.Spec, vars,
@@ -813,18 +819,6 @@ func generateNameVariant(
 
 	if !strings.HasSuffix(name, masterSuffix) {
 		return name + suffix
-	}
-
-	return replaceAllMaster(name, suffix)
-}
-
-func generatePresubmitContextVariant(
-	name, context, version string,
-) string {
-	suffix := "-" + version
-
-	if context != "" {
-		return replaceAllMaster(context, suffix)
 	}
 
 	return replaceAllMaster(name, suffix)

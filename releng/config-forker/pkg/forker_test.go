@@ -645,7 +645,9 @@ func TestGeneratePresubmits(t *testing.T) {
 					Branches: []string{"release-1.15"},
 				},
 				Reporter: config.Reporter{
-					Context: "pull-kubernetes-e2e-branch-in-name-1.15",
+					// The forker does not version presubmit names, so
+					// the default context has to match the name.
+					Context: "pull-kubernetes-e2e-branch-in-name-master",
 				},
 			},
 			{
