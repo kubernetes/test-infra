@@ -26,10 +26,7 @@ periodics:
     - args:
       - /bin/bash
       - -c
-      - set -o errexit; set -o nounset; set -o pipefail; set -o xtrace; MARKER_VERSION=latest-1.35.txt;
-        kubetest2 gce \; --v=9 \; --legacy-mode \; --up \; --down \; --kubernetes-version=https://dl.k8s.io/ci/$MARKER_VERSION
-        \; --test=ginkgo \; -- \; --test-package-url=https://dl.k8s.io \; --test-package-dir=ci
-        \; --test-package-marker=$MARKER_VERSION \; --focus-regex='\[Conformance\]'
+      - set -o errexit; set -o nounset; set -o pipefail; set -o xtrace; MARKER_VERSION=latest-1.35.txt; kubetest2 gce \; --v=9 \; --legacy-mode \; --up \; --down \; --kubernetes-version=https://dl.k8s.io/ci/$MARKER_VERSION \; --test=ginkgo \; -- \; --test-package-url=https://dl.k8s.io \; --test-package-dir=ci \; --test-package-marker=$MARKER_VERSION \; --focus-regex='\[Conformance\]'
       command:
       - runner.sh
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-1.35
@@ -44,15 +41,14 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 8-23/12 * * *, 0 8-23/24 * * *, 0 14-23/24 * * *
-    testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com, release-team@kubernetes.io,
-      sig-node-ci+testgrid@kubernetes.io
+    fork-per-release-cron: 0 8-23/24 * * *, 0 14-23/24 * * *
+    testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com, release-team@kubernetes.io, sig-node-ci+testgrid@kubernetes.io
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.35-blocking, google-gce, sig-node-gpu, sig-node-containerd, nvidia-device-plugin, nvidia-gpu
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.35
   cluster: k8s-infra-prow-build
-  cron: 0 3-23/6 * * *
+  cron: 0 8-23/12 * * *
   decorate: true
   decoration_config:
     timeout: 1h20m0s
@@ -103,7 +99,7 @@ periodics:
           memory: 6Gi
     serviceAccountName: prow-build
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,siarkowicz@google.com,patrick.ohly@intel.com
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind, sig-release-job-config-errors
     testgrid-num-columns-recent: "6"
@@ -117,7 +113,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -544,14 +540,10 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=1
-      - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } &&
-        !Flaky'
+      - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
       - --timeout=60m
       - --skip-regex=
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio
-        --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true
-        --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service"
-        --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+      - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
       command:
       - runner.sh
@@ -573,8 +565,7 @@ periodics:
           memory: 6Gi
 - annotations:
     testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
-    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd,
-      sig-release-1.35-informing
+    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-1.35-informing
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -604,15 +595,10 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=1
-      - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } &&
-        !Flaky'
+      - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
       - --timeout=60m
       - --skip-regex=
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
-        --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
-        --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
-        --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
-        --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
       command:
       - runner.sh
@@ -627,8 +613,7 @@ periodics:
           memory: 6Gi
 - annotations:
     testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
-    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd,
-      sig-release-1.35-informing
+    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-1.35-informing
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -661,15 +646,10 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=1
-      - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } &&
-        !Flaky'
+      - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
       - --timeout=60m
       - --skip-regex=
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
-        --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
-        --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
-        --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
-        --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
       command:
       - runner.sh
@@ -711,18 +691,17 @@ periodics:
       - --allow-dup=false
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
-      - --extra-version-markers=k8s-stable1
+      - --extra-version-markers=k8s-stable2
+      env:
+      - name: FASTLY_SERVICE_NAME
+        value: dl.k8s.io
+      - name: FASTLY_API_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: token
+            name: fastly-purge-token
       image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
-      env:
-        - name: FASTLY_SERVICE_NAME
-          value: dl.k8s.io
-        - name: FASTLY_API_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: fastly-purge-token
-              key: token
-      # docker-in-docker needs privileged mode
       name: ""
       resources:
         limits:
@@ -734,14 +713,13 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24 * * *
-    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com,
-      release-team@kubernetes.io
+    fork-per-release-cron: 0 8-20/12 * * *, 0 8-20/24 * * *
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.35-blocking, sig-scalability-gce
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.35-scalability-100
   cluster: k8s-infra-prow-build
-  cron: 0 0/12 * * *
+  cron: 0 4-16/12 * * *
   decorate: true
   decoration_config:
     timeout: 2h20m0s
@@ -765,8 +743,7 @@ periodics:
     - args:
       - --check-leaked-resources
       - --cluster=e2e-big
-      - --env=APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
-        --profiling --contention-profiling
+      - --env=APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
       - --extract=ci/latest-1.35
       - --gcp-node-image=gci
@@ -817,7 +794,7 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.35-blocking
     testgrid-tab-name: cmd-1.35
@@ -854,7 +831,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.35-blocking
     testgrid-tab-name: integration-1.35
@@ -891,7 +868,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.35-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -905,7 +882,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
   name: ci-kubernetes-e2e-kind-1-35
@@ -915,8 +892,7 @@ periodics:
       - wrapper.sh
       - bash
       - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz -
-        -C "${PATH%%:*}/" && e2e-k8s.sh
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       - name: LABEL_FILTER
         value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
@@ -934,7 +910,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.35-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -948,7 +924,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
   name: ci-kubernetes-e2e-kind-ipv6-1-35
@@ -958,8 +934,7 @@ periodics:
       - wrapper.sh
       - bash
       - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz -
-        -C "${PATH%%:*}/" && e2e-k8s.sh
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       - name: DOCKER_IN_DOCKER_IPV6_ENABLED
         value: "true"
@@ -1016,9 +991,8 @@ periodics:
       runAsGroup: 2010
       runAsUser: 2001
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers+alerts@kubernetes.io,
-      release-team@kubernetes.io
+    fork-per-release-periodic-interval: 6h 24h
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers+alerts@kubernetes.io, release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.35-blocking
     testgrid-tab-name: verify-1.35
   cluster: k8s-infra-prow-build
@@ -1061,14 +1035,13 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 9 * * *, 0 13 * * *, 0 17 * * *
+    fork-per-release-cron: 0 13 * * *, 0 17 * * *
     testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
-    testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, conformance-ppc64le, ibm-k8s-e2e,
-      sig-release-job-config-errors
+    testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, conformance-ppc64le, ibm-k8s-e2e, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: ci-kubernetes-ppc64le-conformance-latest-1.35
   cluster: k8s-infra-ppc64le-prow-build
-  cron: 0 5 * * *
+  cron: 0 9 * * *
   decorate: true
   decoration_config:
     timeout: 5h0m0s
@@ -1118,13 +1091,13 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 9 * * *, 0 13 * * *, 0 17 * * *
+    fork-per-release-cron: 0 13 * * *, 0 17 * * *
     testgrid-alert-email: sig-cloud-provider-ibm-s390x-alerts@kubernetes.io
     testgrid-dashboards: ibm-s390x-k8s, conformance-s390x, ibm-k8s-e2e, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: ci-kubernetes-s390x-conformance-1.35
   cluster: k8s-infra-s390x-prow-build
-  cron: 0 5 * * *
+  cron: 0 9 * * *
   decorate: true
   decoration_config:
     timeout: 2h0m0s
@@ -1176,13 +1149,13 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 2 * * *, 0 4 * * *, 0 6 * * *
+    fork-per-release-cron: 0 4 * * *, 0 6 * * *
     testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
     testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: ci-kubernetes-integration-ppc64le-1.35
   cluster: k8s-infra-ppc64le-prow-build
-  cron: 0 1/6 * * *
+  cron: 0 2 * * *
   decorate: true
   extra_refs:
   - base_ref: release-1.35
@@ -1211,13 +1184,13 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 5 * * *, 0 6 * * *, 0 7 * * *
+    fork-per-release-cron: 0 6 * * *, 0 7 * * *
     testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
     testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: ci-kubernetes-unit-ppc64le-1.35
   cluster: k8s-infra-ppc64le-prow-build
-  cron: 0 4/6 * * *
+  cron: 0 5 * * *
   decorate: true
   extra_refs:
   - base_ref: release-1.35
@@ -1250,20 +1223,20 @@ periodics:
       runAsUser: 2001
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 12h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-dashboards: sig-release-1.35-blocking
     testgrid-tab-name: gce-cos-alphafeatures-1.35
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 2h20m0s
-  interval: 8h
+  interval: 12h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     prow.k8s.io/refs.org: kubernetes
     prow.k8s.io/refs.repo: kubernetes
-  name: ci-kubernetes-e2e-gce-cos-alphafeatures-stable1
+  name: ci-kubernetes-e2e-gce-cos-alphafeatures-stable2
   spec:
     containers:
     - args:
@@ -1277,9 +1250,7 @@ periodics:
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
-      - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
-        --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0
-        --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -1294,20 +1265,20 @@ periodics:
           memory: 3Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 12h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-dashboards: sig-release-1.35-blocking
     testgrid-tab-name: gce-cos-default-1.35
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 2h20m0s
-  interval: 8h
+  interval: 12h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     prow.k8s.io/refs.org: kubernetes
     prow.k8s.io/refs.repo: kubernetes
-  name: ci-kubernetes-e2e-gce-cos-default-stable1
+  name: ci-kubernetes-e2e-gce-cos-default-stable2
   spec:
     containers:
     - args:
@@ -1317,8 +1288,7 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.35
       - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-        --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       command:
@@ -1335,20 +1305,20 @@ periodics:
           memory: 6Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-dashboards: sig-release-1.35-blocking
     testgrid-tab-name: gce-cos-reboot-1.35
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 1h20m0s
-  interval: 2h
+  interval: 6h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     prow.k8s.io/refs.org: kubernetes
     prow.k8s.io/refs.repo: kubernetes
-  name: ci-kubernetes-e2e-gce-cos-reboot-stable1
+  name: ci-kubernetes-e2e-gce-cos-reboot-stable2
   spec:
     containers:
     - args:
@@ -1373,7 +1343,7 @@ periodics:
           memory: 3Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 12h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-dashboards: sig-release-1.35-informing
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-cos-serial-1.35
@@ -1381,13 +1351,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 11h20m0s
-  interval: 8h
+  interval: 12h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     prow.k8s.io/refs.org: kubernetes
     prow.k8s.io/refs.repo: kubernetes
-  name: ci-kubernetes-e2e-gce-cos-serial-stable1
+  name: ci-kubernetes-e2e-gce-cos-serial-stable2
   spec:
     containers:
     - args:
@@ -1398,8 +1368,7 @@ periodics:
       - --extract=ci/latest-1.35
       - --timeout=660m
       - --ginkgo-parallel=1
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]
-        --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -1414,7 +1383,7 @@ periodics:
           memory: 3Gi
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 12h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-dashboards: sig-release-1.35-informing
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-cos-slow-1.35
@@ -1422,13 +1391,13 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 2h50m0s
-  interval: 8h
+  interval: 12h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     prow.k8s.io/refs.org: kubernetes
     prow.k8s.io/refs.repo: kubernetes
-  name: ci-kubernetes-e2e-gce-cos-slow-stable1
+  name: ci-kubernetes-e2e-gce-cos-slow-stable2
   spec:
     containers:
     - args:
@@ -1438,8 +1407,7 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.35
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]
-        --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       command:
       - runner.sh
@@ -1481,8 +1449,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh
-          --test-mode kind
+        - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh --test-mode kind
         env:
         - name: LABEL_FILTER
           value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
@@ -1559,8 +1526,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
-          - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
           value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
@@ -1648,8 +1614,7 @@ presubmits:
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         command:
         - runner.sh
@@ -1698,8 +1663,7 @@ presubmits:
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         command:
         - runner.sh
@@ -1761,8 +1725,7 @@ presubmits:
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         command:
         - runner.sh
@@ -1873,8 +1836,7 @@ presubmits:
         - --gcp-region=us-central1
         - --ginkgo-parallel=1
         - --provider=gce
-        - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=500m
         command:
         - runner.sh
@@ -2034,8 +1996,7 @@ presubmits:
         - --gcp-region=us-central1
         - --ginkgo-parallel=30
         - --provider=gce
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         command:
         - runner.sh
@@ -2678,15 +2639,10 @@ presubmits:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation }
-          && !Flaky && !Slow'
+        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex=
-        - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock
-          --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file=
-          --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
-          --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service"
-          --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
         command:
         - runner.sh
@@ -2735,15 +2691,10 @@ presubmits:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation }
-          && !Flaky && !Slow'
+        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex=
-        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
-          --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
-          --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
-          --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
-          --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
         command:
         - runner.sh
@@ -2789,15 +2740,10 @@ presubmits:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation }
-          && !Flaky && !Slow'
+        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex=
-        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
-          --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
-          --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
-          --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
-          --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
         command:
         - runner.sh
@@ -2843,17 +2789,10 @@ presubmits:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation
-          } && !Flaky && !Slow'
+        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex=
-        - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false
-          --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true
-          --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
-          --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
-          --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
-          --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
-          --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
         command:
         - runner.sh
@@ -2902,8 +2841,7 @@ presubmits:
         - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         command:
         - runner.sh
@@ -2943,11 +2881,7 @@ presubmits:
       - args:
         - --deployment=node
         - --gcp-zone=us-central1-b
-        - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock
-          --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file=
-          --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
-          --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\":
-          \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+        - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
@@ -3146,11 +3080,7 @@ presubmits:
         - --use-dockerized-build=true
         - --target-build-arch=linux/arm64
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:NodeSwap\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
-        - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock
-          --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file=
-          --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
-          --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\":
-          \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/image-config-serial.yaml
         - --timeout=180m
         command:
@@ -3200,11 +3130,7 @@ presubmits:
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
-        - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock
-          --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file=
-          --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
-          --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\":
-          \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
         command:
         - runner.sh
@@ -3403,8 +3329,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
-          - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: DOCKER_IN_DOCKER_IPV6_ENABLED
           value: "true"
@@ -3571,8 +3496,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
-          - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
           value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
@@ -3609,8 +3533,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
-          - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
           value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
@@ -3650,8 +3573,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
-          - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: FEATURE_GATES
           value: '{"AllAlpha":false,"AllBeta":false}'
@@ -3898,8 +3820,7 @@ presubmits:
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
-        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
-          --profiling --contention-profiling
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
