@@ -211,6 +211,8 @@ presubmits:
     name: pull-kubernetes-e2e-gce-cos-serial
     optional: true
     path_alias: k8s.io/kubernetes
+    skip_branches:
+    - release-\d+\.\d+
     spec:
       containers:
       - args:
