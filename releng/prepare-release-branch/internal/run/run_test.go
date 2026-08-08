@@ -39,6 +39,16 @@ func TestSuffixes(t *testing.T) {
 	}
 }
 
+func TestRotateFilesSkipsMissingConfigs(t *testing.T) {
+	t.Parallel()
+
+	// An empty directory stands in for a repo where every out of support
+	// release config was deleted.
+	if err := run.RotateFiles(t.TempDir(), release.Version{Major: 1, Minor: 36}); err != nil {
+		t.Errorf("RotateFiles() = %v, want nil", err)
+	}
+}
+
 func TestFetchGoVersion(t *testing.T) {
 	t.Parallel()
 
