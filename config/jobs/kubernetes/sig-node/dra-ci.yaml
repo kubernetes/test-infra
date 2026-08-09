@@ -17,7 +17,6 @@ periodics:
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -217,7 +216,6 @@ periodics:
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -345,7 +343,6 @@ periodics:
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -473,7 +470,6 @@ periodics:
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -599,7 +595,6 @@ periodics:
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -649,7 +644,7 @@ periodics:
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
+      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -770,7 +765,7 @@ periodics:
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
+      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -825,7 +820,7 @@ periodics:
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
+      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -880,7 +875,7 @@ periodics:
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
+      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -938,7 +933,7 @@ periodics:
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
+      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
     decorate: true
     decoration_config:
       timeout: 90m

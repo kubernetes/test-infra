@@ -19,6 +19,7 @@ presubmits:
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
+      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -78,6 +79,7 @@ presubmits:
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 1.7 on Ubuntu
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
+      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -130,6 +132,7 @@ presubmits:
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 1.7 on COS
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
+      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -182,6 +185,7 @@ presubmits:
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 2.1 on Ubuntu
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
+      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
     decorate: true
     decoration_config:
       timeout: 90m
@@ -237,6 +241,7 @@ presubmits:
       description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 2.1 on COS
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
+      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
     decorate: true
     decoration_config:
       timeout: 90m

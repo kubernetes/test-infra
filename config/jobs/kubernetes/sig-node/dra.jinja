@@ -65,7 +65,13 @@ presubmits:
       fork-per-release: "true"
       {%- if ci %}
       fork-per-release-periodic-interval: 24h
-      fork-per-release-replacements: latest-fast.txt -> latest-{% raw %}{{.Version}}{% endraw %}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
+      {%- endif %}
+      {#- Only the jobs that download a package need the marker rewritten, and
+          the rules must match how the args are written: the URL and the
+          directory are separate args, so "ci/fast" cannot be spelled as a
+          full URL here. Master keeps ci/fast; only the fork moves to ci. #}
+      {%- if job_type == "node" and ( ci or testinfra ) %}
+      fork-per-release-replacements: latest-fast.txt -> latest-{% raw %}{{.Version}}{% endraw %}.txt, ci/fast -> ci
       {%- endif %}
       {%- endif %}
     decorate: true
