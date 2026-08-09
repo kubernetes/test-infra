@@ -27,6 +27,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -55,6 +56,7 @@ var (
 	ErrEnvReplacementResult   = errors.New("expected a single string result replacing env var")
 	ErrEnvReplacementFormat   = errors.New("expected NAME=VALUE format replacing env var")
 	ErrReplacementParse       = errors.New("failed to parse replacement")
+	ErrReplacementUnmatched   = errors.New("replacement matches nothing in the job")
 	ErrImageResolve           = errors.New("image resolution failed")
 )
 
@@ -283,6 +285,13 @@ func generatePostsubmits(
 			job.SkipBranches = nil
 			job.Branches = []string{"release-" + vars.Version}
 
+			if err := verifyReplacements(
+				job.Spec, nil,
+				job.Annotations[replacementAnnotation], postsubmit.Name,
+			); err != nil {
+				return nil, err
+			}
+
 			if err := processContainers(
 				ctx, job.Spec, vars,
 				job.Annotations[replacementAnnotation],
@@ -331,6 +340,13 @@ func generatePresubmits(
 				job.Context = replaceAllMaster(
 					job.Context, "-"+vars.Version,
 				)
+			}
+
+			if err := verifyReplacements(
+				job.Spec, nil,
+				job.Annotations[replacementAnnotation], presubmit.Name,
+			); err != nil {
+				return nil, err
 			}
 
 			if err := processContainers(
@@ -477,6 +493,13 @@ func generatePeriodics(
 			periodic.Annotations[suffixAnnotation] == annotationTrue,
 		)
 
+		if err := verifyReplacements(
+			job.Spec, job.Tags,
+			job.Annotations[replacementAnnotation], periodic.Name,
+		); err != nil {
+			return nil, err
+		}
+
 		if err := processPeriodicContainers(
 			ctx, job.Spec, &conf, job.UtilityConfig, vars,
 			job.Annotations[replacementAnnotation], periodic.Name,
@@ -590,6 +613,68 @@ func performEnvReplacement(
 	}
 
 	return parts[0], parts[1], nil
+}
+
+// replacementKeys returns the search strings of a fork-per-release-replacements
+// annotation. Malformed entries are skipped, because performReplacement reports
+// those with a better message.
+func replacementKeys(replacementStr string) []string {
+	var keys []string
+
+	for entry := range strings.SplitSeq(replacementStr, ", ") {
+		parts := strings.Split(entry, " -> ")
+		if len(parts) == replacementParts {
+			keys = append(keys, parts[0])
+		}
+	}
+
+	return keys
+}
+
+// verifyReplacements reports replacement rules that match nothing in the job.
+// A rule that matches nothing is a stale annotation: the forked job silently
+// keeps the master value the rule was written to rewrite. Call this before the
+// job is processed, so the rules are tested against the strings their author
+// wrote them against.
+func verifyReplacements(
+	spec *v1.PodSpec, tags []string, replacementStr, jobName string,
+) error {
+	if replacementStr == "" {
+		return nil
+	}
+
+	haystack := slices.Clone(tags)
+
+	if spec != nil {
+		for idx := range spec.Containers {
+			container := &spec.Containers[idx]
+			haystack = append(haystack, container.Command...)
+			haystack = append(haystack, container.Args...)
+
+			for _, env := range container.Env {
+				// performEnvReplacement joins the pair before replacing.
+				haystack = append(haystack, env.Name+"="+env.Value)
+			}
+		}
+	}
+
+	var unmatched []string
+
+	for _, key := range replacementKeys(replacementStr) {
+		if !slices.ContainsFunc(haystack, func(straw string) bool {
+			return strings.Contains(straw, key)
+		}) {
+			unmatched = append(unmatched, key)
+		}
+	}
+
+	if len(unmatched) > 0 {
+		return fmt.Errorf(
+			"%s: %w: %q", jobName, ErrReplacementUnmatched, unmatched,
+		)
+	}
+
+	return nil
 }
 
 func performReplacement(
