@@ -18,6 +18,7 @@ package forker
 
 import (
 	"context"
+	"errors"
 	"maps"
 	"reflect"
 	"testing"
@@ -194,6 +195,94 @@ func TestPerformArgReplacements(t *testing.T) {
 
 			if !reflect.DeepEqual(result, test.expected) {
 				t.Errorf("Expected result %v, but got %v instead", test.expected, result)
+			}
+		})
+	}
+}
+
+func TestVerifyReplacements(t *testing.T) {
+	t.Parallel()
+
+	spec := func(cmd, args []string, env ...v1.EnvVar) *v1.PodSpec {
+		return &v1.PodSpec{Containers: []v1.Container{{
+			Command: cmd, Args: args, Env: env,
+		}}}
+	}
+
+	tests := []struct {
+		name         string
+		spec         *v1.PodSpec
+		tags         []string
+		replacements string
+		expectErr    bool
+	}{
+		{
+			name:         "no replacements is fine",
+			spec:         spec(nil, []string{"--foo=bar"}),
+			replacements: "",
+		},
+		{
+			name:         "rule matching an arg is fine",
+			spec:         spec(nil, []string{"--test-package-dir=ci/fast"}),
+			replacements: "ci/fast -> ci",
+		},
+		{
+			name:         "rule matching a command is fine",
+			spec:         spec([]string{"run --marker=latest-fast.txt"}, nil),
+			replacements: "latest-fast.txt -> latest-{{.Version}}.txt",
+		},
+		{
+			name:         "rule matching an env pair is fine",
+			spec:         spec(nil, nil, v1.EnvVar{Name: "MARKER", Value: "latest-fast.txt"}),
+			replacements: "MARKER=latest-fast.txt -> MARKER=latest-{{.Version}}.txt",
+		},
+		{
+			name:         "rule matching a tag is fine",
+			spec:         spec(nil, nil),
+			tags:         []string{"latest-fast.txt"},
+			replacements: "latest-fast.txt -> latest-{{.Version}}.txt",
+		},
+		{
+			// The bug this guard exists for: the job splits the URL across
+			// --test-package-url and --test-package-dir, so a rule written
+			// against the joined URL silently rewrites nothing.
+			name: "rule matching nothing is an error",
+			spec: spec(nil, []string{
+				"--test-package-url=https://dl.k8s.io",
+				"--test-package-dir=ci/fast",
+			}),
+			replacements: "https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci",
+			expectErr:    true,
+		},
+		{
+			name:         "one good rule does not excuse a dead one",
+			spec:         spec(nil, []string{"--marker=latest-fast.txt"}),
+			replacements: "latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci",
+			expectErr:    true,
+		},
+		{
+			name:         "nil spec with a rule is an error",
+			spec:         nil,
+			replacements: "ci/fast -> ci",
+			expectErr:    true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := verifyReplacements(test.spec, test.tags, test.replacements, "some-job")
+			if test.expectErr {
+				if !errors.Is(err, ErrReplacementUnmatched) {
+					t.Fatalf("Expected ErrReplacementUnmatched, but got %v", err)
+				}
+
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
 			}
 		})
 	}
