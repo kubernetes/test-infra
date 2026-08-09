@@ -859,7 +859,7 @@ periodics:
       - --
       - --use-binaries-from-package
       - --test-package-url=https://dl.k8s.io
-      - --test-package-dir=ci/fast
+      - --test-package-dir=ci
       - --test-package-marker=latest-1.37.txt
       - --gcp-zone=us-central1-b
       - --parallelism=1
@@ -915,7 +915,7 @@ periodics:
       - --
       - --use-binaries-from-package
       - --test-package-url=https://dl.k8s.io
-      - --test-package-dir=ci/fast
+      - --test-package-dir=ci
       - --test-package-marker=latest-1.37.txt
       - --gcp-zone=us-central1-b
       - --parallelism=1
@@ -964,7 +964,7 @@ periodics:
       - --
       - --use-binaries-from-package
       - --test-package-url=https://dl.k8s.io
-      - --test-package-dir=ci/fast
+      - --test-package-dir=ci
       - --test-package-marker=latest-1.37.txt
       - --gcp-zone=us-central1-b
       - --parallelism=1
@@ -1016,7 +1016,7 @@ periodics:
       - --
       - --use-binaries-from-package
       - --test-package-url=https://dl.k8s.io
-      - --test-package-dir=ci/fast
+      - --test-package-dir=ci
       - --test-package-marker=latest-1.37.txt
       - --gcp-zone=us-central1-b
       - --parallelism=1
@@ -1068,7 +1068,7 @@ periodics:
       - --
       - --use-binaries-from-package
       - --test-package-url=https://dl.k8s.io
-      - --test-package-dir=ci/fast
+      - --test-package-dir=ci
       - --test-package-marker=latest-1.37.txt
       - --gcp-zone=us-central1-b
       - --parallelism=1
@@ -5454,8 +5454,8 @@ presubmits:
         - --
         - --use-binaries-from-package
         - --test-package-url=https://dl.k8s.io
-        - --test-package-dir=ci/fast
-        - --test-package-marker=latest-fast.txt
+        - --test-package-dir=ci
+        - --test-package-marker=latest-1.37.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
@@ -5505,8 +5505,8 @@ presubmits:
         - --
         - --use-binaries-from-package
         - --test-package-url=https://dl.k8s.io
-        - --test-package-dir=ci/fast
-        - --test-package-marker=latest-fast.txt
+        - --test-package-dir=ci
+        - --test-package-marker=latest-1.37.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
@@ -5549,8 +5549,8 @@ presubmits:
         - --
         - --use-binaries-from-package
         - --test-package-url=https://dl.k8s.io
-        - --test-package-dir=ci/fast
-        - --test-package-marker=latest-fast.txt
+        - --test-package-dir=ci
+        - --test-package-marker=latest-1.37.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
@@ -5597,8 +5597,8 @@ presubmits:
         - --
         - --use-binaries-from-package
         - --test-package-url=https://dl.k8s.io
-        - --test-package-dir=ci/fast
-        - --test-package-marker=latest-fast.txt
+        - --test-package-dir=ci
+        - --test-package-marker=latest-1.37.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
@@ -5645,8 +5645,8 @@ presubmits:
         - --
         - --use-binaries-from-package
         - --test-package-url=https://dl.k8s.io
-        - --test-package-dir=ci/fast
-        - --test-package-marker=latest-fast.txt
+        - --test-package-dir=ci
+        - --test-package-marker=latest-1.37.txt
         - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
