@@ -31,7 +31,7 @@ periodics:
   spec:
     serviceAccountName: prow-build
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-8ed6934dfe-master
       imagePullPolicy: Always
       command:
       - runner.sh

@@ -15,7 +15,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-e16bbc2ef7-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-8ed6934dfe-master
         command:
           - "runner.sh"
           - "./scripts/ci-k8s-e2e-node-test.sh"
@@ -63,7 +63,7 @@ presubmits:
       spec:
         serviceAccountName: azure
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-e16bbc2ef7-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-8ed6934dfe-master
             command:
               - "runner.sh"
               - "./scripts/ci-k8s-e2e-node-test.sh"
@@ -103,7 +103,7 @@ presubmits:
       spec:
         serviceAccountName: azure
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-e16bbc2ef7-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-8ed6934dfe-master
             command:
               - "runner.sh"
               - "./scripts/ci-k8s-e2e-node-test.sh"
