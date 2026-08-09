@@ -17,7 +17,7 @@ periodics:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-e16bbc2ef7-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-8ed6934dfe-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh

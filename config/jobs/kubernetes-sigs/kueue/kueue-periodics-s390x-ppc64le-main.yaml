@@ -23,7 +23,7 @@ periodics:
       pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-e16bbc2ef7-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-8ed6934dfe-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.35"
