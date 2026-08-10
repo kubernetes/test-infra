@@ -54,7 +54,7 @@ periodics:
         value: "e2e-e5b7b461c1-2dc58.tests-kops-aws.k8s.io"
       - name: KOPS_EXTRA_FLAGS
         value: "--networking=cilium --dns=none --api-loadbalancer-type=public"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-8ed6934dfe-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -126,7 +126,7 @@ periodics:
         value: "e2e-4598fd796c-34102.tests-kops-aws.k8s.io"
       - name: KOPS_EXTRA_FLAGS
         value: "--networking=cilium --dns=none --api-loadbalancer-type=public"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-8ed6934dfe-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -195,7 +195,7 @@ periodics:
         value: "e2e-8a27998798-3ab4f.tests-kops-aws.k8s.io"
       - name: KOPS_EXTRA_FLAGS
         value: "--networking=cilium --dns=none --api-loadbalancer-type=public --gce-service-account=default"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-8ed6934dfe-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
       imagePullPolicy: Always
       resources:
         limits:
