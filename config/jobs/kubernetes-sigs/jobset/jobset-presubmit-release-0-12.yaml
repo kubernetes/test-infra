@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-8ed6934dfe-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
@@ -71,7 +71,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-8ed6934dfe-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.34.0
@@ -107,7 +107,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-8ed6934dfe-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.35.0
@@ -143,7 +143,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-8ed6934dfe-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.36.1
@@ -179,7 +179,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-8ed6934dfe-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
         command:
         - runner.sh
         args:
