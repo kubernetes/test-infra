@@ -1630,6 +1630,5 @@ test_groups:
   name: periodic-ci-openshift-release-main-ci-4.15-upgrade-from-stable-4.14-e2e-gcp-ovn-rt-upgrade
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-nightly-4.15-e2e-aws-sdn-upgrade
   name: periodic-ci-openshift-release-main-nightly-4.15-e2e-aws-sdn-upgrade
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.12-to-4.13-to-4.14-to-4.15-ci
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.12-to-4.13-to-4.14-to-4.15-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.12-to-4.13-to-4.14-to-4.15-ci
