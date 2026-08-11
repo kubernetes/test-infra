@@ -548,6 +548,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        aws-fsx-openzfs-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
         cluster-api:
           required_status_checks:
             contexts:
