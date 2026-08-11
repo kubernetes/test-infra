@@ -1323,6 +1323,7 @@ plugins:
     - help
     - hold
     - invalidcommitmsg
+    - issue-management
     - label
     - lgtm
     - lifecycle
@@ -1336,7 +1337,6 @@ plugins:
     - skip
     - slackevents
     - testfreeze
-    - transfer-issue
     - trick-or-treat
     - trigger
     - verify-owners
@@ -1546,6 +1546,7 @@ plugins:
     - help
     - hold
     - invalidcommitmsg
+    - issue-management
     - label
     - lgtm
     - lifecycle
@@ -1556,7 +1557,6 @@ plugins:
     - shrug
     - size
     - skip
-    - transfer-issue
     - trick-or-treat
     - trigger
     - verify-owners
