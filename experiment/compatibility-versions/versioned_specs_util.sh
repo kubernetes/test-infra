@@ -16,13 +16,14 @@
 set -o errexit -o nounset -o pipefail
 
 # get_target_spec takes two arguments: specs_json and emulated_version
-# Returns the highest spec strictly less than or equal to the emulated_version.
+# Returns the highest spec strictly less than or equal to the emulated_version (excluding specs which set minCompatibilityVersion).
 function get_target_spec() {
   local specs_json="$1"
   local emulated_version="$2"
 
   echo "${specs_json}" | jq -r --arg ver "${emulated_version}" '
         [ .[]
+          | select(has("minCompatibilityVersion") | not)
           | select(
               ( .version | sub("^v"; "") | tonumber )
               <=
@@ -34,7 +35,7 @@ function get_target_spec() {
 }
 
 # get_prev_target_spec takes two arguments: specs_json and emulated_version
-# Returns the spec immediately preceding target_spec in the original sorted array.
+# Returns the spec immediately preceding target_spec in the original sorted array (excluding specs which set minCompatibilityVersion).
 function get_prev_target_spec() {
   local specs_json="$1"
   local emulated_version="$2"
@@ -42,6 +43,7 @@ function get_prev_target_spec() {
   echo "${specs_json}" | jq -r --arg ver "${emulated_version}" '
         . as $arr |
         [ range(length)
+          | select($arr[.] | has("minCompatibilityVersion") | not)
           | select(
               ( $arr[.] | .version | sub("^v"; "") | tonumber )
               <=

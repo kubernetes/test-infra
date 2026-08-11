@@ -79,6 +79,25 @@ run_tests() {
     echo "PASS: get_exact_version_spec for non-existent version"
   fi
 
+  local mock_specs='[{"default":false,"preRelease":"Beta","version":"1.37"},{"default":true,"preRelease":"Beta","version":"1.37","minCompatibilityVersion":"1.37"}]'
+  # Test get_target_spec
+  local got
+  got=$(get_target_spec "$mock_specs" "1.37")
+  if [[ "$got" != *'"default": false'* ]]; then
+    echo "FAIL: get_target_spec expected false default considering minCompatibilityVersion, got: $got"
+    failures=$((failures+1))
+  else
+    echo "PASS: get_target_spec considering minCompatibilityVersion"
+  fi
+  # Test get_prev_target_spec
+  got=$(get_prev_target_spec "$mock_specs" "1.37")
+  if [[ "$got" != "null" ]]; then
+    echo "FAIL: get_prev_target_spec (first element) expected null considering minCompatibilityVersion, got: $got"
+    failures=$((failures+1))
+  else
+    echo "PASS: get_prev_target_spec (first element) considering minCompatibilityVersion"
+  fi
+
   if [[ $failures -gt 0 ]]; then
     echo "Tests failed ($failures failures)."
     exit 1
