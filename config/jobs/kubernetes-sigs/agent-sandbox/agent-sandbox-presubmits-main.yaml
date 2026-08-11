@@ -240,10 +240,10 @@ presubmits:
         resources:
           requests:
             cpu: 7
-            memory: 14Gi
+            memory: 27Gi
           limits:
             cpu: 7
-            memory: 14Gi
+            memory: 27Gi
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
       testgrid-tab-name: presubmit-test-e2e-scalability-kwok

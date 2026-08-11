@@ -134,6 +134,15 @@ def presubmit_benchmarks_kops_gcp_claims(job):
     set_run_if_changed(job, r"^extensions/|^cmd/|^controllers/|^internal/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp")  # pylint: disable=line-too-long
 
 
+def presubmit_test_e2e_scalability_kwok(job):
+    optional_presubmit(job)
+    for c in job["spec"]["containers"]:
+        c["resources"] = {
+            "requests": {"cpu": 7, "memory": "27Gi"},
+            "limits": {"cpu": 7, "memory": "27Gi"},
+        }
+
+
 PRESUBMIT_OVERRIDES = {
     "test-autogen-up-to-date": presubmit_test_autogen_up_to_date,
     "test-unit": presubmit_test_unit,
@@ -147,6 +156,7 @@ PRESUBMIT_OVERRIDES = {
     # Not wired up in prow before this generator existed; keep manual until
     # its credential requirements are sorted out.
     "test-skill-eval": manual_presubmit,
+    "test-e2e-scalability-kwok": presubmit_test_e2e_scalability_kwok,
 }
 
 
