@@ -294,6 +294,7 @@ lgtm:
   - kubernetes-sigs/cluster-api-provider-aws
   - kubernetes-sigs/dra-driver-nvidia-gpu
   - kubernetes-sigs/dra-example-driver
+  - kubernetes-sigs/inference-perf
   - kubernetes-sigs/kjob
   - kubernetes-sigs/kueue
   store_tree_hash: true
