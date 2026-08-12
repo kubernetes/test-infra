@@ -124,10 +124,6 @@ prow_ignored:
 
   # Versions provides kubernetes minor version to key-value pairs mapping.
   versions:
-    "1.28":
-      etcd: "3.5.15-0"
-      coreDNS: "v1.10.1"
-      k8sRelease: "stable-1.28"
     "1.29":
       etcd: "3.5.16-0"
       coreDNS: "v1.11.1"
