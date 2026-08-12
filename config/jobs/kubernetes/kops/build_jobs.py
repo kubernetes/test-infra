@@ -922,9 +922,7 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=1,
                    scenario="karpenter",
-                   env = {
-                    "OVERRIDES": "--ipv6 --topology=private --bastion",
-                   },
+                   extra_flags=["--ipv6", "--topology=private", "--bastion"],
                    extra_dashboards=["kops-misc", "kops-ipv6"]),
 
         # [sig-storage, @jsafrane] Test SELinux features, because kops
@@ -2562,9 +2560,7 @@ def generate_presubmits_e2e():
             networking="cilium",
             kops_channel="alpha",
             scenario="karpenter",
-            env = {
-                "OVERRIDES": "--ipv6 --topology=private --bastion",
-            },
+            extra_flags=["--ipv6", "--topology=private", "--bastion"],
         ),
         presubmit_test(
             name="pull-kops-aws-upgrade-k134-ko134-to-k136-kolatest-many-addons",
