@@ -1330,6 +1330,7 @@ plugins:
     - skip
     - slackevents
     - testfreeze
+    - issue-management
     - trick-or-treat
     - trigger
     - verify-owners
@@ -1550,6 +1551,7 @@ plugins:
     - shrug
     - size
     - skip
+    - issue-management
     - trick-or-treat
     - trigger
     - verify-owners

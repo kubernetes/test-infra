@@ -25,7 +25,7 @@ periodics:
         - -c
         - |
           result=0
-          ./scripts/ci-test-coverage.sh || result=$?
+          ./hack/scripts/ci/ci-test-coverage.sh || result=$?
           cp cover.* ${ARTIFACTS}
           cd ../../k8s.io/test-infra/gopherage
           GO111MODULE=on go build .
