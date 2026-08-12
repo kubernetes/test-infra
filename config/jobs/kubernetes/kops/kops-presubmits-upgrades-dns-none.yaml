@@ -49,7 +49,7 @@ presubmits:
           value: "v1.36.1"
         - name: KOPS_SKIP_E2E
           value: "1"
-        - name: KOPS_CONTROL_PLANE_SIZE
+        - name: KOPS_CONTROL_PLANE_COUNT
           value: "3"
         - name: CLOUD_PROVIDER
           value: "aws"
@@ -117,7 +117,7 @@ presubmits:
           value: "v1.36.1"
         - name: KOPS_SKIP_E2E
           value: "1"
-        - name: KOPS_CONTROL_PLANE_SIZE
+        - name: KOPS_CONTROL_PLANE_COUNT
           value: "3"
         - name: CLOUD_PROVIDER
           value: "azure"
@@ -187,7 +187,7 @@ presubmits:
           value: "v1.36.1"
         - name: KOPS_SKIP_E2E
           value: "1"
-        - name: KOPS_CONTROL_PLANE_SIZE
+        - name: KOPS_CONTROL_PLANE_COUNT
           value: "3"
         - name: CLOUD_PROVIDER
           value: "gce"

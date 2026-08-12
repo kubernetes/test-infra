@@ -40,7 +40,7 @@ periodics:
         value: "v1.36.1"
       - name: KOPS_SKIP_E2E
         value: "1"
-      - name: KOPS_CONTROL_PLANE_SIZE
+      - name: KOPS_CONTROL_PLANE_COUNT
         value: "3"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
@@ -116,7 +116,7 @@ periodics:
         value: "v1.36.1"
       - name: KOPS_SKIP_E2E
         value: "1"
-      - name: KOPS_CONTROL_PLANE_SIZE
+      - name: KOPS_CONTROL_PLANE_COUNT
         value: "3"
       - name: CLOUD_PROVIDER
         value: "azure"
@@ -185,7 +185,7 @@ periodics:
         value: "v1.36.1"
       - name: KOPS_SKIP_E2E
         value: "1"
-      - name: KOPS_CONTROL_PLANE_SIZE
+      - name: KOPS_CONTROL_PLANE_COUNT
         value: "3"
       - name: CLOUD_PROVIDER
         value: "gce"
