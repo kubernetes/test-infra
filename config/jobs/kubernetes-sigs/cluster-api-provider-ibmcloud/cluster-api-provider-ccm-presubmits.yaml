@@ -2,7 +2,7 @@ presubmits:
   kubernetes-sigs/cluster-api-provider-ibmcloud:
   - name: pull-cluster-api-provider-ccm-image
     cluster: eks-prow-build-cluster
-    run_if_changed: '^hack/ccm/'
+    run_if_changed: '^hack/release/ccm/'
     branches:
       - ^main$
     decorate: true
@@ -18,7 +18,7 @@ presubmits:
         - bash
         - -c
         - |
-          pushd hack/ccm
+          pushd hack/release/ccm
           make build-image-linux-amd64
           make build-image-linux-ppc64le
           popd
