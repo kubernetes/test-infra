@@ -328,13 +328,13 @@ periodics:
             - test-performance-scheduler
           env:
             - name: GOMAXPROCS
-              value: "5"
+              value: "7"
           resources:
             requests:
-              cpu: "4500m"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "4500m"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-tas-scheduling-perf-release-0-19
@@ -367,13 +367,13 @@ periodics:
             - test-tas-performance-scheduler
           env:
             - name: GOMAXPROCS
-              value: "6"
+              value: "7"
           resources:
             requests:
-              cpu: "5100m"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "5100m"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-large-scale-scheduling-perf-release-0-19
