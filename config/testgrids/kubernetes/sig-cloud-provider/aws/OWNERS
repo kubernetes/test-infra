@@ -1,0 +1,13 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- chrislovecnm
+- justinsb
+approvers:
+- chrislovecnm
+- justinsb
+emeritus_approvers:
+- shyamjvs
+
+labels:
+- area/provider/aws

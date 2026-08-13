@@ -1,0 +1,18 @@
+reviewers:
+  - sig-node-test-reviewers
+  - wangzhen127
+  - Random-Liu
+  - andyxning
+  - dchen1107
+  - mmiranda96
+  - vteratipally
+  - hakman
+approvers:
+  - sig-node-leads
+  - sig-node-test-approvers
+  - wangzhen127
+  - andyxning
+  - vteratipally
+  - hakman
+labels:
+- sig/node

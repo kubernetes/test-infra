@@ -1,0 +1,14 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+# See sigs.k8s.io/cluster-api-provider-openstack/OWNERS_ALIASES
+approvers:
+  - sig-cluster-lifecycle-leads
+  - emilienm
+  - lentzi90
+  - mandre
+  - stephenfin
+
+reviewers:
+  - bnallapeta
+  - smoshiur1237
+  - nikParasyr

@@ -1,0 +1,19 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+  - sig-node-leads
+  - johnbelamaric
+  - pohly
+  - klueska
+  - ffromani
+  - pravk03
+
+reviewers:
+  - johnbelamaric
+  - pohly
+  - klueska
+  - ffromani
+  - pravk03
+
+labels:
+  - sig/node

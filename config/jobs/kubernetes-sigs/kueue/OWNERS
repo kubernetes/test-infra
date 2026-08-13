@@ -1,0 +1,18 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- mimowo
+- tenzen-y
+- kannon92
+- gabesaba
+- mbobrovskyi
+- pbundyra
+- sohankunkerkar
+reviewers:
+- mimowo
+- tenzen-y
+- kannon92
+- gabesaba
+- mbobrovskyi
+- pbundyra
+- sohankunkerkar

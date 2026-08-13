@@ -1,0 +1,45 @@
+---
+storage:
+  files:
+    - path: /etc/containers/storage.conf
+      contents:
+        local: 60-storage-split-disk.conf
+      mode: 0644
+  disks:
+  - device: /dev/disk/by-id/coreos-boot-disk
+    wipe_table: false
+    partitions:
+    - number: 4
+      label: root
+      # Allocate at least 8 GiB to the rootfs. See NOTE above about this.
+      size_mib: 8192
+      resize: true
+    - size_mib: 0
+      label: images
+  filesystems:
+    - path: /var/lib/images
+      device: /dev/disk/by-partlabel/images
+      format: ext4
+      with_mount_unit: true
+systemd:
+  units:
+    - name: label-imagestore.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Label ImageStore
+        After=selinux-install.service
+        Before=crio-install.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=rpm-ostree install \
+          -y \
+          --apply-live \
+          --allow-inactive \
+          policycoreutils-python-utils
+        ExecStart=semanage fcontext -a -e /var/lib/containers/storage /var/lib/images
+        ExecStart=restorecon -R -v /var/lib/images
+
+        [Install]
+        WantedBy=multi-user.target

@@ -1,0 +1,86 @@
+presubmits:
+  kubernetes-sigs/porche:
+  - name: pull-porche-build
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-porche
+      testgrid-tab-name: pull-porche-build
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    spec:
+      containers:
+      - image: golang
+        command:
+        - dev/ci/presubmit-build
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-porche-lint
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-porche
+      testgrid-tab-name: pull-porche-lint
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    spec:
+      containers:
+      - image: golang
+        command:
+        - dev/ci/presubmit-lint
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-porche-test
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-porche
+      testgrid-tab-name: pull-porche-test
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    spec:
+      containers:
+      - image: golang
+        command:
+        - dev/ci/presubmit-test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-porche-verify
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-porche
+      testgrid-tab-name: pull-porche-verify
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    spec:
+      containers:
+      - image: golang
+        command:
+        - dev/ci/presubmit-verify
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi

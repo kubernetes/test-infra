@@ -1,0 +1,151 @@
+# This is the configuration file for cluster-apis prowjob-generator which is located
+# at: https://github.com/kubernetes-sigs/cluster-api/blob/main/hack/tools/prowjob-generator/
+# This configuration is used to generate the presubmits and periodics for cluster-api-provider-vsphere.
+
+# prow_ignored is a well known, unparsed field where non-Prow fields can
+# be defined without conflicting with unknown field validation.
+prow_ignored:
+  # Branch specific configuration: for each configured branch the generator will create two
+  # prowjob configuration files (presubmits, periodics)
+  branches:
+    main:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-1.36"
+      # interval for coverage job
+      interval: "24h"
+      upgrades:
+      - from: "1.31"
+        to: "1.32"
+      - from: "1.32"
+        to: "1.33"
+      - from: "1.33"
+        to: "1.34"
+      - from: "1.34"
+        to: "1.35"
+      - from: "1.35"
+        to: "1.36"
+      - from: "1.36"
+        to: "1.37"
+      other:
+        vmOperator:
+        - version: "8.0"
+          apiVersion: "v1alpha2"
+        - version: "9.1"
+          apiVersion: "v1alpha2"
+        - version: "9.1"
+          apiVersion: "v1alpha5"
+        - version: "9.2"
+          apiVersion: "v1alpha2"
+        - version: "9.2"
+          apiVersion: "v1alpha5"
+        - version: "9.2"
+          apiVersion: "v1alpha6"
+    release-1.17:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-1.36"
+      # interval for coverage job
+      interval: "24h"
+      upgrades:
+        - from: "1.31"
+          to: "1.32"
+        - from: "1.32"
+          to: "1.33"
+        - from: "1.33"
+          to: "1.34"
+        - from: "1.34"
+          to: "1.35"
+        - from: "1.35"
+          to: "1.36"
+        - from: "1.36"
+          to: "1.37"
+      other:
+        vmOperator:
+          - version: "8.0"
+            apiVersion: "v1alpha2"
+          - version: "9.1"
+            apiVersion: "v1alpha2"
+          - version: "9.1"
+            apiVersion: "v1alpha5"
+          - version: "9.2"
+            apiVersion: "v1alpha2"
+          - version: "9.2"
+            apiVersion: "v1alpha5"
+          - version: "9.2"
+            apiVersion: "v1alpha6"
+    release-1.16:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-1.35"
+      # interval for coverage job
+      interval: "24h"
+      upgrades:
+      - from: "1.32"
+        to: "1.33"
+      - from: "1.33"
+        to: "1.34"
+      - from: "1.34"
+        to: "1.35"
+      - from: "1.35"
+        to: "1.36"
+      - from: "1.36"
+        to: "1.37"
+      other:
+        vmOperator:
+        - version: "8.0"
+          apiVersion: "v1alpha2"
+        - version: "9.1"
+          apiVersion: "v1alpha2"
+        # This version is tested by default
+        # - version: "9.1"
+        #   apiVersion: "v1alpha5"
+    release-1.15:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-1.34"
+      # interval for coverage job
+      interval: "24h"
+      upgrades:
+      - from: "1.31"
+        to: "1.32"
+      - from: "1.32"
+        to: "1.33"
+      - from: "1.33"
+        to: "1.34"
+      - from: "1.34"
+        to: "1.35"
+      - from: "1.35"
+        to: "1.36"
+    release-1.14:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260807-e16bbc2ef7-1.33"
+      upgrades:
+      - from: "1.30"
+        to: "1.31"
+      - from: "1.31"
+        to: "1.32"
+      - from: "1.32"
+        to: "1.33"
+      - from: "1.33"
+        to: "1.34"
+
+  # The generator will run each template per branch and use a the name template
+  # to generate the target filename.
+  templates:
+  - name: "cluster-api-provider-vsphere-periodics.yaml.tpl"
+    template: 'cluster-api-provider-vsphere-{{ ReplaceAll .branch "." "-" }}-periodics.yaml'
+  - name: "cluster-api-provider-vsphere-periodics-upgrades.yaml.tpl"
+    template: 'cluster-api-provider-vsphere-{{ ReplaceAll .branch "." "-" }}-periodics-upgrades.yaml'
+  - name: "cluster-api-provider-vsphere-presubmits.yaml.tpl"
+    template: 'cluster-api-provider-vsphere-{{ ReplaceAll .branch "." "-" }}-presubmits.yaml'
+
+  # Versions provides kubernetes minor version to key-value pairs mapping.
+  versions:
+    "1.30":
+      k8sRelease: "stable-1.30"
+    "1.31":
+      k8sRelease: "stable-1.31"
+    "1.32":
+      k8sRelease: "stable-1.32"
+    "1.33":
+      k8sRelease: "stable-1.33"
+    "1.34":
+      k8sRelease: "stable-1.34"
+    "1.35":
+      k8sRelease: "stable-1.35"
+    "1.36":
+      k8sRelease: "stable-1.36"
+    "1.37":
+      k8sRelease: "ci/latest-1.37"

@@ -1,0 +1,20 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- BenTheElder
+- cpanato
+- jeremyrickard
+- justaugustus
+- puerco
+- saschagrunert
+- Verolop
+- xmudrii
+approvers:
+- BenTheElder
+- cpanato
+- justaugustus
+- xmudrii
+emeritus_approvers:
+- amwat
+- spiffxp
+- MushuEE

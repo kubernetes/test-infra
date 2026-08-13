@@ -1,0 +1,122 @@
+presubmits:
+  kubernetes/k8s.io:
+    - name: pull-k8sio-groups
+      cluster: eks-prow-build-cluster
+      annotations:
+        testgrid-create-test-group: "true"
+        testgrid-dashboards: sig-k8s-infra-groups
+      decorate: true
+      path_alias: k8s.io/k8s.io
+      run_if_changed: "^groups/"
+      branches:
+        - ^main$
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - -C
+              - ./groups
+              - test
+            resources:
+              limits:
+                cpu: 1
+                memory: "1Gi"
+              requests:
+                cpu: 1
+                memory: "1Gi"
+            env:
+              - name: GO111MODULE
+                value: "on"
+    - name: pull-k8sio-verify
+      cluster: k8s-infra-prow-build
+      annotations:
+        testgrid-dashboards: sig-k8s-infra-k8sio
+        testgrid-tab-name: pull-k8sio-verify
+      always_run: true
+      decorate: true
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+            command:
+              - ./hack/verify.sh
+            resources:
+              limits:
+                cpu: 1
+                memory: "512Mi"
+              requests:
+                cpu: 1
+                memory: "512Mi"
+    - name: pull-k8sio-dns-validate-config
+      cluster: eks-prow-build-cluster
+      run_if_changed: "^dns/"
+      annotations:
+        testgrid-dashboards: sig-k8s-infra-k8sio
+        testgrid-tab-name: pull-k8sio-dns-validate-config
+      decorate: true
+      spec:
+        containers:
+          - image: registry.k8s.io/infra-tools/octodns:v20220319-97d14a558
+            command:
+              - bash
+            args:
+              - -c
+              - "cd dns && make validate-config"
+            resources:
+              limits:
+                cpu: 1
+                memory: "512Mi"
+              requests:
+                cpu: 1
+                memory: "512Mi"
+    - name: pull-k8sio-argocd-diff
+      cluster: k8s-infra-prow-build
+      run_if_changed: "^kubernetes/"
+      annotations:
+        testgrid-dashboards: sig-k8s-infra-k8sio
+      labels:
+        preset-dind-enabled: "true"
+      decorate: true
+      path_alias: k8s.io/k8s.io
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                git clone --depth 1 https://github.com/kubernetes/k8s.io /tmp/base-branch
+                kind create cluster
+                helm repo add argo https://argoproj.github.io/argo-helm
+                helm upgrade --install argocd argo/argo-cd --version 10.1.2 --create-namespace --namespace argocd-diff-preview \
+                  --set configs.cm."kustomize\.buildOptions"="--load-restrictor LoadRestrictionsNone --enable-alpha-plugins"
+                kubectl apply -n argocd-diff-preview -f kubernetes/gke-utility/argocd/clusters.yaml || true # ignore errors from missing ES
+                kubectl apply -n argocd-diff-preview -f kubernetes/gke-utility/argocd/clusters-diff.yaml # ES based clusters
+
+                docker run \
+                  --network=host \
+                  -v ~/.kube:/root/.kube \
+                  -v /var/run/docker.sock:/var/run/docker.sock \
+                  -v /tmp/base-branch:/base-branch \
+                  -v $(pwd):/target-branch \
+                  -v $(ARTIFACTS):/output \
+                  -e TARGET_BRANCH=$PULL_PULL_SHA \
+                  -e REPO=$REPO_OWNER/$REPO_NAME \
+                  dagandersen/argocd-diff-preview:v0.2.11 \
+                  --argocd-namespace=argocd-diff-preview \
+                  --create-cluster=false
+
+                echo "Successfully generated argocd diff preview at https://storage.googleapis.com/kubernetes-ci-logs/pr-logs/pull/k8s.io/$PULL_NUMBER/pull-k8sio-argocd-diff/$BUILD_ID/artifacts/diff.html"
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 2
+                memory: 6Gi
+              requests:
+                cpu: 2
+                memory: 6Gi

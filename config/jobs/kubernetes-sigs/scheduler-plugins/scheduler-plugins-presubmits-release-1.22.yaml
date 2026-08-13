@@ -1,0 +1,87 @@
+# sigs.k8s.io/scheduler-plugins presubmits
+presubmits:
+  kubernetes-sigs/scheduler-plugins:
+  - name: pull-scheduler-plugins-verify-gofmt-release-1-22
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/scheduler-plugins
+    branches:
+    - ^release-1.22$
+    always_run: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.16.7
+        command:
+        - make
+        args:
+        - verify
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-scheduler-plugins-verify-build-release-1-22
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/scheduler-plugins
+    branches:
+    - ^release-1.22$
+    always_run: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.16.7
+        command:
+        - make
+        args:
+        - build
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-scheduler-plugins-unit-test-release-1-22
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/scheduler-plugins
+    branches:
+    - ^release-1.22$
+    always_run: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.16.7
+        command:
+        - make
+        args:
+        - unit-test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-scheduler-plugins-integration-test-release-1-22
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/scheduler-plugins
+    branches:
+    - ^release-1.22$
+    always_run: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.16.7
+        command:
+        - make
+        args:
+        - integration-test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi

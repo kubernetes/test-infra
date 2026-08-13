@@ -1,0 +1,13 @@
+#
+# Start dashboards
+#
+dashboards:
+- name: google-gce
+
+#
+# Start dashboard groups
+#
+dashboard_groups:
+- name: google
+  dashboard_names:
+  - google-gce

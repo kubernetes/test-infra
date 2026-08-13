@@ -1,0 +1,40 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- baludontu
+- divyenpatel
+- imkin
+- frapposelli
+- dougm
+- figo
+- akutz
+- yastij
+- lubronzhan
+- HanFa
+- XudongLiuHarold
+- DanielXiao
+- chenlin07
+- zhanggbj
+- silvery1622
+approvers:
+- baludontu
+- divyenpatel
+- imkin
+- frapposelli
+- dougm
+- figo
+- akutz
+- yastij
+- lubronzhan
+- HanFa
+- XudongLiuHarold
+- DanielXiao
+- chenlin07
+- zhanggbj
+- silvery1622
+emeritus_approvers:
+- abrarshivani
+- kerneltime
+labels:
+- sig/cloud-provider
+- area/provider/vmware

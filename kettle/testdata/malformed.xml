@@ -1,0 +1,10 @@
+<!-- This was taken fromhttps://prow.k8s.io/view/gs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-network-proxy-grpc/1307184419391410176 -->
+<?xml version="1.0" encoding="UTF-8"?>
+  <testsuite name="Kubernetes e2e suite" tests="36" failures="0" errors="0" time="3136.105">
+      <testcase name="[sig-storage] In-tree Volumes [Driver: nfs] [Testpattern: Dynamic PV (block volmode)] multiVolume [Slow] should access to two volumes with different volume mode and retain data across pod recreation on the same node" classname="Kubernetes e2e suite" time="0">
+          <skipped></skipped>
+      </testcase>
+      <testcase name="[sig-storage] In-tree Volumes [Driver: local][LocalVolumeType: dir] [Testpattern: Dynamic PV (ntfs)][sig-windows] subPath should fail if subpath file is outside the volume [Slow][LinuxOnly]" classname="Kubernetes e2e suite" time="0">
+          <skipped></skipped>
+      </testcase>
+<testcase name="[sig-storage] In-tree Volumes [Driver: gluster] [Testpattern: Pre-provisioned PV (filesystem volmode)] volumeMode should fail to use a volume in a pod with mismatched mode [Slow⏎

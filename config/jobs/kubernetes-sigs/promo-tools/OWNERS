@@ -1,0 +1,14 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- release-engineering-approvers
+- promo-tools-approvers
+
+reviewers:
+- release-engineering-reviewers
+- promo-tools-reviewers
+
+labels:
+- sig/release
+- area/release-eng
+- area/artifacts

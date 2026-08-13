@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+  - sig-node-test-reviewers
+approvers:
+  - sig-node-leads
+  - sig-node-test-approvers
+  - samuelkarp
+labels:
+  - sig/node

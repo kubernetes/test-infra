@@ -1,0 +1,114 @@
+# Copyright 2019 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Includes tools used for sigs.k8s.io/kind CI
+# NOTE: we attempt to avoid unnecessary tools and image layers while
+# supporting kubernetes builds, kind installation, etc.
+
+FROM debian:bookworm
+ARG TARGETARCH
+
+# arg that specifies the image name (for debugging)
+ARG IMAGE_ARG
+
+# Overrides the Go version to install.
+# Unset GO_VERSION means we will respect .go-version in the kubernetes repo
+# based on K8S_BRANCH.
+ARG GO_VERSION
+# which Kubernetes branch we're building for
+ARG K8S_BRANCH=master
+
+# add envs:
+# - so we can debug with the image name:tag
+# - adding gsutil etc. to path (where we will install them)
+# - disabling prompts when installing gsutil etc.
+# - hinting that we are in a docker container
+ENV KRTE_IMAGE=${IMAGE_ARG} \
+    GOPATH=/home/prow/go \
+    PATH=/home/prow/go/bin:/usr/local/go/bin:/google-cloud-sdk/bin:${PATH} \
+    CLOUDSDK_CORE_DISABLE_PROMPTS=1 \
+    CONTAINER=docker
+
+# copy in image utility scripts
+COPY wrapper.sh /usr/local/bin/
+
+# Install tools needed to:
+# - install docker
+# - build kind
+# - build kubernetes
+#
+# TODO: the `sed` is a bit of a hack, look into alternatives.
+# Why this exists: `docker service start` on debian runs a `cgroupfs_mount` method,
+# We're already inside docker though so we can be sure these are already mounted.
+# Trying to remount these makes for a very noisy error block in the beginning of
+# the pod logs, so we just comment out the call to it... :shrug:
+RUN echo "Installing Packages ..." \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends \
+            apt-transport-https \
+            build-essential \
+            ca-certificates \
+            curl \
+            file \
+            git \
+            gnupg2 \
+            iproute2 \
+            kmod \
+            lsb-release \
+            mercurial \
+            pkg-config \
+            procps \
+            python3 \
+            rsync \
+            software-properties-common \
+            unzip \
+        && rm -rf /var/lib/apt/lists/* \
+    && echo "Installing Go ..." \
+        && if [ -z "${GO_VERSION}" ]; then \
+            GO_VERSION=$(curl --retry 6 --retry-connrefused -fsSL "https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/${K8S_BRANCH}/.go-version"); \
+        fi \
+        && export GO_TARBALL="go${GO_VERSION}.linux-${TARGETARCH}.tar.gz" \
+        && curl -fsSL "https://go.dev/dl/${GO_TARBALL}" --output "${GO_TARBALL}" \
+        && tar xzf "${GO_TARBALL}" -C /usr/local \
+        && rm "${GO_TARBALL}"\
+        && mkdir -p "${GOPATH}/bin" \
+    && echo "Installing gcloud SDK, kubectl ..." \
+        && curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz --output google-cloud-sdk.tar.gz \
+        && tar xzf google-cloud-sdk.tar.gz -C / \
+        && rm google-cloud-sdk.tar.gz \
+        && /google-cloud-sdk/install.sh \
+            --disable-installation-options \
+            --bash-completion=false \
+            --path-update=false \
+            --usage-reporting=false \
+        && gcloud components install kubectl \
+    && echo "Installing Docker ..." \
+        && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+        && chmod a+r /etc/apt/keyrings/docker.gpg \
+        && echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+            "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+            tee /etc/apt/sources.list.d/docker.list > /dev/null \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends docker-ce docker-buildx-plugin \
+        && rm -rf /var/lib/apt/lists/* \
+        && sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
+        && sed -i 's/ulimit -Hn/# ulimit -Hn/g' /etc/init.d/docker \
+    && echo "Ensuring Legacy Iptables ..." \
+        && update-alternatives --set iptables /usr/sbin/iptables-legacy \
+        && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+
+# entrypoint is our wrapper script, in Prow you will need to explicitly re-specify this
+ENTRYPOINT ["wrapper.sh"]
+# volume for docker in docker, use an emptyDir in Prow
+VOLUME ["/var/lib/docker"]

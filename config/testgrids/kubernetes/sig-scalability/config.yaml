@@ -1,0 +1,33 @@
+test_groups:
+- name: ci-kubernetes-e2e-gce-scale-performance-5000-experimental
+  gcs_prefix: kubernetes-ci-logs/logs/ci-kubernetes-e2e-gce-scale-performance-5000-experimental
+  column_header:
+  - configuration_value: Commit
+  - configuration_value: variant
+- name: pull-kubernetes-gce-master-scale-performance-5000-experimental
+  gcs_prefix: kubernetes-ci-logs/pr-logs/directory/pull-kubernetes-gce-master-scale-performance-5000-experimental
+  column_header:
+  - configuration_value: Commit
+  - configuration_value: variant
+
+dashboard_groups:
+- name: sig-scalability
+  dashboard_names:
+    - sig-scalability-aws
+    - sig-scalability-azure
+    - sig-scalability-dra
+    - sig-scalability-gce
+    - sig-scalability-node
+    - sig-scalability-perf-tests
+    - sig-scalability-benchmarks
+    - sig-scalability-golang
+
+dashboards:
+- name: sig-scalability-aws
+- name: sig-scalability-azure
+- name: sig-scalability-dra
+- name: sig-scalability-gce
+- name: sig-scalability-node
+- name: sig-scalability-perf-tests
+- name: sig-scalability-benchmarks
+- name: sig-scalability-golang

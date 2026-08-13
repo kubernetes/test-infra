@@ -1,0 +1,9 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+  - ahg-g
+  - andreyvelich
+  - GiuseppeTT
+  - kannon92
+emeritus_approvers:
+  - danielvegamyhre  # 2026-01-16

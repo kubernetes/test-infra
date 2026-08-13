@@ -1,0 +1,160 @@
+postsubmits:
+  kubernetes-sigs/kind:
+    - name: post-kind-push-binaries
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-kind, sig-k8s-infra-gcb
+        testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kind
+              - --scratch-bucket=gs://k8s-staging-kind-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - hack/ci/push-latest-cli/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers
+    - name: post-kind-push-base-image
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '(^images/base)|(^images/Makefile)|(^.go-version)'
+      annotations:
+        testgrid-dashboards: sig-testing-kind, sig-k8s-infra-gcb
+        testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kind
+              - --scratch-bucket=gs://k8s-staging-kind-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - images/base/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers
+    - name: post-kind-push-kindnetd-image
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '(^images/kindnetd)|(^images/Makefile)|(^.go-version)'
+      annotations:
+        testgrid-dashboards: sig-testing-kind, sig-k8s-infra-gcb
+        testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kind
+              - --scratch-bucket=gs://k8s-staging-kind-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - images/kindnetd/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers
+    - name: post-kind-push-local-path-provisioner-image
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '(^images/local-path-provisioner)|(^images/Makefile)|(^.go-version)'
+      annotations:
+        testgrid-dashboards: sig-testing-kind, sig-k8s-infra-gcb
+        testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kind
+              - --scratch-bucket=gs://k8s-staging-kind-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - images/local-path-provisioner/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers
+    - name: post-kind-push-local-path-helper-image
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '(^images/local-path-helper)|(^images/Makefile)'
+      annotations:
+        testgrid-dashboards: sig-testing-kind, sig-k8s-infra-gcb
+        testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kind
+              - --scratch-bucket=gs://k8s-staging-kind-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - images/local-path-helper/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers

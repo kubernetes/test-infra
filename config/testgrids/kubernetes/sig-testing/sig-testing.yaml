@@ -1,0 +1,44 @@
+# Test Groups
+
+test_groups:
+- name: ci-kubernetes-coverage-unit
+  gcs_prefix: kubernetes-ci-logs/logs/ci-kubernetes-coverage-unit
+  short_text_metric: coverage
+
+# Dashboard Group
+
+dashboard_groups:
+- name: sig-testing
+  dashboard_names:
+  - sig-testing-prow-repo
+  - sig-testing-boskos
+  - sig-testing-canaries
+  - sig-testing-e2e-framework
+  - sig-testing-images
+  - sig-testing-image-pushes
+  - sig-testing-kind
+  - sig-testing-kubetest2
+  - sig-testing-maintenance
+  - sig-testing-misc
+  - sig-testing-prow
+  - sig-testing-testgrid
+
+# Dashboards
+
+dashboards:
+- name: sig-testing-prow-repo
+- name: sig-testing-boskos
+- name: sig-testing-canaries
+  dashboard_tab:
+  - name: ci-kubernetes-coverage-unit
+    test_group_name: ci-kubernetes-coverage-unit
+    base_options: "exclude-filter-by-regex=Overall$&group-by-directory=&expand-groups=&sort-by-name="
+- name: sig-testing-e2e-framework
+- name: sig-testing-images
+- name: sig-testing-image-pushes
+- name: sig-testing-kind
+- name: sig-testing-kubetest2
+- name: sig-testing-maintenance
+- name: sig-testing-misc
+- name: sig-testing-prow
+- name: sig-testing-testgrid

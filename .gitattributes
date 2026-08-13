@@ -1,0 +1,2 @@
+# Mark protoc-generated code as generated so they don't clutter PRs
+prow/gangway/*.pb.go linguist-generated=true

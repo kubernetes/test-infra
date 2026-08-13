@@ -1,0 +1,73 @@
+periodics:
+- name: periodic-sync-enhancements-github-project-1-37
+  # temporarily disable job by with an impossible cron date instead of deleting it
+  cron: '0 0 31 2 *'
+  # interval: 6h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-create-test-group: "true"
+    testgrid-dashboards: sig-release-release-team-periodics
+    description: Periodically syncs the opted-in k/enhancements issues on the Enhancements Tracking GitHub Beta Project Board
+  extra_refs:
+  - org: kubernetes
+    repo: sig-release
+    base_ref: master
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+      command:
+      - runner.sh
+      args:
+      - ./release-team/hack/sync-enhancements-github-project-beta.sh
+      resources:
+        requests:
+          cpu: 1
+          memory: 2Gi
+        limits:
+          cpu: 1
+          memory: 2Gi
+      env:
+        - name: GITHUB_PROJECT_BETA_NUMBER
+          value: "264"
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: k8s-release-enhancements-triage-github-token
+              key: token
+- name: periodic-sync-bug-triage-github-project-beta-1-36
+  interval: 3h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-create-test-group: "true"
+    testgrid-dashboards: sig-release-release-team-periodics
+    description: Periodically syncs the opted-in k/k issues on the Bug Triage Tracking GitHub Beta Project Board
+  extra_refs:
+  - org: kubernetes
+    repo: sig-release
+    base_ref: master
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+      command:
+      - runner.sh
+      args:
+      - ./release-team/hack/sync-bug-triage-github-project-beta.sh
+      resources:
+        requests:
+          cpu: 1
+          memory: 2Gi
+        limits:
+          cpu: 1
+          memory: 2Gi
+      env:
+        - name: PROJECT_NUMBER
+          value: "80"
+        - name: MILESTONE
+          value: "v1.36"
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: k8s-release-bug-triage-github-token
+              key: token

@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- Amulyam24
+- mkumatag
+- Prajyot-Parab
+approvers:
+- Amulyam24
+- mkumatag
+- Prajyot-Parab

@@ -1,0 +1,7 @@
+---
+storage:
+  files:
+    - path: /etc/crio/crio.conf.d/40-evented-pleg.conf
+      contents:
+        local: 40-evented-pleg.conf
+      mode: 0644

@@ -1,0 +1,33 @@
+postsubmits:
+  kubernetes-sigs/cloud-provider-kind:
+    - name: post-cloud-provider-kind-image
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-kind, sig-k8s-infra-gcb
+        testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers

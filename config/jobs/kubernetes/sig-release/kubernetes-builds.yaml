@@ -1,0 +1,144 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-cross
+    optional: true
+    always_run: false
+    run_if_changed: '(^.go-version)|(^build/build-image/)|(^hack/lib/golang.sh)|(^build/common.sh)'
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - release
+        - KUBE_RELEASE_RUN_TESTS=n
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7
+            memory: "25Gi"
+          requests:
+            cpu: 7
+            memory: "25Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
+
+periodics:
+- name: ci-kubernetes-build
+  interval: 1h
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+  labels:
+    preset-dind-enabled: "true"
+  spec:
+    serviceAccountName: prow-build
+    nodeSelector:
+      node.kubernetes.io/instance-type: c4d-standard-16-lssd
+    tolerations:
+      - key: build
+        operator: Exists
+    containers:
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+      imagePullPolicy: Always
+      command:
+      - wrapper.sh
+      - /krel
+      - ci-build
+      - --configure-docker
+      - --allow-dup=false
+      - --bucket=k8s-release-dev
+      - --registry=gcr.io/k8s-staging-ci-images
+      env:
+        - name: FASTLY_SERVICE_NAME
+          value: dl.k8s.io
+        - name: FASTLY_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: fastly-purge-token
+              key: token
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 15
+          memory: 50Gi
+        requests:
+          cpu: 15
+          memory: 50Gi
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+  annotations:
+    fork-per-release: "true"
+    # No replacements. "k8s-master" stopped matching when b7f6021f2a dropped
+    # --extra-version-markers, and "latest-default" names the image tag, which
+    # this annotation does not rewrite. To give the newest release branch the
+    # k8s-beta marker again, put the arg back first.
+    testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
+    testgrid-tab-name: build-master
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
+
+- interval: 5m
+  name: ci-kubernetes-build-fast
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+  labels:
+    preset-dind-enabled: "true"
+  spec:
+    serviceAccountName: prow-build
+    containers:
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+      imagePullPolicy: Always
+      command:
+      - wrapper.sh
+      - /krel
+      - ci-build
+      - --configure-docker
+      - --allow-dup=false
+      - --fast
+      - --bucket=k8s-release-dev
+      # docker-in-docker needs privileged mode
+      env:
+        - name: FASTLY_SERVICE_NAME
+          value: dl.k8s.io
+        - name: FASTLY_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: fastly-purge-token
+              key: token
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 7
+          memory: "12Gi"
+        requests:
+          cpu: 7
+          memory: "12Gi"
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+  annotations:
+    testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
+    testgrid-tab-name: build-master-fast
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
+    description: 'Ends up running: make quick-release'

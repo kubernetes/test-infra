@@ -1,0 +1,13 @@
+steps:
+- name: golang:1.21
+  entrypoint: /bin/bash
+  args:
+  - -c
+  - |
+    echo "$_GIT_TAG should match the tag in push-misc-images"
+    go install github.com/google/ko@latest
+    make push-misc-images REGISTRY=gcr.io/$PROJECT_ID
+substitutions:
+  _GIT_TAG: '12345'
+options:
+  machineType: E2_HIGHCPU_32

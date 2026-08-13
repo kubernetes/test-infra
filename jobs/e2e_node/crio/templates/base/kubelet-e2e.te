@@ -1,0 +1,21 @@
+
+module kubelet-e2e 1.0;
+
+require {
+        type iptables_t;
+        type cgroup_t;
+        type user_tmp_t;
+        type init_t;
+        type container_t;
+        class dir { ioctl create open write };
+        class file { append create lock map open read rename unlink write };
+}
+
+#============= init_t ==============
+allow init_t user_tmp_t:file { append create lock map open read rename unlink write };
+
+#============= container_t ==============
+allow container_t user_tmp_t:dir { create open write };
+
+#============= iptables_t ==============
+allow iptables_t cgroup_t:dir ioctl;

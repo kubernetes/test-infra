@@ -1,0 +1,99 @@
+postsubmits:
+  kubernetes-sigs/provider-ibmcloud-test-infra:
+  - name: post-provider-ibmcloud-test-infra-kubetest2-tf-build-push
+    cluster: k8s-infra-ppc64le-prow-build
+    decorate: true
+    branches:
+    - ^main$
+    run_if_changed: 'kubetest2-tf'
+    annotations:
+      testgrid-dashboards: ibm-ppc64le-postsubmits
+      testgrid-tab-name: post-provider-ibmcloud-test-infra-kubetest2-tf-build-push
+      description: Build and push kubetest2-tf binary when repo provider-ibmcloud-test-infra has merge to main
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          set -o xtrace
+
+          echo "Building kubetest2-tf deployer..."
+          make build-deployer-tf
+
+          echo "Pushing kubetest2-tf binary to IBM Cloud COS..."
+          cd kubetest2-tf
+          make push-to-cos WHAT=kubetest2-tf \
+            COS_SERVICE_CREDENTIALS_PATH=/etc/secret/service-credentials
+          echo "Build and push completed successfully!"
+        volumeMounts:
+        - name: service-credentials
+          mountPath: /etc/secret
+          readOnly: true
+        resources:
+          requests:
+            cpu: 1
+            memory: 4Gi
+          limits:
+            cpu: 1
+            memory: 4Gi
+      volumes:
+      - name: service-credentials
+        secret:
+          secretName: k8s-ppc-artifacts-svc-creds
+
+  - name: post-provider-ibmcloud-test-infra-terraform-plugins-build-push
+    cluster: k8s-infra-ppc64le-prow-build
+    decorate: true
+    branches:
+    - ^main$
+    run_if_changed: '^kubetest2-tf/hack/terraform_versions\.env$'
+    annotations:
+      testgrid-dashboards: ibm-ppc64le-postsubmits
+      testgrid-tab-name: post-provider-ibmcloud-test-infra-terraform-plugins-build-push
+      description: Build and push Terraform binary and plugins tarball to IBM Cloud COS when terraform_versions.env changes
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          set -o xtrace
+
+          cd kubetest2-tf
+
+          echo "Building Terraform binary and plugins tarball..."
+          make generate-tar-tf-plugins
+
+          echo "Pushing the Terraform and Terraform plugins binary to IBM Cloud COS..."
+          make push-to-cos \
+            WHAT="terraform terraform-plugins-linux-ppc64le.tar.gz" \
+            COS_SERVICE_CREDENTIALS_PATH="/etc/secret/service-credentials"
+          echo "Terraform binaries and plugins build/push completed successfully!"
+        volumeMounts:
+        - name: service-credentials
+          mountPath: /etc/secret
+          readOnly: true
+        resources:
+          requests:
+            cpu: 1
+            memory: 4Gi
+          limits:
+            cpu: 1
+            memory: 4Gi
+      volumes:
+      - name: service-credentials
+        secret:
+          secretName: k8s-ppc-artifacts-svc-creds

@@ -1,0 +1,30 @@
+service: github
+runtime: python27
+api_version: 1
+threadsafe: yes
+instance_class: F2
+
+inbound_services:
+- warmup
+
+handlers:
+- url: /_ah/warmup
+  script: main.app
+  login: admin
+- url: /digest
+  script: admin.app
+- url: /admin.*
+  script: admin.app
+  login: admin
+- url: /sync
+  script: periodic_sync.app
+  login: admin
+- url: .*
+  script: main.app
+
+libraries:
+- name: webapp2
+  version: "latest"
+
+builtins:
+- deferred: on

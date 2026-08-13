@@ -1,0 +1,28 @@
+dashboard_groups:
+- name: sig-instrumentation
+  dashboard_names:
+  - sig-instrumentation-tests
+  - sig-instrumentation-presubmits
+  - sig-instrumentation-image-pushes
+  - sig-instrumentation-metrics-server
+  - sig-instrumentation-custom-metrics-apiserver
+  - sig-instrumentation-prometheus-adapter
+  - sig-instrumentation-usage-metrics-collector
+
+dashboards:
+- name: sig-instrumentation-tests
+  dashboard_tab:
+    - name: gci-gce
+      test_group_name: ci-kubernetes-e2e-gci-gce
+      base_options: include-filter-by-regex=sig-instrumentation
+      description: instrumentation gce e2e tests for master branch
+    - name: gci-gce-serial
+      test_group_name: ci-kubernetes-e2e-gci-gce-serial
+      base_options: include-filter-by-regex=sig-instrumentation
+      description: instrumentation gce serial e2e tests for master branch
+- name: sig-instrumentation-presubmits
+- name: sig-instrumentation-image-pushes
+- name: sig-instrumentation-metrics-server
+- name: sig-instrumentation-custom-metrics-apiserver
+- name: sig-instrumentation-prometheus-adapter
+- name: sig-instrumentation-usage-metrics-collector

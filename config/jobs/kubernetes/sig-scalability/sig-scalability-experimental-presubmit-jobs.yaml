@@ -1,0 +1,244 @@
+# Experimental presubmit jobs for sig-scalability.
+# These are not release-blocking and are intentionally separated from the
+# official presubmits in sig-scalability-presubmit-jobs.yaml. Stability and
+# lifecycle differ: jobs here may change or be removed at any time, and the
+# rules for adding/changing them are looser than for the official set.
+presubmits:
+  kubernetes/kubernetes:
+  # Currently testing RangeStream.
+  - name: pull-kubernetes-gce-master-scale-performance-100-experimental
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    branches:
+    - master
+    - main
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-kops-scalability-common: "true"
+      preset-kops-scalability-gce-common: "true"
+      preset-kops-scalability-gce-100-node: "true"
+      preset-kops-scalability-gce-experimental: "true"
+    decoration_config:
+      timeout: 100m
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-gce-master-scale-performance-100-experimental
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_FEATURE_GATES
+          value: "+EtcdRangeStream"
+        resources:
+          requests:
+            cpu: 5
+            memory: 16Gi
+          limits:
+            cpu: 5
+            memory: 16Gi
+
+  - name: pull-kubernetes-e2e-gce-watch-list-off-benchmark
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    branches:
+    - master
+    - main
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 120m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-scalability-common: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    annotations:
+      testgrid-dashboards: sig-scalability-benchmarks
+      testgrid-tab-name: gce-watch-list-off-benchmark
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --check-leaked-resources
+        - --env=CL2_ENABLE_WATCH_LIST_FEATURE=false
+        - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1
+        - --env=KUBE_GCE_PRIVATE_CLUSTER=false
+        - --gcp-node-image=gci
+        - --gcp-master-size=n2-standard-32
+        - --gcp-node-size=e2-standard-16
+        - --gcp-nodes=1
+        - --gcp-project-type=scalability-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=1
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
+        - --test-cmd-args=--testconfig=testing/watch-list/config.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=60m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+        resources:
+          requests:
+            cpu: 2
+            memory: "8Gi"
+          limits:
+            cpu: 2
+            memory: "8Gi"
+        securityContext:
+          privileged: true
+
+  - name: pull-kubernetes-e2e-gce-watch-list-benchmark
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    branches:
+    - master
+    - main
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 120m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-scalability-common: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    annotations:
+      testgrid-dashboards: sig-scalability-benchmarks
+      testgrid-tab-name: gce-watch-list-benchmark
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --check-leaked-resources
+        - --env=CL2_ENABLE_WATCH_LIST_FEATURE=true
+        - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1
+        - --env=KUBE_GCE_PRIVATE_CLUSTER=false
+        - --gcp-node-image=gci
+        - --gcp-master-size=n2-standard-32
+        - --gcp-node-size=e2-standard-16
+        - --gcp-nodes=1
+        - --gcp-project-type=scalability-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=1
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
+        - --test-cmd-args=--testconfig=testing/watch-list/config.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=60m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+        resources:
+          requests:
+            cpu: 2
+            memory: "8Gi"
+          limits:
+            cpu: 2
+            memory: "8Gi"
+        securityContext:
+          privileged: true
+
+  # Presubmit mirror of ci-kubernetes-e2e-gce-scale-performance-5000-experimental.
+  - name: pull-kubernetes-gce-master-scale-performance-5000-experimental
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    branches:
+    - master
+    - main
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-kops-scalability-common: "true"
+      preset-kops-scalability-gce-common: "true"
+      preset-kops-scalability-gce-5000-node: "true"
+      preset-kops-scalability-gce-experimental: "true"
+    job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
+    decoration_config:
+      timeout: 450m
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability, sig-scalability-gce
+      testgrid-tab-name: pull-kubernetes-gce-master-scale-performance-5000-experimental
+    spec:
+      serviceAccountName: prow-build
+      tolerations:
+        - key: highmem
+          operator: Exists
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7
+            memory: "40Gi"
+          limits:
+            cpu: 7
+            memory: "40Gi"

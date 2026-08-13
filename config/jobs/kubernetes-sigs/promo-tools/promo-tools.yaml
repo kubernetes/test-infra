@@ -1,0 +1,91 @@
+presubmits:
+  kubernetes-sigs/promo-tools:
+  - name: pull-cip-image-cip
+    cluster: k8s-infra-prow-build
+    decorate: true
+    path_alias: "sigs.k8s.io/promo-tools"
+    skip_report: false
+    always_run: true
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --env-passthrough=PULL_BASE_REF
+            - .
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: cip-image-cip
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  # Build all binaries and also run unit tests.
+  - name: pull-cip-unit-tests
+    decorate: true
+    path_alias: "sigs.k8s.io/promo-tools"
+    skip_report: false
+    always_run: true
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - "make"
+        args:
+        - "test-ci"
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-num-columns-recent: '30'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+  # Run linter.
+  - name: pull-cip-verify
+    decorate: true
+    path_alias: "sigs.k8s.io/promo-tools"
+    skip_report: false
+    always_run: true
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.26-trixie
+        imagePullPolicy: Always
+        command:
+        - make
+        - verify
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-num-columns-recent: '30'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io

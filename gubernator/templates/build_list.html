@@ -1,0 +1,45 @@
+% extends 'base.html'
+{% block title %}{{job}}{% endblock %}
+% block header
+<h1><a href="/jobs{{job_dir|dirname|dirname}}">{{job_dir|dirname|dirname}}</a>/{{job}}</h1>
+% endblock
+% block content
+<div id="content">
+% if testgrid_query
+<a href="{{testgrid_query | tg_url}}"><h3>Testgrid History for Job</h3></a>
+% endif
+<a href="{{job_dir | gcs_browse_url}}">GCS Storage Browser</a><br>
+% if '/pull/' in job_dir and 'directory' not in job_dir
+<a href="/builds/{{dir_link}}">Recent Runs Across PRs</a><br>
+% endif
+<h3>Builds</h3>
+% for build, loc, started, finished in builds
+<a href="/build{{loc}}/">{{build}}
+% if finished
+  <span class="build-{{finished['result'] | slugify}}" title="Result: {{finished['result']}}">
+  % if started and 'timestamp' in started
+    {{started['timestamp'] | timestamp}}
+    % if 'timestamp' in finished
+    took {{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
+  % else
+    {{finished['result']}}{% endif %}
+</span></a>
+% elif started and 'timestamp' in started
+{{started['timestamp'] | timestamp}}</a>
+% endif
+  % for issue in refs[loc]
+    <a href="{{issue.url}}" title="{{issue.title}}">#{{issue.number}}</a>
+  % endfor
+<br>
+% endfor
+% if 'directory' in job_dir or '/pull/' not in job_dir
+<br>
+% if before
+<a href="?" rel="nofollow">View latest builds...</a><br>
+% endif
+% if builds
+<a href="?before={{builds[-1][0]}}" rel="nofollow">View earlier builds...</a><br>
+% endif
+% endif
+</div>
+% endblock

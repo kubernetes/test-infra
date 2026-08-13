@@ -1,0 +1,11 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- JeremyOT
+- pmorie
+- lauralorenz
+- skitt
+- nojnhuh
+
+labels:
+- sig/multicluster

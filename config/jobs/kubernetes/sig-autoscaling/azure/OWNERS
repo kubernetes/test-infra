@@ -1,0 +1,14 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- jackfrancis
+- gandhipr
+- tallaxes
+- nojnhuh
+- willie-yao
+approvers:
+- jackfrancis
+- gandhipr
+- tallaxes
+- nojnhuh
+- willie-yao

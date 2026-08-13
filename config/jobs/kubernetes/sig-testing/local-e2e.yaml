@@ -1,0 +1,108 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-local-e2e
+    branches:
+    # TODO(releng): Remove once repo default branch has been renamed
+    - master
+    - main
+    always_run: false
+    skip_report: false
+    max_concurrency: 8
+    optional: true
+    run_if_changed: 'local-up-cluster'
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+        env:
+        - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+          value: "true"
+        - name: CONTAINER_RUNTIME_ENDPOINT
+          value: "/var/run/docker/containerd/containerd.sock"
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --deployment=local
+        - --ginkgo-parallel=25
+        - --provider=local
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
+        - --timeout=180m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: 9Gi
+            cpu: 7
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: 9Gi
+            # during the tests more like 3-20m is used
+            cpu: 7
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-misc
+      description: Runs single node conformance tests using kubetest with local-up-cluster
+
+periodics:
+- name: ci-kubernetes-local-e2e
+  interval: 3h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 240m
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+      env:
+      - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+        value: "true"
+      - name: CONTAINER_RUNTIME_ENDPOINT
+        value: "/var/run/docker/containerd/containerd.sock"
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --deployment=local
+      - --extract=ci/latest
+      - --extract-source
+      - --ginkgo-parallel=25
+      - --provider=local
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
+      - --timeout=180m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          memory: 9Gi
+          cpu: 7
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: 9Gi
+          # during the tests more like 3-20m is used
+          cpu: 7
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-hack-local-up-cluster, sig-testing-misc
+    testgrid-tab-name: local-up-cluster, master (dev)
+    description: Runs single node conformance tests using kubetest with hack/local-up-cluster.sh
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'

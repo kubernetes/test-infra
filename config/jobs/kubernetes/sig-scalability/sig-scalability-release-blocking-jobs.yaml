@@ -1,0 +1,193 @@
+periodics:
+# This is a sig-release-master-blocking job.
+# The frequency was cut to reduce infrastructure costs.
+- cron: '1 17 2-31/2 * *' # Run on even days at 9:01PST (17:01 UTC)
+  name: ci-kubernetes-e2e-gce-scale-correctness
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
+  decorate: true
+  job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
+  decoration_config:
+    timeout: 270m
+  annotations:
+    testgrid-num-failures-to-alert: '2'
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
+    testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
+    testgrid-tab-name: gce-master-scale-correctness
+    # exclude-filter-by-regex=^(kubetest\.Test|ci-kubernetes-e2e-gce-scale-correctness\.Overall)$
+    testgrid-base-options: 'exclude-filter-by-regex=%5E(kubetest%5C.Test%7Cci-kubernetes-e2e-gce-scale-correctness%5C.Overall)%24'
+    description: "Uses kubetest to run correctness tests against a 2000-node cluster created with cluster/kube-up.sh"
+  spec:
+    volumes:
+    - name: cache-secret
+      secret:
+        secretName: scale-pull-cache-token
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+      volumeMounts:
+      - name: cache-secret
+        readOnly: true
+        mountPath: /etc/registry-auth
+      env:
+      - name: KUBERNETES_REGISTRY_PULL_THROUGH_HOST
+        value: https://us-central1-docker.pkg.dev/v2/k8s-infra-e2e-scale-5k-project/k8s-5k-scale-cache/
+      - name: KUBERNETES_REGISTRY_PULL_THROUGH_BASIC_AUTH_TOKEN_PATH
+        value: /etc/registry-auth/token
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=gce-scale-cluster
+      - --env=CONCURRENT_SERVICE_SYNCS=20 # support 20 LoadBalancer Services in parallel to deal with existing CI load #122286
+      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
+      - --extract=ci/fast/latest-fast
+      - --env=KUBE_CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
+      # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-node-size=e2-small
+      - --gcp-nodes=2000
+      - --gcp-project-type=scalability-scale-project
+      - --gcp-ssh-proxy-instance-name=gce-scale-cluster-master
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=40
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8 --node-schedulable-timeout=90m
+      - --timeout=240m
+      - --use-logexporter
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
+        limits:
+          cpu: 6
+          memory: "16Gi"
+
+# This is a sig-release-master-blocking job.
+# The frequency was cut to reduce infrastructure costs.
+- cron: '1 17 1-31/2 * *' # Run on odd days at 9:01PST (17:01 UTC)
+  name: ci-kubernetes-e2e-gce-scale-performance-5000
+  tags:
+  - "perfDashPrefix: gce-5000Nodes"
+  - "perfDashBuildsCount: 270"
+  - "perfDashJobType: performance"
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-k8s-ssh: "true"
+    preset-kops-scalability-common: "true"
+    preset-kops-scalability-gce-common: "true"
+    preset-kops-scalability-gce-5000-node: "true"
+  decorate: true
+  job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
+  decoration_config:
+    timeout: 450m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
+    testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce, kops-misc
+    testgrid-tab-name: gce-master-scale-performance-5000
+    testgrid-days-of-results: '60'
+    testgrid-num-failures-to-alert: '1'
+    testgrid-num-columns-recent: '3'
+    description: "Uses kubetest2 to run k8s.io/perf-tests/run-e2e.sh against a 5000-node cluster created with kops"
+  spec:
+    serviceAccountName: prow-build
+    tolerations:
+      - key: highmem
+        operator: Exists
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7
+          memory: "40Gi"
+        limits:
+          cpu: 7
+          memory: "40Gi"
+
+- name: ci-kubernetes-e2e-gce-scale-performance-100
+  tags:
+  - "perfDashPrefix: gce-100Nodes-master"
+  - "perfDashJobType: performance"
+  - "perfDashBuildsCount: 500"
+  cluster: k8s-infra-prow-build
+  interval: 30m
+  labels:
+    preset-k8s-ssh: "true"
+    preset-kops-scalability-common: "true"
+    preset-kops-scalability-gce-common: "true"
+    preset-kops-scalability-gce-100-node: "true"
+  decorate: true
+  decoration_config:
+    timeout: 1h
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24 * * *
+    fork-per-release-replacements: "KUBERNETES_VERSION=master -> KUBERNETES_VERSION={{.Version}}, gce-100Nodes-master -> gce-100Nodes-{{.Version}}"
+    testgrid-dashboards: sig-release-master-blocking, sig-scalability-gce, kops-misc
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
+    description: "Uses kubetest2 to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with kops"
+    testgrid-num-failures-to-alert: '8'
+    testgrid-tab-name: gce-master-scale-performance-100
+  spec:
+    serviceAccountName: prow-build
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      env:
+      - name: KUBERNETES_VERSION
+        value: master
+      resources:
+        requests:
+          cpu: 2
+          memory: 6Gi
+        limits:
+          cpu: 2
+          memory: 6Gi

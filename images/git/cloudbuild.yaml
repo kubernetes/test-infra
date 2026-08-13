@@ -1,0 +1,21 @@
+steps:
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260729-0b834bafc6
+    entrypoint: /buildx-entrypoint
+    args:
+    - build
+    - --tag=gcr.io/$PROJECT_ID/git:$_GIT_TAG
+    - --platform=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/riscv64
+    - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/git:$_GIT_TAG
+    - --push
+    - .
+    dir: .
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260729-0b834bafc6
+    entrypoint: gcloud
+    args:
+    - container
+    - images
+    - add-tag
+    - gcr.io/$PROJECT_ID/git:$_GIT_TAG
+    - gcr.io/$PROJECT_ID/git:latest
+substitutions:
+  _GIT_TAG: '12345'

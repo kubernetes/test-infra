@@ -1,0 +1,20 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- wojtek-t # For European timezone emergencies.
+- tosi3k
+- marseel
+- feiskyer
+approvers:
+- wojtek-t # For European timezone emergencies.
+- tosi3k
+- marseel
+- feiskyer
+emeritus_approvers:
+- amwat
+- BenTheElder
+- krzyzacy
+- shyamjvs
+
+labels:
+- area/kubetest

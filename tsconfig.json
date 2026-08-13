@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "es6", "ScriptHost", "es2015.core", "dom.iterable", "es2016.array.include"],
+    "target": "es2015",
+    "module": "esnext",
+    "downlevelIteration": true,
+    "skipDefaultLibCheck": true,
+    "moduleResolution": "node",
+    "preserveConstEnums": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "jsx": "react",
+    "noErrorTruncation": false,
+    "noEmitOnError": false,
+    "declaration": false,
+    "stripInternal": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "sourceMap": false,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "rootDir": ".",
+    "rootDirs": [
+        "."
+    ],
+    "paths": {
+      "*": [
+        "node_modules/*",
+        "node_modules/@types/*"
+      ]
+    },
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "types": []
+  }
+}

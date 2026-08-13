@@ -1,0 +1,9 @@
+{
+  "extends": "../../../../tsconfig.json",
+  "include": [
+    "browser.ts",
+    "parser.ts",
+    "utils.ts",
+    "../../../../node_modules/@types/google.visualization/index.d.ts"
+  ]
+}

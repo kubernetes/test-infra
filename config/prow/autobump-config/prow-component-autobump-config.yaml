@@ -1,0 +1,25 @@
+---
+gitHubLogin: "k8s-infra-ci-robot"
+gitHubToken: "/etc/github-token/token"
+gitName: "Kubernetes Prow Robot"
+gitEmail: "75457971+k8s-infra-ci-robot@users.noreply.github.com"
+onCallAddress: "" # No oncall assigned to this at the moment.
+selfAssign: true # Commenting `/cc`, so that autobump PR is not assigned to anyone
+additionalPRBody: "/cc @dims"
+skipPullRequest: false
+gitHubOrg: "kubernetes"
+gitHubRepo: "test-infra"
+remoteName: "test-infra"
+upstreamURLBase: "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+includedConfigPaths:
+  - "config/jobs"
+extraFiles:
+  - config/mkpj.sh
+  - config/prow/config.yaml
+targetVersion: "latest"
+prefixes:
+  - name: "Prow"
+    prefix: "us-docker.pkg.dev/k8s-infra-prow/images/"
+    repo: "https://github.com/kubernetes-sigs/prow"
+    summarise: true
+    consistentImages: true

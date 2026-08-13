@@ -1,0 +1,25 @@
+# Dashboard Group
+
+dashboard_groups:
+- name: sig-k8s-infra
+  dashboard_names:
+  - sig-k8s-infra-apps
+  - sig-k8s-infra-canaries
+  - sig-k8s-infra-dns
+  - sig-k8s-infra-gcb
+  - sig-k8s-infra-groups
+  - sig-k8s-infra-k8sio
+  - sig-k8s-infra-registry
+  - sig-k8s-infra-porche
+  - sig-k8s-infra-prow
+
+dashboards:
+- name: sig-k8s-infra-apps
+- name: sig-k8s-infra-dns
+- name: sig-k8s-infra-canaries
+- name: sig-k8s-infra-gcb
+- name: sig-k8s-infra-groups
+- name: sig-k8s-infra-k8sio
+- name: sig-k8s-infra-registry
+- name: sig-k8s-infra-porche
+- name: sig-k8s-infra-prow

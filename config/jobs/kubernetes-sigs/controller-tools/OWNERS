@@ -1,0 +1,13 @@
+# See the OWNERS docs: https://git.k8s.io/community/contributors/devel/owners.md
+# Note: This is kept in sync with https://github.com/kubernetes-sigs/controller-tools/blob/master/OWNERS_ALIASES
+# to ensure approvers/reviewers of the controller-tools repo have the same rights for the corresponding jobs.
+approvers:
+  - alvaroaleman
+  - joelanford
+  - sbueringer
+  - vincepri
+reviewers:
+  - alvaroaleman
+  - joelanford
+  - sbueringer
+  - vincepri

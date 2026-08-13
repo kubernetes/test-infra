@@ -1,0 +1,31 @@
+presets:
+# Credentials for using DigitalOcean Spaces test account. Used for kops tests.
+- labels:
+    preset-do-spaces-credential: "true"
+  env:
+  - name: S3_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: spaces-digitalocean-s3
+        key: access-key
+  - name: S3_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: spaces-digitalocean-s3
+        key: secret-key
+- labels:
+    preset-do-ssh: "true"
+  env:
+  - name: DO_SSH_PUBLIC_KEY_FILE
+    value: /etc/do-ssh/public-ssh-key
+  - name: DO_SSH_PRIVATE_KEY_FILE
+    value: /etc/do-ssh/private-ssh-key
+  volumes:
+  - name: do-ssh
+    secret:
+      defaultMode: 0400
+      secretName: kops-e2e-do-ssh-key
+  volumeMounts:
+  - name: do-ssh
+    mountPath: /etc/do-ssh
+    readOnly: true

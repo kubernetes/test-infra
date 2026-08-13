@@ -1,0 +1,9 @@
+dashboard_groups:
+- name: containerd
+  dashboard_names:
+  - containerd-periodic
+  - containerd-postsubmits
+
+dashboards:
+  - name: containerd-periodic
+  - name: containerd-postsubmits

@@ -1,0 +1,172 @@
+test_groups:
+- name: pull-kubernetes-gce-master-scale-performance-5000
+  gcs_prefix: kubernetes-ci-logs/pr-logs/directory/pull-kubernetes-gce-master-scale-performance-5000
+  column_header:
+  - configuration_value: Commit
+
+dashboard_groups:
+- name: presubmits
+  dashboard_names:
+  - presubmits-alibaba-cloud-csi-driver
+  - presubmits-cloud-provider-alibaba
+  - presubmits-cloud-provider-vsphere-blocking
+  - presubmits-ec2
+  - presubmits-kops
+  - presubmits-kubernetes-blocking
+  - presubmits-kubernetes-nonblocking
+  - presubmits-kubernetes-scalability
+  - presubmits-node-problem-detector
+  - presubmits-test-infra
+
+dashboards:
+- name: presubmits-alibaba-cloud-csi-driver
+- name: presubmits-cloud-provider-alibaba
+- name: presubmits-cloud-provider-vsphere-blocking
+- name: presubmits-kops
+- name: presubmits-kubernetes-blocking
+  dashboard_tab:
+  - name: pull-kubernetes-e2e-kind
+    test_group_name: pull-kubernetes-e2e-kind
+    base_options: width=10
+    alert_options:
+      alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
+  - name: pull-kubernetes-node-e2e-containerd
+    test_group_name: pull-kubernetes-node-e2e-containerd
+    base_options: width=10
+  - name: pull-kubernetes-cmd
+    test_group_name: pull-kubernetes-cmd
+    base_options: width=10
+  - name: pull-kubernetes-cmd-go-compatibility
+    test_group_name: pull-kubernetes-cmd-go-compatibility
+    base_options: width=10
+  - name: pull-kubernetes-integration
+    test_group_name: pull-kubernetes-integration
+    base_options: width=10
+  - name: pull-kubernetes-integration-go-compatibility
+    test_group_name: pull-kubernetes-integration-go-compatibility
+    base_options: width=10
+  - name: pull-kubernetes-verify
+    test_group_name: pull-kubernetes-verify
+    base_options: width=10
+  - name: pull-kubernetes-typecheck
+    test_group_name: pull-kubernetes-typecheck
+    base_options: width=10
+  - name: pull-kubernetes-dependencies
+    test_group_name: pull-kubernetes-dependencies
+    base_options: width=10
+  - name: pull-kubernetes-conformance-kind-ga-only-parallel
+    test_group_name: pull-kubernetes-conformance-kind-ga-only-parallel
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce
+    test_group_name: pull-kubernetes-e2e-gce
+    base_options: width=10
+- name: presubmits-kubernetes-nonblocking
+  dashboard_tab:
+  - name: pull-kubernetes-e2e-kind-ipv6
+    test_group_name: pull-kubernetes-e2e-kind-ipv6
+    base_options: width=10
+    alert_options:
+      alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
+  - name: pull-cos-containerd-e2e-ubuntu-gce
+    test_group_name: pull-cos-containerd-e2e-ubuntu-gce
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-network-proxy-grpc
+    test_group_name: pull-kubernetes-e2e-gce-network-proxy-grpc
+    base_options: width=10
+  - name: pull-kubernetes-e2e-ec2
+    test_group_name: pull-kubernetes-e2e-ec2
+    base_options: width=10
+  - name: pull-kubernetes-e2e-ec2-arm64
+    test_group_name: pull-kubernetes-e2e-ec2-arm64
+    base_options: width=10
+  - name: pull-kubernetes-e2e-ec2-conformance
+    test_group_name: pull-kubernetes-e2e-ec2-conformance
+    base_options: width=10
+  - name: pull-kubernetes-e2e-ec2-conformance-arm64
+    test_group_name: pull-kubernetes-e2e-ec2-conformance-arm64
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gci-gce
+    test_group_name: pull-kubernetes-e2e-gci-gce
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-cos
+    test_group_name: pull-kubernetes-e2e-gce-cos
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-cos-canary
+    test_group_name: pull-kubernetes-e2e-gce-cos-canary
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-canary
+    test_group_name: pull-kubernetes-e2e-gce-canary
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-canary
+    test_group_name: pull-kubernetes-e2e-kind-canary
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-ipv6-canary
+    test_group_name: pull-kubernetes-e2e-kind-ipv6-canary
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-dual-canary
+    test_group_name: pull-kubernetes-e2e-kind-dual-canary
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-evented-pleg
+    test_group_name: pull-kubernetes-e2e-kind-evented-pleg
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-beta-features
+    test_group_name: pull-kubernetes-e2e-kind-beta-features
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-beta-enabled
+    test_group_name: pull-kubernetes-e2e-kind-beta-enabled
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-beta-enabled-conformance
+    test_group_name: pull-kubernetes-e2e-kind-beta-enabled-conformance
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-alpha-beta-features
+    test_group_name: pull-kubernetes-e2e-kind-alpha-beta-features
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-alpha-beta-enabled
+    test_group_name: pull-kubernetes-e2e-kind-alpha-beta-enabled
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-alpha-beta-enabled-conformance
+    test_group_name: pull-kubernetes-e2e-kind-alpha-beta-enabled-conformance
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-alpha-beta-features-audit
+    test_group_name: pull-kubernetes-e2e-kind-alpha-beta-features-audit
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-alpha-beta-features-race
+    test_group_name: pull-kubernetes-e2e-kind-alpha-beta-features-race
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-cos-alpha-features
+    test_group_name: pull-kubernetes-e2e-gce-cos-alpha-features
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-storage-slow
+    test_group_name: pull-kubernetes-e2e-gce-storage-slow
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-storage-snapshot
+    test_group_name: pull-kubernetes-e2e-gce-storage-snapshot
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-csi-serial
+    test_group_name: pull-kubernetes-e2e-gce-csi-serial
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    test_group_name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    base_options: width=10
+  - name: pull-kubernetes-node-e2e-containerd-features
+    test_group_name: pull-kubernetes-node-e2e-containerd-features
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-storage-disruptive
+    test_group_name: pull-kubernetes-e2e-gce-storage-disruptive
+    base_options: width=10
+  - name: pull-kubernetes-cross
+    test_group_name: pull-kubernetes-cross
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce
+    test_group_name: pull-kubernetes-e2e-gce
+    base_options: width=10
+  - name: pull-kubernetes-node-e2e-containerd-kubetest2
+    test_group_name: pull-kubernetes-node-e2e-containerd-kubetest2
+    base_options: width=10
+  - name: pull-kubernetes-node-e2e-containerd-features-kubetest2
+    test_group_name: pull-kubernetes-node-e2e-containerd-features-kubetest2
+    base_options: width=10
+- name: presubmits-kubernetes-scalability
+- name: presubmits-node-problem-detector
+- name: presubmits-test-infra
+- name: presubmits-ec2

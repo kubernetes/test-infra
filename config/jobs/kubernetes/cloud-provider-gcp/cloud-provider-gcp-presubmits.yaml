@@ -1,0 +1,188 @@
+presubmits:
+  kubernetes/cloud-provider-gcp:
+  - name: cloud-provider-gcp-tests
+    cluster: k8s-infra-prow-build
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/cloud-provider-gcp
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Build and unit test for kubernetes/cloud-provider-gcp.
+      testgrid-num-columns-recent: '30'
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - dev/ci/presubmits/cloud-provider-gcp-tests
+        resources:
+          limits:
+            cpu: 4
+            memory: 16Gi
+          requests:
+            cpu: 4
+            memory: 16Gi
+
+  - name: cloud-provider-gcp-verify-all
+    cluster: k8s-infra-prow-build
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/cloud-provider-gcp
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Run verify scripts on kubernetes/cloud-provider-gcp.
+      testgrid-num-columns-recent: '30'
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+          command:
+            - runner.sh
+          args:
+          - "/bin/bash"
+          - "-c"
+          - REPO_ROOT=$(git rev-parse --show-toplevel);
+            make verify
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
+
+  - name: pull-cloud-provider-gcp-e2e
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 80m
+    path_alias: cloud-provider-gcp
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Runs the e2e scenario against PRs
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 14Gi
+          requests:
+            cpu: 4
+            memory: 14Gi
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - make
+        - run-e2e-test
+
+  - name: cloud-provider-gcp-e2e-full
+    cluster: k8s-infra-prow-build
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 80m
+    path_alias: k8s.io/cloud-provider-gcp
+    labels:
+      preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: End to end test of kubernetes/cloud-provider-gcp for bumping to next version
+      testgrid-num-columns-recent: '30'
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - make
+        - run-e2e-test
+        resources:
+          limits:
+            cpu: 4
+            memory: 14Gi
+          requests:
+            cpu: 4
+            memory: 14Gi
+
+  - name: cloud-provider-gcp-verify-up-to-date
+    cluster: k8s-infra-prow-build
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/cloud-provider-gcp
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Run verify scripts on kubernetes/cloud-provider-gcp.
+      testgrid-num-columns-recent: '30'
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+          command:
+            - runner.sh
+          args:
+          - "/bin/bash"
+          - "-c"
+          - REPO_ROOT=$(git rev-parse --show-toplevel);
+            make verify-up-to-date
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
+
+  - name: pull-cloud-provider-gcp-metis-glibc-floor-test
+    cluster: k8s-infra-prow-build
+    decorate: true
+    path_alias: k8s.io/cloud-provider-gcp
+    always_run: false
+    run_if_changed: "^metis/"
+    labels:
+      preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Run GLIBC floor compatibility test for Metis.
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        args:
+        - /bin/bash
+        - -c
+        - |
+          cd metis
+          make test-glibc-floor
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi

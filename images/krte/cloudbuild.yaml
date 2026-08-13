@@ -1,0 +1,25 @@
+timeout: 1800s
+steps:
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260729-0b834bafc6
+    entrypoint: /buildx-entrypoint
+    args:
+    - build
+    - --tag=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
+    - --tag=gcr.io/$PROJECT_ID/krte:latest-$_CONFIG
+    - --build-arg=K8S_BRANCH=$_K8S_BRANCH
+    - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
+    - --platform=linux/amd64,linux/arm64
+    - --push
+    - .
+    dir: images/krte
+substitutions:
+  _GIT_TAG: '12345'
+  _CONFIG: master
+  _K8S_BRANCH: master
+options:
+  substitution_option: ALLOW_LOOSE
+  # this is a large and critical CI image, builds are slow on the default 1 core
+  machineType: E2_HIGHCPU_32
+tags:
+  - krte
+  - $_CONFIG

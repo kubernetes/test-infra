@@ -1,0 +1,343 @@
+aliases:
+  # copied from git.k8s.io/community/OWNERS_ALIASES
+  sig-api-machinery-leads:
+    - deads2k
+    - fedebongio
+    - jpbetz
+    - sttts
+  sig-apps-leads:
+    - janetkuo
+    - kow3ns
+    - soltysh
+  sig-architecture-leads:
+    - derekwaynecarr
+    - dims
+    - johnbelamaric
+  sig-auth-leads:
+    - deads2k
+    - enj
+    - liggitt
+    - mikedanese
+    - ritazh
+  sig-autoscaling-leads:
+    - adrianmoisey
+    - gjtempleton
+    - jackfrancis
+    - towca
+  sig-cli-leads:
+    - ardaguclu
+    - eddiezane
+    - mpuckett159
+    - soltysh
+  sig-cloud-provider-leads:
+    - bridgetkromhout
+    - cheftako
+    - elmiko
+  sig-cluster-lifecycle-leads:
+    - fabriziopandini
+    - justinsb
+    - neolit123
+    - vincepri
+  sig-contributor-experience-leads:
+    - MadhavJivrajani
+    - Priyankasaggu11929
+    - kaslin
+    - mfahlandt
+    - palnabarun
+  sig-contributor-experience-technical-leads:
+    - MadhavJivrajani
+    - Priyankasaggu11929
+  sig-docs-leads:
+    - divya-mohan0209
+    - katcosgrove
+    - natalisucks
+    - reylejano
+    - salaxander
+    - tengqm
+  sig-etcd-leads:
+    - ahrtr
+    - jmhbnz
+    - serathius
+    - wenjiaswe
+  sig-instrumentation-leads:
+    - dashpole
+    - dgrisonnet
+    - rexagod
+    - richabanker
+  sig-k8s-infra-leads:
+    - ameukam
+    - GenPage
+    - hakman
+    - upodroid
+    - xmudrii
+  sig-multicluster-leads:
+    - jeremyot
+    - skitt
+  sig-network-leads:
+    - aojea
+    - danwinship
+    - mikezappa87
+    - shaneutt
+    - thockin
+  sig-node-leads:
+    - SergeyKanzhelev
+    - dchen1107
+    - derekwaynecarr
+    - haircommander
+    - mrunalp
+  sig-release-leads:
+    - Verolop
+    - cpanato
+    - jeremyrickard
+    - justaugustus
+    - puerco
+    - saschagrunert
+  sig-scalability-leads:
+    - marseel
+    - shyamjvs
+    - wojtek-t
+  sig-scheduling-leads:
+    - dom4ha
+    - macsko
+    - sanposhiho
+  sig-security-leads:
+    - IanColdwater
+    - cailyn-codes
+    - tabbysable
+  sig-storage-leads:
+    - jsafrane
+    - msau42
+    - saad-ali
+    - xing-yang
+  sig-testing-leads:
+    - BenTheElder
+    - alvaroaleman
+    - aojea
+    - cjwagner
+    - jbpratt
+    - michelle192837
+    - pohly
+    - xmcqueen
+  sig-ui-leads:
+    - floreks
+    - joaquimrocha
+    - shu-mutou
+  sig-windows-leads:
+    - aravindhp
+    - claudiubelu
+    - jsturtevant
+    - knabben
+    - marosset
+  wg-batch-leads:
+    - kannon92
+    - mwielgus
+    - soltysh
+    - swatisehgal
+  wg-data-protection-leads:
+    - xing-yang
+    - yuxiangqian
+  wg-device-management-leads:
+    - johnbelamaric
+    - klueska
+    - pohly
+  wg-etcd-operator-leads:
+    - ahrtr
+    - hakman
+    - jberkus
+    - jmhbnz
+    - justinsb
+  wg-lts-leads:
+    - jeremyrickard
+    - liggitt
+    - micahhausler
+  wg-node-lifecycle-leads:
+    - JoelSpeed
+    - atiratree
+    - fabriziopandini
+    - haircommander
+    - humblec
+    - intUnderflow
+    - kwilczynski
+    - rthallisey
+  wg-policy-leads:
+    - JimBugwadia
+    - poonam-lamba
+    - sudermanjr
+  wg-serving-leads:
+    - ArangoGutierrez
+    - Jeffwan
+    - SergeyKanzhelev
+    - terrytangyuan
+  wg-structured-logging-leads:
+    - mengjiao-liu
+    - pohly
+  committee-code-of-conduct:
+    - AnaMMedina21
+    - endocrimes
+    - hlipsig
+    - jeremyrickard
+    - salaxander
+  committee-security-response:
+    - SaranBalaji90
+    - cjcullen
+    - cji
+    - enj
+    - joelsmith
+    - micahhausler
+    - ritazh
+    - tabbysable
+  committee-steering:
+    - BenTheElder
+    - aojea
+    - justaugustus
+    - pacoxu
+    - pohly
+    - saschagrunert
+    - soltysh
+## BEGIN CUSTOM CONTENT
+  provider-aws:
+    - justinsb
+    - nckturner
+    - wongma7
+  provider-azure:
+    - craiglpeters
+    - feiskyer
+    - khenidak
+  provider-gcp:
+    - abgworrall
+  provider-ibmcloud:
+    - spzala
+  provider-openstack:
+    - chrigl
+    - lingxiankong
+    - ramineni
+  provider-vmware:
+    - cantbewong
+    - frapposelli
+  sig-node-test-reviewers:
+    - bart0sh
+    - bobbypage
+    - ConnorDoyle
+    - dims
+    - derekwaynecarr
+    - endocrimes
+    - klueska
+    - pacoxu
+    - tallclair
+    - sjenning
+    - SergeyKanzhelev
+    - kannon92
+  sig-node-test-approvers:
+    - bart0sh
+    - Random-Liu
+    - yujuhong
+    - tallclair
+    - derekwaynecarr
+    - ConnorDoyle
+    - klueska
+    - dchen1107
+    - dims
+    - sjenning
+    - mrunalp
+    - SergeyKanzhelev
+    - endocrimes
+    - kannon92
+  sig-scheduling-reviewers:
+    - AxeZhan
+    - damemi
+    - denkensk
+    - dom4ha
+    - macsko
+    - sanposhiho
+    - utam0k
+    - kerthcet
+  sig-scheduling-approvers:
+    - ahg-g
+    - dom4ha
+    - Huang-Wei
+    - kerthcet
+    - macsko
+    - sanposhiho
+  # - emeritus
+  # - yguo0905
+  # - dashpole
+  # - ehashman
+## END CUSTOM CONTENT
+
+  # Modified from https://kubernetes.io/releases/release-managers/#release-managers
+  #
+  # While most Release Managers are included in the reviewers group, approvals
+  # (especially for image pushing and container promotion jobs) are restricted
+  # to a rough subset of:
+  #
+  # - SIG Release Chairs/Technical Leads
+  # - Release Engineering subproject owners
+  # - Active Release Managers with deep experience maintaining our
+  #   k/test-infra jobs and overall CI Signal
+  #
+  release-engineering-approvers:
+    - cici37 # Release Manager
+    - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - jeremyrickard # SIG Chair / RelEng subproject owner / Release Manager
+    - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
+    - palnabarun # Release Manager
+    - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
+    - Verolop # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - xmudrii # Release Manager
+  release-engineering-reviewers:
+    - cici37 # Release Manager
+    - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - jeremyrickard # SIG Chair / RelEng subproject owner / Release Manager
+    - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
+    - palnabarun # Release Manager
+    - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
+    - Verolop # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - xmudrii # Release Manager
+
+  # copied from git.k8s.io/enhancements/OWNERS_ALIASES
+  enhancements-approvers:
+    - jeremyrickard # subproject owner
+    - johnbelamaric # subproject owner
+    - justaugustus # subproject owner
+    - mrbobbytables # subproject owner
+  enhancements-reviewers:
+    - jeremyrickard # subproject owner
+    - johnbelamaric # subproject owner
+    - justaugustus # subproject owner
+    - mrbobbytables # subproject owner
+
+  # copied from sigs.k8s.io/promo-tools/OWNERS_ALIASES
+  promo-tools-approvers:
+    - cpanato
+    - jeremyrickard
+    - justaugustus
+    - puerco
+    - saschagrunert
+  promo-tools-reviewers:
+    - cpanato
+    - jeremyrickard
+    - justaugustus
+    - puerco
+    - saschagrunert
+
+  publishing-bot-approvers:
+    - cpanato
+    - dims
+    - justaugustus
+    - nikhita
+    - puerco
+    - saschagrunert
+    - sttts
+  publishing-bot-reviewers:
+    - cpanato
+    - dims
+    - justaugustus
+    - nikhita
+    - palnabarun
+    - puerco
+    - saschagrunert
+    - sttts
+    - Verolop
+    - xmudrii

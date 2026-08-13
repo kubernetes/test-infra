@@ -1,0 +1,14 @@
+# See the OWNERS file documentation:
+#  https://github.com/kubernetes/community/blob/HEAD/contributors/guide/owners.md
+# Synced to the root OWNERS file in sigs.k8s.io/aws-load-balancer-controller as of 07/21/23
+
+approvers:
+- M00nF1sh
+- kishorj
+reviewers:
+- M00nF1sh
+- kishorj
+- johngmyers
+emeritus_approvers:
+- bigkraig
+- alejandrox1

@@ -1,0 +1,429 @@
+periodics:
+- interval: 2h
+  name: ci-kubernetes-e2e-gci-gce-network-proxy-http-connect
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
+  decorate: true
+  decoration_config:
+    timeout: 80m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --env=PREPARE_KONNECTIVITY_SERVICE=true
+      - --env=RUN_KONNECTIVITY_PODS=true
+      - --env=EGRESS_VIA_KONNECTIVITY=true
+      - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-b
+      - --ginkgo-parallel=25
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
+      - --timeout=60m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+      resources:
+        requests:
+          cpu: 2
+          memory: 6Gi
+        limits:
+          cpu: 2
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-api-machinery-network-proxy
+- interval: 2h
+  name: ci-kubernetes-e2e-gci-gce-network-proxy-grpc
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: kubernetes
+  decorate: true
+  decoration_config:
+    timeout: 80m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --env=PREPARE_KONNECTIVITY_SERVICE=true
+      - --env=RUN_KONNECTIVITY_PODS=true
+      - --env=EGRESS_VIA_KONNECTIVITY=true
+      - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-b
+      - --ginkgo-parallel=25
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
+      - --timeout=60m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+      resources:
+        requests:
+          cpu: 2
+          memory: 6Gi
+        limits:
+          cpu: 2
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-api-machinery-network-proxy
+# NOTE: When making changes to this job, please ensure that you also keep the original job
+# pull-kubernetes-unit in config/jobs/kubernetes/sig-testing/make-test.yaml
+# and the pull job pull-kubernetes-unit-fieldsv1string in sync.
+- interval: 4h
+  name: ci-kubernetes-unit-fieldsv1string
+  cluster: k8s-infra-prow-build
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-api-machinery-fieldsv1string
+    testgrid-tab-name: ci-kubernetes-unit-fieldsv1string
+    description: "Periodic unit test for fieldsv1string build tag"
+  path_alias: k8s.io/kubernetes
+  labels:
+    preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    securityContext:
+      runAsUser: 2001
+      runAsGroup: 2010
+    containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        securityContext:
+          allowPrivilegeEscalation: false
+        command:
+          - make
+          - test
+        env:
+          - name: GOFLAGS
+            value: "-tags=fieldsv1string"
+        resources:
+          limits:
+            cpu: 7
+            memory: "16Gi"
+          requests:
+            cpu: 7
+            memory: "16Gi"
+# NOTE: When making changes to this job, please ensure that you also keep the original job
+# pull-kubernetes-integration in config/jobs/kubernetes/sig-testing/integration.yaml
+# and the pull job pull-kubernetes-integration-fieldsv1string in sync
+- interval: 4h
+  name: ci-kubernetes-integration-fieldsv1string
+  cluster: k8s-infra-prow-build
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-api-machinery-fieldsv1string
+    testgrid-tab-name: ci-kubernetes-integration-fieldsv1string
+    description: "Periodic integration test for fieldsv1string build tag"
+  path_alias: k8s.io/kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+      command:
+      - runner.sh
+      args:
+      - ./hack/jenkins/test-integration-dockerized.sh
+      env:
+      - name: GOFLAGS
+        value: "-tags=fieldsv1string"
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 7
+          memory: 20Gi
+        requests:
+          cpu: 7
+          memory: 20Gi
+# NOTE: When making changes to this job, please ensure that you also keep the original job
+# pull-kubernetes-e2e-kind in config/jobs/kubernetes/sig-testing/kubernetes-kind-presubmits.yaml
+# and the pull job pull-kubernetes-e2e-fieldsv1string in sync.
+- interval: 4h
+  name: ci-kubernetes-e2e-kind-fieldsv1string
+  cluster: k8s-infra-prow-build
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-api-machinery-fieldsv1string
+    testgrid-tab-name: ci-kubernetes-e2e-kind-fieldsv1string
+    description: "Periodic e2e kind test for fieldsv1string build tag"
+  path_alias: k8s.io/kubernetes
+  labels:
+    preset-dind-enabled: "true"
+  decoration_config:
+    timeout: 60m
+    grace_period: 15m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260810-7619858115-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      - name: GOFLAGS
+        value: "-tags=fieldsv1string"
+      - name: LABEL_FILTER
+        value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+      - name: PARALLEL
+        value: "true"
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 7
+          memory: 9000Mi
+        requests:
+          cpu: 7
+          memory: 9000Mi
+
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-gce-network-proxy-http-connect
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 105m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=
+        - --env=PREPARE_KONNECTIVITY_SERVICE=true
+        - --env=RUN_KONNECTIVITY_PODS=true
+        - --env=EGRESS_VIA_KONNECTIVITY=true
+        - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
+        - --gcp-node-image=gci
+        - --gcp-zone=us-central1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
+        - --timeout=80m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+        resources:
+          requests:
+            cpu: 2
+            memory: 6Gi
+          limits:
+            cpu: 2
+            memory: 6Gi
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-api-machinery-network-proxy
+  - name: pull-kubernetes-e2e-gce-network-proxy-grpc
+    always_run: false
+    optional: true
+    cluster: k8s-infra-prow-build
+    run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 105m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=
+        - --env=PREPARE_KONNECTIVITY_SERVICE=true
+        - --env=RUN_KONNECTIVITY_PODS=true
+        - --env=EGRESS_VIA_KONNECTIVITY=true
+        - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
+        - --gcp-node-image=gci
+        - --gcp-zone=us-central1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
+        - --timeout=80m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+        resources:
+          requests:
+            cpu: 4
+            memory: 14Gi
+          limits:
+            cpu: 4
+            memory: 14Gi
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-api-machinery-network-proxy
+  # NOTE: When making changes to this job, please ensure that you also keep the original job
+  # pull-kubernetes-unit in config/jobs/kubernetes/sig-testing/make-test.yaml
+  # and the periodic job ci-kubernetes-unit-fieldsv1string in sync.
+  - name: pull-kubernetes-unit-fieldsv1string
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: sig-api-machinery-fieldsv1string
+      testgrid-tab-name: pull-kubernetes-unit-fieldsv1string
+      description: "Manual opt-in unit test for fieldsv1string build tag"
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+    spec:
+      securityContext:
+        runAsUser: 2001
+        runAsGroup: 2010
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+            - make
+            - test
+          env:
+            - name: GOFLAGS
+              value: "-tags=fieldsv1string"
+          resources:
+            limits:
+              cpu: 7
+              memory: "16Gi"
+            requests:
+              cpu: 7
+              memory: "16Gi"
+  # NOTE: When making changes to this job, please ensure that you also keep the original job
+  # pull-kubernetes-integration in config/jobs/kubernetes/sig-testing/integration.yaml
+  # and the periodic job ci-kubernetes-integration-fieldsv1string in sync.
+  - name: pull-kubernetes-integration-fieldsv1string
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: sig-api-machinery-fieldsv1string
+      testgrid-tab-name: pull-kubernetes-integration-fieldsv1string
+      description: "Manual opt-in integration test for fieldsv1string build tag"
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/test-integration-dockerized.sh
+        env:
+        - name: GOFLAGS
+          value: "-tags=fieldsv1string"
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7
+            memory: 20Gi
+          requests:
+            cpu: 7
+            memory: 20Gi
+  # NOTE: When making changes to this job, please ensure that you also keep the original job
+  # pull-kubernetes-e2e-kind in config/jobs/kubernetes/sig-testing/kubernetes-kind-presubmits.yaml
+  # and the periodic job ci-kubernetes-e2e-kind-fieldsv1string in sync.
+  - name: pull-kubernetes-e2e-kind-fieldsv1string
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    decorate: true
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    labels:
+      preset-dind-enabled: "true"
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260810-7619858115-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        - name: GOFLAGS
+          value: "-tags=fieldsv1string"
+        - name: LABEL_FILTER
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+        - name: PARALLEL
+          value: "true"
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7
+            memory: 9000Mi
+          requests:
+            cpu: 7
+            memory: 9000Mi
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: sig-api-machinery-fieldsv1string
+      testgrid-tab-name: pull-kubernetes-e2e-kind-fieldsv1string
+      description: "Manual opt-in e2e kind test for fieldsv1string build tag"

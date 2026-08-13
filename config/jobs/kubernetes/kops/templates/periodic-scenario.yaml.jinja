@@ -1,0 +1,70 @@
+
+- name: {{job_name}}
+  cluster: {{build_cluster}}
+  cron: '{{cron}}'
+  labels:
+    {%- if cloud == "aws" %}
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    {%- if build_cluster == "k8s-infra-kops-prow-build" %}
+    preset-k8s-kops-aws-credential: "true"
+    {%- endif %}
+    {%- elif cloud == "azure" %}
+    preset-service-account: "true"
+    preset-kops-azure-cred-wi: "true"
+    {%- endif %}
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: {{job_timeout}}
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  {%- if extra_refs %}
+  {%- for ref in extra_refs %}
+  - org: {{ ref.org }}
+    repo: {{ ref.repo }}
+    base_ref: {{ ref.base_ref }}
+    {%- if ref.path_alias %}
+    path_alias: {{ ref.path_alias }}
+    {%- endif %}
+  {%- endfor %}
+  {%- endif %}
+  spec:
+    {%- if cloud == "gce" %}
+    serviceAccountName: k8s-kops-test
+    {%- elif cloud == "azure" %}
+    serviceAccountName: azure
+    {%- elif build_cluster != "default" %}
+    serviceAccountName: prowjob-default-sa
+    {%- endif %}
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/{{ scenario }}/run-test.sh
+      env:
+      {%- if kops_feature_flags %}
+      - name: KOPS_FEATURE_FLAGS
+        value: "{{kops_feature_flags}}"
+      {%- endif %}
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
+      {%- for key, val in env.items() %}
+      - name: {{ key }}
+        value: "{{ val }}"
+      {%- endfor %}
+      image: {{image}}
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true

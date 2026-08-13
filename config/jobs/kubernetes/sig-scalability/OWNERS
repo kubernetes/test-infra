@@ -1,0 +1,20 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- marseel
+- mborsz
+- wojtek-t
+- upodroid
+
+approvers:
+- marseel
+- serathius
+- wojtek-t
+
+emeritus_approvers:
+- mborsz
+- shyamjvs
+- mm4tt
+
+labels:
+- sig/scalability

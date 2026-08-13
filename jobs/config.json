@@ -1,0 +1,35 @@
+{
+  "fake-branch": {
+    "args": [
+      "./fake/fake-branch.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "fake-failure": {
+    "args": [
+      "exit(1)"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "fake-pr": {
+    "args": [
+      "./fake/fake-pr.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "random_job": {
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  }
+}

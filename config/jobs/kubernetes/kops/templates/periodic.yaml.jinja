@@ -1,0 +1,147 @@
+
+- name: {{job_name}}
+  cron: '{{cron}}'
+  labels:
+    {%- if cloud == "aws" %}
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    {%- if not boskos_resource_type %}
+    preset-k8s-kops-aws-credential: "true"
+    {%- endif %}
+    {%- elif cloud == "azure" %}
+    preset-service-account: "true"
+    preset-kops-azure-cred-wi: "true"
+    {%- elif cloud == "do" %}
+    preset-service-account: "true"
+    preset-do-credential: "true"
+    preset-do-spaces-credential: "true"
+    preset-do-ssh: "true"
+    {%- else %}
+    preset-k8s-ssh: "true"
+    {%- endif %}
+    {%- if storage_e2e_cred %}
+    preset-storage-e2e-service-account: "true"
+    {%- endif %}
+  cluster: {{build_cluster}}
+  decorate: true
+  decoration_config:
+    timeout: {{job_timeout}}
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  {%- if extra_refs %}
+  {%- for ref in extra_refs %}
+  - org: {{ ref.org }}
+    repo: {{ ref.repo }}
+    base_ref: {{ ref.base_ref }}
+    {%- if ref.path_alias %}
+    path_alias: {{ ref.path_alias }}
+    {%- endif %}
+  {%- endfor %}
+  {%- endif %}
+  spec:
+    {%- if cloud == "gce" %}
+    serviceAccountName: k8s-kops-test
+    {%- elif cloud == "azure" %}
+    serviceAccountName: azure
+    {%- endif %}
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          {%- if cloud == "do" %}
+          --cloud-provider=digitalocean \
+          --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
+          {%- else %}
+          --cloud-provider={{cloud}} \
+          {%- endif %}
+          {%- if cloud == "gce" %}
+          --admin-access=0.0.0.0/0 \
+          {%- endif %}
+          --create-args="{{create_args}}" \
+          {%- if cp_ig_overrides %}
+          --control-plane-instance-group-overrides="{{ cp_ig_overrides }}" \
+          {%- endif %}
+          {%- if cluster_name %}
+          --cluster-name="{{ cluster_name }}" \
+          {%- endif %}
+          {%- if node_ig_overrides %}
+          --node-instance-group-overrides="{{ node_ig_overrides }}" \
+          {%- endif %}
+          {%- if kops_feature_flags %}
+          --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \
+          {%- endif %}
+          {%- if kubernetes_feature_gates %}
+          --kubernetes-feature-gates={{ kubernetes_feature_gates }} \
+          {%- endif %}
+          --kops-version-marker={{kops_deploy_url}} \
+          {%- if publish_version_marker %}
+          --publish-version-marker={{publish_version_marker}} \
+          {%- endif %}
+          --kubernetes-version={{k8s_deploy_url}} \
+          {%- if terraform_version %}
+          --terraform-version={{terraform_version}} \
+          {%- endif %}
+          {%- if validation_wait %}
+          --validation-wait={{validation_wait}} \
+          {%- endif %}
+          {%- if template_path %}
+          --template-path={{template_path}} \
+          {%- endif %}
+          --test=kops \
+          -- \
+          {%- if test_args %}
+          --test-args="-test.timeout={{test_timeout}} {{ test_args }}" \
+          {%- else %}
+          --test-args="-test.timeout={{test_timeout}}" \
+          {%- endif %}
+          {%- if test_package_url %}
+          --test-package-url={{test_package_url}} \
+          {%- endif %}
+          {%- if test_package_dir %}
+          --test-package-dir={{test_package_dir}} \
+          {%- endif %}
+          --test-package-marker={{marker}} \
+          {%- if focus_regex %}
+          --focus-regex="{{focus_regex}}" \
+          {%- endif %}
+          {%- if skip_regex %}
+          --skip-regex="{{skip_regex}}" \
+          {%- endif %}
+          --parallel={{test_parallelism}}
+      env:
+      {#- AWS jobs get the key from preset-aws-ssh's AWS_SSH_PRIVATE_KEY_FILE,
+          which kubetest2-kops re-exports as KUBE_SSH_KEY_PATH for the e2e framework. -#}
+      {%- if cloud != "azure" and cloud != "do" and cloud != "aws" %}
+      - name: KUBE_SSH_KEY_PATH
+        value: {{kops_ssh_key_path}}
+      {%- endif %}
+      {%- if cloud != "azure" and cloud != "do" %}
+      - name: KUBE_SSH_USER
+        value: {{kops_ssh_user}}
+      {%- endif %}
+      - name: GINKGO_NO_COLOR
+        value: "TRUE"
+      {%- for key, val in env.items() %}
+      - name: {{ key }}
+        value: "{{ val }}"
+      {%- endfor %}
+      image: {{image}}
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi

@@ -1,0 +1,22 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- cblecker
+- chases2
+- dims
+- MadhavJivrajani
+- Priyankasaggu11929
+- rjsadow
+- wojtek-t
+approvers:
+- cblecker
+- chases2
+- dims
+- MadhavJivrajani
+- Priyankasaggu11929
+- wojtek-t
+emeritus_approvers:
+- krzyzacy
+- spiffxp
+labels:
+- area/config

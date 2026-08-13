@@ -1,0 +1,51 @@
+presubmits:
+  kubernetes/community:
+  - name: pull-community-verify
+    cluster: eks-prow-build-cluster
+    branches:
+    - main
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.22.4
+        command:
+        - sh
+        - "-c"
+        # Add GOPATH/bin back to PATH to workaround #9469
+        - "export PATH=$PATH:$GOPATH/bin && make verify"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-contribex-community
+      testgrid-tab-name: pull-verify
+
+  - name: pull-community-tempelis-check
+    decorate: true
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    run_if_changed: '^communication/slack-config'
+    annotations:
+      testgrid-dashboards: sig-contribex-slack-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-slack-infra/tempelis:v20260505-4a08de2
+        command:
+        - /tempelis
+        args:
+        - --config=communication/slack-config/
+        - --restrictions=communication/slack-config/restrictions.yaml
+        - --validate-only
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi

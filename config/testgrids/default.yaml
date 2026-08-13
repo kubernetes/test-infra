@@ -1,0 +1,41 @@
+# Default testgroup and dashboardtab, please do not change them
+# In this repository, if you don't set something in your configuration file or prow job, it will use the value here
+
+default_test_group:
+  # TODO: Reduce this back down to 14 once a full update has completed.
+  days_of_results: 15 # Number of days of test results to gather and serve.
+  tests_name_policy: 2 # replace the name of the test
+  ignore_pending: false # Show in-progress tests.
+  ignore_skip: false # Show skipped tests.
+  column_header:
+    - configuration_value: Commit # Shows the commit number on column header
+  num_columns_recent: 10
+  use_kubernetes_client: true # These two fields are deprecated and should always be true
+  is_external: true
+  alert_stale_results_hours: 0 # Don't alert for staleness by default.
+  num_failures_to_alert: 3 # Consider a test failed if it has 3 or more consecutive failures.
+  num_passes_to_disable_alert: 1 # Consider a failing test passing if it has 1 or more consecutive passes.
+  code_search_path: github.com/kubernetes/kubernetes/search # URL for regression search links.
+
+default_dashboard_tab:
+  open_test_template: # The URL template to visit after clicking on a cell
+    url: https://prow.k8s.io/view/gs/<gcs_prefix>/<changelist>
+  file_bug_template: # The URL template to visit when filing a bug
+    url: https://github.com/kubernetes/kubernetes/issues/new
+    options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+  attach_bug_template: # The URL template to visit when attaching to an existing bug
+    url: # empty
+    options: #empty
+  open_bug_template: # The URL template to visit when visiting an associated bug
+    url: https://github.com/kubernetes/kubernetes/issues/
+  results_text: See these results on Prow # Text to show in the about menu as a link to another view of the results
+  results_url_template: # The URL template to visit after clicking
+    url: https://prow.k8s.io/job-history/<gcs_prefix>
+  code_search_path: github.com/kubernetes/kubernetes/search # URL for regression search links.
+  num_columns_recent: 10
+  code_search_url_template: # The URL template to visit when searching for changelists
+    url: https://github.com/kubernetes/kubernetes/compare/<start-custom-0>...<end-custom-0>

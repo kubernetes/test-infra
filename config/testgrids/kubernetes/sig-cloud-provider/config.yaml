@@ -1,0 +1,10 @@
+dashboard_groups:
+- name: sig-cloud-provider
+  dashboard_names:
+    - sig-cloud-provider-apiserver-network-proxy
+    - sig-cloud-provider-ibm-vpc-block-csi-driver
+    - sig-cloud-provider-ibm-powervs-block-csi-driver
+dashboards:
+- name: sig-cloud-provider-apiserver-network-proxy
+- name: sig-cloud-provider-ibm-vpc-block-csi-driver
+- name: sig-cloud-provider-ibm-powervs-block-csi-driver

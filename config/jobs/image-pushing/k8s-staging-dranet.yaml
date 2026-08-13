@@ -1,0 +1,33 @@
+postsubmits:
+  kubernetes-sigs/dranet:
+    - name: post-dranet-image
+      branches:
+        - ^main$
+        # Build semver tags, too
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-dranet, sig-k8s-infra-gcb
+        testgrid-alert-email: maspinwall@google.com, gauravkg@google.com, antonio.ojea.garcia@gmail.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-networking
+              - --scratch-bucket=gs://k8s-staging-networking-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers

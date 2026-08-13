@@ -1,0 +1,113 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: check-dependency-stats
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kubernetes
+    always_run: false
+    optional: true
+    run_if_changed: '^(go.mod|go.sum|vendor)'
+    spec:
+      containers:
+      - image: golang
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          set -euo pipefail
+
+          export WORKDIR=${ARTIFACTS:-$TMPDIR}
+          export PATH=$PATH:$GOPATH/bin
+          export GOWORK=off
+
+          mkdir -p "${WORKDIR}"
+          pushd "$WORKDIR"
+          go install github.com/kubernetes-sigs/depstat@latest
+          popd
+
+          # Install graphviz and jq
+          apt-get update -qq && apt-get install -y -qq graphviz jq > /dev/null 2>&1
+
+          MAIN_MODULES="k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')"
+
+          echo "=== Dependency Stats: ${PULL_BASE_SHA}..HEAD ==="
+          echo ""
+
+          # Show compact before/after/delta stats summary
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --stats | tee "${WORKDIR}/stats.txt"
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --stats --json > "${WORKDIR}/stats.json"
+
+          echo ""
+          echo "=== Dependency Diff: ${PULL_BASE_SHA}..HEAD ==="
+          echo ""
+
+          # Generate dependency diff with split-test-only and vendor-level signals.
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" -v --split-test-only --vendor --vendor-files | tee "${WORKDIR}/diff.txt"
+
+          # Generate JSON for programmatic consumption (split + version + vendor sections)
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --split-test-only --vendor --vendor-files --json > "${WORKDIR}/diff.json"
+
+          # Generate DOT and SVG visualization of changes
+          depstat diff "${PULL_BASE_SHA}" HEAD -m "${MAIN_MODULES}" --dot > "${WORKDIR}/diff.dot"
+          dot -Tsvg "${WORKDIR}/diff.dot" -o "${WORKDIR}/diff.svg"
+
+          # Show why each new dependency was added
+          ADDED_DEPS=$(jq -r '.added[]?' "${WORKDIR}/diff.json" 2>/dev/null || true)
+          if [ -n "${ADDED_DEPS}" ]; then
+            echo ""
+            echo "=== Why new dependencies are included ==="
+            for dep in ${ADDED_DEPS}; do
+              echo ""
+              echo "--- ${dep} ---"
+              depstat why "${dep}" -m "${MAIN_MODULES}" 2>/dev/null || echo "  (could not trace dependency path)"
+            done | tee "${WORKDIR}/why-added.txt"
+          fi
+
+          # Explain vendor-only removals (removed from vendor, still in module graph)
+          VENDOR_ONLY_REMOVED=$(jq -r '.vendor.vendorOnlyRemovals[]?.path' "${WORKDIR}/diff.json" 2>/dev/null || true)
+          if [ -n "${VENDOR_ONLY_REMOVED}" ]; then
+            echo ""
+            echo "=== Why vendor-only removed modules are still in module graph ==="
+            for dep in ${VENDOR_ONLY_REMOVED}; do
+              echo ""
+              echo "--- ${dep} ---"
+              depstat why "${dep}" -m "${MAIN_MODULES}" 2>/dev/null || echo "  (could not trace dependency path)"
+            done | tee "${WORKDIR}/why-vendor-only-removed.txt"
+          fi
+
+          # Summarize test-only vs non-test changes
+          echo ""
+          echo "=== Test-only vs Non-test dependency changes ==="
+          jq -r '"Non-test added: \(.split.nonTestOnly.added // [] | length), removed: \(.split.nonTestOnly.removed // [] | length)"' "${WORKDIR}/diff.json"
+          jq -r '"Test-only added: \(.split.testOnly.added // [] | length), removed: \(.split.testOnly.removed // [] | length)"' "${WORKDIR}/diff.json"
+
+          echo ""
+          echo "=== High-signal dependency summary ==="
+          jq -r '[
+            "Module graph: added=\(.added | length), removed=\(.removed | length), versionChanges=\(.versionChanges // [] | length)",
+            "Non-test: added=\(.split.nonTestOnly.added // [] | length), removed=\(.split.nonTestOnly.removed // [] | length), versionChanges=\(.split.nonTestOnly.versionChanges // [] | length)",
+            "Test-only: added=\(.split.testOnly.added // [] | length), removed=\(.split.testOnly.removed // [] | length), versionChanges=\(.split.testOnly.versionChanges // [] | length)",
+            "Vendor: added=\(.vendor.added // [] | length), removed=\(.vendor.removed // [] | length), versionChanges=\(.vendor.versionChanges // [] | length), vendorOnlyRemovals=\(.vendor.vendorOnlyRemovals // [] | length)",
+            "Vendor files: added=\(.vendor.filesAdded // [] | length), deleted=\(.vendor.filesDeleted // [] | length)"
+          ] | .[]' "${WORKDIR}/diff.json"
+
+          echo ""
+          echo "Artifacts saved to: ${WORKDIR}"
+          echo "  - diff.txt: Human-readable diff (summary + split + version + vendor sections)"
+          echo "  - diff.json: Machine-readable diff (includes .split.*, .versionChanges, .vendor.*)"
+          echo "  - diff.svg: Visual dependency change graph"
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-dashboards: sig-arch-code-organization
+      testgrid-alert-email: davanum@gmail.com
+      description: Generates dependency diff with visualization showing added/removed dependencies

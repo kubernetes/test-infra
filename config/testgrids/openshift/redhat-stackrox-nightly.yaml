@@ -1,0 +1,256 @@
+dashboards:
+- dashboard_tab:
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-eks-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-eks-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-gke-kernel-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-gke-kernel-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-gke-nongroovy-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-gke-nongroovy-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-gke-postgres-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-gke-postgres-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-gke-postgres-scale-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-gke-postgres-scale-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-gke-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-gke-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-gke-race-condition-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-gke-race-condition-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-gke-scale-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-gke-scale-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-gke-ui-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-gke-ui-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-gke-upgrade-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-gke-upgrade-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-go-postgres-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-go-postgres-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-go-unit-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-go-unit-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-go-unit-tests-release
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-go-unit-tests-release
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-grouped-static-checks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-grouped-static-checks
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-integration-unit-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-integration-unit-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-local-roxctl-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-local-roxctl-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-mitre-bundles-checks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-mitre-bundles-checks
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-nightly-tag
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-nightly-tag
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-openshift-oldest-operator-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-openshift-oldest-operator-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-operator-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-operator-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-openshift-penultimate-operator-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-openshift-penultimate-operator-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-osd-gcp-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-osd-gcp-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-policy-checks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-policy-checks
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-push-and-release
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-push-and-release
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-shell-unit-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-shell-unit-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-style-checks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-style-checks
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-ui-unit-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-ui-unit-tests
+  name: redhat-stackrox-nightly
+test_groups:
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-eks-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-eks-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-gke-kernel-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-gke-kernel-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-gke-nongroovy-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-gke-nongroovy-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-gke-postgres-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-gke-postgres-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-gke-postgres-scale-tests
+  name: branch-ci-stackrox-stackrox-nightlies-gke-postgres-scale-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-gke-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-gke-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-gke-race-condition-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-gke-race-condition-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-gke-scale-tests
+  name: branch-ci-stackrox-stackrox-nightlies-gke-scale-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-gke-ui-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-gke-ui-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-gke-upgrade-tests
+  name: branch-ci-stackrox-stackrox-nightlies-gke-upgrade-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-go-postgres-tests
+  name: branch-ci-stackrox-stackrox-nightlies-go-postgres-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-go-unit-tests
+  name: branch-ci-stackrox-stackrox-nightlies-go-unit-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-go-unit-tests-release
+  name: branch-ci-stackrox-stackrox-nightlies-go-unit-tests-release
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-grouped-static-checks
+  name: branch-ci-stackrox-stackrox-nightlies-grouped-static-checks
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-integration-unit-tests
+  name: branch-ci-stackrox-stackrox-nightlies-integration-unit-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-local-roxctl-tests
+  name: branch-ci-stackrox-stackrox-nightlies-local-roxctl-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-mitre-bundles-checks
+  name: branch-ci-stackrox-stackrox-nightlies-mitre-bundles-checks
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-nightly-tag
+  name: branch-ci-stackrox-stackrox-nightlies-nightly-tag
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-openshift-oldest-operator-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-openshift-oldest-operator-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-openshift-newest-operator-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-operator-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-openshift-penultimate-operator-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-openshift-penultimate-operator-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-openshift-newest-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-osd-gcp-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-osd-gcp-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-policy-checks
+  name: branch-ci-stackrox-stackrox-nightlies-policy-checks
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-push-and-release
+  name: branch-ci-stackrox-stackrox-nightlies-push-and-release
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-shell-unit-tests
+  name: branch-ci-stackrox-stackrox-nightlies-shell-unit-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-style-checks
+  name: branch-ci-stackrox-stackrox-nightlies-style-checks
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-ui-unit-tests
+  name: branch-ci-stackrox-stackrox-nightlies-ui-unit-tests

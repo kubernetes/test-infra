@@ -1,0 +1,138 @@
+[
+   {
+      "name" : "elapsed",
+      "type" : "FLOAT",
+      "description" : "total build time",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "started",
+      "type" : "TIMESTAMP",
+      "description" : "build start time",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "finished",
+      "description" : "build end time",
+      "type" : "TIMESTAMP",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "passed",
+      "type" : "BOOLEAN",
+      "description" : "Whether the build succeeded.",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "result",
+      "type" : "STRING",
+      "description" : "(DEPRECATED: use passed) \"SUCCESS\" \"FAILURE\" \"ABORTED\", etc",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "version",
+      "type" : "STRING",
+      "description" : "Version of kubernetes project",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "path",
+      "type" : "STRING",
+      "description" : "GCS path with build results",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "job",
+      "type" : "STRING",
+      "description" : "Job name.",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "number",
+      "type" : "INTEGER",
+      "description" : "Build number.",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name": "metadata",
+      "type" : "RECORD",
+      "description": "extra build information",
+      "mode" : "REPEATED",
+      "fields": [
+         {
+            "mode" : "NULLABLE",
+            "type" : "STRING",
+            "name" : "key",
+            "description" : ""
+         },
+         {
+            "mode" : "NULLABLE",
+            "type" : "STRING",
+            "name" : "value",
+            "description" : ""
+         }
+      ]
+   },
+   {
+      "name" : "test",
+      "fields" : [
+         {
+            "name" : "name",
+            "type" : "STRING",
+            "description" : "",
+            "mode" : "NULLABLE"
+         },
+         {
+            "name" : "time",
+            "type" : "FLOAT",
+            "description" : "Elapsed test time.",
+            "mode" : "NULLABLE"
+         },
+         {
+            "name" : "failed",
+            "type" : "BOOLEAN",
+            "description" : "Did this test fail?",
+            "mode" : "NULLABLE"
+         },
+         {
+            "name" : "failure_text",
+            "type" : "STRING",
+            "description" : "Failure text (if test failed).",
+            "mode" : "NULLABLE"
+         }
+      ],
+      "type" : "RECORD",
+      "description" : "Test results from individual JUnit files.",
+      "mode" : "REPEATED"
+   },
+   {
+      "name" : "tests_run",
+      "type" : "INTEGER",
+      "description" : "Number of tests run.",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "tests_failed",
+      "type" : "INTEGER",
+      "description" : "Number of tests that failed.",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "executor",
+      "type" : "STRING",
+      "description": "Hostname of machine that ran the test",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "repos",
+      "type" : "STRING",
+      "description": "Branch and Hash for all included repos",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "repo_commit",
+      "type" : "STRING",
+      "description": "Commit Hash",
+      "mode" : "NULLABLE"
+   }
+]

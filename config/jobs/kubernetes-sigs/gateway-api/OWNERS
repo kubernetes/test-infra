@@ -1,0 +1,15 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- bowei
+- thockin
+- aojea
+- rikatz
+- robscott
+- youngnick
+approvers:
+- bowei
+- thockin
+- rikatz
+- robscott
+- youngnick

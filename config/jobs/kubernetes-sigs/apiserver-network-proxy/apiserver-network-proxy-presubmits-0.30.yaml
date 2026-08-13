@@ -1,0 +1,28 @@
+presubmits:
+  kubernetes-sigs/apiserver-network-proxy:
+  - name: pull-apiserver-network-proxy-test-0-30
+    cluster: eks-prow-build-cluster
+    always_run: true
+    branches:
+    - release-0.30
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.21.9
+        command:
+        - make
+        args:
+        - test
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: 2
+          limits:
+            memory: 8Gi
+            cpu: 2
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-test-0-30
+      description: Tests the apiserver-network-proxy

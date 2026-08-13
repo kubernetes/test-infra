@@ -1,0 +1,9 @@
+# Keep this file in sync with the other image-config*.yaml files in this directory.
+images:
+  ubuntu:
+    image_family: pipeline-1-34-amd64 # Use pipeline-1-34-amd64 to lock down what Ubuntu version is used with containerd 2.1, which aligns with Ubuntu's built-in containerd version
+    project: ubuntu-os-gke-cloud
+    # the image regex is added so that only cgroupv2 images are selected.
+    # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
+    image_regex: ".*[^-cgroupsv1]$"
+    metadata: "user-data</home/prow/go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/env"

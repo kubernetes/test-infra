@@ -1,0 +1,31 @@
+---
+systemd:
+  units:
+    - name: swap-enable.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Enable swap on CoreOS
+        Before=crio-install.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c "sudo dd if=/dev/zero of=/var/swapfile count=1024 bs=1MiB && sudo chmod 600 /var/swapfile && sudo mkswap /var/swapfile && sudo swapon /var/swapfile && free -h"
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: disable-swap.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Disable swap
+        After=disableswap-system.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c "sudo systemctl set-property system.slice MemorySwapMax=0"
+        ExecStart=/bin/sh -c "sudo systemctl set-property user.slice MemorySwapMax=0"
+
+        [Install]
+        WantedBy=multi-user.target
+

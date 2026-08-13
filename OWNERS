@@ -1,0 +1,26 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- aojea
+- BenTheElder
+- dims
+- upodroid
+approvers:
+- aojea
+- BenTheElder
+- dims
+- michelle192837
+- upodroid
+emeritus_approvers:
+- amwat
+- cjwagner
+- chases2
+- fejta
+- ixdy
+- krzyzacy
+- mpherman2
+- spiffxp
+- stevekuznetsov
+
+labels:
+- sig/testing

@@ -1,0 +1,7 @@
+dashboard_groups:
+- name: sig-ui
+  dashboard_names:
+    - sig-ui-headlamp
+
+dashboards:
+- name: sig-ui-headlamp

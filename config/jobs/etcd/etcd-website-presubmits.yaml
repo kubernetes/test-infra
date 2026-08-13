@@ -1,0 +1,31 @@
+---
+presubmits:
+  etcd-io/website:
+  - name: pull-website-lint
+    cluster: eks-prow-build-cluster
+    always_run: false
+    run_if_changed: '.*\.md$'
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-website-presubmits
+      testgrid-tab-name: pull-website-lint
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/node:20
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          apt-get update && apt-get install -y gawk
+          npm install -g markdownlint-cli2
+          make markdown-diff-lint
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"

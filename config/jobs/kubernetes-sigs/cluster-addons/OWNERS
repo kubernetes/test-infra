@@ -1,0 +1,17 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- atoato88
+- johnsonj
+- justinsb
+- rajansandeep
+- stealthybox
+approvers:
+- atoato88
+- johnsonj
+- justinsb
+- rajansandeep
+- stealthybox
+
+labels:
+- sig/cluster-lifecycle

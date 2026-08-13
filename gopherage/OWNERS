@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+# this will fall up to repo owners now, no active developers
+emeritus_approvers:
+- amwat
+- BenTheElder
+- Katharine
+
+labels:
+- area/gopherage

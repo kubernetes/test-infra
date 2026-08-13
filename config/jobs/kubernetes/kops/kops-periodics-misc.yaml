@@ -1,0 +1,116 @@
+periodics:
+- name: e2e-kops-do-calico-dns-none
+  cron: '54 5 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-do-credential: "true"
+    preset-do-spaces-credential: "true"
+    preset-do-ssh: "true"
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+        -v 2 \
+        --up --down \
+        --cloud-provider=digitalocean \
+        --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
+        --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --control-plane-count=3 --dns=none" \
+        --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
+        --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+        --test=kops \
+        -- \
+        --ginkgo-args="--debug" \
+        --test-package-marker=stable.txt \
+        --parallel 15 \
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+  annotations:
+    test.kops.k8s.io/cloud: digitalocean
+    test.kops.k8s.io/k8s_version: 'stable'
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/networking: 'calico'
+    testgrid-dashboards: kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: e2e-kops-do-calico-dns-none
+- name: e2e-kops-do-calico-fqdn
+  cron: '54 2 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-do-credential: "true"
+    preset-do-spaces-credential: "true"
+    preset-do-ssh: "true"
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+          make test-e2e-install
+          kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=digitalocean \
+          --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
+          --create-args "--networking=calico --node-count=3 --control-plane-count=3" \
+          --cluster-name=e2e-b284d3e83b-4c997.test-cncf-do.k8s.io \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+          --test=kops \
+          -- \
+          --ginkgo-args="--debug" \
+          --test-package-marker=stable.txt \
+          --parallel 15 \
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+  annotations:
+    test.kops.k8s.io/cloud: digitalocean
+    test.kops.k8s.io/k8s_version: 'stable'
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/networking: 'calico'
+    testgrid-dashboards: kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: e2e-kops-do-calico-fqdn

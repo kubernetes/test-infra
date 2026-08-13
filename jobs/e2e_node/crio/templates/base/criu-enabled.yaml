@@ -1,0 +1,7 @@
+---
+storage:
+  files:
+    - path: /etc/crio/crio.conf.d/42-checkpoint-enabled.conf
+      contents:
+        local: 42-checkpoint-enabled.conf
+      mode: 0644

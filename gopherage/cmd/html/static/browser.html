@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Conformance Code Coverage</title>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+    var embeddedProfiles = {{ .Coverage }};
+    {{ .Script }}
+  </script>
+  <style type="text/css">
+    body {
+      font-family: sans-serif;
+    }
+
+    .arrow {
+      float: left;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+<h1>Coverage summary</h1>
+<h2 id="breadcrumbs"></h2>
+<div id="table">
+  Loading...
+</div>
+</body>
+</html>

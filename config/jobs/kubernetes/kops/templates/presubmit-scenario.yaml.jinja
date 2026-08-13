@@ -1,0 +1,101 @@
+
+  - name: {{job_name}}
+    cluster: {{build_cluster}}
+    branches:
+    - {{branch}}
+    {%- if run_if_changed %}
+    run_if_changed: '{{run_if_changed}}'
+    {%- endif %}
+    {%- if job_queue_name %}
+    job_queue_name: '{{job_queue_name}}'
+    {%- endif %}
+    always_run: {{always_run}}
+    optional: {{optional}}
+    skip_report: {{skip_report}}
+    labels:
+      {%- if cloud == "aws" %}
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      {%- if use_preset_for_account_creds %}
+      {{use_preset_for_account_creds}}: "true"
+      {%- elif not boskos_resource_type %}
+      preset-k8s-kops-aws-credential: "true"
+      {%- endif %}
+      {%- elif cloud == "azure" %}
+      preset-service-account: "true"
+      preset-kops-azure-cred-wi: "true"
+      {%- else %}
+      preset-k8s-ssh: "true"
+      {%- endif %}
+    max_concurrency: 1
+    decorate: true
+    decoration_config:
+      timeout: {{job_timeout}}
+    path_alias: k8s.io/kops
+    {%- if scenario == 'scalability' %}
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    {%- endif %}
+    {%- if extra_refs %}
+    extra_refs:
+    {%- for ref in extra_refs %}
+    - org: {{ ref.org }}
+      repo: {{ ref.repo }}
+      base_ref: {{ ref.base_ref }}
+      {%- if ref.path_alias %}
+      path_alias: {{ ref.path_alias }}
+      {%- endif %}
+    {%- endfor %}
+    {%- endif %}
+    spec:
+      {%- if cloud == "gce" %}
+      serviceAccountName: k8s-kops-test
+      {%- elif cloud == "azure" %}
+      serviceAccountName: azure
+      {%- endif %}
+      containers:
+      - image: {{image}}
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/{{ scenario }}/run-test.sh
+        securityContext:
+          privileged: true
+        env:
+        {%- if kops_feature_flags %}
+        - name: KOPS_FEATURE_FLAGS
+          value: "{{kops_feature_flags}}"
+        {%- endif %}
+        {#- AWS jobs get the key from preset-aws-ssh's AWS_SSH_PRIVATE_KEY_FILE,
+            which kubetest2-kops re-exports as KUBE_SSH_KEY_PATH for the e2e framework. -#}
+        {%- if cloud != "azure" and cloud != "aws" %}
+        - name: KUBE_SSH_KEY_PATH
+          value: {{kops_ssh_key_path}}
+        {%- endif %}
+        {%- if cloud != "azure" %}
+        - name: KUBE_SSH_USER
+          value: {{kops_ssh_user}}
+        {%- endif %}
+        - name: GINKGO_NO_COLOR
+          value: "TRUE"
+        - name: GOPATH
+          value: /home/prow/go
+        {%- if artifacts %}
+        - name: ARTIFACTS
+          value: {{artifacts}}
+        {%- endif %}
+        {%- for key, val in env.items() %}
+        - name: {{ key }}
+          value: "{{ val }}"
+        {%- endfor %}
+        resources:
+          requests:
+            cpu: "6"
+            memory: "16Gi"
+          limits:
+            cpu: "6"
+            memory: "16Gi"

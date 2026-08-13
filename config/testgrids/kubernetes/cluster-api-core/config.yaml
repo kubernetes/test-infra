@@ -1,0 +1,13 @@
+dashboard_groups:
+- name: cluster-api-core
+  dashboard_names:
+    - cluster-api-core-main
+    - cluster-api-core-1.12
+    - cluster-api-core-1.13
+    - cluster-api-core-1.14
+
+dashboards:
+- name: cluster-api-core-main
+- name: cluster-api-core-1.12
+- name: cluster-api-core-1.13
+- name: cluster-api-core-1.14

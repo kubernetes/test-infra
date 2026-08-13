@@ -1,0 +1,25 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+# From
+# https://github.com/kubernetes/cloud-provider-openstack/blob/master/OWNERS
+# Correct as of 2025-06-20
+emeritus_approvers:
+- chrigl
+- lingxiankong
+- ramineni
+- jichenjc
+approvers:
+- dulek
+- kayrus
+- stephenfin
+- zetaab
+reviewers:
+- dulek
+- kayrus
+- mdbooth
+- stephenfin
+- zetaab
+
+labels:
+- sig/cloud-provider
+- area/provider/openstack

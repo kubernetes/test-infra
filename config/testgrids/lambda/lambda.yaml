@@ -1,0 +1,15 @@
+#
+# Start dashboards
+#
+dashboards:
+- name: lambda-gpu-periodics
+- name: lambda-gpu-presubmits
+
+#
+# Start dashboard groups
+#
+dashboard_groups:
+- name: lambda
+  dashboard_names:
+  - lambda-gpu-periodics
+  - lambda-gpu-presubmits

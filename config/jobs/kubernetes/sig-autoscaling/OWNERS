@@ -1,0 +1,21 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- mwielgus
+- towca
+- jackfrancis
+- adrianmoisey
+- omerap12
+approvers:
+- mwielgus
+- towca
+- jackfrancis
+- adrianmoisey
+- omerap12
+emeritus_approvers:
+- bskiba
+- maciekpytel
+- kwiesmueller
+- voelzmo
+- gjtempleton
+- raywainman

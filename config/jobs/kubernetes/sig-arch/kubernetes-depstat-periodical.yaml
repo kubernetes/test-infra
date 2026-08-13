@@ -1,0 +1,65 @@
+periodics:
+  - interval: 6h
+    name: check-dependency-stats-periodical
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: golang
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          set -euo pipefail
+
+          export WORKDIR=${ARTIFACTS:-$TMPDIR}
+          export PATH=$PATH:$GOPATH/bin
+          export GOWORK=off
+
+          mkdir -p "${WORKDIR}"
+          pushd "$WORKDIR"
+          go install github.com/kubernetes-sigs/depstat@latest
+          popd
+
+          # Install graphviz and jq
+          apt-get update -qq && apt-get install -y -qq graphviz jq > /dev/null 2>&1
+
+          MAIN_MODULES="k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')"
+
+          # Generate stats in multiple formats (with test-only split)
+          depstat stats -m "${MAIN_MODULES}" -v --split-test-only | tee "${WORKDIR}/stats.txt"
+          depstat stats -m "${MAIN_MODULES}" --split-test-only --json > "${WORKDIR}/stats.json"
+          depstat stats -m "${MAIN_MODULES}" --split-test-only --csv > "${WORKDIR}/stats.csv"
+
+          # Generate full dependency graph with edge types
+          depstat graph -m "${MAIN_MODULES}" --show-edge-types
+          mv graph.dot "${WORKDIR}/graph.dot"
+          dot -Tsvg "${WORKDIR}/graph.dot" -o "${WORKDIR}/graph.svg" || echo "Graph too large for SVG"
+
+          # Check for dependency cycles
+          echo ""
+          echo "=== Dependency Cycles ==="
+          depstat cycles -m "${MAIN_MODULES}" | tee "${WORKDIR}/cycles.txt"
+
+          echo ""
+          echo "Artifacts saved to: ${WORKDIR}"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-dashboards: sig-arch-code-organization
+      testgrid-alert-email: davanum@gmail.com
+      description: Generates comprehensive dependency statistics and graph for kubernetes master

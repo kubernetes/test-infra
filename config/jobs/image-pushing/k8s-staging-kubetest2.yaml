@@ -1,0 +1,72 @@
+postsubmits:
+  kubernetes-sigs/kubetest2:
+    - name: post-kubetest2-push-binaries
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-kubetest2, sig-k8s-infra-gcb
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      decoration_config:
+        timeout: 180m
+        grace_period: 10m
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kubetest2
+              - --scratch-bucket=gs://k8s-staging-kubetest2-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - hack/ci/push-binaries/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kubetest2-maintainers
+
+periodics:
+  - interval: 72h
+    name: ci-kubetest2-push-binaries
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-testing-kubetest2, sig-k8s-infra-gcb
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+    decorate: true
+    decoration_config:
+      timeout: 180m
+      grace_period: 10m
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kubetest2
+        base_ref: master
+        path_alias: sig.k8s.io/kubetest2
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-kubetest2
+            - --scratch-bucket=gs://k8s-staging-kubetest2-gcb
+            - --env-passthrough=PULL_BASE_SHA
+            - --with-git-dir
+            - --build-dir=.
+            - hack/ci/push-binaries/
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: kubetest2-maintainers

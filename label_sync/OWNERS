@@ -1,0 +1,22 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+filters:
+  ".*":
+    approvers:
+      - sig-contributor-experience-technical-leads
+      - cblecker
+    reviewers:
+      - sig-contributor-experience-technical-leads
+      - cblecker
+      - smg247
+      - danilo-gemoli
+      - droslean
+    emeritus_approvers:
+      - fejta
+      - spiffxp
+    labels:
+      - area/label_sync
+      - sig/contributor-experience
+  "labels\\.yaml":
+    required_reviewers:
+      - sig-contributor-experience-technical-leads

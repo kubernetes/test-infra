@@ -1,0 +1,200 @@
+periodics:
+  - name: ci-kubernetes-unit-s390x
+    interval: 1h
+    cluster: k8s-infra-s390x-prow-build
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    annotations:
+      testgrid-dashboards: ibm-s390x-periodics, ibm-s390x-k8s
+      testgrid-tab-name: ci-kubernetes-unit-s390x
+    spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsGroup: 2010
+        runAsUser: 2001
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+          command:
+            - make
+            - test
+          env:
+            - name: KUBE_TIMEOUT
+              value: "-timeout=300s"
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 6
+              memory: "16Gi"
+            limits:
+              cpu: 6
+              memory: "16Gi"
+
+  - name: ci-kubernetes-integration-master-s390x
+    interval: 1h
+    cluster: k8s-infra-s390x-prow-build
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    annotations:
+      testgrid-dashboards: ibm-s390x-k8s, ibm-s390x-periodics
+      testgrid-tab-name: ci-kubernetes-integration-master-s390x
+      description: "Ends up running: make test-integration"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/test-integration-dockerized.sh
+        env:
+        - name: SHORT
+          value: --short=false
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 6
+            memory: 20Gi
+          requests:
+            cpu: 6
+            memory: 20Gi
+
+  - name: ci-kubernetes-integration-1-34-s390x
+    interval: 6h # bump to 24h after initial debugging
+    cluster: k8s-infra-s390x-prow-build
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.34
+      path_alias: k8s.io/kubernetes
+    annotations:
+      testgrid-dashboards: ibm-s390x-k8s, ibm-s390x-periodics
+      testgrid-tab-name: ci-kubernetes-integration-1.34-s390x
+      description: "Ends up running: make test-integration"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/test-integration-dockerized.sh
+        env:
+        - name: SHORT
+          value: --short=false
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 6
+            memory: 20Gi
+          requests:
+            cpu: 6
+            memory: 20Gi
+
+  - name: ci-kubernetes-integration-1-33-s390x
+    interval: 6h # bump to 24h after initial debugging
+    cluster: k8s-infra-s390x-prow-build
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.33
+      path_alias: k8s.io/kubernetes
+    annotations:
+      testgrid-dashboards: ibm-s390x-k8s, ibm-s390x-periodics
+      testgrid-tab-name: ci-kubernetes-integration-1.33-s390x
+      description: "Ends up running: make test-integration"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/test-integration-dockerized.sh
+        env:
+        - name: SHORT
+          value: --short=false
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 6
+            memory: 20Gi
+          requests:
+            cpu: 6
+            memory: 20Gi
+
+  - name: ci-kubernetes-s390x-conformance-master
+    cron: "0 3-23/4 * * *" # every 4h starting at 03:00 UTC
+    cluster: k8s-infra-s390x-prow-build
+    labels:
+      preset-ibmcloud-cred-z: "true"
+    decorate: true
+    decoration_config:
+      timeout: 2h0m0s
+    extra_refs:
+      - base_ref: main
+        org: kubernetes-sigs
+        repo: provider-ibmcloud-test-infra
+        workdir: true
+    annotations:
+      description: Runs conformance tests using kubetest2 against kubernetes ci latest on IBM VPC
+      fork-per-release: "true"
+      fork-per-release-cron: 0 1 * * *, 0 5 * * *, 0 9 * * *, 0 13 * * *, 0 17 * * *
+      fork-per-release-replacements: "MARKER_VERSION=latest.txt -> MARKER_VERSION=latest-{{.Version}}.txt"
+      testgrid-dashboards: ibm-s390x-k8s, conformance-s390x, ibm-k8s-e2e
+      testgrid-tab-name: ci-kubernetes-s390x-conformance-master
+      testgrid-alert-email: sig-cloud-provider-ibm-s390x-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 4
+              memory: "12Gi"
+            limits:
+              cpu: 4
+              memory: "12Gi"
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              set -o xtrace
+
+              MARKER_VERSION=latest.txt;
+              K8S_BUILD_VERSION=$(curl -Ls https://dl.k8s.io/ci/$MARKER_VERSION);
+
+              #Setup of kubetest2 tf deployer
+              make install-deployer-tf
+
+              kubetest2 tf --target-provider vpc --vpc-node-image-name ibm-ubuntu-22-04-4-minimal-s390x-3 \
+              --vpc-ssh-key k8s-s390x-ssh-key \
+              --vpc-node-profile bz2-4x16 --ssh-private-key /etc/secret-volume/ssh-privatekey \
+              --extra-vars=ansible_user:k8s-admin --extra-vars=ansible_become:true \
+              --extra-vars=ansible_become_method:sudo \
+              --extra-vars=k8s_tar_bundles:kubernetes-server-linux-s390x.tar.gz \
+              --extra-vars=pod_subnet:10.244.0.0/16 --extra-vars=cni_provider:flannel \
+              --workers-count 2 --cluster-name conformance-$(date +%s) --up --down --auto-approve \
+              --retry-on-tf-failure 3 --break-kubetest-on-upfail true --ignore-destroy-errors \
+              --build-version $K8S_BUILD_VERSION --release-marker $K8S_BUILD_VERSION \
+              --test=ginkgo -- --parallel 10 --test-package-dir ci --test-package-marker $MARKER_VERSION \
+              --focus-regex='\[Conformance\]'

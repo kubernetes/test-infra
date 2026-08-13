@@ -1,0 +1,163 @@
+postsubmits:
+  kubernetes/minikube:
+    - name: post-minikube-kubernetes-bootcamp-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+      run_if_changed: '^(deploy/images/kubernetes-bootcamp/|hack/prow/image/kubernetes-bootcamp/|hack/prow/prow_images\.mk$)'
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --gcb-config=hack/prow/image/kubernetes-bootcamp/cloudbuild.yaml
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+    - name: post-minikube-gvisor-addon-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+      run_if_changed: '^(deploy/images/gvisor/|hack/prow/image/gvisor/|hack/prow/prow_images\.mk$)'
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --gcb-config=hack/prow/image/gvisor/cloudbuild.yaml
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+    - name: post-minikube-kubernetes-registry-proxy-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+      run_if_changed: '^(deploy/images/kube-registry-proxy/|hack/prow/image/kube-registry-proxy/|hack/prow/prow_images\.mk$)'
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --gcb-config=hack/prow/image/kube-registry-proxy/cloudbuild.yaml
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+    - name: post-minikube-kicbase-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+      run_if_changed: '^(deploy/kicbase/|hack/prow/image/kicbase/|hack/prow/prow_images\.mk$)'
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --gcb-config=hack/prow/image/kicbase/cloudbuild.yaml
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+    - name: post-minikube-buildroot-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+      run_if_changed: '^(deploy/iso/minikube-iso/Dockerfile|hack/prow/image/buildroot-image/|hack/prow/prow_images\.mk$)'
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --gcb-config=hack/prow/image/buildroot-image/cloudbuild.yaml
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+    - name: post-minikube-storage-provisioner-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+      run_if_changed: '^(deploy/storage-provisioner/|pkg/storage/|hack/prow/image/storage-provisioner/|hack/prow/prow_images\.mk$)'
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --gcb-config=hack/prow/image/storage-provisioner/cloudbuild.yaml
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+    - name: post-minikube-auto-pause-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+      run_if_changed: '^(deploy/addons/auto-pause/|cmd/auto-pause/|hack/prow/image/auto-pause/|hack/prow/prow_images\.mk$)'
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --gcb-config=hack/prow/image/auto-pause/cloudbuild.yaml
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"

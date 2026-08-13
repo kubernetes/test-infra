@@ -1,0 +1,18 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+  - msau42
+  - saad-ali
+  - wongma7
+  - jsafrane
+  - cofyc
+  - xing-yang
+  - andyzhangx
+approvers:
+  - msau42
+  - saad-ali
+  - wongma7
+  - jsafrane
+  - cofyc
+  - xing-yang
+  - andyzhangx

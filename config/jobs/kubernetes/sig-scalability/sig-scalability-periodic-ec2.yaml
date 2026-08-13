@@ -1,0 +1,231 @@
+periodics:
+- name: maintenance-ci-scale-aws-janitor
+  cluster: eks-prow-build-cluster
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential-boskos-scale-001-kops: "true"
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
+  decorate: true
+  spec:
+    containers:
+    - command:
+      - /app
+      args:
+      - --ttl=12h
+      - --path=s3://k8s-infra-kops-scale-tests/objs.json
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260730-11fb0c8
+      resources:
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: ci-scale-aws-janitor
+    description: Deletes old AWS resources for scalability jobs
+
+- name: ci-kubernetes-e2e-kops-aws-scale-amazonvpc-using-cl2
+  tags:
+  - "perfDashPrefix: aws-5000Nodes"
+  - "perfDashBuildsCount: 270"
+  - "perfDashJobType: performance"
+  cluster: eks-prow-build-cluster
+  cron: '1 7 * * 0,1,3,5' # Sun/Mon/Wed/Fri 07:01 UTC; alternates with the 5k DRA job (Tue/Thu/Sat)
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential-boskos-scale-001-kops: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  job_queue_name: '5k-aws-scale-test'
+  decoration_config:
+    timeout: 480m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/networking: amazonvpc
+    testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws, sig-release-master-informing, amazon-ec2-release
+    testgrid-tab-name: ec2-master-scale-performance
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com, release-team@kubernetes.io
+    testgrid-days-of-results: "60"
+    testgrid-num-columns-recent: "3"
+    testgrid-num-failures-to-alert: "1"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
+      - name: GOPATH
+        value: /home/prow/go
+      - name: CNI_PLUGIN
+        value: "amazonvpc"
+      - name: KUBE_NODE_COUNT
+        value: "5000"
+      - name: CL2_LOAD_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_DELETE_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_RATE_LIMIT_POD_CREATION
+        value: "false"
+      - name: NODE_MODE
+        value: "master"
+      - name: CONTROL_PLANE_COUNT
+        value: "1"
+      - name: CONTROL_PLANE_SIZE
+        value: "c8i.24xlarge"
+      - name: CL2_ENABLE_DNS_PROGRAMMING
+        value: "true"
+      - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+        value: "true"
+      - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+        value: "99.5"
+      - name: CL2_ALLOWED_SLOW_API_CALLS
+        value: "1"
+      - name: ENABLE_PROMETHEUS_SERVER
+        value: "true"
+      - name: TEAR_DOWN_PROMETHEUS_SERVER
+        value: "false"
+      - name: PROMETHEUS_PVC_STORAGE_CLASS
+        value: "io2"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: KOPS_IRSA
+        value: "true"
+      resources:
+        requests:
+          cpu: 7
+          memory: 24Gi
+        limits:
+          cpu: 7
+          memory: 24Gi
+
+# This job is the same as above, but using 100 nodes instead of 5000
+- name: ci-kubernetes-e2e-kops-aws-small-scale-amazonvpc-using-cl2
+  tags:
+  - "perfDashPrefix: aws-100Nodes"
+  - "perfDashBuildsCount: 270"
+  - "perfDashJobType: performance"
+  cluster: eks-prow-build-cluster
+  cron: '1 0,6,12,18 * * *' # Run every day at 12:01 AM, 6:01 AM, 12:01 PM, and 6:01 PM UTC (4 times a day)
+  # Equivalent local times: 7:01 PM, 1:01 AM, 7:01 AM, 1:01 PM PDT / 8:01 PM, 2:01 AM, 8:01 AM, 2:01 PM PST / 8:01 PM, 2:01 AM, 8:01 AM, 2:01 PM EDT (during daylight saving)
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential-boskos-scale-001-kops: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 480m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    karpenter.sh/do-not-disrupt: "true"
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/networking: amazonvpc
+    testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws, amazon-ec2-release
+    testgrid-tab-name: ec2-master-small-scale-performance
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
+      - name: GOPATH
+        value: /home/prow/go
+      - name: CNI_PLUGIN
+        value: "amazonvpc"
+      - name: KUBE_NODE_COUNT
+        value: "100"
+      - name: CL2_LOAD_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_DELETE_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_RATE_LIMIT_POD_CREATION
+        value: "false"
+      - name: NODE_MODE
+        value: "master"
+      - name: CONTROL_PLANE_COUNT
+        value: "1"
+      - name: CONTROL_PLANE_SIZE
+        value: "c8a.8xlarge"
+      - name: CL2_ENABLE_DNS_PROGRAMMING
+        value: "true"
+      - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+        value: "true"
+      - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+        value: "99.5"
+      - name: CL2_ALLOWED_SLOW_API_CALLS
+        value: "1"
+      - name: ENABLE_PROMETHEUS_SERVER
+        value: "true"
+      - name: TEAR_DOWN_PROMETHEUS_SERVER
+        value: "false"
+      - name: PROMETHEUS_PVC_STORAGE_CLASS
+        value: "io2"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: KOPS_IRSA
+        value: "true"
+      resources:
+        requests:
+          cpu: 7
+          memory: 24Gi
+        limits:
+          cpu: 7
+          memory: 24Gi

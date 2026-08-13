@@ -1,0 +1,11 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- brancz
+- serathius
+- dashpole
+approvers:
+- sig-instrumentation-leads
+- serathius
+labels:
+- sig/instrumentation

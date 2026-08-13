@@ -1,0 +1,7 @@
+---
+storage:
+  files:
+    - path: /etc/crio/crio.conf.d/30-crio-drop-infra-ctr.conf
+      contents:
+        local: 30-crio-drop-infra-ctr.conf
+      mode: 0644

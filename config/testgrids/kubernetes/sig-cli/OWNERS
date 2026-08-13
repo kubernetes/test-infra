@@ -1,0 +1,12 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- ardaguclu
+- brianpursley
+- eddiezane
+- soltysh
+approvers:
+- ardaguclu
+- brianpursley
+- eddiezane
+- soltysh

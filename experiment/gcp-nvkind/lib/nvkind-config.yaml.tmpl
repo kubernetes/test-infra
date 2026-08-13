@@ -1,0 +1,43 @@
+# nvkind / kind cluster config template.
+# Rendered by nvkind: `numGPUs` is provided automatically based on host GPU count.
+# Enables DynamicResourceAllocation feature gate across control-plane
+# components and kubelet, and turns on CDI in containerd.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+featureGates:
+  DynamicResourceAllocation: true
+containerdConfigPatches:
+- |-
+  [plugins."io.containerd.grpc.v1.cri"]
+    enable_cdi = true
+nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: ClusterConfiguration
+    apiServer:
+      extraArgs:
+        feature-gates: "DynamicResourceAllocation=true"
+    controllerManager:
+      extraArgs:
+        feature-gates: "DynamicResourceAllocation=true"
+    scheduler:
+      extraArgs:
+        feature-gates: "DynamicResourceAllocation=true"
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        feature-gates: "DynamicResourceAllocation=true"
+- role: worker
+  kubeadmConfigPatches:
+  - |
+    kind: JoinConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        feature-gates: "DynamicResourceAllocation=true"
+  {{- range $gpu := until numGPUs }}
+  extraMounts:
+  - hostPath: /dev/null
+    containerPath: /var/run/nvidia-container-devices/{{ $gpu }}
+  {{- end }}

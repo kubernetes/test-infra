@@ -1,0 +1,86 @@
+% extends 'base.html'
+{% block title %}PR Dashboard{% endblock %}
+% block head
+<link rel="stylesheet" href="{{'octicons/octicons.css'|static}}" />
+<script src="{{'pr.js'|static}}"></script>
+{{ super() }}
+% endblock
+% block header
+	<h1>PR Dashboard</h1>
+% endblock
+% block content
+<form id="prdash-nav" onsubmit="document.location='/pr/' + document.getElementById('userBox').value; return false;">
+View
+{% if user %}<a href="/pr/all">All</a>{% else %}<b>All</b>{% endif %}
+ | {% if user != login or not login %}<a href="/pr">Me</a>{% else %}<b>Me</b>{% endif %}
+ | <input id="userBox" pattern='[-\w]+' name="user" type="textbox" placeholder="username" value="{{user or ''}}"}>
+<button>Switch User</button>
+</form>
+
+% if milestones
+<div id="milestone-nav">
+Filter Milestone: {% if milestone %}<a href="?">Any</a>{% else %}<b>Any</b>{% endif %}
+% for ms in milestones
+	% if ms == milestone
+		<b>{{ms}}</b>
+	% else
+		<a href="?milestone={{ms}}">{{ms}}</a>
+	% endif
+% endfor
+</div>
+% endif
+
+% for title, pred, search in cats
+	% set sub_prs = prs | select(pred)
+	% if title == 'Approvable' and not sub_prs
+		% continue
+	% endif
+	<h3 class="pr-section">
+	<a id="section-{{title|slugify}}"></a>
+	% if search
+	<a href="https://github.com/pulls?q={{search|quote_plus}}">{{title}}</a>
+	% else
+	{{title}}
+	% endif
+	({{sub_prs|length}})
+	% if title == 'Needs Attention' and acks
+		<button style='margin-left: 20px;' onclick='ack_clear()' alt='Reset "Needs Attention" ignores'>Clear Acks ({{acks|length}})</button>
+	% endif
+	</h3>
+	% if sub_prs
+	<table class="pr pr-dash">
+	<thead>
+		<tr><th>Repo<th>Number<th>Author<th>Status<th>&#9660; Updated<th>Assignees<th>Size<th>Title</tr>
+	</thead>
+		% for pr in sub_prs
+			% set pl = pr.payload
+      <tr id="{{title|slugify}} {{pr.repo}} {{pr.number}}"
+        onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')"
+        onauxclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')"
+        title="https://github.com/{{pr.repo}}/pull/{{pr.number}}">
+			<td>{{pr.repo|ltrim('kubernetes/')}}
+			<td>{{pr.number}}
+			<td>{{pl['author']}}
+			<td>{{pl|render_status(user)}}
+			<td>{{pr.updated_at|dt_to_epoch|timestamp('humantimestamp', '%b %e')}}
+			<td>{{pl['assignees']|join(", ")}}
+			<td>{{pl|classify_size}}
+			<td>{{pl['title']}}
+			% if title == "Needs Attention" and acks is not none
+				% set latest = pl|get_latest(user)
+				% if latest
+					<td><button onclick="ack(event, '{{pr.repo}}', {{pr.number}}, {{latest}});">ACK</button>
+				% endif
+			% endif
+		% endfor
+	</table>
+	% else
+		<p><h4 class="pr-section">No Results</h4>
+	% endif
+% endfor
+
+<div id="help">
+  <p><b>Needs Attention</b> is a heuristic grouping based on a <a href="https://git.k8s.io/test-infra/gubernator/github/classifier.py#L397">simple state machine</a>. {% if user != login or not login %}<a href="/pr">Login</a> to use {% else %}Use {% endif %} the "ACK" button to remove a PR from "Needs Attention" until something new occurs.
+<p>Have a problem? <a href="https://github.com/kubernetes/test-infra/issues/new?title=PR%20Dashboard:&labels=area/gubernator&assignee=rmmh">File a bug!</a>
+</div>
+% endblock

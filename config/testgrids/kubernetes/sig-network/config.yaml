@@ -1,0 +1,92 @@
+dashboard_groups:
+- name: sig-network
+  dashboard_names:
+    - sig-network-dns
+    - sig-network-external-dns
+    - sig-network-gce
+    - sig-network-ingress-gce-e2e
+    - sig-network-gateway-api
+    - sig-network-ingress2gateway
+    - sig-network-policy-api
+    - sig-network-ingress-controller-conformance
+    - sig-network-kind
+    - sig-network-node-ipam-controller
+    - sig-network-gwctl
+    - sig-network-nat64
+    - sig-network-kindnet
+    - sig-network-kube-agentic-networking
+    - sig-network-dranet
+
+dashboards:
+- name: sig-network-dns
+- name: sig-network-external-dns
+- name: sig-network-gce
+  dashboard_tab:
+    - name: gci-gce-ipvs
+      test_group_name: ci-kubernetes-e2e-gci-gce-ipvs
+      description: network gci-gce e2e tests in ipvs proxier mode
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com, lionwei1992+alerts@gmail.com
+    - name: gci-gce-coredns
+      test_group_name: ci-kubernetes-e2e-gci-gce-coredns
+      description: network gci-gce tests with CoreDNS
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    - name: gci-gce-coredns-nodecache
+      test_group_name: ci-kubernetes-e2e-gci-gce-coredns-nodecache
+      description: network gci-gce tests with CoreDNS and nodelocaldns cache enabled
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    - name: gci-gce-kube-dns
+      test_group_name: ci-kubernetes-e2e-gci-gce-kube-dns
+      description: network gci-gce tests with kube-dns
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    - name: gci-gce-kube-dns-nodecache
+      test_group_name: ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
+      description: network gci-gce tests with kube-dns and nodelocaldns cache enabled
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    - name: gci-gce
+      test_group_name: ci-kubernetes-e2e-gci-gce
+      description: network gci-gce e2e tests for master branch
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    - name: gci-gce-slow
+      test_group_name: ci-kubernetes-e2e-gci-gce-slow
+      description: network gci-gce slow e2e tests for master branch
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    - name: gci-gce-serial
+      test_group_name: ci-kubernetes-e2e-gci-gce-serial
+      description: network gci-gce serial e2e tests for master branch
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    - name: gci-gce-serial-kube-dns
+      test_group_name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
+      description: network gci-gce with kube-dns serial e2e tests for master branch
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    - name: gci-gce-serial-kube-dns-nodecache
+      test_group_name: ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
+      description: network gci-gce with kube-dns and nodelocaldns cache serial e2e tests for master branch
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    - name: gci-gce-alpha-features
+      test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
+      description: network gci-gce alpha features e2e tests for master branch
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+
+- name: sig-network-ingress-gce-e2e
+- name: sig-network-gateway-api
+- name: sig-network-ingress2gateway
+- name: sig-network-policy-api
+- name: sig-network-ingress-controller-conformance
+- name: sig-network-kind
+- name: sig-network-node-ipam-controller
+- name: sig-network-gwctl
+- name: sig-network-nat64
+- name: sig-network-kindnet
+- name: sig-network-kube-agentic-networking
+- name: sig-network-dranet

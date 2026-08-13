@@ -1,0 +1,51 @@
+periodics:
+- cron: "17 * * * *"  # Every hour at 17 minutes past the hour
+  name: ci-test-infra-label-sync
+  cluster: k8s-infra-prow-build-trusted
+  labels:
+    app: label-sync
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
+  decorate: true
+  spec:
+    containers:
+    - name: label-sync
+      image: gcr.io/k8s-staging-test-infra/label_sync:v20260729-f66136c16c
+      command:
+      - label_sync
+      args:
+      - --config=/etc/config/labels.yaml
+      - --confirm=true
+      - --orgs=kubernetes,kubernetes-client,kubernetes-csi,kubernetes-sigs
+      - --token=/etc/github/token
+      - --endpoint=http://ghproxy.test-pods.svc.cluster.local
+      - --endpoint=https://api.github.com
+      - --debug
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github
+        readOnly: true
+      - name: config
+        mountPath: /etc/config
+        readOnly: true
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-github-robot-github-token
+    - name: config
+      configMap:
+        name: label-config
+  annotations:
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '12'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: label_sync
+    testgrid-alert-email: sig-contribex-leads@kubernetes.io, kubernetes-sig-testing-alerts@googlegroups.com
+    description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.

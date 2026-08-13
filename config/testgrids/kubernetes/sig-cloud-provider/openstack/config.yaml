@@ -1,0 +1,13 @@
+dashboard_groups:
+- name: provider-openstack
+  dashboard_names:
+    - provider-openstack-openstack-cloud-controller-manager
+    - provider-openstack-openstack-csi-cinder
+    - provider-openstack-manila-csi-plugin
+    - provider-openstack-keystone-authentication-authorization
+
+dashboards:
+- name: provider-openstack-openstack-cloud-controller-manager
+- name: provider-openstack-openstack-csi-cinder
+- name: provider-openstack-manila-csi-plugin
+- name: provider-openstack-keystone-authentication-authorization

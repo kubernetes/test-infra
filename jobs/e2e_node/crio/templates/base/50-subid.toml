@@ -1,0 +1,5 @@
+# user:firstID:count of IDs
+# where
+# - firstID is 65536 * 2 (not the beginning of the count)
+# - count of IDs is 110 (default max pods) * 65536
+kubelet:131072:7208960

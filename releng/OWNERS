@@ -1,0 +1,14 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- release-engineering-approvers
+
+reviewers:
+- release-engineering-reviewers
+
+emeritus_approvers:
+- Katharine
+
+labels:
+- sig/release
+- area/release-eng

@@ -1,0 +1,61 @@
+periodics:
+  - name: ar-to-s3-sync
+    interval: 5m
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    max_concurrency: 1
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+      # this rarely has a flake like exceeding QPS or network connection issues
+      # it runs in under 2m ever 5m so a flake is not worth alerting on
+      testgrid-num-failures-to-alert: "3"
+      # if this stops running for some reason we have a problem
+      testgrid-alert-stale-results-hours: "1"
+    extra_refs:
+      - org: kubernetes
+        repo: registry.k8s.io
+        base_ref: main
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes
+          slug: sig-k8s-infra-leads
+    spec:
+      serviceAccountName: s3-sync
+      containers:
+        - name: s3-sync
+          image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+          command:
+            - /bin/bash
+            - -c
+            - |
+              aws sts get-caller-identity
+              make geranos
+              REALLY_UPLOAD=true ./bin/geranos
+          env:
+            - name: AWS_ROLE_ARN
+              value: arn:aws:iam::513428760722:role/registry.k8s.io_s3writer
+            - name: AWS_WEB_IDENTITY_TOKEN_FILE
+              value: /var/run/secrets/aws-iam-token/serviceaccount/token
+            - name: AWS_REGION
+              value: us-east-2
+          resources:
+            limits:
+              cpu: 4
+              memory: 4Gi
+            requests:
+              cpu: 4
+              memory: 4Gi
+          volumeMounts:
+            - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
+              name: aws-iam-token
+              readOnly: true
+      volumes:
+        - name: aws-iam-token
+          projected:
+            defaultMode: 420
+            sources:
+              - serviceAccountToken:
+                  audience: sts.amazonaws.com
+                  expirationSeconds: 86400
+                  path: token

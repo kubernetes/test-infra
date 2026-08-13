@@ -1,0 +1,23 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- mikedanese
+- jpbetz
+- jprzychodzen
+- mmamczur
+- YifeiZhuang
+- hdp617
+- LogicalShark
+approvers:
+- mikedanese
+- jpbetz
+- jprzychodzen
+- mmamczur
+- YifeiZhuang
+- hdp617
+- LogicalShark
+emeritus_approvers:
+- amwat
+labels:
+- sig/cloud-provider
+- area/provider/gcp

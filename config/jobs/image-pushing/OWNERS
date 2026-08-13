@@ -1,0 +1,20 @@
+# Only sig k8s infra TLS get approval here because it provides access to infra secrets.
+options:
+  no_parent_owners: true
+
+# k8s-infra TLs
+reviewers:
+- ameukam
+- upodroid
+- xmudrii
+- hakman
+
+approvers:
+- ameukam
+- upodroid
+- xmudrii
+- hakman
+
+emeritus_approvers:
+- BenTheElder
+- dims

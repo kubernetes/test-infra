@@ -1,0 +1,19 @@
+---
+storage:
+  files:
+    # Note: this ignition file assumes FCOS has shadow-utils installed.
+    # As of the time of writing this, it does.
+    - path: /etc/subuid
+      contents:
+        local: 50-subid.toml
+      mode: 0644
+      overwrite: true
+    - path: /etc/subgid
+      contents:
+        local: 50-subid.toml
+      mode: 0644
+      overwrite: true
+passwd:
+  users:
+    - name: core
+    - name: kubelet

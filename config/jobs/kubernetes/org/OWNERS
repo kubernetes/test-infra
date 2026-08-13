@@ -1,0 +1,17 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- cblecker
+- idvoretskyi
+- mrbobbytables
+- nikhita
+approvers:
+- cblecker
+- idvoretskyi
+- mrbobbytables
+- nikhita
+emeritus_approvers:
+- fejta
+- spiffxp
+labels:
+- sig/contributor-experience

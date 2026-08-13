@@ -1,0 +1,233 @@
+body {
+    font-family: sans-serif;
+    padding: 0;
+    margin: 0;
+    scroll-behavior: smooth;
+}
+#page-top-banner {
+    text-align: center;
+    padding: 15px;
+    background-color: #ffeb00;
+    font-weight: bold;
+}
+#page-top-banner a {
+    color: #0027ff;
+}
+#header {
+    background-color: #3f51b5;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    box-shadow: 0px 0px 10px #666;
+    min-height: 100px;
+}
+#header a {
+    color: white;
+}
+#header img {
+    width: 100px;
+    height: 100px;
+    float: left;
+    padding-left: 20px;
+}
+#summary {
+    text-align: center;
+}
+#failures {
+    padding: 0 0 0 10px;
+}
+#content {
+    margin: 10px;
+}
+#help {
+    margin: 30px;
+}
+h3 {
+    margin: 0.67em 0 0 0;
+}
+pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+pre.nowrap{
+    white-space: pre;
+}
+pre.error {
+    margin: .5em 0 1em 2em;
+    padding: 10px;
+    background-color: #eee;
+    display: inline-block;
+    border-radius: 10px;
+    box-shadow: 5px 5px 2px 0 #aaa;
+}
+pre.cmd {
+    padding: 1em;     /* make the click target large */
+    margin: 0 0 0 0;  /* margin isn't clickable */
+    font-size: 9pt;
+    color: #777;
+}
+pre.cmd::before {
+    content: "Command: ";  /* This text isn't selectable */
+}
+span.highlight {
+    background-color: palegoldenrod;
+}
+span.keyword {
+    font-weight: bolder;
+}
+span.skip {
+    color: #999;
+    text-decoration: underline;
+    cursor: pointer;
+}
+span.inset-filename {
+    float: right;
+    color: #777;
+    margin-left: 3em;
+}
+span.time {
+    font-weight: lighter;
+    font-family: monospace;
+}
+span.inset-expand {
+    float: left;
+    color: #777;
+}
+.hidden {
+    display: none;
+}
+.expand {
+    cursor: pointer;
+    text-decoration: underline;
+}
+a.anchor, pre.error>a {
+    color: inherit;
+}
+a.anchor:target {
+    color: blue;
+}
+table.pr {
+    margin: 20px;
+}
+tr.pr-version th {
+    background-color: lightgrey;
+}
+table.pr td {
+    padding: 5px;
+    max-width: 30vw;
+}
+table.pr th {
+    cursor: pointer;
+    user-select: none;
+}
+.build-success {
+    background-color: lightgreen;
+}
+.build-failure {
+    background-color: #F88;
+}
+.build-unset {
+    background-color: lightgrey;
+}
+.build-unstable {
+    background-color: yellow;
+}
+label:hover {
+    cursor: pointer;
+}
+table.pr-dash {
+    border-spacing: 0;
+}
+table.pr-dash tbody tr {
+    cursor: pointer;
+}
+table.pr-dash tbody tr:nth-child(odd) {
+    background: #EEE;
+}
+table.pr-dash tbody tr:hover {
+    background: #e3e9ff;
+}
+#prdash-nav, #milestone-nav {
+    margin: 10px 0 0 40px;
+}
+#userBox {
+    width: 10em;
+}
+table.build-meta {
+    text-align: left;
+    word-break: break-word;
+    margin: 0 auto;  /* center */
+}
+table.build-meta tr:nth-child(even) {
+    background: #ddd;
+}
+table.build-meta td:nth-child(2) {
+    max-width: 60vw;
+}
+table.build-meta td {
+    padding:2px 5px 2px 5px;
+}
+h3.pr-section {
+    margin: 1em 0 0 1em;
+}
+h4.pr-section {
+    margin-left: 3em;
+}
+.text-success { color: #55a532; }
+.text-pending { color: #cea61b; }
+.text-failure { color: #bd2c00; }
+
+.testlist {
+    margin-left: 2em;
+}
+.testlist p {
+    margin: 0;
+}
+
+/* ansi colors from https://en.wikipedia.org/wiki/ANSI_escape_code#Colors */
+.ansi-0 { color: #000000; }  /* Black */
+.ansi-1 { color: #c23621; }  /* Red */
+.ansi-2 { color: #25bc26; }  /* Green */
+.ansi-3 { color: #adad27; }  /* Brown */
+.ansi-4 { color: #492ee1; }  /* Blue */
+.ansi-5 { color: #d338d3; }  /* Magenta */
+.ansi-6 { color: #33bbc8; }  /* Cyan */
+.ansi-7 { color: #cbcccd; }  /* Gray */
+/* Bright */
+.ansi-8 { color: #818383; }  /* Darkgray */
+.ansi-9 { color: #fc391f; }  /* Red */
+.ansi-10 { color: #31e722; }  /* Green */
+.ansi-11 { color: #eaec23; }  /* Yellow */
+.ansi-12 { color: #5833ff; }  /* Blue */
+.ansi-13 { color: #f935f8; }  /* Magenta */
+.ansi-14 { color: #14f0f0; }  /* Cyan */
+.ansi-15 { color: #e9ebeb; }  /* White */
+ul.nav {
+    list-style-type:none;
+}
+li.nav {
+    padding: 5px 20px 5px 20px;
+    display: inline-block;
+    background-color: #eee;
+}
+div#log {
+    padding: 0 0 0 10px;
+}
+ul.log {
+    list-style-type:none;
+    margin: 0px;
+    padding: 0px;
+}
+li.log {
+    padding: 5px;
+    display: inline-block;
+}
+
+/* weak mobile support */
+@media (max-device-width: 500px) {
+    body { font-size: xx-large; }
+    pre { font-size: x-small; }
+    pre.cmd { display: none; }
+    pre.error { font-size: medium; }
+    button { font-size: xx-large; }
+}
