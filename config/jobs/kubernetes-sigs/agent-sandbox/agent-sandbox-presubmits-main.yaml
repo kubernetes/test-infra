@@ -7,7 +7,7 @@ presubmits:
   kubernetes-sigs/agent-sandbox:
   - name: presubmit-test-autogen-up-to-date
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     labels:
       preset-service-account: "true"
@@ -30,7 +30,7 @@ presubmits:
       testgrid-num-columns-recent: "30"
   - name: presubmit-agent-sandbox-test-unit
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     spec:
       containers:
@@ -87,7 +87,7 @@ presubmits:
       testgrid-tab-name: presubmit-lint-api
   - name: presubmit-agent-sandbox-test-e2e
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -112,7 +112,7 @@ presubmits:
       testgrid-tab-name: presubmit-test-e2e
   - name: presubmit-agent-sandbox-benchmarks-kops-gcp-cilium
     cluster: k8s-infra-prow-build
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     optional: true
     labels:
@@ -172,7 +172,7 @@ presubmits:
       testgrid-tab-name: presubmit-benchmarks-kops-gcp-claims
   - name: presubmit-agent-sandbox-benchmarks-kops-gcp-kindnet
     cluster: k8s-infra-prow-build
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     optional: true
     labels:
@@ -202,7 +202,7 @@ presubmits:
       testgrid-tab-name: presubmit-benchmarks-kops-gcp-kindnet
   - name: presubmit-agent-sandbox-test-skill-eval
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     always_run: false
     optional: true
@@ -223,7 +223,7 @@ presubmits:
       testgrid-tab-name: presubmit-test-skill-eval
   - name: presubmit-agent-sandbox-test-e2e-scalability-kwok
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     optional: true
     labels:
@@ -249,7 +249,7 @@ presubmits:
       testgrid-tab-name: presubmit-test-e2e-scalability-kwok
   - name: presubmit-agent-sandbox-lint-olm
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     optional: true
     spec:
@@ -269,7 +269,7 @@ presubmits:
       testgrid-tab-name: presubmit-lint-olm
   - name: presubmit-agent-sandbox-test-olm-unit
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     optional: true
     spec:
