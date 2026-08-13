@@ -1935,7 +1935,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-karpenter
 
-  # {"cloud": "aws", "distro": "u2404arm64", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+  # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-ipv6-karpenter
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1971,10 +1971,10 @@ presubmits:
           value: "TRUE"
         - name: GOPATH
           value: /home/prow/go
-        - name: OVERRIDES
-          value: "--ipv6 --topology=private --bastion"
         - name: CLOUD_PROVIDER
           value: "aws"
+        - name: KOPS_EXTRA_FLAGS
+          value: "--ipv6 --topology=private --bastion"
         resources:
           requests:
             cpu: "6"
@@ -1985,6 +1985,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404arm64
+      test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium

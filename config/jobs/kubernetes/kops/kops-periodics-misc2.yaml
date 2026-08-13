@@ -1438,7 +1438,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-karpenter
 
-# {"cloud": "aws", "distro": "u2404arm64", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --topology=private --bastion", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-ipv6-karpenter
   cluster: k8s-infra-kops-prow-build
   cron: '55 7-23/24 * * *'
@@ -1466,8 +1466,6 @@ periodics:
       env:
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      - name: OVERRIDES
-        value: "--ipv6 --topology=private --bastion"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -1478,6 +1476,8 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-6e00e57ddb-8c03f.tests-kops-aws.k8s.io"
+      - name: KOPS_EXTRA_FLAGS
+        value: "--ipv6 --topology=private --bastion"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
       imagePullPolicy: Always
       resources:
@@ -1492,6 +1492,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
+    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
