@@ -42,7 +42,7 @@ import sys
 
 import yaml
 
-IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master"  # pylint: disable=line-too-long
+IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master"  # pylint: disable=line-too-long
 DASHBOARD = "sig-apps-agent-sandbox"
 REPO_ORG = "kubernetes-sigs"
 REPO_NAME = "agent-sandbox"
@@ -50,13 +50,13 @@ REPO_NAME = "agent-sandbox"
 # Skip presubmits when only docs/site/metadata changed.
 SKIP_DOCS = (
     r"^(docs|site|\.agents)/|\.md$"
-    r"|^(\.gitignore|LICENSE|netlify\.toml|OWNERS|\.coderabbit\.yaml|SECURITY_CONTACTS|cloudbuild\.yaml)$"  # pylint: disable=line-too-long
+    r"|^(\.gitignore|LICENSE|netlify\.toml|(.*/)?OWNERS|\.coderabbit\.yaml|SECURITY_CONTACTS|cloudbuild\.yaml)$"  # pylint: disable=line-too-long
     r"|^\.github/"
 )
 # Variant that still runs for site/ changes (used by the autogen check).
 SKIP_DOCS_ALLOW_SITE = (
     r"^(docs|\.agents)/|\.md$"
-    r"|^(\.gitignore|LICENSE|netlify\.toml|OWNERS|\.coderabbit\.yaml|SECURITY_CONTACTS|cloudbuild\.yaml)$"  # pylint: disable=line-too-long
+    r"|^(\.gitignore|LICENSE|netlify\.toml|(.*/)?OWNERS|\.coderabbit\.yaml|SECURITY_CONTACTS|cloudbuild\.yaml)$"  # pylint: disable=line-too-long
     r"|^\.github/"
 )
 
