@@ -113,8 +113,6 @@ periodics:
           --test-package-marker=latest.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -247,8 +245,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -313,8 +309,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -379,8 +373,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -446,8 +438,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: core
       - name: GINKGO_NO_COLOR
@@ -513,8 +503,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: core
       - name: GINKGO_NO_COLOR
@@ -579,8 +567,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -645,8 +631,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -712,8 +696,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -779,8 +761,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -845,8 +825,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -1217,8 +1195,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -1283,8 +1259,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -1351,8 +1325,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -1545,8 +1517,6 @@ periodics:
           --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.nfs3\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]" \
           --parallel=1
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
       - name: GINKGO_NO_COLOR
@@ -1686,8 +1656,6 @@ periodics:
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
       - name: GINKGO_NO_COLOR
@@ -1755,8 +1723,6 @@ periodics:
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -1895,8 +1861,6 @@ periodics:
           --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
       - name: GINKGO_NO_COLOR
@@ -2035,8 +1999,6 @@ periodics:
           --skip-regex="\[FOOBAR\]" \
           --parallel=1
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
       - name: GINKGO_NO_COLOR
@@ -2103,8 +2065,6 @@ periodics:
           --skip-regex="\[FOOBAR\]" \
           --parallel=1
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
       - name: GINKGO_NO_COLOR
@@ -2173,8 +2133,6 @@ periodics:
           --skip-regex="\[FOOBAR\]" \
           --parallel=1
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
       - name: GINKGO_NO_COLOR
@@ -2243,8 +2201,6 @@ periodics:
           --skip-regex="should.serve.endpoints.on.same.port.and.different.protocols|same.hostPort.but.different.hostIP.and.protocol" \
           --parallel=1
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
       - name: GINKGO_NO_COLOR
@@ -2383,8 +2339,6 @@ periodics:
           --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]" \
           --parallel=1
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
       - name: GINKGO_NO_COLOR
@@ -2524,8 +2478,6 @@ periodics:
           --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]" \
           --parallel=1
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
       - name: GINKGO_NO_COLOR
@@ -2595,8 +2547,6 @@ periodics:
           --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0" \
           --parallel=4
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
       - name: GINKGO_NO_COLOR

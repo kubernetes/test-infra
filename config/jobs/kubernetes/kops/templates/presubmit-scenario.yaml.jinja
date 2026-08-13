@@ -70,9 +70,13 @@
         - name: KOPS_FEATURE_FLAGS
           value: "{{kops_feature_flags}}"
         {%- endif %}
-        {%- if cloud != "azure" %}
+        {#- AWS jobs get the key from preset-aws-ssh's AWS_SSH_PRIVATE_KEY_FILE,
+            which kubetest2-kops re-exports as KUBE_SSH_KEY_PATH for the e2e framework. -#}
+        {%- if cloud != "azure" and cloud != "aws" %}
         - name: KUBE_SSH_KEY_PATH
           value: {{kops_ssh_key_path}}
+        {%- endif %}
+        {%- if cloud != "azure" %}
         - name: KUBE_SSH_USER
           value: {{kops_ssh_user}}
         {%- endif %}
