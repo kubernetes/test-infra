@@ -668,7 +668,7 @@ def generate_misc():
                        'KOPS_VERSION': "v1.33.1",
                        'K8S_VERSION': "v1.33.5",
                        'KOPS_SKIP_E2E': '1',
-                       'KOPS_CONTROL_PLANE_SIZE': '3',
+                       'KOPS_CONTROL_PLANE_COUNT': '3',
                    }),
 
         # Test Cilium against ci k8s test suite
@@ -828,7 +828,7 @@ def generate_misc():
                    runs_per_day=1,
                    test_timeout_minutes=240,
                    scenario="keypair-rotation",
-                   env={'KOPS_CONTROL_PLANE_SIZE': '3'},
+                   env={'KOPS_CONTROL_PLANE_COUNT': '3'},
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-metrics-server",
@@ -1612,7 +1612,7 @@ def generate_upgrades():
             'K8S_VERSION_B': k8s_b,
             'KOPS_SKIP_E2E': '1',
             'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-            'KOPS_CONTROL_PLANE_SIZE': '3',
+            'KOPS_CONTROL_PLANE_COUNT': '3',
         }
 
         results.append(
@@ -1677,7 +1677,7 @@ def generate_periodics_upgrades_dns_none():
                     'KOPS_VERSION_B': kops_b,
                     'K8S_VERSION_B': k8s_b,
                     'KOPS_SKIP_E2E': '1',
-                    'KOPS_CONTROL_PLANE_SIZE': '3',
+                    'KOPS_CONTROL_PLANE_COUNT': '3',
                 },
             ))
     return results
@@ -1807,7 +1807,7 @@ def generate_presubmits_upgrades_dns_none():
                     'KOPS_VERSION_B': kops_b,
                     'K8S_VERSION_B': k8s_b,
                     'KOPS_SKIP_E2E': '1',
-                    'KOPS_CONTROL_PLANE_SIZE': '3',
+                    'KOPS_CONTROL_PLANE_COUNT': '3',
                 },
             ))
     return results
@@ -2583,7 +2583,7 @@ def generate_presubmits_e2e():
                 'K8S_VERSION_B': "v1.36.0",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-                'KOPS_CONTROL_PLANE_SIZE': '3',
+                'KOPS_CONTROL_PLANE_COUNT': '3',
             }
         ),
         presubmit_test(
@@ -2603,7 +2603,7 @@ def generate_presubmits_e2e():
                 'K8S_VERSION_B': "v1.36.0",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-                'KOPS_CONTROL_PLANE_SIZE': '3',
+                'KOPS_CONTROL_PLANE_COUNT': '3',
             }
         ),
         presubmit_test(
