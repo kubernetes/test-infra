@@ -37,8 +37,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
         - name: GINKGO_NO_COLOR
@@ -139,8 +137,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
         - name: GINKGO_NO_COLOR

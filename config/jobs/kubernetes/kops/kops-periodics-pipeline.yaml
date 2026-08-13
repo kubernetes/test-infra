@@ -46,8 +46,6 @@ periodics:
           --skip-regex="\[Slow\]|\[Serial\]" \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -116,8 +114,6 @@ periodics:
           --skip-regex="\[Slow\]|\[Serial\]" \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -186,8 +182,6 @@ periodics:
           --skip-regex="\[Slow\]|\[Serial\]" \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
@@ -256,8 +250,6 @@ periodics:
           --skip-regex="\[Slow\]|\[Serial\]" \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
