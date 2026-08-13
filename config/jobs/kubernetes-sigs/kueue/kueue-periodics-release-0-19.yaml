@@ -1391,7 +1391,7 @@ periodics:
             - make
             - kind-image-build
             - test-tas-was-e2e-baseline
-            # docker-in-docker needs privileged mode
+          # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
           resources:
@@ -1438,7 +1438,7 @@ periodics:
             - make
             - kind-image-build
             - test-tas-was-e2e-extended-shard-0
-            # docker-in-docker needs privileged mode
+          # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
           resources:
@@ -1485,7 +1485,7 @@ periodics:
             - make
             - kind-image-build
             - test-tas-was-e2e-extended-shard-1
-            # docker-in-docker needs privileged mode
+          # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
           resources:

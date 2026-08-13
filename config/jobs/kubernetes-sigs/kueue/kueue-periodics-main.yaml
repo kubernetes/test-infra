@@ -1421,11 +1421,13 @@ periodics:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
           args:
             - make
             - kind-image-build
             - test-tas-was-e2e-baseline
+          # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
           resources:
@@ -1466,11 +1468,13 @@ periodics:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
           args:
             - make
             - kind-image-build
             - test-tas-was-e2e-extended-shard-0
+          # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
           resources:
@@ -1511,11 +1515,13 @@ periodics:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
           args:
             - make
             - kind-image-build
             - test-tas-was-e2e-extended-shard-1
+          # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
           resources:
