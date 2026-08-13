@@ -1062,6 +1062,129 @@ presubmits:
               limits:
                 cpu: "6500m"
                 memory: "10Gi"
+    - name: pull-kueue-test-e2e-tas-was-baseline-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-tas-was-baseline-main
+        description: "Run tas was baseline end to end tests"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+            env:
+              - name: E2E_K8S_VERSION
+                value: "1.35"
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-tas-was-e2e-baseline
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6000m"
+                memory: "10Gi"
+              limits:
+                cpu: "6000m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-tas-was-extended-shard-0-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-tas-was-extended-shard-0-main
+        description: "Run tas was extended end to end tests shard 0"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+            env:
+              - name: E2E_K8S_VERSION
+                value: "1.35"
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-tas-was-e2e-extended-shard-0
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "4100m"
+                memory: "10Gi"
+              limits:
+                cpu: "4100m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-tas-was-extended-shard-1-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-tas-was-extended-shard-1-main
+        description: "Run tas was extended end to end tests shard 1"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+            env:
+              - name: E2E_K8S_VERSION
+                value: "1.35"
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-tas-was-e2e-extended-shard-1
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6500m"
+                memory: "10Gi"
+              limits:
+                cpu: "6500m"
+                memory: "10Gi"
     - name: pull-kueue-test-e2e-sequential-baseline-shard-0-main
       cluster: eks-prow-build-cluster
       branches:
