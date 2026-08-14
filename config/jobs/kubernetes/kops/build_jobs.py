@@ -115,6 +115,7 @@ def build_test(cloud='aws',
                alert_email=None,
                alert_num_failures=None,
                job_queue_name=None,
+               ephemeral_ssh_key=False,
                extra_refs=None):
     # pylint: disable=too-many-statements,too-many-arguments
     if kops_version is None:
@@ -267,6 +268,7 @@ def build_test(cloud='aws',
         instance_groups_overrides=instance_groups_overrides,
         extra_refs=extra_refs,
         job_queue_name=job_queue_name,
+        ephemeral_ssh_key=ephemeral_ssh_key,
     )
 
     spec = {
@@ -1409,6 +1411,10 @@ def generate_distros():
                        extra_dashboards=['kops-distros'],
                        extra_flags=extra_flags,
                        runs_per_day=3,
+                       # Canary for kubetest2-kops' ephemeral SSH keys. al2023 covers a
+                       # non-ubuntu default user (ec2-user); the other distros keep the
+                       # shared CI key as a control.
+                       ephemeral_ssh_key=(distro_short == 'al2023'),
                        )
         )
     return results
@@ -2062,6 +2068,10 @@ def generate_versions():
                 networking='calico',
                 extra_dashboards=['kops-versions'],
                 runs_per_day=8,
+                # Canary for kubetest2-kops' ephemeral SSH keys. 1.36 covers the ubuntu
+                # default user at 8 runs/day; the other versions keep the shared CI key
+                # as a control.
+                ephemeral_ssh_key=(version == '1.36'),
             )
         )
     return results
