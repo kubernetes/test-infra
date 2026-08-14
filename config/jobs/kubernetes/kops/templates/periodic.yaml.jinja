@@ -4,7 +4,11 @@
   labels:
     {%- if cloud == "aws" %}
     preset-service-account: "true"
+    {#- Without preset-aws-ssh there is no AWS_SSH_PRIVATE_KEY_FILE, so kubetest2-kops
+        generates a throwaway keypair for the cluster instead of using the shared CI key. -#}
+    {%- if not ephemeral_ssh_key %}
     preset-aws-ssh: "true"
+    {%- endif %}
     {%- if not boskos_resource_type %}
     preset-k8s-kops-aws-credential: "true"
     {%- endif %}
