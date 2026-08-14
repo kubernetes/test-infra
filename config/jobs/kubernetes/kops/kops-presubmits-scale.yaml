@@ -14,7 +14,6 @@ presubmits:
     skip_report: false
     labels:
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       preset-aws-credential-boskos-scale-001-kops: "true"
     max_concurrency: 1
     decorate: true
@@ -114,7 +113,6 @@ presubmits:
     skip_report: false
     labels:
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       preset-aws-credential-boskos-scale-001-kops: "true"
     max_concurrency: 1
     decorate: true
