@@ -13,7 +13,6 @@ presubmits:
     skip_report: false
     labels:
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
@@ -150,7 +149,6 @@ presubmits:
     skip_report: false
     labels:
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
@@ -287,7 +285,6 @@ presubmits:
     skip_report: false
     labels:
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
@@ -424,7 +421,6 @@ presubmits:
     skip_report: false
     labels:
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:

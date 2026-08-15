@@ -8,7 +8,6 @@ periodics:
   cron: '13 3-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
@@ -77,7 +76,6 @@ periodics:
   cron: '5 15-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -211,7 +209,6 @@ periodics:
   cron: '29 0-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -275,7 +272,6 @@ periodics:
   cron: '22 3-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -339,7 +335,6 @@ periodics:
   cron: '17 3-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -403,7 +398,6 @@ periodics:
   cron: '41 2-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -468,7 +462,6 @@ periodics:
   cron: '52 3-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -533,7 +526,6 @@ periodics:
   cron: '54 6-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -597,7 +589,6 @@ periodics:
   cron: '24 2-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -661,7 +652,6 @@ periodics:
   cron: '5 13-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -726,7 +716,6 @@ periodics:
   cron: '17 23-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -791,7 +780,6 @@ periodics:
   cron: '10 5-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -856,7 +844,6 @@ periodics:
   cron: '37 5-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
@@ -916,7 +903,6 @@ periodics:
   cron: '26 12-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
@@ -978,7 +964,6 @@ periodics:
   cron: '42 2-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
@@ -1042,7 +1027,6 @@ periodics:
   cron: '50 6-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
@@ -1102,7 +1086,6 @@ periodics:
   cron: '43 4-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
@@ -1161,7 +1144,6 @@ periodics:
   cron: '25 6-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -1225,7 +1207,6 @@ periodics:
   cron: '55 5-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -1289,7 +1270,6 @@ periodics:
   cron: '19 6-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -1356,7 +1336,6 @@ periodics:
   cron: '14 16-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
@@ -1416,7 +1395,6 @@ periodics:
   cron: '55 7-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
@@ -1478,7 +1456,6 @@ periodics:
   cron: '38 1-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -1619,7 +1596,6 @@ periodics:
   cron: '50 0-23/3 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -1686,7 +1662,6 @@ periodics:
   cron: '31 1-23/3 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -1823,7 +1798,6 @@ periodics:
   cron: '1 1-23/4 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -1961,7 +1935,6 @@ periodics:
   cron: '10 1-23/4 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -2029,7 +2002,6 @@ periodics:
   cron: '16 1-23/4 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -2095,7 +2067,6 @@ periodics:
   cron: '30 2-23/4 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -2163,7 +2134,6 @@ periodics:
   cron: '57 1-23/4 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -2301,7 +2271,6 @@ periodics:
   cron: '10 4-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -2440,7 +2409,6 @@ periodics:
   cron: '48 0-23/6 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -2508,7 +2476,6 @@ periodics:
   cron: '16 1-23/4 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true

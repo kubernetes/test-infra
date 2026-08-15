@@ -12,7 +12,6 @@
     labels:
       {%- if cloud == "aws" %}
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       {%- if not boskos_resource_type %}
       preset-k8s-kops-aws-credential: "true"
       {%- endif %}
@@ -122,8 +121,8 @@
         securityContext:
           privileged: true
         env:
-        {#- AWS jobs get the key from preset-aws-ssh's AWS_SSH_PRIVATE_KEY_FILE,
-            which kubetest2-kops re-exports as KUBE_SSH_KEY_PATH for the e2e framework. -#}
+        {#- AWS jobs have no key to point at: kubetest2-kops generates an ephemeral one
+            per cluster and re-exports it as KUBE_SSH_KEY_PATH for the e2e framework. -#}
         {%- if cloud != "azure" and cloud != "do" and cloud != "aws" %}
         - name: KUBE_SSH_KEY_PATH
           value: {{kops_ssh_key_path}}

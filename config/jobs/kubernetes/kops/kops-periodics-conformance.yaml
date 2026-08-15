@@ -7,7 +7,6 @@ periodics:
   cron: '4 2-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -75,7 +74,6 @@ periodics:
   cron: '44 4-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -210,7 +208,6 @@ periodics:
   cron: '15 1-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -278,7 +275,6 @@ periodics:
   cron: '57 2-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -413,7 +409,6 @@ periodics:
   cron: '45 7-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -481,7 +476,6 @@ periodics:
   cron: '51 12-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -616,7 +610,6 @@ periodics:
   cron: '15 5-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -684,7 +677,6 @@ periodics:
   cron: '53 6-23/24 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -820,7 +812,6 @@ periodics:
   cron: '38 5-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
