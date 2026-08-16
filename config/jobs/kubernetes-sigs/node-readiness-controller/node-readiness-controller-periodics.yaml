@@ -130,7 +130,7 @@ periodics:
     annotations:
       testgrid-dashboards: sig-node-node-readiness-controller
       testgrid-num-failures-to-alert: '1'
-      testgrid-alert-email: ajaysundar.k@gmail.com, priyankasaggu11929@gmail.com
+      testgrid-alert-email: ajaysundar.k@gmail.com
       description: "Run periodic node-readiness-controller e2e tests for Kubernetes 1.33"
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
@@ -146,7 +146,7 @@ periodics:
             - name: E2E_KIND_VERSION
               value: v1.33
           command:
-            - exit 1; runner.sh
+            - runner.sh
           args:
             - make
             - test-e2e-kind
