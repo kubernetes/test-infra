@@ -61,10 +61,14 @@ aws_distro_options = {
 
 # GCE distributions
 gce_distro_options = {
-    "cos121": kops_versions,
-    "cos121arm64": kops_versions,
+    # None is the "latest kops" entry, so it has to be dropped explicitly to stop
+    # testing an aged-out distro against newer kops.
+    "cos121": drop_unsupported_versions(kops_versions, [None, '1.36']),
+    "cos121arm64": drop_unsupported_versions(kops_versions, [None, '1.36']),
     "cos125": kops_versions,
     "cos125arm64": kops_versions,
+    "cos129": drop_unsupported_versions(kops_versions, ['1.33', '1.34', '1.35']),
+    "cos129arm64": drop_unsupported_versions(kops_versions, ['1.33', '1.34', '1.35']),
     "cosdev": kops_versions,
     "cosdevarm64": kops_versions,
     "debian12": kops_versions,

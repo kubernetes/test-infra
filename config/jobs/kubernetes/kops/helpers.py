@@ -319,6 +319,8 @@ gce_distro_images = {
     "cos121arm64": latest_gce_image("cos-cloud", "cos-arm64-121-lts", "ARM64"),
     "cos125": latest_gce_image("cos-cloud", "cos-125-lts"),
     "cos125arm64": latest_gce_image("cos-cloud", "cos-arm64-125-lts", "ARM64"),
+    "cos129": latest_gce_image("cos-cloud", "cos-129-lts"),
+    "cos129arm64": latest_gce_image("cos-cloud", "cos-arm64-129-lts", "ARM64"),
     "cosdev": latest_gce_image("cos-cloud", "cos-dev"),
     "cosdevarm64": latest_gce_image("cos-cloud", "cos-arm64-dev", "ARM64"),
     "rocky10": latest_gce_image("rocky-linux-cloud", "rocky-linux-10-optimized-gcp"),
