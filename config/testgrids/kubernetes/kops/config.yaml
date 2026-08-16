@@ -28,6 +28,7 @@ dashboard_groups:
   - kops-distro-umini2404
   - kops-distro-cos121
   - kops-distro-cos125
+  - kops-distro-cos129
   - kops-distro-cosdev
   - kops-network-amazonvpc
   - kops-network-calico
@@ -80,6 +81,7 @@ dashboards:
 - name: kops-distro-umini2404
 - name: kops-distro-cos121
 - name: kops-distro-cos125
+- name: kops-distro-cos129
 - name: kops-distro-cosdev
 - name: kops-network-amazonvpc
 - name: kops-network-calico
