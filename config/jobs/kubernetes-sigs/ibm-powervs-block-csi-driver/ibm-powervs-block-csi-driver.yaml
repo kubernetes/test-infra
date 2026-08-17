@@ -76,7 +76,7 @@ presubmits:
         - ^main$
       spec:
         containers:
-          - image: 'public.ecr.aws/docker/library/golang:1.25'
+          - image: 'public.ecr.aws/docker/library/golang:1.26'
             command:
               - make
             args:
@@ -102,7 +102,7 @@ presubmits:
         - ^main$
       spec:
         containers:
-          - image: 'public.ecr.aws/docker/library/golang:1.25'
+          - image: 'public.ecr.aws/docker/library/golang:1.26'
             command:
               - make
             args:
