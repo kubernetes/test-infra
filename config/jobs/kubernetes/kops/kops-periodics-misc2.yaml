@@ -179,8 +179,6 @@ periodics:
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
-      - name: KUBE_SSH_USER
-        value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1566,8 +1564,6 @@ periodics:
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
-      - name: KUBE_SSH_USER
-        value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1768,8 +1764,6 @@ periodics:
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
-      - name: KUBE_SSH_USER
-        value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1905,8 +1899,6 @@ periodics:
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
-      - name: KUBE_SSH_USER
-        value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2241,8 +2233,6 @@ periodics:
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
-      - name: KUBE_SSH_USER
-        value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2379,8 +2369,6 @@ periodics:
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
-      - name: KUBE_SSH_USER
-        value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2585,8 +2573,6 @@ periodics:
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
-      - name: KUBE_SSH_USER
-        value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
