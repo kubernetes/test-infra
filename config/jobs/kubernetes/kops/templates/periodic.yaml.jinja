@@ -124,7 +124,9 @@
       - name: KUBE_SSH_KEY_PATH
         value: {{kops_ssh_key_path}}
       {%- endif %}
-      {%- if cloud != "azure" and cloud != "do" %}
+      {#- Without KUBE_SSH_USER, kubetest2-kops asks the cluster which user kops
+          registered the SSH key for. -#}
+      {%- if cloud != "azure" and cloud != "do" and not derive_ssh_user %}
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
       {%- endif %}

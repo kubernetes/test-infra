@@ -115,6 +115,7 @@ def build_test(cloud='aws',
                alert_email=None,
                alert_num_failures=None,
                job_queue_name=None,
+               derive_ssh_user=False,
                extra_refs=None):
     # pylint: disable=too-many-statements,too-many-arguments
     if kops_version is None:
@@ -266,6 +267,7 @@ def build_test(cloud='aws',
         instance_groups_overrides=instance_groups_overrides,
         extra_refs=extra_refs,
         job_queue_name=job_queue_name,
+        derive_ssh_user=derive_ssh_user,
     )
 
     spec = {
@@ -2041,6 +2043,12 @@ def generate_nftables():
                 extra_flags=extra_flags,
                 extra_dashboards=["kops-nftables"],
                 runs_per_day=3,
+                # Canary for kubetest2-kops determining the SSH user from the cluster
+                # (kubernetes/kops#18699). cos125 is the load-bearing case: it derives
+                # "admin", which differs from the kops fallback, so a broken lookup fails
+                # visibly. u2404 derives "ubuntu", the same as the fallback, so it is a
+                # control. Every other distro keeps KUBE_SSH_USER.
+                derive_ssh_user=(distro_short in ('u2404', 'cos125')),
             )
         )
     return results
