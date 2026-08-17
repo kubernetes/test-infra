@@ -107,6 +107,10 @@ periodics:
         value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
       - name: KOPS_CL2_TEST_CONFIG
         value: testing/dra/config.yaml
+      - name: KOPS_SCHEDULER_QPS
+        value: "500"
+      - name: KOPS_SCHEDULER_BURST
+        value: "500"
       resources:
         requests:
           cpu: 7
@@ -320,6 +324,10 @@ presubmits:
           value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
         - name: KOPS_CL2_TEST_CONFIG
           value: testing/dra/config.yaml
+        - name: KOPS_SCHEDULER_QPS
+          value: "500"
+        - name: KOPS_SCHEDULER_BURST
+          value: "500"
         resources:
           requests:
             cpu: 7
