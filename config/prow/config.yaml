@@ -989,15 +989,11 @@ presets:
 - labels:
     preset-k8s-ssh: "true"
   env:
-  - name: USER
+  - name: KUBE_SSH_USER
     value: prow
-  - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+  - name: KUBE_SSH_PRIVATE_KEY_PATH
     value: /etc/ssh-key-secret/ssh-private
-  - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-    value: /etc/ssh-key-secret/ssh-public
-  - name: GCE_SSH_PRIVATE_KEY_FILE
-    value: /etc/ssh-key-secret/ssh-private
-  - name: GCE_SSH_PUBLIC_KEY_FILE
+  - name: KUBE_SSH_PUBLIC_KEY_PATH
     value: /etc/ssh-key-secret/ssh-public
   volumes:
   - name: ssh
@@ -1011,12 +1007,14 @@ presets:
 - labels:
     preset-aws-ssh: "true"
   env:
-  - name: USER
+  - name: KUBE_SSH_USER
     value: prow
-  - name: AWS_SSH_PRIVATE_KEY_FILE
+  - name: KUBE_SSH_PRIVATE_KEY_PATH
     value: /etc/aws-ssh/aws-ssh-private
-  - name: AWS_SSH_PUBLIC_KEY_FILE
+  - name: KUBE_SSH_PUBLIC_KEY_PATH
     value: /etc/aws-ssh/aws-ssh-public
+  - name: KUBE_SSH_KEY_PATH
+    value: /etc/aws-ssh/aws-ssh-private
   volumes:
   - name: aws-ssh
     secret:

@@ -588,7 +588,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone, runtimeC
 		log.Printf("cwd : %s", wd)
 	}
 
-	sshKeyPath := os.Getenv("JENKINS_GCE_SSH_PRIVATE_KEY_FILE")
+	sshKeyPath := os.Getenv("KUBE_SSH_PRIVATE_KEY_PATH")
 	if _, err := os.Stat(sshKeyPath); err != nil {
 		return fmt.Errorf("Cannot find ssh key from: %v, err : %w", sshKeyPath, err)
 	}

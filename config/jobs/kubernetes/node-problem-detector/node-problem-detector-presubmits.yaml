@@ -275,7 +275,7 @@ presubmits:
         - -c
         - >-
           ./test/build.sh install-lib &&
-          SSH_USER=${USER} SSH_KEY=${JENKINS_GCE_SSH_PRIVATE_KEY_FILE} make e2e-test
+          SSH_USER=${KUBE_SSH_USER} SSH_KEY=${KUBE_SSH_PRIVATE_KEY_PATH} make e2e-test
         resources:
           limits:
             cpu: 2

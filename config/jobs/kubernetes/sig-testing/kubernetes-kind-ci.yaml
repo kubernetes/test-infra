@@ -556,8 +556,8 @@ periodics:
         # (k8s-infra-prow-build lacks cgroup v2, and the kubekins-e2e container lacks systemd)
         (cd ; GO111MODULE=on go install github.com/rootless-containers/kubetest2-kindinv@master)
         mkdir -p -m 0700 ~/.ssh
-        cp -f "${GCE_SSH_PRIVATE_KEY_FILE}" ~/.ssh/google_compute_engine
-        cp -f "${GCE_SSH_PUBLIC_KEY_FILE}" ~/.ssh/google_compute_engine.pub
+        cp -f "${KUBE_SSH_PRIVATE_KEY_PATH}" ~/.ssh/google_compute_engine
+        cp -f "${KUBE_SSH_PUBLIC_KEY_PATH}" ~/.ssh/google_compute_engine.pub
         exec kubetest2 kindinv \
           --boskos-location=http://boskos.test-pods.svc.cluster.local \
           --gcp-zone=us-central1-b \

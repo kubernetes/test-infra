@@ -113,8 +113,8 @@ class LocalMode(object):
         shutil.copy(priv, gce_ssh)
         shutil.copy(pub, gce_pub)
         self.add_environment(
-            'JENKINS_GCE_SSH_PRIVATE_KEY_FILE=%s' % gce_ssh,
-            'JENKINS_GCE_SSH_PUBLIC_KEY_FILE=%s' % gce_pub,
+              'KUBE_SSH_PRIVATE_KEY_PATH=%s' % gce_ssh,
+              'KUBE_SSH_PUBLIC_KEY_PATH=%s' % gce_pub,
         )
 
     @staticmethod
@@ -319,11 +319,11 @@ def create_parser():
         '(usage: "--env=VAR=SETTING" will set VAR to SETTING).')
     parser.add_argument(
         '--gce-ssh',
-        default=os.environ.get('JENKINS_GCE_SSH_PRIVATE_KEY_FILE'),
+        default=os.environ.get('KUBE_SSH_PRIVATE_KEY_PATH'),
         help='Path to .ssh/google_compute_engine keys')
     parser.add_argument(
         '--gce-pub',
-        default=os.environ.get('JENKINS_GCE_SSH_PUBLIC_KEY_FILE'),
+        default=os.environ.get('KUBE_SSH_PUBLIC_KEY_PATH'),
         help='Path to pub gce ssh key')
     parser.add_argument(
         '--service-account',

@@ -713,7 +713,7 @@ def pr_paths(base, repos, job, build):
 BUILD_ENV = 'BUILD_ID'
 BOOTSTRAP_ENV = 'BOOTSTRAP_MIGRATION'
 CLOUDSDK_ENV = 'CLOUDSDK_CONFIG'
-GCE_KEY_ENV = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
+GCE_KEY_ENV = 'KUBE_SSH_PRIVATE_KEY_PATH'
 GUBERNATOR = 'https://gubernator.k8s.io/build'
 HOME_ENV = 'HOME'
 JENKINS_HOME_ENV = 'JENKINS_HOME'
@@ -729,7 +729,7 @@ GIT_AUTHOR_DATE_ENV = 'GIT_AUTHOR_DATE'
 GIT_COMMITTER_DATE_ENV = 'GIT_COMMITTER_DATE'
 SOURCE_DATE_EPOCH_ENV = 'SOURCE_DATE_EPOCH'
 JOB_ARTIFACTS_ENV = 'ARTIFACTS'
-
+SSH_PUBLIC_KEY_ENV = 'KUBE_SSH_PUBLIC_KEY_PATH'
 
 def build_name(started):
     """Return the unique(ish) string representing this build."""
@@ -827,15 +827,15 @@ def setup_magic_environment(job, call):
         os.path.join(home, '.ssh/google_compute_engine'),
     )
     os.environ.setdefault(
-        'JENKINS_GCE_SSH_PUBLIC_KEY_FILE',
+           SSH_PUBLIC_KEY_ENV,
         os.path.join(home, '.ssh/google_compute_engine.pub'),
     )
     os.environ.setdefault(
-        'AWS_SSH_PRIVATE_KEY_FILE',
+        'KUBE_SSH_PRIVATE_KEY_PATH',
         os.path.join(home, '.ssh/kube_aws_rsa'),
     )
     os.environ.setdefault(
-        'AWS_SSH_PUBLIC_KEY_FILE',
+        'KUBE_SSH_PUBLIC_KEY_PATH',
         os.path.join(home, '.ssh/kube_aws_rsa.pub'),
     )
 

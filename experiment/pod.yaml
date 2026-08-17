@@ -28,10 +28,10 @@ spec:
         value: k8s-jkns-e2e-prow-canary
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+      - name: KUBE_SSH_PRIVATE_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public       
+      - name: KUBE_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public
     volumeMounts:
     - mountPath: /etc/service-account
       name: service
