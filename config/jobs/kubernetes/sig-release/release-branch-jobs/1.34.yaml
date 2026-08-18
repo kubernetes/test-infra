@@ -214,10 +214,10 @@ periodics:
       name: ""
       resources:
         limits:
-          cpu: "2"
+          cpu: "4"
           memory: 6Gi
         requests:
-          cpu: "2"
+          cpu: "4"
           memory: 6Gi
       securityContext:
         privileged: true
