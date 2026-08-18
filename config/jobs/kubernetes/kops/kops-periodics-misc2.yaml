@@ -140,7 +140,6 @@ periodics:
 - name: e2e-kops-gce-cni-cilium-k8s-ci
   cron: '22 12-23/24 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -177,8 +176,6 @@ periodics:
           --test-package-marker=latest.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1524,7 +1521,6 @@ periodics:
 - name: e2e-ci-kubernetes-kops-cos-gce-canary
   cron: '50 2-23/3 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1562,8 +1558,6 @@ periodics:
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1723,7 +1717,6 @@ periodics:
 - name: e2e-ci-kubernetes-kops-cos-gce-slow-canary
   cron: '37 2-23/4 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1762,8 +1755,6 @@ periodics:
           --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1858,7 +1849,6 @@ periodics:
 - name: e2e-ci-kubernetes-kops-cos-gce-conformance-canary
   cron: '44 1-23/4 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1897,8 +1887,6 @@ periodics:
           --skip-regex="\[FOOBAR\]" \
           --parallel=1
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2192,7 +2180,6 @@ periodics:
 - name: e2e-ci-kubernetes-kops-cos-gce-disruptive-canary
   cron: '57 0-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -2231,8 +2218,6 @@ periodics:
           --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]|\[sig-cloud-provider-gcp\]" \
           --parallel=1
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2327,7 +2312,6 @@ periodics:
 - name: e2e-ci-kubernetes-kops-cos-gce-serial-canary
   cron: '22 0-23/6 * * *'
   labels:
-    preset-k8s-ssh: "true"
     preset-storage-e2e-service-account: "true"
   cluster: k8s-infra-prow-build
   decorate: true
@@ -2367,8 +2351,6 @@ periodics:
           --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
           --parallel=1
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2531,7 +2513,6 @@ periodics:
 - name: e2e-ci-kubernetes-kops-cos-gce-alpha-features
   cron: '21 1-23/4 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -2571,8 +2552,6 @@ periodics:
           --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0" \
           --parallel=4
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master

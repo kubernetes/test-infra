@@ -1141,7 +1141,6 @@ periodics:
 - name: e2e-kops-gce-nftables-cos121
   cron: '54 7-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1176,8 +1175,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1205,7 +1202,6 @@ periodics:
 - name: e2e-kops-gce-nftables-cos121arm64
   cron: '58 2-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1240,8 +1236,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1269,7 +1263,6 @@ periodics:
 - name: e2e-kops-gce-nftables-cos125
   cron: '35 6-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1304,8 +1297,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1333,7 +1324,6 @@ periodics:
 - name: e2e-kops-gce-nftables-cos125arm64
   cron: '28 4-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1368,8 +1358,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1397,7 +1385,6 @@ periodics:
 - name: e2e-kops-gce-nftables-cos129
   cron: '44 5-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1432,8 +1419,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1461,7 +1446,6 @@ periodics:
 - name: e2e-kops-gce-nftables-cos129arm64
   cron: '51 7-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1496,8 +1480,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1525,7 +1507,6 @@ periodics:
 - name: e2e-kops-gce-nftables-cosdev
   cron: '41 4-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1560,8 +1541,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1589,7 +1568,6 @@ periodics:
 - name: e2e-kops-gce-nftables-cosdevarm64
   cron: '13 5-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1624,8 +1602,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1653,7 +1629,6 @@ periodics:
 - name: e2e-kops-gce-nftables-deb12
   cron: '33 5-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1688,8 +1663,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1717,7 +1690,6 @@ periodics:
 - name: e2e-kops-gce-nftables-deb12arm64
   cron: '11 5-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1752,8 +1724,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1781,7 +1751,6 @@ periodics:
 - name: e2e-kops-gce-nftables-deb13
   cron: '43 3-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1816,8 +1785,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1845,7 +1812,6 @@ periodics:
 - name: e2e-kops-gce-nftables-deb13arm64
   cron: '30 0-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1880,8 +1846,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1909,7 +1873,6 @@ periodics:
 - name: e2e-kops-gce-nftables-u2204
   cron: '36 0-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -1944,8 +1907,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -1973,7 +1934,6 @@ periodics:
 - name: e2e-kops-gce-nftables-u2404
   cron: '22 2-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -2008,8 +1968,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2037,7 +1995,6 @@ periodics:
 - name: e2e-kops-gce-nftables-u2404arm64
   cron: '42 4-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -2072,8 +2029,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2101,7 +2056,6 @@ periodics:
 - name: e2e-kops-gce-nftables-umini2404
   cron: '28 2-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -2136,8 +2090,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2165,7 +2117,6 @@ periodics:
 - name: e2e-kops-gce-nftables-umini2404arm64
   cron: '29 2-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -2200,8 +2151,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2229,7 +2178,6 @@ periodics:
 - name: e2e-kops-gce-nftables-rhel10
   cron: '5 4-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -2264,8 +2212,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2293,7 +2239,6 @@ periodics:
 - name: e2e-kops-gce-nftables-rocky10arm64
   cron: '42 7-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -2328,8 +2273,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
@@ -2357,7 +2300,6 @@ periodics:
 - name: e2e-kops-gce-nftables-rocky10
   cron: '41 3-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -2392,8 +2334,6 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
       - name: GINKGO_NO_COLOR
         value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
