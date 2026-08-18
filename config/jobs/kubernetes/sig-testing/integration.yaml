@@ -100,6 +100,8 @@ presubmits:
           value: "-timeout=40m"
         - name: KUBE_RACE
           value: "-race"
+        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
+          value: "5"
         args:
         - ./hack/jenkins/test-integration-dockerized.sh
         # docker-in-docker needs privileged mode
@@ -108,10 +110,10 @@ presubmits:
         resources:
           limits:
             cpu: 7
-            memory: 20Gi
+            memory: 27Gi
           requests:
             cpu: 7
-            memory: 20Gi
+            memory: 27Gi
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
     always_run: true
