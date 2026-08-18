@@ -276,7 +276,6 @@ presubmits:
     optional: true
     skip_report: false
     labels:
-      preset-k8s-ssh: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -309,10 +308,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
         - name: GINKGO_NO_COLOR
           value: "TRUE"
         - name: GOPATH
@@ -543,7 +538,6 @@ presubmits:
     optional: true
     skip_report: false
     labels:
-      preset-k8s-ssh: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -576,10 +570,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
         - name: GINKGO_NO_COLOR
           value: "TRUE"
         - name: GOPATH
@@ -744,7 +734,6 @@ presubmits:
     optional: true
     skip_report: false
     labels:
-      preset-k8s-ssh: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -777,10 +766,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
         - name: GINKGO_NO_COLOR
           value: "TRUE"
         - name: GOPATH
@@ -1143,7 +1128,6 @@ presubmits:
     optional: true
     skip_report: false
     labels:
-      preset-k8s-ssh: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -1176,10 +1160,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
         - name: GINKGO_NO_COLOR
           value: "TRUE"
         - name: GOPATH
