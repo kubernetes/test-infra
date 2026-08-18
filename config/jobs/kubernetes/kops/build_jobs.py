@@ -413,6 +413,8 @@ def presubmit_test(branch='master',
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, extra_flags, kops_image, distro)
 
+    derive_ssh_user = cloud == 'gce' and branch not in ('release-1.33', 'release-1.34', 'release-1.35', 'release-1.36')
+
     # Scenario-specific parameters
     if env is None:
         env = {}
@@ -460,6 +462,7 @@ def presubmit_test(branch='master',
         instance_groups_overrides=instance_groups_overrides,
         extra_refs=extra_refs,
         job_queue_name=job_queue_name,
+        derive_ssh_user=derive_ssh_user,
     )
 
     spec = {
