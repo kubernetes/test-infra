@@ -125,8 +125,6 @@ def build_test(cloud='aws',
     else:
         kops_deploy_url = marker_updown_green(kops_version)
 
-    derive_ssh_user = cloud == 'gce' and kops_version not in ('1.34', '1.35', '1.36')
-
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
     if networking == 'kopeio' and distro in ('flatcar', 'flatcararm64'):
@@ -209,6 +207,10 @@ def build_test(cloud='aws',
     if env is None:
         env = {}
 
+    derive_ssh_user = (cloud == 'gce'
+                       and kops_version not in ('1.34', '1.35', '1.36')
+                       and env.get('KOPS_VERSION_A') not in ('1.34', '1.35', '1.36'))
+
     tmpl_file = "periodic.yaml.jinja"
     if scenario is not None:
         tmpl_file = "periodic-scenario.yaml.jinja"
@@ -217,7 +219,8 @@ def build_test(cloud='aws',
             if 'KOPS_DNS_DOMAIN' not in env:
                 env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
         env['CLOUD_PROVIDER'] = cloud
-        env['KUBE_SSH_USER'] = kops_ssh_user
+        if not derive_ssh_user:
+            env['KUBE_SSH_USER'] = kops_ssh_user
         if not cluster_name:
             # scenario scripts often need to reference the cluster name outside of kubetest2-kops.
             # Since kubetest2-kops defaults to generating one automatically, the easiest way to
@@ -413,11 +416,13 @@ def presubmit_test(branch='master',
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, extra_flags, kops_image, distro)
 
-    derive_ssh_user = cloud == 'gce' and branch not in ('release-1.33', 'release-1.34', 'release-1.35', 'release-1.36')
-
     # Scenario-specific parameters
     if env is None:
         env = {}
+
+    derive_ssh_user = (cloud == 'gce'
+                       and branch not in ('release-1.33', 'release-1.34', 'release-1.35', 'release-1.36')
+                       and env.get('KOPS_VERSION_A') not in ('1.34', '1.35', '1.36'))
 
     tmpl_file = "presubmit.yaml.jinja"
     if scenario is not None:
