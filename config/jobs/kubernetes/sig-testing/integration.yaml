@@ -110,10 +110,10 @@ presubmits:
         resources:
           limits:
             cpu: 7
-            memory: 27Gi
+            memory: 26Gi
           requests:
             cpu: 7
-            memory: 27Gi
+            memory: 26Gi
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
     always_run: true
