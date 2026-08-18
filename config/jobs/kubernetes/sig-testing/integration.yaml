@@ -101,7 +101,7 @@ presubmits:
         - name: KUBE_RACE
           value: "-race"
         - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
-          value: "5"
+          value: "4"
         args:
         - ./hack/jenkins/test-integration-dockerized.sh
         # docker-in-docker needs privileged mode
