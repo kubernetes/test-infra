@@ -23,7 +23,7 @@
       {%- elif cloud == "azure" %}
       preset-service-account: "true"
       preset-kops-azure-cred-wi: "true"
-      {%- else %}
+      {%- elif not derive_ssh_user %}
       preset-k8s-ssh: "true"
       {%- endif %}
     max_concurrency: 1
@@ -69,13 +69,13 @@
         - name: KOPS_FEATURE_FLAGS
           value: "{{kops_feature_flags}}"
         {%- endif %}
-        {#- AWS jobs have no key to point at: kubetest2-kops generates an ephemeral one
-            per cluster and re-exports it as KUBE_SSH_KEY_PATH for the e2e framework. -#}
-        {%- if cloud != "azure" and cloud != "aws" %}
+        {#- Jobs without a configured key get an ephemeral one per cluster from
+            kubetest2-kops, re-exported as KUBE_SSH_KEY_PATH for the e2e framework. -#}
+        {%- if cloud != "azure" and cloud != "aws" and not derive_ssh_user %}
         - name: KUBE_SSH_KEY_PATH
           value: {{kops_ssh_key_path}}
         {%- endif %}
-        {%- if cloud != "azure" %}
+        {%- if cloud != "azure" and not derive_ssh_user %}
         - name: KUBE_SSH_USER
           value: {{kops_ssh_user}}
         {%- endif %}

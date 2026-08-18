@@ -154,6 +154,7 @@ periodics:
   cluster: k8s-infra-prow-build
   cron: '41 3-23/8 * * *'
   labels:
+    preset-k8s-ssh: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
