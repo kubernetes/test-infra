@@ -101,13 +101,14 @@ presubmits:
         - name: KUBE_RACE
           value: "-race"
         - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
-          value: "4"
+          value: "4" # Update together resources below. We need some spare CPUs to avoid starvation when each test binary itself needs more than one CPU.
         args:
         - ./hack/jenkins/test-integration-dockerized.sh
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
+          # Update cpu together with KUBE_INTEGRATION_TEST_MAX_CONCURRENCY above.
           limits:
             cpu: 7
             memory: 25Gi
@@ -268,13 +269,16 @@ periodics:
         value: "-timeout=40m"
       - name: KUBE_RACE
         value: "-race"
+      - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
+        value: "4" # Update together with resources below. We need some spare CPUs to avoid starvation when each test binary itself needs more than one CPU.
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       resources:
+        # Update cpu together with KUBE_INTEGRATION_TEST_MAX_CONCURRENCY above.
         limits:
-          cpu: 6
-          memory: 20Gi
+          cpu: 7
+          memory: 25Gi
         requests:
-          cpu: 6
-          memory: 20Gi
+          cpu: 7
+          memory: 25Gi
