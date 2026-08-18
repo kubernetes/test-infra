@@ -555,14 +555,19 @@ def generate_grid():
                         ])
                     if 'rhel10' in distro or 'rocky10' in distro:
                         if networking == 'kuberouter':
-                            # Missing support for nftables
-                            # https://github.com/cloudnativelabs/kube-router/issues/2034
-                            continue
-                        if networking == 'amazon-vpc':
+                            # kube-router's network policy controller enforces policies with
+                            # nftables instead of iptables and ipsets when useNFTablesForNetpol
+                            # is set. https://github.com/cloudnativelabs/kube-router/issues/2034
+                            if kops_version in ('1.34', '1.35', '1.36'):
+                                continue
+                            extra_flags.extend([
+                                "--set=cluster.spec.networking.kubeRouter.useNFTablesForNetpol=true",
+                            ])
+                        elif networking == 'amazon-vpc':
                             # RHEL10/Rocky10 kernels removed xt_comment and xt_conntrack modules;
                             # the AWS VPC CNI requires these for iptables-nft SNAT rules.
                             continue
-                        if networking == 'calico':
+                        elif networking == 'calico':
                             # Calico BPF mode takes over kube-proxy's role; from
                             # v3.31 felix also binds the kube-proxy healthz port,
                             # so kube-proxy must be disabled to avoid the conflict.
