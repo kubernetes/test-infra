@@ -24,7 +24,7 @@ presubmits:
   - name: presubmit-mcp-lifecycle-operator-e2e-test
     cluster: eks-prow-build-cluster
     always_run: true
-    optional: true
+    optional: false
     decorate: true
     labels:
       preset-dind-enabled: "true"
