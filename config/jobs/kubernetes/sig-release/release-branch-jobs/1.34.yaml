@@ -171,6 +171,62 @@ periodics:
         curl --fail --silent --show-error --location "https://dl.k8s.io/ci/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
         ginkgo=kubernetes/test/bin/ginkgo
         e2e_test=kubernetes/test/bin/e2e.test
+        # Snapshot the CPU cgroup layout for kubernetes/kubernetes#141435: the runner moves the job
+        # into a leaf whose cpu.max is unset, so Go can size GOMAXPROCS to the whole node instead of
+        # the pod quota. Best-effort, never fails the job.
+        collect_cpu_state () {
+            local when="$1"
+            # A subshell with tracing off keeps the job's set -x out of the artifact; the redirect on
+            # the toggle hides the trace of the toggle itself.
+            ( { set +x; } 2>/dev/null
+                echo "### cpu-state (${when})"
+                echo "## CPU affinity (what Go's NumCPU and default GOMAXPROCS count):"
+                echo "   Cpus_allowed_list=[$(awk '/^Cpus_allowed_list/{print $2}' /proc/self/status 2>/dev/null)]"
+                echo "## /proc/self/cgroup (raw membership):"
+                sed 's/^/  /' /proc/self/cgroup 2>/dev/null || echo "  n/a"
+                echo "## cgroup chain leaf -> root (cpu.max and throttling at each level):"
+                rel=$(awk -F: '$1 == "0" { print $3 }' /proc/self/cgroup 2>/dev/null)
+                leafdir="/sys/fs/cgroup${rel}"
+                while [ -n "${rel}" ]; do
+                    dir="/sys/fs/cgroup${rel}"
+                    printf '  %s cpu.max=[%s] usage_usec=[%s] nr_throttled=[%s] throttled_usec=[%s]\n' \
+                        "${rel}" \
+                        "$(cat "${dir}/cpu.max" 2>/dev/null || echo n/a)" \
+                        "$(awk '/^usage_usec/{print $2}' "${dir}/cpu.stat" 2>/dev/null)" \
+                        "$(awk '/^nr_throttled/{print $2}' "${dir}/cpu.stat" 2>/dev/null)" \
+                        "$(awk '/^throttled_usec/{print $2}' "${dir}/cpu.stat" 2>/dev/null)"
+                    [ "${rel}" = "/" ] && break
+                    rel="${rel%/*}"; [ -z "${rel}" ] && rel="/"
+                done
+                case "${leafdir}" in
+                    */init) parent="${leafdir%/init}" ;;
+                    *) echo "## note: not in an 'init' leaf, so the init/dind split below may not apply (leaf=${leafdir})"; parent="" ;;
+                esac
+                echo "## init vs dind cpu.weight + usage (the runner and the kind cluster share the parent):"
+                printf '  init cpu.weight=[%s] usage_usec=[%s]  dind cpu.weight=[%s] usage_usec=[%s]\n' \
+                    "$(cat "${parent}/init/cpu.weight" 2>/dev/null || echo n/a)" \
+                    "$(awk '/^usage_usec/{print $2}' "${parent}/init/cpu.stat" 2>/dev/null || echo n/a)" \
+                    "$(cat "${parent}/dind/cpu.weight" 2>/dev/null || echo n/a)" \
+                    "$(awk '/^usage_usec/{print $2}' "${parent}/dind/cpu.stat" 2>/dev/null || echo n/a)"
+                echo "## dind cpu.pressure (CPU stall of the kind cluster; dind has no cpu.max to throttle):"
+                sed 's/^/  /' "${parent}/dind/cpu.pressure" 2>/dev/null || echo "  n/a"
+                echo "## parent cpu.pressure (init and dind combined stall under the pod quota):"
+                sed 's/^/  /' "${parent}/cpu.pressure" 2>/dev/null || echo "  n/a"
+                echo "## leaf cpu.pressure:"
+                sed 's/^/  /' "${leafdir}/cpu.pressure" 2>/dev/null || echo "  n/a"
+                echo "## e2e.test baked GODEBUG:"
+                godebug=$(go version -m "${e2e_test}" 2>/dev/null | awk '/DefaultGODEBUG/{print $0}' || true)
+                echo "  ${godebug:-n/a}"
+                # kind/docker can wedge under the resource pressure this diagnostic is investigating,
+                # so bound them: a stuck daemon must not turn the collector into a job timeout.
+                echo "## per kind node: cpu.max + cpu.pressure (isolates the control-plane node's stall):"
+                for node in $(timeout 10 kind get nodes 2>/dev/null); do
+                    printf '  %s cpu.max=[%s]\n' "${node}" "$(timeout 5 docker exec "${node}" cat /sys/fs/cgroup/cpu.max 2>/dev/null || echo 'n/a (timeout/err)')"
+                    nodepsi=$(timeout 5 docker exec "${node}" cat /sys/fs/cgroup/cpu.pressure 2>/dev/null || true)
+                    printf '%s\n' "${nodepsi:-n/a (timeout/err)}" | sed 's/^/    cpu.pressure: /'
+                done
+            ) >"${ARTIFACTS}/cpu-state-${when}.txt" 2>&1 || true
+        }
         # The latest kind is assumed to work also for older release branches, should this job get forked.
         curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
         kind build node-image --image=dra/node:latest "${kind_node_source}"
@@ -200,11 +256,13 @@ periodics:
         cat /tmp/kind.yaml
         kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
         atexit () {
+            collect_cpu_state at-cleanup
             kind export logs "${ARTIFACTS}/kind"
             kind delete cluster
         }
         trap atexit EXIT
 
+        collect_cpu_state before-ginkgo
         KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Alpha && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
         GINKGO_E2E_PID=$!
         wait "${GINKGO_E2E_PID}"
