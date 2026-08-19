@@ -1004,8 +1004,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1051,8 +1049,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1098,8 +1094,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1145,8 +1139,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1192,8 +1184,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1239,8 +1229,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1286,8 +1274,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1333,8 +1319,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1380,8 +1364,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.36"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1427,8 +1409,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.36"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1474,8 +1454,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.36"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1521,8 +1499,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1568,8 +1544,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1615,8 +1589,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1662,8 +1634,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1709,8 +1679,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1756,8 +1724,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1803,8 +1769,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1850,8 +1814,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1940,8 +1902,6 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
