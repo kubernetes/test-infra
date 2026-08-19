@@ -75,8 +75,10 @@ periodics:
 
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
 
@@ -173,8 +175,10 @@ periodics:
 
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
 
@@ -274,8 +278,10 @@ periodics:
 
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
 
@@ -401,8 +407,10 @@ periodics:
 
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
 
@@ -528,8 +536,10 @@ periodics:
 
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
 
