@@ -51,6 +51,50 @@ periodics:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+
+          # Snapshot the CPU cgroup layout for kubernetes/kubernetes#141435: the runner moves the
+          # job into a leaf whose cpu.max is unset, so Go can size GOMAXPROCS to the whole node
+          # instead of the pod quota. Best-effort, never fails the job.
+          collect_cpu_state () {
+              local when="$1"
+              local rel dir leafdir parent
+              # A subshell with tracing off keeps the job's set -x out of the artifact; the
+              # redirect on the toggle hides the trace of the toggle itself.
+              ( { set +x; } 2>/dev/null
+                  echo "### cpu-state (${when})"
+                  echo "## Go sizes GOMAXPROCS to the CPU affinity, not the cgroup quota:"
+                  echo "   Cpus_allowed_list=[$(awk '/^Cpus_allowed_list/{print $2}' /proc/self/status 2>/dev/null)]"
+                  echo "## cgroup chain leaf -> root (Go reads the leaf cpu.max, not the ancestor quota):"
+                  rel=$(awk -F: '$1 == "0" { print $3 }' /proc/self/cgroup 2>/dev/null)
+                  leafdir="/sys/fs/cgroup${rel}"
+                  while [ -n "${rel}" ]; do
+                      dir="/sys/fs/cgroup${rel}"
+                      printf '  %s cpu.max=[%s] nr_throttled=[%s] throttled_usec=[%s]\n' \
+                          "${rel}" \
+                          "$(cat "${dir}/cpu.max" 2>/dev/null || echo n/a)" \
+                          "$(awk '/^nr_throttled/{print $2}' "${dir}/cpu.stat" 2>/dev/null)" \
+                          "$(awk '/^throttled_usec/{print $2}' "${dir}/cpu.stat" 2>/dev/null)"
+                      [ "${rel}" = "/" ] && break
+                      rel="${rel%/*}"; [ -z "${rel}" ] && rel="/"
+                  done
+                  echo "## init vs dind cpu.weight (the runner and the kind cluster share the parent):"
+                  parent=${leafdir%/init}
+                  printf '  init cpu.weight=[%s]  dind cpu.weight=[%s] nr_throttled=[%s]\n' \
+                      "$(cat "${parent}/init/cpu.weight" 2>/dev/null || echo n/a)" \
+                      "$(cat "${parent}/dind/cpu.weight" 2>/dev/null || echo n/a)" \
+                      "$(awk '/^nr_throttled/{print $2}' "${parent}/dind/cpu.stat" 2>/dev/null)"
+                  echo "## leaf cpu.pressure:"
+                  sed 's/^/  /' "${leafdir}/cpu.pressure" 2>/dev/null || echo "  n/a"
+                  echo "## e2e.test baked GODEBUG:"
+                  go version -m "${e2e_test}" 2>/dev/null | awk '/DefaultGODEBUG/{print "  "$0}' || echo "  n/a"
+                  echo "## kind node cpu.max + throttle:"
+                  for node in $(kind get nodes 2>/dev/null); do
+                      printf '  %s cpu.max=[%s] nr_throttled=[%s]\n' "${node}" \
+                          "$(docker exec "${node}" cat /sys/fs/cgroup/cpu.max 2>/dev/null || echo n/a)" \
+                          "$(docker exec "${node}" awk '/^nr_throttled/{print $2}' /sys/fs/cgroup/cpu.stat 2>/dev/null)"
+                  done
+              ) >"${ARTIFACTS}/cpu-state-${when}.txt" 2>&1 || true
+          }
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -80,6 +124,7 @@ periodics:
           }
           trap atexit EXIT
 
+          collect_cpu_state before-ginkgo
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
@@ -149,6 +194,50 @@ periodics:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+
+          # Snapshot the CPU cgroup layout for kubernetes/kubernetes#141435: the runner moves the
+          # job into a leaf whose cpu.max is unset, so Go can size GOMAXPROCS to the whole node
+          # instead of the pod quota. Best-effort, never fails the job.
+          collect_cpu_state () {
+              local when="$1"
+              local rel dir leafdir parent
+              # A subshell with tracing off keeps the job's set -x out of the artifact; the
+              # redirect on the toggle hides the trace of the toggle itself.
+              ( { set +x; } 2>/dev/null
+                  echo "### cpu-state (${when})"
+                  echo "## Go sizes GOMAXPROCS to the CPU affinity, not the cgroup quota:"
+                  echo "   Cpus_allowed_list=[$(awk '/^Cpus_allowed_list/{print $2}' /proc/self/status 2>/dev/null)]"
+                  echo "## cgroup chain leaf -> root (Go reads the leaf cpu.max, not the ancestor quota):"
+                  rel=$(awk -F: '$1 == "0" { print $3 }' /proc/self/cgroup 2>/dev/null)
+                  leafdir="/sys/fs/cgroup${rel}"
+                  while [ -n "${rel}" ]; do
+                      dir="/sys/fs/cgroup${rel}"
+                      printf '  %s cpu.max=[%s] nr_throttled=[%s] throttled_usec=[%s]\n' \
+                          "${rel}" \
+                          "$(cat "${dir}/cpu.max" 2>/dev/null || echo n/a)" \
+                          "$(awk '/^nr_throttled/{print $2}' "${dir}/cpu.stat" 2>/dev/null)" \
+                          "$(awk '/^throttled_usec/{print $2}' "${dir}/cpu.stat" 2>/dev/null)"
+                      [ "${rel}" = "/" ] && break
+                      rel="${rel%/*}"; [ -z "${rel}" ] && rel="/"
+                  done
+                  echo "## init vs dind cpu.weight (the runner and the kind cluster share the parent):"
+                  parent=${leafdir%/init}
+                  printf '  init cpu.weight=[%s]  dind cpu.weight=[%s] nr_throttled=[%s]\n' \
+                      "$(cat "${parent}/init/cpu.weight" 2>/dev/null || echo n/a)" \
+                      "$(cat "${parent}/dind/cpu.weight" 2>/dev/null || echo n/a)" \
+                      "$(awk '/^nr_throttled/{print $2}' "${parent}/dind/cpu.stat" 2>/dev/null)"
+                  echo "## leaf cpu.pressure:"
+                  sed 's/^/  /' "${leafdir}/cpu.pressure" 2>/dev/null || echo "  n/a"
+                  echo "## e2e.test baked GODEBUG:"
+                  go version -m "${e2e_test}" 2>/dev/null | awk '/DefaultGODEBUG/{print "  "$0}' || echo "  n/a"
+                  echo "## kind node cpu.max + throttle:"
+                  for node in $(kind get nodes 2>/dev/null); do
+                      printf '  %s cpu.max=[%s] nr_throttled=[%s]\n' "${node}" \
+                          "$(docker exec "${node}" cat /sys/fs/cgroup/cpu.max 2>/dev/null || echo n/a)" \
+                          "$(docker exec "${node}" awk '/^nr_throttled/{print $2}' /sys/fs/cgroup/cpu.stat 2>/dev/null)"
+                  done
+              ) >"${ARTIFACTS}/cpu-state-${when}.txt" 2>&1 || true
+          }
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -178,6 +267,7 @@ periodics:
           }
           trap atexit EXIT
 
+          collect_cpu_state before-ginkgo
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit -logcheck-data-races &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
@@ -250,6 +340,50 @@ periodics:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+
+          # Snapshot the CPU cgroup layout for kubernetes/kubernetes#141435: the runner moves the
+          # job into a leaf whose cpu.max is unset, so Go can size GOMAXPROCS to the whole node
+          # instead of the pod quota. Best-effort, never fails the job.
+          collect_cpu_state () {
+              local when="$1"
+              local rel dir leafdir parent
+              # A subshell with tracing off keeps the job's set -x out of the artifact; the
+              # redirect on the toggle hides the trace of the toggle itself.
+              ( { set +x; } 2>/dev/null
+                  echo "### cpu-state (${when})"
+                  echo "## Go sizes GOMAXPROCS to the CPU affinity, not the cgroup quota:"
+                  echo "   Cpus_allowed_list=[$(awk '/^Cpus_allowed_list/{print $2}' /proc/self/status 2>/dev/null)]"
+                  echo "## cgroup chain leaf -> root (Go reads the leaf cpu.max, not the ancestor quota):"
+                  rel=$(awk -F: '$1 == "0" { print $3 }' /proc/self/cgroup 2>/dev/null)
+                  leafdir="/sys/fs/cgroup${rel}"
+                  while [ -n "${rel}" ]; do
+                      dir="/sys/fs/cgroup${rel}"
+                      printf '  %s cpu.max=[%s] nr_throttled=[%s] throttled_usec=[%s]\n' \
+                          "${rel}" \
+                          "$(cat "${dir}/cpu.max" 2>/dev/null || echo n/a)" \
+                          "$(awk '/^nr_throttled/{print $2}' "${dir}/cpu.stat" 2>/dev/null)" \
+                          "$(awk '/^throttled_usec/{print $2}' "${dir}/cpu.stat" 2>/dev/null)"
+                      [ "${rel}" = "/" ] && break
+                      rel="${rel%/*}"; [ -z "${rel}" ] && rel="/"
+                  done
+                  echo "## init vs dind cpu.weight (the runner and the kind cluster share the parent):"
+                  parent=${leafdir%/init}
+                  printf '  init cpu.weight=[%s]  dind cpu.weight=[%s] nr_throttled=[%s]\n' \
+                      "$(cat "${parent}/init/cpu.weight" 2>/dev/null || echo n/a)" \
+                      "$(cat "${parent}/dind/cpu.weight" 2>/dev/null || echo n/a)" \
+                      "$(awk '/^nr_throttled/{print $2}' "${parent}/dind/cpu.stat" 2>/dev/null)"
+                  echo "## leaf cpu.pressure:"
+                  sed 's/^/  /' "${leafdir}/cpu.pressure" 2>/dev/null || echo "  n/a"
+                  echo "## e2e.test baked GODEBUG:"
+                  go version -m "${e2e_test}" 2>/dev/null | awk '/DefaultGODEBUG/{print "  "$0}' || echo "  n/a"
+                  echo "## kind node cpu.max + throttle:"
+                  for node in $(kind get nodes 2>/dev/null); do
+                      printf '  %s cpu.max=[%s] nr_throttled=[%s]\n' "${node}" \
+                          "$(docker exec "${node}" cat /sys/fs/cgroup/cpu.max 2>/dev/null || echo n/a)" \
+                          "$(docker exec "${node}" awk '/^nr_throttled/{print $2}' /sys/fs/cgroup/cpu.stat 2>/dev/null)"
+                  done
+              ) >"${ARTIFACTS}/cpu-state-${when}.txt" 2>&1 || true
+          }
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -314,6 +448,7 @@ periodics:
           # only those cover kubelet behavior.
           kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
 
+          collect_cpu_state before-ginkgo
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --sem-ver-filter=kubelet=1.$previous_minor --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation }$kubelet_label_filter && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
@@ -377,6 +512,50 @@ periodics:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+
+          # Snapshot the CPU cgroup layout for kubernetes/kubernetes#141435: the runner moves the
+          # job into a leaf whose cpu.max is unset, so Go can size GOMAXPROCS to the whole node
+          # instead of the pod quota. Best-effort, never fails the job.
+          collect_cpu_state () {
+              local when="$1"
+              local rel dir leafdir parent
+              # A subshell with tracing off keeps the job's set -x out of the artifact; the
+              # redirect on the toggle hides the trace of the toggle itself.
+              ( { set +x; } 2>/dev/null
+                  echo "### cpu-state (${when})"
+                  echo "## Go sizes GOMAXPROCS to the CPU affinity, not the cgroup quota:"
+                  echo "   Cpus_allowed_list=[$(awk '/^Cpus_allowed_list/{print $2}' /proc/self/status 2>/dev/null)]"
+                  echo "## cgroup chain leaf -> root (Go reads the leaf cpu.max, not the ancestor quota):"
+                  rel=$(awk -F: '$1 == "0" { print $3 }' /proc/self/cgroup 2>/dev/null)
+                  leafdir="/sys/fs/cgroup${rel}"
+                  while [ -n "${rel}" ]; do
+                      dir="/sys/fs/cgroup${rel}"
+                      printf '  %s cpu.max=[%s] nr_throttled=[%s] throttled_usec=[%s]\n' \
+                          "${rel}" \
+                          "$(cat "${dir}/cpu.max" 2>/dev/null || echo n/a)" \
+                          "$(awk '/^nr_throttled/{print $2}' "${dir}/cpu.stat" 2>/dev/null)" \
+                          "$(awk '/^throttled_usec/{print $2}' "${dir}/cpu.stat" 2>/dev/null)"
+                      [ "${rel}" = "/" ] && break
+                      rel="${rel%/*}"; [ -z "${rel}" ] && rel="/"
+                  done
+                  echo "## init vs dind cpu.weight (the runner and the kind cluster share the parent):"
+                  parent=${leafdir%/init}
+                  printf '  init cpu.weight=[%s]  dind cpu.weight=[%s] nr_throttled=[%s]\n' \
+                      "$(cat "${parent}/init/cpu.weight" 2>/dev/null || echo n/a)" \
+                      "$(cat "${parent}/dind/cpu.weight" 2>/dev/null || echo n/a)" \
+                      "$(awk '/^nr_throttled/{print $2}' "${parent}/dind/cpu.stat" 2>/dev/null)"
+                  echo "## leaf cpu.pressure:"
+                  sed 's/^/  /' "${leafdir}/cpu.pressure" 2>/dev/null || echo "  n/a"
+                  echo "## e2e.test baked GODEBUG:"
+                  go version -m "${e2e_test}" 2>/dev/null | awk '/DefaultGODEBUG/{print "  "$0}' || echo "  n/a"
+                  echo "## kind node cpu.max + throttle:"
+                  for node in $(kind get nodes 2>/dev/null); do
+                      printf '  %s cpu.max=[%s] nr_throttled=[%s]\n' "${node}" \
+                          "$(docker exec "${node}" cat /sys/fs/cgroup/cpu.max 2>/dev/null || echo n/a)" \
+                          "$(docker exec "${node}" awk '/^nr_throttled/{print $2}' /sys/fs/cgroup/cpu.stat 2>/dev/null)"
+                  done
+              ) >"${ARTIFACTS}/cpu-state-${when}.txt" 2>&1 || true
+          }
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -441,6 +620,7 @@ periodics:
           # only those cover kubelet behavior.
           kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
 
+          collect_cpu_state before-ginkgo
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --sem-ver-filter=kubelet=1.$previous_minor --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation }$kubelet_label_filter && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
@@ -504,6 +684,50 @@ periodics:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+
+          # Snapshot the CPU cgroup layout for kubernetes/kubernetes#141435: the runner moves the
+          # job into a leaf whose cpu.max is unset, so Go can size GOMAXPROCS to the whole node
+          # instead of the pod quota. Best-effort, never fails the job.
+          collect_cpu_state () {
+              local when="$1"
+              local rel dir leafdir parent
+              # A subshell with tracing off keeps the job's set -x out of the artifact; the
+              # redirect on the toggle hides the trace of the toggle itself.
+              ( { set +x; } 2>/dev/null
+                  echo "### cpu-state (${when})"
+                  echo "## Go sizes GOMAXPROCS to the CPU affinity, not the cgroup quota:"
+                  echo "   Cpus_allowed_list=[$(awk '/^Cpus_allowed_list/{print $2}' /proc/self/status 2>/dev/null)]"
+                  echo "## cgroup chain leaf -> root (Go reads the leaf cpu.max, not the ancestor quota):"
+                  rel=$(awk -F: '$1 == "0" { print $3 }' /proc/self/cgroup 2>/dev/null)
+                  leafdir="/sys/fs/cgroup${rel}"
+                  while [ -n "${rel}" ]; do
+                      dir="/sys/fs/cgroup${rel}"
+                      printf '  %s cpu.max=[%s] nr_throttled=[%s] throttled_usec=[%s]\n' \
+                          "${rel}" \
+                          "$(cat "${dir}/cpu.max" 2>/dev/null || echo n/a)" \
+                          "$(awk '/^nr_throttled/{print $2}' "${dir}/cpu.stat" 2>/dev/null)" \
+                          "$(awk '/^throttled_usec/{print $2}' "${dir}/cpu.stat" 2>/dev/null)"
+                      [ "${rel}" = "/" ] && break
+                      rel="${rel%/*}"; [ -z "${rel}" ] && rel="/"
+                  done
+                  echo "## init vs dind cpu.weight (the runner and the kind cluster share the parent):"
+                  parent=${leafdir%/init}
+                  printf '  init cpu.weight=[%s]  dind cpu.weight=[%s] nr_throttled=[%s]\n' \
+                      "$(cat "${parent}/init/cpu.weight" 2>/dev/null || echo n/a)" \
+                      "$(cat "${parent}/dind/cpu.weight" 2>/dev/null || echo n/a)" \
+                      "$(awk '/^nr_throttled/{print $2}' "${parent}/dind/cpu.stat" 2>/dev/null)"
+                  echo "## leaf cpu.pressure:"
+                  sed 's/^/  /' "${leafdir}/cpu.pressure" 2>/dev/null || echo "  n/a"
+                  echo "## e2e.test baked GODEBUG:"
+                  go version -m "${e2e_test}" 2>/dev/null | awk '/DefaultGODEBUG/{print "  "$0}' || echo "  n/a"
+                  echo "## kind node cpu.max + throttle:"
+                  for node in $(kind get nodes 2>/dev/null); do
+                      printf '  %s cpu.max=[%s] nr_throttled=[%s]\n' "${node}" \
+                          "$(docker exec "${node}" cat /sys/fs/cgroup/cpu.max 2>/dev/null || echo n/a)" \
+                          "$(docker exec "${node}" awk '/^nr_throttled/{print $2}' /sys/fs/cgroup/cpu.stat 2>/dev/null)"
+                  done
+              ) >"${ARTIFACTS}/cpu-state-${when}.txt" 2>&1 || true
+          }
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -568,6 +792,7 @@ periodics:
           # only those cover kubelet behavior.
           kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
 
+          collect_cpu_state before-ginkgo
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --sem-ver-filter=kubelet=1.$previous_minor --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation }$kubelet_label_filter && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
