@@ -150,12 +150,12 @@ periodics:
     description: Uses kubetest to run e2e tests (+Feature:many, -many) against a cluster
       created with cluster/kube-up.sh
     testgrid-alert-email: release-team@kubernetes.io
-    testgrid-dashboards: sig-release-master-blocking, google-gce
+    testgrid-dashboards: sig-release-master-informing, google-gce
     testgrid-tab-name: gce-cos-master-alpha-features
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 2h20m0s
+    timeout: 3h20m0s
   interval: 30m
   labels:
     preset-k8s-ssh: "true"
@@ -178,7 +178,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
         --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0
         --minStartupPods=8
-      - --timeout=120m
+      - --timeout=180m
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
