@@ -112,6 +112,13 @@ def create_args(kops_channel, networking, extra_flags, kops_image, distro):
         args += " --set=cluster.spec.containerd.version=2.0.7"
         args += " --set=cluster.spec.containerd.runc.version=1.3.4"
 
+    if networking == 'kindnet':
+        # kindnet is the only CNI in the grid that intercepts cluster DNS on the
+        # node, and it is the only one whose failures are Service-name resolution
+        # (`getaddrinfo ... Name does not resolve`). Turn the interception off to
+        # confirm or clear it as the cause.
+        args += " --set=cluster.spec.networking.kindnet.dnsCaching=false"
+
     image_overridden = False
     if extra_flags:
         for arg in extra_flags:
