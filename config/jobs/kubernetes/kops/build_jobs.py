@@ -2006,8 +2006,8 @@ def generate_presubmits_scale():
 def generate_nftables():
     results = []
     for distro, _ in aws_distro_options.items():
-        if distro in ('debian'):
-            continue  # nftables not supported on these distros
+        if distro in ('debian11',):
+            continue  # kube-proxy nftables mode needs kernel >= 5.13; deb11 is on 5.10
         distro_short = distro_shortener(distro)
         extra_flags = ["--set=cluster.spec.kubeProxy.proxyMode=nftables"]
         if 'arm64' in distro:
