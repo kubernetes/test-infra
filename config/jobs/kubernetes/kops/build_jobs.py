@@ -583,16 +583,12 @@ def generate_grid():
                             # the AWS VPC CNI requires these for iptables-nft SNAT rules.
                             continue
                         elif networking == 'calico':
-                            # Calico BPF mode takes over kube-proxy's role; from
-                            # v3.31 felix also binds the kube-proxy healthz port,
-                            # so kube-proxy must be disabled to avoid the conflict.
-                            # https://docs.tigera.io/calico-enterprise/latest/operations/ebpf/install#disable-kube-proxy-or-avoid-conflicts
+                            # https://github.com/kubernetes/kops/issues/17915
                             # Felix's iptables-nft dataplane goes through the
                             # nft_compat shim on these distros and loses BGP
                             # session state; switch Felix to native nftables.
                             extra_flags.extend([
-                                "--set=cluster.spec.kubeProxy.enabled=false",
-                                "--set=cluster.spec.networking.calico.bpfEnabled=true",
+                                "--set=cluster.spec.kubeProxy.proxyMode=nftables",
                                 "--set=cluster.spec.networking.calico.nftablesMode=Enabled",
                             ])
                         else:
@@ -638,16 +634,12 @@ def generate_grid():
                         ])
                     if 'rhel10' in distro or 'rocky10' in distro:
                         if networking == 'calico':
-                            # Calico BPF mode takes over kube-proxy's role; from
-                            # v3.31 felix also binds the kube-proxy healthz port,
-                            # so kube-proxy must be disabled to avoid the conflict.
-                            # https://docs.tigera.io/calico-enterprise/latest/operations/ebpf/install#disable-kube-proxy-or-avoid-conflicts
+                            # https://github.com/kubernetes/kops/issues/17915
                             # Felix's iptables-nft dataplane goes through the
                             # nft_compat shim on these distros and loses BGP
                             # session state; switch Felix to native nftables.
                             extra_flags.extend([
-                                "--set=cluster.spec.kubeProxy.enabled=false",
-                                "--set=cluster.spec.networking.calico.bpfEnabled=true",
+                                "--set=cluster.spec.kubeProxy.proxyMode=nftables",
                                 "--set=cluster.spec.networking.calico.nftablesMode=Enabled",
                             ])
                         else:
