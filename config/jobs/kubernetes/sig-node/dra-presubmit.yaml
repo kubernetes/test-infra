@@ -72,7 +72,7 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
               rc=$?
               kind export logs "${ARTIFACTS}/kind" || true
@@ -80,6 +80,7 @@ presubmits:
               exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
@@ -172,7 +173,7 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
               rc=$?
               kind export logs "${ARTIFACTS}/kind" || true
@@ -180,6 +181,7 @@ presubmits:
               exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit -logcheck-data-races &
           GINKGO_E2E_PID=$!
@@ -280,7 +282,7 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
               rc=$?
               kind export logs "${ARTIFACTS}/kind" || true
@@ -288,6 +290,7 @@ presubmits:
               exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit -logcheck-data-races &
           GINKGO_E2E_PID=$!
@@ -381,7 +384,7 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
               rc=$?
               kind export logs "${ARTIFACTS}/kind" || true
@@ -389,6 +392,7 @@ presubmits:
               exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
           # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
@@ -523,7 +527,7 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
               rc=$?
               kind export logs "${ARTIFACTS}/kind" || true
@@ -531,6 +535,7 @@ presubmits:
               exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
           # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
@@ -665,7 +670,7 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
               rc=$?
               kind export logs "${ARTIFACTS}/kind" || true
@@ -673,6 +678,7 @@ presubmits:
               exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
           # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
