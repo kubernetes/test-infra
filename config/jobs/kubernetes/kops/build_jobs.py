@@ -538,6 +538,13 @@ def generate_grid():
                     # but not backported to earlier kops versions
                     if kops_version == '1.34' and networking in ('amazon-vpc', 'cilium-eni') and distro_short in ('deb11', 'rhel9'):
                         continue
+                    # The AWS CCM route controller races node registration and
+                    # leaves some nodes without a route, which black-holes pod
+                    # traffic under kubenet. Fixed by pinning CCM to v1.36.1 in
+                    # https://github.com/kubernetes/kops/pull/18649, not backported
+                    # to release-1.34 or release-1.35.
+                    if kops_version in ('1.34', '1.35') and networking == 'kubenet':
+                        continue
                     extra_flags = []
                     if 'arm64' in distro:
                         if networking in ['cilium-eni', 'amazon-vpc']:
