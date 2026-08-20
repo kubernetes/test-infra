@@ -92,6 +92,17 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
         done
     done
     echo "cgroup: ${own_cgroup} subtree_control=[$(cat "${cg}/cgroup.subtree_control")], dind subtree_control=[$(cat "${cg}/dind/cgroup.subtree_control")]"
+    # Moving into the init leaf hides the container's CPU quota from anything
+    # that reads its own cgroup: cpu.max is not inherited, so a fresh leaf
+    # reports "max" while the kernel still throttles the whole subtree to the
+    # quota on ${own_cgroup}. Go's cgroup-aware GOMAXPROCS default reads only
+    # the leaf, so test binaries size themselves to the node's CPU count
+    # instead of the pod's quota. Copy the quota down so the leaf reports it.
+    # The parent still caps the subtree, so enforcement is unchanged.
+    if [[ -f "${cg}/cpu.max" && -f "${cg}/init/cpu.max" ]]; then
+        cat "${cg}/cpu.max" > "${cg}/init/cpu.max" || true
+        echo "cgroup: init cpu.max=[$(cat "${cg}/init/cpu.max")]"
+    fi
 
     docker_registry_mirror_url=""
     if [[ "${PROW_CLOUD_PROVIDER:-}" == "amazon" ]]; then
