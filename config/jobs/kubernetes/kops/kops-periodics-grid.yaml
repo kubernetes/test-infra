@@ -16250,7 +16250,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rhel9-k36-ko36
 
-# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-calico-rhel10arm64-k34
   cron: '21 22 * * 6'
   labels:
@@ -16279,7 +16279,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -16306,7 +16306,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -16315,7 +16315,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rhel10arm64-k34
 
-# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
+# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
 - name: e2e-kops-grid-calico-rhel10arm64-k34-ko35
   cron: '45 1 * * 1'
   labels:
@@ -16344,7 +16344,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -16371,7 +16371,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.35'
@@ -16380,7 +16380,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rhel10arm64-k34-ko35
 
-# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-calico-rhel10arm64-k34-ko36
   cron: '15 11 * * 3'
   labels:
@@ -16409,7 +16409,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -16436,7 +16436,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -16445,7 +16445,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rhel10arm64-k34-ko36
 
-# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-calico-rhel10arm64-k35
   cron: '31 16 * * 1'
   labels:
@@ -16474,7 +16474,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -16501,7 +16501,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -16510,7 +16510,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rhel10arm64-k35
 
-# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
+# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
 - name: e2e-kops-grid-calico-rhel10arm64-k35-ko35
   cron: '28 12 * * 1'
   labels:
@@ -16539,7 +16539,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -16566,7 +16566,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.35'
@@ -16575,7 +16575,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rhel10arm64-k35-ko35
 
-# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-calico-rhel10arm64-k35-ko36
   cron: '46 6 * * 4'
   labels:
@@ -16604,7 +16604,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -16631,7 +16631,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -16640,7 +16640,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rhel10arm64-k35-ko36
 
-# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-calico-rhel10arm64-k36
   cron: '37 10 * * 4'
   labels:
@@ -16669,7 +16669,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
@@ -16696,7 +16696,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -16705,7 +16705,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rhel10arm64-k36
 
-# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "aws", "distro": "rhel10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-calico-rhel10arm64-k36-ko36
   cron: '44 16 * * 6'
   labels:
@@ -16734,7 +16734,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260728-arm64-0-Hourly2-GP3' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
@@ -16761,7 +16761,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -17346,7 +17346,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rocky9-k36-ko36
 
-# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-calico-rocky10arm64-k34
   cron: '51 23 * * 3'
   labels:
@@ -17375,7 +17375,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -17402,7 +17402,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -17411,7 +17411,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rocky10arm64-k34
 
-# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
+# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
 - name: e2e-kops-grid-calico-rocky10arm64-k34-ko35
   cron: '14 1 * * 1'
   labels:
@@ -17440,7 +17440,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -17467,7 +17467,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.35'
@@ -17476,7 +17476,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rocky10arm64-k34-ko35
 
-# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-calico-rocky10arm64-k34-ko36
   cron: '28 3 * * 1'
   labels:
@@ -17505,7 +17505,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -17532,7 +17532,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -17541,7 +17541,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rocky10arm64-k34-ko36
 
-# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-calico-rocky10arm64-k35
   cron: '49 9 * * 3'
   labels:
@@ -17570,7 +17570,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -17597,7 +17597,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -17606,7 +17606,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rocky10arm64-k35
 
-# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
+# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
 - name: e2e-kops-grid-calico-rocky10arm64-k35-ko35
   cron: '47 4 * * 6'
   labels:
@@ -17635,7 +17635,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -17662,7 +17662,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.35'
@@ -17671,7 +17671,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rocky10arm64-k35-ko35
 
-# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-calico-rocky10arm64-k35-ko36
   cron: '17 6 * * 1'
   labels:
@@ -17700,7 +17700,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -17727,7 +17727,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -17736,7 +17736,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rocky10arm64-k35-ko36
 
-# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-calico-rocky10arm64-k36
   cron: '11 11 * * 1'
   labels:
@@ -17765,7 +17765,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
@@ -17792,7 +17792,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -17801,7 +17801,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-rocky10arm64-k36
 
-# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "aws", "distro": "rocky10arm64", "extra_flags": "--node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-calico-rocky10arm64-k36-ko36
   cron: '55 16 * * 5'
   labels:
@@ -17830,7 +17830,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='792107900819/Rocky-10-EC2-Base-10.2-20260525.0.aarch64' --channel=alpha --networking=calico --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
@@ -17857,7 +17857,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --node-size=m6g.large --control-plane-size=m6g.large --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -106938,7 +106938,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-umini2404arm64-k36-ko36
 
-# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rhel10-k34
   cron: '43 16 * * 2'
   labels:
@@ -106967,7 +106967,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -106992,7 +106992,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rhel10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -107001,7 +107001,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rhel10-k34
 
-# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
+# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rhel10-k34-ko35
   cron: '50 3 * * 6'
   labels:
@@ -107031,7 +107031,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -107060,7 +107060,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rhel10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.35'
@@ -107069,7 +107069,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rhel10-k34-ko35
 
-# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rhel10-k34-ko36
   cron: '16 9 * * 5'
   labels:
@@ -107099,7 +107099,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -107128,7 +107128,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rhel10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -107137,7 +107137,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rhel10-k34-ko36
 
-# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rhel10-k35
   cron: '13 14 * * 5'
   labels:
@@ -107166,7 +107166,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -107191,7 +107191,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rhel10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -107200,7 +107200,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rhel10-k35
 
-# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
+# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rhel10-k35-ko35
   cron: '3 6 * * 0'
   labels:
@@ -107230,7 +107230,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -107259,7 +107259,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rhel10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.35'
@@ -107268,7 +107268,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rhel10-k35-ko35
 
-# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rhel10-k35-ko36
   cron: '17 12 * * 5'
   labels:
@@ -107298,7 +107298,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -107327,7 +107327,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rhel10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -107336,7 +107336,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rhel10-k35-ko36
 
-# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rhel10-k36
   cron: '39 12 * * 4'
   labels:
@@ -107365,7 +107365,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
@@ -107390,7 +107390,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rhel10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -107399,7 +107399,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rhel10-k36
 
-# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "gce", "distro": "rhel10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rhel10-k36-ko36
   cron: '3 10 * * 2'
   labels:
@@ -107429,7 +107429,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rhel-cloud/rhel-10-v20260714' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
@@ -107458,7 +107458,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rhel10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -107467,7 +107467,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rhel10-k36-ko36
 
-# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10arm64-k34
   cron: '6 22 * * 3'
   labels:
@@ -107496,7 +107496,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -107521,7 +107521,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -107530,7 +107530,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10arm64-k34
 
-# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10arm64-k34-ko35
   cron: '0 6 * * 3'
   labels:
@@ -107560,7 +107560,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -107589,7 +107589,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.35'
@@ -107598,7 +107598,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10arm64-k34-ko35
 
-# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10arm64-k34-ko36
   cron: '18 12 * * 4'
   labels:
@@ -107628,7 +107628,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -107657,7 +107657,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -107666,7 +107666,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10arm64-k34-ko36
 
-# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10arm64-k35
   cron: '44 8 * * 0'
   labels:
@@ -107695,7 +107695,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -107720,7 +107720,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -107729,7 +107729,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10arm64-k35
 
-# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10arm64-k35-ko35
   cron: '57 11 * * 4'
   labels:
@@ -107759,7 +107759,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -107788,7 +107788,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.35'
@@ -107797,7 +107797,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10arm64-k35-ko35
 
-# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10arm64-k35-ko36
   cron: '35 9 * * 6'
   labels:
@@ -107827,7 +107827,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -107856,7 +107856,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -107865,7 +107865,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10arm64-k35-ko36
 
-# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10arm64-k36
   cron: '34 18 * * 5'
   labels:
@@ -107894,7 +107894,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
@@ -107919,7 +107919,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -107928,7 +107928,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10arm64-k36
 
-# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10arm64", "extra_flags": "--gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10arm64-k36-ko36
   cron: '25 15 * * 2'
   labels:
@@ -107958,7 +107958,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-arm64-v20260720' --channel=alpha --networking=calico --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
@@ -107987,7 +107987,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10arm64
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -107996,7 +107996,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10arm64-k36-ko36
 
-# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10-k34
   cron: '50 21 * * 3'
   labels:
@@ -108025,7 +108025,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -108050,7 +108050,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -108059,7 +108059,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10-k34
 
-# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10-k34-ko35
   cron: '52 20 * * 1'
   labels:
@@ -108089,7 +108089,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -108118,7 +108118,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.35'
@@ -108127,7 +108127,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10-k34-ko35
 
-# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10-k34-ko36
   cron: '14 14 * * 4'
   labels:
@@ -108157,7 +108157,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
@@ -108186,7 +108186,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -108195,7 +108195,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10-k34-ko36
 
-# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10-k35
   cron: '4 3 * * 6'
   labels:
@@ -108224,7 +108224,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -108249,7 +108249,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -108258,7 +108258,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10-k35
 
-# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.35", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10-k35-ko35
   cron: '1 17 * * 6'
   labels:
@@ -108288,7 +108288,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -108317,7 +108317,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.35'
@@ -108326,7 +108326,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10-k35-ko35
 
-# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10-k35-ko36
   cron: '55 19 * * 5'
   labels:
@@ -108356,7 +108356,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -108385,7 +108385,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
@@ -108394,7 +108394,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10-k35-ko36
 
-# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10-k36
   cron: '34 17 * * 1'
   labels:
@@ -108423,7 +108423,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
@@ -108448,7 +108448,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -108457,7 +108457,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-rocky10-k36
 
-# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
+# {"cloud": "gce", "distro": "rocky10", "extra_flags": "--gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "1.36", "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-rocky10-k36-ko36
   cron: '57 13 * * 2'
   labels:
@@ -108487,7 +108487,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
+          --create-args="--image='rocky-linux-cloud/rocky-linux-10-optimized-gcp-v20260720' --channel=alpha --networking=calico --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.36/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
@@ -108516,7 +108516,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: rocky10
-    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.enabled=false --set=cluster.spec.networking.calico.bpfEnabled=true --set=cluster.spec.networking.calico.nftablesMode=Enabled
+    test.kops.k8s.io/extra_flags: --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true --set=cluster.spec.kubeProxy.proxyMode=nftables --set=cluster.spec.networking.calico.nftablesMode=Enabled
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.36'
