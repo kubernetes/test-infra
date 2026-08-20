@@ -39,7 +39,12 @@ def drop_unsupported_versions(original_list, version_to_drop):
 
 # AWS distributions
 aws_distro_options = {
-    "debian11": kops_versions,
+    # containerd 2.x needs GLIBC_2.32; Debian 11 is on 2.31, so it cannot run any
+    # containerd that kops 1.37 still accepts (2.1.0 is the floor). Spell out the
+    # kops versions that can still run it instead of dropping the None entry, so
+    # that aging those versions out takes the special case with them rather than
+    # silently handing deb11 every new kops release.
+    "debian11": ['1.34', '1.35', '1.36'],
     "debian12": kops_versions,
     "debian13": kops_versions,
     "ubuntu2204": kops_versions,
@@ -61,10 +66,10 @@ aws_distro_options = {
 
 # GCE distributions
 gce_distro_options = {
-    # None is the "latest kops" entry, so it has to be dropped explicitly to stop
-    # testing an aged-out distro against newer kops.
-    "cos121": drop_unsupported_versions(kops_versions, [None, '1.36']),
-    "cos121arm64": drop_unsupported_versions(kops_versions, [None, '1.36']),
+    # COS 121 was pinned down to containerd 2.0.7 and cannot reach the 2.1.0 floor
+    # kops 1.37 requires. Allowlisted as for debian11 above.
+    "cos121": ['1.34', '1.35'],
+    "cos121arm64": ['1.34', '1.35'],
     "cos125": kops_versions,
     "cos125arm64": kops_versions,
     "cos129": drop_unsupported_versions(kops_versions, ['1.33', '1.34', '1.35']),

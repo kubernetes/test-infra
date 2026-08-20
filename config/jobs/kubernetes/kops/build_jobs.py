@@ -538,6 +538,13 @@ def generate_grid():
                     # but not backported to earlier kops versions
                     if kops_version == '1.34' and networking in ('amazon-vpc', 'cilium-eni') and distro_short in ('deb11', 'rhel9'):
                         continue
+                    # The AWS CCM route controller races node registration and
+                    # leaves some nodes without a route, which black-holes pod
+                    # traffic under kubenet. Fixed by pinning CCM to v1.36.1 in
+                    # https://github.com/kubernetes/kops/pull/18649, not backported
+                    # to release-1.34 or release-1.35.
+                    if kops_version in ('1.34', '1.35') and networking == 'kubenet':
+                        continue
                     extra_flags = []
                     if 'arm64' in distro:
                         if networking in ['cilium-eni', 'amazon-vpc']:
@@ -1402,7 +1409,9 @@ def generate_conformance():
 ###############################
 def generate_distros():
     results = []
-    for distro, _ in aws_distro_options.items():
+    for distro, distro_kops_versions in aws_distro_options.items():
+        if None not in distro_kops_versions:
+            continue
         distro_short = distro_shortener(distro)
         extra_flags = []
         if 'arm64' in distro:
@@ -1432,7 +1441,9 @@ def generate_distros():
 ###############################
 def generate_presubmits_distros():
     results = []
-    for distro, _ in aws_distro_options.items():
+    for distro, distro_kops_versions in aws_distro_options.items():
+        if None not in distro_kops_versions:
+            continue
         distro_short = distro_shortener(distro)
         extra_flags = []
         if 'arm64' in distro:
@@ -1469,7 +1480,9 @@ def generate_presubmits_distros():
                 always_run=False,
             )
         )
-    for distro, _ in gce_distro_options.items():
+    for distro, distro_kops_versions in gce_distro_options.items():
+        if None not in distro_kops_versions:
+            continue
         distro_short = distro_shortener(distro)
         extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
         if 'arm64' in distro:
@@ -2005,9 +2018,11 @@ def generate_presubmits_scale():
 #################################
 def generate_nftables():
     results = []
-    for distro, _ in aws_distro_options.items():
-        if distro in ('debian'):
-            continue  # nftables not supported on these distros
+    for distro, distro_kops_versions in aws_distro_options.items():
+        if None not in distro_kops_versions:
+            continue
+        if distro in ('debian11',):
+            continue  # kube-proxy nftables mode needs kernel >= 5.13; deb11 is on 5.10
         distro_short = distro_shortener(distro)
         extra_flags = ["--set=cluster.spec.kubeProxy.proxyMode=nftables"]
         if 'arm64' in distro:
@@ -2028,7 +2043,9 @@ def generate_nftables():
                 runs_per_day=3,
             )
         )
-    for distro, _ in gce_distro_options.items():
+    for distro, distro_kops_versions in gce_distro_options.items():
+        if None not in distro_kops_versions:
+            continue
         distro_short = distro_shortener(distro)
         extra_flags = [
             "--set=cluster.spec.kubeProxy.proxyMode=nftables",
