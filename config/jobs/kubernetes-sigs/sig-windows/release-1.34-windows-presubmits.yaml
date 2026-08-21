@@ -43,7 +43,7 @@ presubmits:
         - "env"
         - KUBERNETES_VERSION=latest-1.34
         - "./capz/run-capz-e2e.sh"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-1.34
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260817-81577dc432-1.34
         name: ""
         resources:
           requests:

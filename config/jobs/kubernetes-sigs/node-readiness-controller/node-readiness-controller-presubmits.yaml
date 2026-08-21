@@ -6,7 +6,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260821-da0c0a29ed-master
         command:
         - make
         args:
@@ -32,7 +32,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260821-da0c0a29ed-master
         command:
         - make
         args:
@@ -62,7 +62,7 @@ presubmits:
       timeout: 2h
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260821-da0c0a29ed-master
           command:
             - runner.sh
           args:
@@ -95,7 +95,7 @@ presubmits:
       timeout: 2h
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260821-da0c0a29ed-master
           command:
             - runner.sh
           args:
@@ -128,7 +128,7 @@ presubmits:
       timeout: 2h
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260821-da0c0a29ed-master
           command:
             - runner.sh
           env:

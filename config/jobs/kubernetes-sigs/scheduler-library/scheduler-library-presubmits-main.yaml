@@ -13,7 +13,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260821-da0c0a29ed-master
         resources:
           requests:
             memory: "8Gi"
