@@ -2,7 +2,7 @@
 # 13 jobs, total of 133 runs per week
 periodics:
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--node-size=t3.large --control-plane-size=t3.large", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "extra_flags": "--node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-conformance-master
   cron: '4 2-23/24 * * *'
   labels:
@@ -11,7 +11,7 @@ periodics:
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -31,12 +31,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=calico --node-size=t3.large --control-plane-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=calico --node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
@@ -60,7 +60,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
-    test.kops.k8s.io/extra_flags: --node-size=t3.large --control-plane-size=t3.large
+    test.kops.k8s.io/extra_flags: --node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -69,7 +69,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-master
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--node-size=t4g.large --control-plane-size=t4g.large", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-conformance-arm64-master
   cron: '44 4-23/24 * * *'
   labels:
@@ -78,7 +78,7 @@ periodics:
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -98,12 +98,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260714' --channel=alpha --networking=calico --node-size=t4g.large --control-plane-size=t4g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260714' --channel=alpha --networking=calico --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
@@ -127,7 +127,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --node-size=t4g.large --control-plane-size=t4g.large
+    test.kops.k8s.io/extra_flags: --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -136,7 +136,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-master
 
-# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "azure", "distro": "u2404", "extra_flags": "--set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "feature_flags": "Azure", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-azure-conformance-master
   cron: '17 9-23/12 * * *'
   labels:
@@ -145,7 +145,7 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -166,13 +166,13 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=calico" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=calico --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
@@ -194,6 +194,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: azure
     test.kops.k8s.io/distro: u2404
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/feature_flags: Azure
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
@@ -203,7 +204,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-azure-conformance-master
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--node-size=t3.large --control-plane-size=t3.large", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "extra_flags": "--node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-conformance-1-34
   cron: '15 1-23/24 * * *'
   labels:
@@ -212,7 +213,7 @@ periodics:
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -232,12 +233,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=calico --node-size=t3.large --control-plane-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=calico --node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest-1.34.txt \
@@ -261,7 +262,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
-    test.kops.k8s.io/extra_flags: --node-size=t3.large --control-plane-size=t3.large
+    test.kops.k8s.io/extra_flags: --node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -270,7 +271,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-34
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--node-size=t4g.large --control-plane-size=t4g.large", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-conformance-arm64-1-34
   cron: '57 2-23/24 * * *'
   labels:
@@ -279,7 +280,7 @@ periodics:
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -299,12 +300,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260714' --channel=alpha --networking=calico --node-size=t4g.large --control-plane-size=t4g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260714' --channel=alpha --networking=calico --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest-1.34.txt \
@@ -328,7 +329,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --node-size=t4g.large --control-plane-size=t4g.large
+    test.kops.k8s.io/extra_flags: --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -337,7 +338,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-34
 
-# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "azure", "distro": "u2404", "extra_flags": "--set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "feature_flags": "Azure", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-azure-conformance-1-34
   cron: '53 3-23/12 * * *'
   labels:
@@ -346,7 +347,7 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -367,13 +368,13 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=calico" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=calico --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest-1.34.txt \
@@ -395,6 +396,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: azure
     test.kops.k8s.io/distro: u2404
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/feature_flags: Azure
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
@@ -404,7 +406,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-azure-conformance-1-34
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--node-size=t3.large --control-plane-size=t3.large", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "extra_flags": "--node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-conformance-1-35
   cron: '45 7-23/24 * * *'
   labels:
@@ -413,7 +415,7 @@ periodics:
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -433,12 +435,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=calico --node-size=t3.large --control-plane-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=calico --node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest-1.35.txt \
@@ -462,7 +464,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
-    test.kops.k8s.io/extra_flags: --node-size=t3.large --control-plane-size=t3.large
+    test.kops.k8s.io/extra_flags: --node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -471,7 +473,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-35
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--node-size=t4g.large --control-plane-size=t4g.large", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-conformance-arm64-1-35
   cron: '51 12-23/24 * * *'
   labels:
@@ -480,7 +482,7 @@ periodics:
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -500,12 +502,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260714' --channel=alpha --networking=calico --node-size=t4g.large --control-plane-size=t4g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260714' --channel=alpha --networking=calico --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest-1.35.txt \
@@ -529,7 +531,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --node-size=t4g.large --control-plane-size=t4g.large
+    test.kops.k8s.io/extra_flags: --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -538,7 +540,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-35
 
-# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "azure", "distro": "u2404", "extra_flags": "--set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "feature_flags": "Azure", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-azure-conformance-1-35
   cron: '35 1-23/12 * * *'
   labels:
@@ -547,7 +549,7 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -568,13 +570,13 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=calico" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=calico --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest-1.35.txt \
@@ -596,6 +598,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: azure
     test.kops.k8s.io/distro: u2404
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/feature_flags: Azure
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
@@ -605,7 +608,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-azure-conformance-1-35
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--node-size=t3.large --control-plane-size=t3.large", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "extra_flags": "--node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-conformance-1-36
   cron: '15 5-23/24 * * *'
   labels:
@@ -614,7 +617,7 @@ periodics:
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -634,12 +637,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=calico --node-size=t3.large --control-plane-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=calico --node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest-1.36.txt \
@@ -663,7 +666,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
-    test.kops.k8s.io/extra_flags: --node-size=t3.large --control-plane-size=t3.large
+    test.kops.k8s.io/extra_flags: --node-size=t3.large --control-plane-size=t3.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -672,7 +675,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-36
 
-# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--node-size=t4g.large --control-plane-size=t4g.large", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-conformance-arm64-1-36
   cron: '53 6-23/24 * * *'
   labels:
@@ -681,7 +684,7 @@ periodics:
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -701,12 +704,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260714' --channel=alpha --networking=calico --node-size=t4g.large --control-plane-size=t4g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20260714' --channel=alpha --networking=calico --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest-1.36.txt \
@@ -730,7 +733,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --node-size=t4g.large --control-plane-size=t4g.large
+    test.kops.k8s.io/extra_flags: --node-size=t4g.large --control-plane-size=t4g.large --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -739,7 +742,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-36
 
-# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "azure", "distro": "u2404", "extra_flags": "--set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false", "feature_flags": "Azure", "k8s_version": "1.36", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-azure-conformance-1-36
   cron: '49 7-23/12 * * *'
   labels:
@@ -748,7 +751,7 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 180m
+    timeout: 230m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -769,13 +772,13 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=calico" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=calico --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=150m" \
+          --test-args="-test.timeout=200m" \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest-1.36.txt \
@@ -797,6 +800,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: azure
     test.kops.k8s.io/distro: u2404
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.updatePolicy=external --set=cluster.spec.networking.calico.wireguardEnabled=false
     test.kops.k8s.io/feature_flags: Azure
     test.kops.k8s.io/k8s_version: '1.36'
     test.kops.k8s.io/kops_channel: alpha
