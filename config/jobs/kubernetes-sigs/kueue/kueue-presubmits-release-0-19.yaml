@@ -2019,7 +2019,7 @@ presubmits:
         - ^release-0.19
       decorate: true
       decoration_config:
-        timeout: 1h
+        timeout: 90m
         pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
