@@ -545,6 +545,12 @@ def generate_grid():
                     # to release-1.34 or release-1.35.
                     if kops_version in ('1.34', '1.35') and networking == 'kubenet':
                         continue
+                    # kindnet's node-local DNS cache intermittently answers
+                    # NXDOMAIN for live Services. Disabled by default in
+                    # https://github.com/kubernetes/kops/pull/18727, cherry-picked
+                    # to release-1.35 and release-1.36 but not to release-1.34.
+                    if kops_version == '1.34' and networking == 'kindnet':
+                        continue
                     extra_flags = []
                     if 'arm64' in distro:
                         if networking in ['cilium-eni', 'amazon-vpc']:
@@ -617,6 +623,9 @@ def generate_grid():
                 for kops_version in kops_versions:
                     # cilium-etcd + gce support was added in kops 1.36+
                     if networking == 'cilium-etcd' and kops_version in ('1.34', '1.35'):
+                        continue
+                    # See the kindnet note in the AWS grid above.
+                    if kops_version == '1.34' and networking == 'kindnet':
                         continue
                     distro_short = distro_shortener(distro)
                     extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
