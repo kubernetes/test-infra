@@ -1212,6 +1212,7 @@ def generate_misc():
                        "--node-size=r5d.xlarge",
                        "--control-plane-size=r5d.xlarge",
                        *AMAZON_VPC_ENV_FLAGS,
+                       "--set=cluster.spec.containerd.installCriCtl=true",
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
