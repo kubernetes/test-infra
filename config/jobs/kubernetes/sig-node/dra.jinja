@@ -223,12 +223,15 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           {%- if kubelet_skew|int > 0 %}
 
           # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
