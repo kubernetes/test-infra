@@ -303,7 +303,8 @@ class StopWhen:
 
 
 def _make_bucket_map(path):
-    bucket_map = yaml.safe_load(open(path))
+    _yaml = yaml.YAML(typ='safe', pure=True)
+    bucket_map = _yaml.load(open(path))
     bucket_to_attrs = dict()
     for k, v in bucket_map.items():
         bucket = k.rsplit('/')[2] # of form gs://<bucket>/...
