@@ -212,8 +212,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - ^main
-    always_run: false
-    optional: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     decoration_config:
       timeout: 1h
