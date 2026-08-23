@@ -627,6 +627,12 @@ def generate_grid():
                     # See the kindnet note in the AWS grid above.
                     if kops_version == '1.34' and networking == 'kindnet':
                         continue
+                    # kOps <=1.35 omits tcp/179 from the GCE node-to-master firewall rule, so
+                    # BGP collision resolution drops the one direction that is allowed whenever a
+                    # worker's IP sorts above the control plane's. Fixed by kubernetes/kops#18351,
+                    # backported to release-1.35 but not to the dormant release-1.34.
+                    if kops_version == '1.34' and networking == 'calico':
+                        continue
                     distro_short = distro_shortener(distro)
                     extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
                     if 'arm64' in distro:
