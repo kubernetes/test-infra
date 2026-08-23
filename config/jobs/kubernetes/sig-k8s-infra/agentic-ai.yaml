@@ -20,9 +20,7 @@ periodics:
             - agy
           args:
             - --model
-            - gemini-3.7-flash-latest
-            - --effort
-            - medium
+            - gemini-3.7-flash-medium
             - --print
             - Respond with exactly "k8s-infra-agentic-ai is ready".
           env:
