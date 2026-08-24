@@ -21,6 +21,8 @@ periodics:
           args:
             - --model
             - gemini-3.7-flash-medium
+            - --project
+            - k8s-infra-agentic-ai
             - --print
             - Respond with exactly "k8s-infra-agentic-ai is ready".
           env:
@@ -29,6 +31,8 @@ periodics:
             - name: GOOGLE_GENAI_USE_VERTEXAI
               value: "true"
             - name: GOOGLE_CLOUD_PROJECT
+              value: "k8s-infra-agentic-ai"
+            - name: GOOGLE_CLOUD_QUOTA_PROJECT
               value: "k8s-infra-agentic-ai"
             - name: GOOGLE_CLOUD_LOCATION
               value: "us-central1"
