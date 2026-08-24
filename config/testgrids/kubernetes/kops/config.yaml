@@ -38,7 +38,6 @@ dashboard_groups:
   - kops-network-flannel
   - kops-network-gce
   - kops-network-kindnet
-  - kops-network-kopeio
   - kops-network-kubenet
   - kops-network-kube-router
   - kops-k8s-1.34
@@ -91,7 +90,6 @@ dashboards:
 - name: kops-network-flannel
 - name: kops-network-gce
 - name: kops-network-kindnet
-- name: kops-network-kopeio
 - name: kops-network-kubenet
 - name: kops-network-kube-router
 - name: kops-k8s-1.34

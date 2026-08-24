@@ -127,8 +127,6 @@ def build_test(cloud='aws',
 
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
-    if networking == 'kopeio' and distro in ('flatcar', 'flatcararm64'):
-        return None
 
     if extra_flags is None:
         extra_flags = []
@@ -524,9 +522,6 @@ def generate_grid():
     for networking in network_plugins_periodics['supports_aws']:
         for distro, kops_versions in aws_distro_options.items():
             for k8s_version in [v for v in k8s_versions if v != 'master']:
-                # kopeio/networking-agent doesn't have multi-arch builds yet
-                if 'arm64' in distro and networking == 'kopeio':
-                    continue
                 for kops_version in kops_versions:
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
                     distro_short = distro_shortener(distro)
