@@ -1635,6 +1635,7 @@ plugins:
     - milestone
     - milestonestatus
     - release-note
+    - stage
 
   kubernetes-sigs/kustomize:
     plugins:
