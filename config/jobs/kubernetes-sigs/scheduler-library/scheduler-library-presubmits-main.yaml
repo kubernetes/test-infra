@@ -26,3 +26,28 @@ presubmits:
         args:
         - make
         - verify
+  - name: pull-scheduler-library-test-integration-main
+    decorate: true
+    path_alias: sigs.k8s.io/scheduler-library
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-scheduler-library-test-integration-main
+    branches:
+    - ^main$
+    always_run: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-integration
