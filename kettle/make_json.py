@@ -36,15 +36,16 @@ MAX_ROW_SIZE = 104857600 # 100MB
 SECONDS_PER_DAY = 86400
 
 def buckets_yaml():
-    import ruamel.yaml as yaml  # pylint: disable=import-outside-toplevel
+    from ruamel.yaml import YAML  # pylint: disable=import-outside-toplevel
+    _yaml = YAML(typ='safe', pure=True)
     with open(os.path.dirname(os.path.abspath(__file__))+'/buckets.yaml') as fp:
-        return yaml.safe_load(fp)
+        return _yaml.load(fp)
 
 # pypy compatibility hack
 def python_buckets_yaml(python='python3'):
     return json.loads(subprocess.check_output(
         [python, '-c',
-         'import json, ruamel.yaml as yaml; print(json.dumps(yaml.safe_load(open("buckets.yaml"))))'
+         'import json; from ruamel.yaml import YAML; y=YAML(typ="safe",pure=True); print(json.dumps(y.load(open("buckets.yaml"))))' # pylint: disable=line-too-long
          ],
         cwd=os.path.dirname(os.path.abspath(__file__))).decode("utf-8"))
 
