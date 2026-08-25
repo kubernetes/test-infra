@@ -29,21 +29,25 @@ type e2eSuite struct {
 	// "E2eNode Suite". Used to recognize (and ignore) job runs that
 	// executed a different suite.
 	junitClassname string
-	// defaultJobDir is the default value of the -job-dir flag when this
-	// suite is selected, relative to the test-infra repo root.
-	defaultJobDir string
+	// defaultJobDirs are the default values of the -job-dir flag when
+	// this suite is selected, relative to the test-infra repo root. Jobs
+	// from all of these directories are combined.
+	defaultJobDirs []string
 }
 
 var e2eSuites = map[string]e2eSuite{
 	"e2e": {
 		testPackage:    "./test/e2e",
 		junitClassname: "Kubernetes e2e suite",
-		defaultJobDir:  "config/jobs/kubernetes",
+		// kubernetes-sigs is included because several subprojects there
+		// (e.g. sig-windows) run the kubernetes/kubernetes "e2e" suite
+		// against their own images.
+		defaultJobDirs: []string{"config/jobs/kubernetes", "config/jobs/kubernetes-sigs"},
 	},
 	"e2e_node": {
 		testPackage:    "./test/e2e_node",
 		junitClassname: "E2eNode Suite",
-		defaultJobDir:  "config/jobs/kubernetes/sig-node",
+		defaultJobDirs: []string{"config/jobs/kubernetes/sig-node"},
 	},
 }
 

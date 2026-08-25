@@ -19,7 +19,7 @@ report.
    depending on `-e2e-suite`) to get the authoritative list of Ginkgo test
    names.
 2. **List the jobs.** It loads the Prow configuration
-   (`config/prow/config.yaml` plus the job directory given via `-job-dir`)
+   (`config/prow/config.yaml` plus the job directories given via `-job-dir`)
    using `sigs.k8s.io/prow/pkg/config`, and collects all periodic jobs
    whose name matches `-job-filter`. Jobs that don't test
    `kubernetes/kubernetes` at `master` (e.g. jobs testing another repo, or
@@ -87,7 +87,7 @@ Must be run with the current working directory set to the root of the
 given job directory).
 
 ```
-go run ./test-coverage -kubernetes-repo <path> [-e2e-suite e2e|e2e_node] [-job-dir <path>] [-age <duration>] [-job-filter <regexp>] [-workers <n>]
+go run ./test-coverage -kubernetes-repo <path> [-e2e-suite e2e|e2e_node] [-job-dir <path>[,<path>...]] [-age <duration>] [-job-filter <regexp>] [-workers <n>]
 ```
 
 Flags:
@@ -96,10 +96,13 @@ Flags:
   checkout, used to list the suite's tests via `--list-tests`.
 * `-e2e-suite` (default `e2e_node`): which suite to analyze, `e2e` or
   `e2e_node`.
-* `-job-dir` (default depends on `-e2e-suite`): directory of periodic job
-  definitions to scan, relative to the test-infra repo root. Defaults to
-  `config/jobs/kubernetes` for `e2e` and
-  `config/jobs/kubernetes/sig-node` for `e2e_node`.
+* `-job-dir` (default depends on `-e2e-suite`): comma-separated list of
+  directories of periodic job definitions to scan, relative to the
+  test-infra repo root. Defaults to `config/jobs/kubernetes` and
+  `config/jobs/kubernetes-sigs` for `e2e` (since some `kubernetes-sigs`
+  subprojects, e.g. `sig-windows`, also run the `test/e2e` suite against
+  `kubernetes/kubernetes`), and `config/jobs/kubernetes/sig-node` for
+  `e2e_node`.
 * `-age` (default `24h`): how far back to look for job runs.
 * `-job-filter` (default `.*`): regular expression used to filter
   periodic job names.

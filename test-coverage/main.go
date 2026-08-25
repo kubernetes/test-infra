@@ -16,7 +16,7 @@ limitations under the License.
 
 // Command coverage reports how often each test of a Kubernetes Ginkgo e2e
 // suite ("e2e" or "e2e_node") has actually been executed by the periodic
-// Prow jobs defined in a given job directory, over a recent window of time.
+// Prow jobs defined in given job directories, over a recent window of time.
 //
 // It must be run with the current working directory set to the root of the
 // test-infra repository, since it needs to load the main Prow config from
@@ -35,6 +35,7 @@ import (
 	"os/signal"
 	"regexp"
 	"sort"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -60,14 +61,14 @@ func main() {
 
 	kubernetesRepo := flag.String("kubernetes-repo", "", "Path to a kubernetes/kubernetes repository checkout (required).")
 	e2eSuiteName := flag.String("e2e-suite", "e2e_node", `Which Ginkgo test suite in the "test" directory to analyze: "e2e" or "e2e_node".`)
-	jobDir := flag.String("job-dir", "", "Path to a directory of periodic Prow job definitions, relative to the test-infra repository root. Defaults to the standard job directory for -e2e-suite.")
+	jobDir := flag.String("job-dir", "", "Comma-separated list of directories of periodic Prow job definitions, relative to the test-infra repository root. Defaults to the standard job directories for -e2e-suite.")
 	age := flag.Duration("age", 24*time.Hour, "How far back to look for job runs.")
 	jobFilter := flag.String("job-filter", ".*", "Regular expression used to filter periodic job names.")
 	workers := flag.Int("workers", 10, "Number of concurrent workers used to download and analyze job runs from GCS.")
 	flag.Parse()
 
 	if *kubernetesRepo == "" {
-		fmt.Fprintln(os.Stderr, "Usage: coverage -kubernetes-repo <path> [-e2e-suite e2e|e2e_node] [-job-dir <path>] [-age <duration>] [-job-filter <regexp>] [-workers <n>]")
+		fmt.Fprintln(os.Stderr, "Usage: coverage -kubernetes-repo <path> [-e2e-suite e2e|e2e_node] [-job-dir <path>[,<path>...]] [-age <duration>] [-job-filter <regexp>] [-workers <n>]")
 		flag.PrintDefaults()
 		os.Exit(2)
 	}
@@ -77,8 +78,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var jobDirs []string
 	if *jobDir == "" {
-		*jobDir = suite.defaultJobDir
+		jobDirs = suite.defaultJobDirs
+	} else {
+		jobDirs = strings.Split(*jobDir, ",")
 	}
 
 	jobFilterRE, err := regexp.Compile(*jobFilter)
@@ -90,12 +94,12 @@ func main() {
 		log.Fatalf("invalid -workers %d: must be at least 1", *workers)
 	}
 
-	if err := run(*kubernetesRepo, suite, *jobDir, *age, jobFilterRE, *workers, os.Stdout); err != nil {
+	if err := run(*kubernetesRepo, suite, jobDirs, *age, jobFilterRE, *workers, os.Stdout); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func run(kubernetesRepo string, suite e2eSuite, jobDir string, age time.Duration, jobFilter *regexp.Regexp, workers int, out *os.File) error {
+func run(kubernetesRepo string, suite e2eSuite, jobDirs []string, age time.Duration, jobFilter *regexp.Regexp, workers int, out *os.File) error {
 	log.Printf("Listing %s tests in %s ...", suite.testPackage, kubernetesRepo)
 	tests, err := listGinkgoTests(kubernetesRepo, suite.testPackage)
 	if err != nil {
@@ -103,8 +107,8 @@ func run(kubernetesRepo string, suite e2eSuite, jobDir string, age time.Duration
 	}
 	log.Printf("Found %d tests.", len(tests))
 
-	log.Printf("Listing periodic jobs in %s matching %q ...", jobDir, jobFilter)
-	jobs, err := listPeriodicJobs(jobDir, jobFilter)
+	log.Printf("Listing periodic jobs in %v matching %q ...", jobDirs, jobFilter)
+	jobs, err := listPeriodicJobs(jobDirs, jobFilter)
 	if err != nil {
 		return fmt.Errorf("listing periodic jobs: %w", err)
 	}

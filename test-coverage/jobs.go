@@ -29,25 +29,32 @@ import (
 // current working directory set to that root.
 const mainProwConfigPath = "config/prow/config.yaml"
 
-// listPeriodicJobs returns the sorted names of all periodic jobs defined
-// underneath jobDir (a path relative to the test-infra repo root, e.g.
-// "config/jobs/kubernetes/sig-node") whose name matches jobFilter and which
-// test kubernetes/kubernetes at master.
-func listPeriodicJobs(jobDir string, jobFilter *regexp.Regexp) ([]string, error) {
-	c, err := prowconfig.Load(mainProwConfigPath, jobDir, nil, "")
-	if err != nil {
-		return nil, fmt.Errorf("loading Prow config for job dir %q: %w", jobDir, err)
-	}
-
+// listPeriodicJobs returns the sorted, deduplicated names of all periodic
+// jobs defined underneath jobDirs (paths relative to the test-infra repo
+// root, e.g. "config/jobs/kubernetes/sig-node") whose name matches
+// jobFilter and which test kubernetes/kubernetes at master.
+func listPeriodicJobs(jobDirs []string, jobFilter *regexp.Regexp) ([]string, error) {
+	seen := make(map[string]bool)
 	var names []string
-	for _, p := range c.AllPeriodics() {
-		if !jobFilter.MatchString(p.Name) {
-			continue
+	for _, jobDir := range jobDirs {
+		c, err := prowconfig.Load(mainProwConfigPath, jobDir, nil, "")
+		if err != nil {
+			return nil, fmt.Errorf("loading Prow config for job dir %q: %w", jobDir, err)
 		}
-		if !testsKubernetesAtMaster(p) {
-			continue
+
+		for _, p := range c.AllPeriodics() {
+			if !jobFilter.MatchString(p.Name) {
+				continue
+			}
+			if !testsKubernetesAtMaster(p) {
+				continue
+			}
+			if seen[p.Name] {
+				continue
+			}
+			seen[p.Name] = true
+			names = append(names, p.Name)
 		}
-		names = append(names, p.Name)
 	}
 	sort.Strings(names)
 	return names, nil
