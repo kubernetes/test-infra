@@ -1593,38 +1593,6 @@ presubmits:
               limits:
                 cpu: "4700m"
                 memory: "6Gi"
-    - name: pull-kueue-test-kwok-smoke-main
-      cluster: eks-prow-build-cluster
-      optional: true
-      always_run: false
-      branches:
-        - ^main
-      decorate: true
-      decoration_config:
-        timeout: 30m
-        pod_unscheduled_timeout: 14m
-      path_alias: sigs.k8s.io/kueue
-      annotations:
-        testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-kwok-smoke-main
-        description: "Run the Kueue KWOK smoke test"
-      spec:
-        containers:
-          - image: public.ecr.aws/docker/library/golang:1.26
-            command:
-              - make
-            args:
-              - test-kwok-smoke
-            env:
-              - name: GOMAXPROCS
-                value: "2"
-            resources:
-              requests:
-                cpu: "2"
-                memory: "6Gi"
-              limits:
-                cpu: "2"
-                memory: "6Gi"
     - name: pull-kueue-test-scheduling-perf-main
       cluster: eks-prow-build-cluster
       branches:
