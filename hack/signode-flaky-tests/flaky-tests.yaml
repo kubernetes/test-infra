@@ -1,0 +1,33 @@
+# SIG Node Flaky Test Configuration
+#
+# Tests listed here are known to be flaky and will be skipped in CI jobs
+# that opt into this configuration. This allows SIG Node maintainers to
+# quickly quarantine flaky tests without modifying kubernetes/kubernetes.
+#
+# Each entry requires:
+#   - name:       Ginkgo test name substring or regex to match (required)
+#   - issue:      Link to a tracking issue (required)
+#   - dateAdded:  Date the entry was added, YYYY-MM-DD (required)
+#
+# Optional fields:
+#   - suite:      Limit to "node_e2e" or "e2e" tests (default: both)
+#   - feature:    Feature gate name if test covers a non-GA feature (omit for conformance)
+#   - jobs:       Limit to specific job names (default: all sig-node jobs)
+#   - reason:     Brief explanation of the flake
+#
+# To add a flaky test, open a PR adding an entry below. The PR only
+# needs approval from sig-node-test-approvers (OWNERS in this directory).
+#
+# Integration: kubetest2 jobs append the generated skip regex to --skip-regex.
+# See hack/signode-flaky-tests/README.md for details.
+#
+# Example:
+#   - name: "should not allow privilege escalation when false"
+#     issue: "https://github.com/kubernetes/kubernetes/issues/12345"
+#     dateAdded: "2026-08-26"
+#     suite: "node_e2e"
+#     reason: "Flakes on COS with containerd 2.0"
+#     jobs:
+#       - ci-cos-containerd-node-e2e-serial
+
+flakyTests: []
