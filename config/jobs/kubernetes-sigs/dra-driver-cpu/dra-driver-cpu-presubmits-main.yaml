@@ -255,6 +255,8 @@ presubmits:
           value: "true"
         - name: DRACPU_E2E_VERBOSE
           value: "1"
+        - name: DRACPU_E2E_ALLOCATOR
+          value: "external"
         command:
         - runner.sh
         args:
