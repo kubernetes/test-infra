@@ -19,7 +19,6 @@
 # needs approval from sig-node-test-approvers (OWNERS in this directory).
 #
 # Integration: kubetest2 jobs append the generated skip regex to --skip-regex.
-# See hack/signode-flaky-tests/README.md for details.
 #
 # Example:
 #   - name: "should not allow privilege escalation when false"
@@ -30,4 +29,16 @@
 #     jobs:
 #       - ci-cos-containerd-node-e2e-serial
 
-flakyTests: []
+flakyTests:
+  - name: "Probing container should \\*not\\* be restarted with a non-local redirect http liveness probe"
+    issue: "https://github.com/kubernetes/kubernetes/issues/116123"
+    dateAdded: "2026-08-26"
+    suite: "node_e2e"
+    reason: "30 failures in 14 days across pull-kubernetes-node-e2e-containerd, ci-cos-containerd-node-e2e, ci-kubernetes-node-e2e-containerd"
+
+  - name: "Probing restartable init container should \\*not\\* be restarted with a non-local redirect http liveness probe"
+    issue: "https://github.com/kubernetes/kubernetes/issues/116123"
+    dateAdded: "2026-08-26"
+    suite: "node_e2e"
+    reason: "23 failures in 14 days across ci-cos-containerd-node-e2e, pull-kubernetes-node-e2e-containerd, ci-kubernetes-node-e2e-containerd"
+
