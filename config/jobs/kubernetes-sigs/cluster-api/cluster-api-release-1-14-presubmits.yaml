@@ -292,7 +292,7 @@ presubmits:
     annotations:
       testgrid-dashboards: cluster-api-core-1.14
       testgrid-tab-name: capi-pr-e2e-release-1-14
-  - name: pull-cluster-api-e2e-upgrade-1-36-1-37-release-1-14
+  - name: pull-cluster-api-e2e-upgrade-1-37-1-38-release-1-14
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -320,13 +320,13 @@ presubmits:
           - name: ALWAYS_BUILD_KIND_IMAGES
             value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "stable-1.36"
+            value: "stable-1.37"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "ci/latest-1.37"
+            value: "ci/latest-1.38"
           - name: ETCD_VERSION_UPGRADE_TO
-            value: "3.6.8-0"
+            value: "3.7.0-0"
           - name: COREDNS_VERSION_UPGRADE_TO
-            value: "v1.14.2"
+            value: "v1.14.6"
           - name: GINKGO_LABEL_FILTER
             value: "(Conformance && K8s-Upgrade)"
         # we need privileged mode in order to do docker in docker
@@ -341,7 +341,7 @@ presubmits:
             memory: 6Gi
     annotations:
       testgrid-dashboards: cluster-api-core-1.14
-      testgrid-tab-name: capi-pr-e2e-release-1-14-1-36-1-37
+      testgrid-tab-name: capi-pr-e2e-release-1-14-1-37-1-38
   - name: pull-cluster-api-e2e-conformance-release-1-14
     cluster: eks-prow-build-cluster
     labels:

@@ -63,7 +63,7 @@ periodics:
       # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
       # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
       - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
-        value: "1.33.0"
+        value: "1.34.1"
       resources:
         requests:
           cpu: 7
@@ -172,7 +172,7 @@ periodics:
       # Please also make sure to refer a version where a kindest/node image exists
       # for (see https://github.com/kubernetes-sigs/kind/releases/)
       - name: KUBERNETES_VERSION_MANAGEMENT
-        value: "v1.33.7"
+        value: "v1.34.11"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -325,17 +325,17 @@ periodics:
           - name: KIND_BUILD_IMAGES
             value: "KUBERNETES_VERSION_LATEST_CI"
           - name: KUBERNETES_VERSION_MANAGEMENT
-            value: ci/latest-1.37
+            value: ci/latest-1.38
           - name: KUBERNETES_VERSION
-            value: ci/latest-1.37
+            value: ci/latest-1.38
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: stable-1.36
+            value: stable-1.37
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: ci/latest-1.37
+            value: ci/latest-1.38
           - name: ETCD_VERSION_UPGRADE_TO
-            value: 3.6.8-0
+            value: 3.7.0-0
           - name: COREDNS_VERSION_UPGRADE_TO
-            value: v1.14.2
+            value: v1.14.6
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
