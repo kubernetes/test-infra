@@ -1024,10 +1024,10 @@ periodics:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
 
   - name: ci-node-e2e-containerd-1-7-cos-dra-alpha-beta-features
     cluster: k8s-infra-prow-build
@@ -1131,10 +1131,10 @@ periodics:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
 
   - name: ci-node-e2e-containerd-2-0-cos-dra-alpha-beta-features
     cluster: k8s-infra-prow-build
