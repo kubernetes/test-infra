@@ -20,7 +20,7 @@ periodics:
     path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20260810-7619858115-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20260824-a5e45c393a-master
       command:
       - wrapper.sh
       - bash
@@ -74,7 +74,7 @@ presubmits:
       timeout: 3h55m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260810-7619858115-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260824-a5e45c393a-master
         command:
         - runner.sh
         args:

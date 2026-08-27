@@ -18,7 +18,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
       command:
       - runner.sh
       args:
@@ -54,7 +54,7 @@ periodics:
     nodeSelector:
       kubernetes.io/arch: arm64
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
       command:
       - runner.sh
       args:
@@ -87,7 +87,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
       command:
       - runner.sh
       args:
@@ -121,7 +121,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
       command:
       - runner.sh
       args:
@@ -155,7 +155,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
       command:
       - runner.sh
       args:
@@ -189,7 +189,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260810-7619858115-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
       command:
       - runner.sh
       args:
