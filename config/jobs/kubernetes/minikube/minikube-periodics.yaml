@@ -2,7 +2,7 @@ periodics:
 # name convention: integration-<driver>-<container-runtime>-<OS>-<arch>
 - name: ci-minikube-kvm-docker-linux-x86
   cluster: k8s-infra-prow-build
-  interval: 4h
+  interval: 24h
   decorate: true
   path_alias: "k8s.io/minikube"
   labels:
@@ -36,7 +36,7 @@ periodics:
           cpu: 7
 - name: ci-minikube-docker-docker-linux-arm
   cluster: k8s-infra-prow-build
-  interval: 4h
+  interval: 24h
   decorate: true
   path_alias: "k8s.io/minikube"
   labels:
@@ -71,7 +71,7 @@ periodics:
           cpu: 7
 - name: ci-minikube-kvm-containerd-linux-x86
   cluster: k8s-infra-prow-build
-  interval: 4h
+  interval: 24h
   decorate: true
   path_alias: "k8s.io/minikube"
   labels:
@@ -105,7 +105,7 @@ periodics:
           cpu: 7
 - name: ci-minikube-docker-docker-linux-x86
   cluster: k8s-infra-prow-build
-  interval: 4h
+  interval: 24h
   decorate: true
   path_alias: "k8s.io/minikube"
   labels:
@@ -139,7 +139,7 @@ periodics:
           cpu: 7
 - name: ci-minikube-docker-containerd-linux-x86
   cluster: k8s-infra-prow-build
-  interval: 4h
+  interval: 24h
   decorate: true
   path_alias: "k8s.io/minikube"
   labels:
@@ -173,7 +173,7 @@ periodics:
           cpu: 7
 - name: ci-minikube-none-docker-linux-x86
   cluster: k8s-infra-prow-build
-  interval: 4h
+  interval: 24h
   decorate: true
   path_alias: "k8s.io/minikube"
   labels:
