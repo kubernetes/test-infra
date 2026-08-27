@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/minikube:
   - name: pull-minikube-build
+    context: "Integration Test / build"
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
@@ -29,8 +30,9 @@ presubmits:
           limits:
             memory: "2000Mi"
             cpu: 2
-  # name convention: integration-<driver>-<container-runtime>-<OS>-<arch>
+  # GitHub context: "Integration Test / <driver>-<runtime>-<os>-<arch>"
   - name: pull-minikube-kvm-docker-linux-x86
+    context: "Integration Test / kvm-docker-linux-x86"
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
@@ -61,6 +63,7 @@ presubmits:
             memory: 20Gi
             cpu: 7
   - name: pull-minikube-docker-docker-linux-arm
+    context: "Integration Test / docker-docker-linux-arm"
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
@@ -92,6 +95,7 @@ presubmits:
             memory: 20Gi
             cpu: 7
   - name: pull-minikube-docker-containerd-linux-arm
+    context: "Integration Test / docker-containerd-linux-arm"
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
@@ -124,6 +128,7 @@ presubmits:
             memory: 20Gi
             cpu: 7
   - name: pull-minikube-kvm-containerd-linux-x86
+    context: "Integration Test / kvm-containerd-linux-x86"
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
@@ -154,6 +159,7 @@ presubmits:
             memory: 20Gi
             cpu: 7
   - name: pull-minikube-kvm-crio-linux-x86
+    context: "Integration Test / kvm-crio-linux-x86"
     cluster: k8s-infra-prow-build
     optional: true
     decorate: true
@@ -185,6 +191,7 @@ presubmits:
             memory: 20Gi
             cpu: 7
   - name: pull-minikube-docker-docker-linux-x86
+    context: "Integration Test / docker-docker-linux-x86"
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
@@ -215,6 +222,7 @@ presubmits:
             memory: 20Gi
             cpu: 7
   - name: pull-minikube-docker-containerd-linux-x86
+    context: "Integration Test / docker-containerd-linux-x86"
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
@@ -245,6 +253,7 @@ presubmits:
             memory: 20Gi
             cpu: 7
   - name: pull-minikube-docker-crio-linux-x86
+    context: "Integration Test / docker-crio-linux-x86"
     cluster: k8s-infra-prow-build
     optional: true
     decorate: true
@@ -276,6 +285,7 @@ presubmits:
             memory: 20Gi
             cpu: 7
   - name: pull-minikube-none-containerd-linux-x86
+    context: "Integration Test / none-containerd-linux-x86"
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
@@ -307,6 +317,7 @@ presubmits:
             memory: 20Gi
             cpu: 7
   - name: pull-minikube-none-docker-linux-x86
+    context: "Integration Test / none-docker-linux-x86"
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
@@ -337,6 +348,7 @@ presubmits:
             memory: 20Gi
             cpu: 7
   - name: pull-minikube-vfkit-docker-macos-arm
+    context: "Integration Test / vfkit-docker-macos-arm"
     cluster: k8s-infra-prow-build
     optional: true # macos machine is precious, so only run when matainers explicitly trigger with /test <job_name>
     decorate: true
