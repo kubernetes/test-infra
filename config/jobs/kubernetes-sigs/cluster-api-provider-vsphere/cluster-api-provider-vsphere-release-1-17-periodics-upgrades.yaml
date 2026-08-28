@@ -312,7 +312,7 @@ periodics:
       - name: KUBERNETES_VERSION_UPGRADE_FROM
         value: "stable-1.36"
       - name: KUBERNETES_VERSION_UPGRADE_TO
-        value: "ci/latest-1.37"
+        value: "stable-1.37"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -328,6 +328,61 @@ periodics:
   annotations:
     testgrid-dashboards: cluster-api-provider-vsphere-1.17
     testgrid-tab-name: periodic-e2e-govmomi-release-1-17-1-36-1-37
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+
+- name: periodic-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-37-1-38-release-1-17
+  cluster: k8s-infra-prow-build
+  cron: '0 5 * * *'
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-provider-vsphere-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-gcve-e2e-config: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-vsphere
+    base_ref: release-1.17
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260824-a5e45c393a-1.36
+      command:
+      - runner.sh
+      args:
+      - ./hack/e2e.sh
+      env:
+      - name: GINKGO_FOCUS
+        value: "\\[Conformance\\] \\[K8s-Upgrade\\]"
+      - name: KUBERNETES_VERSION_UPGRADE_FROM
+        value: "stable-1.37"
+      - name: KUBERNETES_VERSION_UPGRADE_TO
+        value: "ci/latest-1.38"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["NET_ADMIN"]
+      resources:
+        requests:
+          cpu: "4000m"
+          memory: "6Gi"
+        limits:
+          cpu: "4000m"
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: cluster-api-provider-vsphere-1.17
+    testgrid-tab-name: periodic-e2e-govmomi-release-1-17-1-37-1-38
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 
@@ -642,7 +697,7 @@ periodics:
       - name: KUBERNETES_VERSION_UPGRADE_FROM
         value: "stable-1.36"
       - name: KUBERNETES_VERSION_UPGRADE_TO
-        value: "ci/latest-1.37"
+        value: "stable-1.37"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -658,5 +713,60 @@ periodics:
   annotations:
     testgrid-dashboards: cluster-api-provider-vsphere-1.17
     testgrid-tab-name: periodic-e2e-supervisor-release-1-17-1-36-1-37
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+
+- name: periodic-cluster-api-provider-vsphere-e2e-supervisor-upgrade-1-37-1-38-release-1-17
+  cluster: k8s-infra-prow-build
+  cron: '0 3 * * *'
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-provider-vsphere-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-gcve-e2e-config: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-vsphere
+    base_ref: release-1.17
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260824-a5e45c393a-1.36
+      command:
+      - runner.sh
+      args:
+      - ./hack/e2e.sh
+      env:
+      - name: GINKGO_FOCUS
+        value: "\\[supervisor\\] \\[Conformance\\] \\[K8s-Upgrade\\]"
+      - name: KUBERNETES_VERSION_UPGRADE_FROM
+        value: "stable-1.37"
+      - name: KUBERNETES_VERSION_UPGRADE_TO
+        value: "ci/latest-1.38"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["NET_ADMIN"]
+      resources:
+        requests:
+          cpu: "4000m"
+          memory: "6Gi"
+        limits:
+          cpu: "4000m"
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: cluster-api-provider-vsphere-1.17
+    testgrid-tab-name: periodic-e2e-supervisor-release-1-17-1-37-1-38
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
