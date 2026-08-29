@@ -206,8 +206,8 @@ def build_test(cloud='aws',
         env = {}
 
     derive_ssh_user = (cloud == 'gce'
-                       and kops_version not in ('1.34', '1.35', '1.36')
-                       and env.get('KOPS_VERSION_A') not in ('1.34', '1.35', '1.36'))
+                       and kops_version not in ('1.35', '1.36')
+                       and env.get('KOPS_VERSION_A') not in ('1.35', '1.36'))
 
     tmpl_file = "periodic.yaml.jinja"
     if scenario is not None:
@@ -525,26 +525,18 @@ def generate_grid():
                 for kops_version in kops_versions:
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
                     distro_short = distro_shortener(distro)
-                    # Fixes in https://github.com/kubernetes/kops/pull/17940
-                    # but not backported to earlier kops versions.
-                    if kops_version == '1.34' and (distro_short in ('deb13', 'al2023', 'al2023arm64') and networking == 'amazon-vpc') or (distro_short in ('deb13', 'al2023', 'al2023arm64') and networking == 'cilium-eni'):
-                        continue
-                    # Fixes in https://github.com/kubernetes/kops/pull/18269
-                    # but not backported to earlier kops versions
-                    if kops_version == '1.34' and networking in ('amazon-vpc', 'cilium-eni') and distro_short in ('deb11', 'rhel9'):
+                    # Fixes in https://github.com/kubernetes/kops/pull/17940.
+                    # NOTE: this has always applied to every kops version, because the
+                    # original condition parsed as
+                    # `(kops_version == '1.34' and amazon-vpc) or cilium-eni`.
+                    if distro_short in ('deb13', 'al2023', 'al2023arm64') and networking == 'cilium-eni':
                         continue
                     # The AWS CCM route controller races node registration and
                     # leaves some nodes without a route, which black-holes pod
                     # traffic under kubenet. Fixed by pinning CCM to v1.36.1 in
                     # https://github.com/kubernetes/kops/pull/18649, not backported
-                    # to release-1.34 or release-1.35.
-                    if kops_version in ('1.34', '1.35') and networking == 'kubenet':
-                        continue
-                    # kindnet's node-local DNS cache intermittently answers
-                    # NXDOMAIN for live Services. Disabled by default in
-                    # https://github.com/kubernetes/kops/pull/18727, cherry-picked
-                    # to release-1.35 and release-1.36 but not to release-1.34.
-                    if kops_version == '1.34' and networking == 'kindnet':
+                    # to release-1.35.
+                    if kops_version == '1.35' and networking == 'kubenet':
                         continue
                     extra_flags = []
                     if 'arm64' in distro:
@@ -574,7 +566,7 @@ def generate_grid():
                             # kube-router's network policy controller enforces policies with
                             # nftables instead of iptables and ipsets when useNFTablesForNetpol
                             # is set. https://github.com/cloudnativelabs/kube-router/issues/2034
-                            if kops_version in ('1.34', '1.35', '1.36'):
+                            if kops_version in ('1.35', '1.36'):
                                 continue
                             extra_flags.extend([
                                 "--set=cluster.spec.networking.kubeRouter.useNFTablesForNetpol=true",
@@ -617,16 +609,7 @@ def generate_grid():
             for k8s_version in [v for v in k8s_versions if v != 'master']:
                 for kops_version in kops_versions:
                     # cilium-etcd + gce support was added in kops 1.36+
-                    if networking == 'cilium-etcd' and kops_version in ('1.34', '1.35'):
-                        continue
-                    # See the kindnet note in the AWS grid above.
-                    if kops_version == '1.34' and networking == 'kindnet':
-                        continue
-                    # kOps <=1.35 omits tcp/179 from the GCE node-to-master firewall rule, so
-                    # BGP collision resolution drops the one direction that is allowed whenever a
-                    # worker's IP sorts above the control plane's. Fixed by kubernetes/kops#18351,
-                    # backported to release-1.35 but not to the dormant release-1.34.
-                    if kops_version == '1.34' and networking == 'calico':
+                    if networking == 'cilium-etcd' and kops_version == '1.35':
                         continue
                     distro_short = distro_shortener(distro)
                     extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
@@ -2110,7 +2093,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.36', '1.35', '1.34']:
+    for version in ['master', '1.37', '1.36', '1.35', '1.34']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
@@ -2136,7 +2119,7 @@ def generate_pipeline():
 ######################
 def generate_presubmits_branch():
     results = []
-    for version in ['1.36', '1.35', '1.34', '1.33']:
+    for version in ['1.37', '1.36', '1.35', '1.34', '1.33']:
         results.extend([
             presubmit_test(
                 name=f"pull-kops-e2e-k8s-aws-calico-{version.replace('.', '-')}",
@@ -2602,27 +2585,7 @@ def generate_presubmits_e2e():
             extra_flags=["--ipv6", "--topology=private", "--bastion"],
         ),
         presubmit_test(
-            name="pull-kops-aws-upgrade-k134-ko134-to-k136-kolatest-many-addons",
-            optional=True,
-            distro='u2404',
-            networking='cilium',
-            k8s_version='stable',
-            kops_channel='alpha',
-            test_timeout_minutes=150,
-            run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)',
-            scenario='upgrade-ab',
-            env={
-                'KOPS_VERSION_A': "1.34",
-                'K8S_VERSION_A': "v1.34.7",
-                'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.36.0",
-                'KOPS_SKIP_E2E': '1',
-                'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-                'KOPS_CONTROL_PLANE_COUNT': '3',
-            }
-        ),
-        presubmit_test(
-            name="pull-kops-aws-upgrade-k135-ko135-to-k136-kolatest-many-addons",
+            name="pull-kops-aws-upgrade-k135-ko135-to-k137-kolatest-many-addons",
             optional=True,
             distro='u2404',
             networking='cilium',
@@ -2633,9 +2596,29 @@ def generate_presubmits_e2e():
             scenario='upgrade-ab',
             env={
                 'KOPS_VERSION_A': "1.35",
-                'K8S_VERSION_A': "v1.35.4",
+                'K8S_VERSION_A': "v1.35.8",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.36.0",
+                'K8S_VERSION_B': "v1.37.0",
+                'KOPS_SKIP_E2E': '1',
+                'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
+                'KOPS_CONTROL_PLANE_COUNT': '3',
+            }
+        ),
+        presubmit_test(
+            name="pull-kops-aws-upgrade-k136-ko136-to-k137-kolatest-many-addons",
+            optional=True,
+            distro='u2404',
+            networking='cilium',
+            k8s_version='stable',
+            kops_channel='alpha',
+            test_timeout_minutes=150,
+            run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)',
+            scenario='upgrade-ab',
+            env={
+                'KOPS_VERSION_A': "1.36",
+                'K8S_VERSION_A': "v1.36.4",
+                'KOPS_VERSION_B': "latest",
+                'K8S_VERSION_B': "v1.37.0",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
                 'KOPS_CONTROL_PLANE_COUNT': '3',
