@@ -2110,7 +2110,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.36', '1.35', '1.34']:
+    for version in ['master', '1.37', '1.36', '1.35', '1.34']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
@@ -2136,7 +2136,7 @@ def generate_pipeline():
 ######################
 def generate_presubmits_branch():
     results = []
-    for version in ['1.36', '1.35', '1.34', '1.33']:
+    for version in ['1.37', '1.36', '1.35', '1.34', '1.33']:
         results.extend([
             presubmit_test(
                 name=f"pull-kops-e2e-k8s-aws-calico-{version.replace('.', '-')}",
