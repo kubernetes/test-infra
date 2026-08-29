@@ -32,11 +32,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
-        value: "v1.35.6"
+        value: "v1.35.7"
       - name: KOPS_VERSION_B
         value: "1.35"
       - name: K8S_VERSION_B
-        value: "v1.35.7"
+        value: "v1.35.8"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -99,11 +99,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
-        value: "v1.35.6"
+        value: "v1.35.7"
       - name: KOPS_VERSION_B
         value: "1.35"
       - name: K8S_VERSION_B
-        value: "v1.35.7"
+        value: "v1.35.8"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -172,11 +172,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
-        value: "v1.35.7"
+        value: "v1.35.8"
       - name: KOPS_VERSION_B
         value: "1.36"
       - name: K8S_VERSION_B
-        value: "v1.36.3"
+        value: "v1.36.4"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -239,11 +239,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
-        value: "v1.35.7"
+        value: "v1.35.8"
       - name: KOPS_VERSION_B
         value: "1.36"
       - name: K8S_VERSION_B
-        value: "v1.36.3"
+        value: "v1.36.4"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -316,7 +316,7 @@ periodics:
       - name: KOPS_VERSION_B
         value: "1.36"
       - name: K8S_VERSION_B
-        value: "v1.36.3"
+        value: "v1.36.4"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -383,7 +383,7 @@ periodics:
       - name: KOPS_VERSION_B
         value: "1.36"
       - name: K8S_VERSION_B
-        value: "v1.36.3"
+        value: "v1.36.4"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -703,9 +703,9 @@ periodics:
     testgrid-tab-name: kops-aws-upgrade-k131-ko135-to-k132-kolatest-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k132-ko135-to-k132-kolatest
+- name: e2e-kops-aws-upgrade-k132-ko135-to-k133-kolatest
   cluster: k8s-infra-kops-prow-build
-  cron: '35 2-23/8 * * *'
+  cron: '33 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-k8s-kops-aws-credential: "true"
@@ -736,7 +736,7 @@ periodics:
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.32.13"
+        value: "v1.33.13"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -746,7 +746,7 @@ periodics:
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: CLUSTER_NAME
-        value: "e2e-3b8481fa86-03f3b.tests-kops-aws.k8s.io"
+        value: "e2e-d6200600e5-a9258.tests-kops-aws.k8s.io"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
       imagePullPolicy: Always
       resources:
@@ -767,12 +767,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-network-calico, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k132-ko135-to-k132-kolatest
+    testgrid-tab-name: kops-aws-upgrade-k132-ko135-to-k133-kolatest
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k132-ko135-to-k132-kolatest-many-addons
+- name: e2e-kops-aws-upgrade-k132-ko135-to-k133-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '3 7-23/8 * * *'
+  cron: '7 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-k8s-kops-aws-credential: "true"
@@ -803,7 +803,7 @@ periodics:
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.32.13"
+        value: "v1.33.13"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -819,7 +819,7 @@ periodics:
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: CLUSTER_NAME
-        value: "e2e-463e6b9986-46d80.tests-kops-aws.k8s.io"
+        value: "e2e-ac14980f74-63fc9.tests-kops-aws.k8s.io"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
       imagePullPolicy: Always
       resources:
@@ -840,7 +840,7 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-network-calico, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k132-ko135-to-k132-kolatest-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k132-ko135-to-k133-kolatest-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k133-ko135-to-k134-kolatest
@@ -876,7 +876,7 @@ periodics:
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.34.10"
+        value: "v1.34.11"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -943,7 +943,7 @@ periodics:
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.34.10"
+        value: "v1.34.11"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -1012,11 +1012,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
-        value: "v1.34.10"
+        value: "v1.34.11"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.35.7"
+        value: "v1.35.8"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -1079,11 +1079,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
-        value: "v1.34.10"
+        value: "v1.34.11"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.35.7"
+        value: "v1.35.8"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -1296,7 +1296,7 @@ periodics:
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.34.10"
+        value: "v1.34.11"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -1363,7 +1363,7 @@ periodics:
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.34.10"
+        value: "v1.34.11"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -1432,11 +1432,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
-        value: "v1.34.10"
+        value: "v1.34.11"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.35.7"
+        value: "v1.35.8"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -1499,11 +1499,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
-        value: "v1.34.10"
+        value: "v1.34.11"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.35.7"
+        value: "v1.35.8"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -1572,11 +1572,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
-        value: "v1.35.7"
+        value: "v1.35.8"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.36.3"
+        value: "v1.36.4"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -1639,11 +1639,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
-        value: "v1.35.7"
+        value: "v1.35.8"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.36.3"
+        value: "v1.36.4"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE

@@ -141,30 +141,28 @@ network_plugins_presubmits = {
 
 
 # Upgrade test versions
-kops32 = "v1.32.4"
-kops33 = "v1.33.2"
 kops35 = "v1.35.2"
 kops36 = "v1.36.2"
 
 upgrade_versions_list = [
     #  kops    k8s          kops      k8s
     # 1.35 release branch
-    ((kops35, "v1.35.6"), ("1.35", "v1.35.7")),
+    ((kops35, "v1.35.7"), ("1.35", "v1.35.8")),
     # 1.36 release branch
-    ((kops35, "v1.35.7"), ("1.36", "v1.36.3")),
-    ((kops36, "v1.36.3"), ("1.36", "v1.36.3")),
+    ((kops35, "v1.35.8"), ("1.36", "v1.36.4")),
+    ((kops36, "v1.36.3"), ("1.36", "v1.36.4")),
     # 1.37 release branch
     ((kops36, "v1.36.4"), ("1.37", "v1.37.0")),
     # kOps 1.35 upgrade to latest
     ((kops35, "v1.31.14"), ("latest", "v1.32.13")),
-    ((kops35, "v1.32.13"), ("latest", "v1.32.13")),
-    ((kops35, "v1.33.13"), ("latest", "v1.34.10")),
-    ((kops35, "v1.34.10"), ("latest", "v1.35.7")),
+    ((kops35, "v1.32.13"), ("latest", "v1.33.13")),
+    ((kops35, "v1.33.13"), ("latest", "v1.34.11")),
+    ((kops35, "v1.34.11"), ("latest", "v1.35.8")),
     # kOps 1.36 upgrade to latest
     ((kops36, "v1.32.13"), ("latest", "v1.33.13")),
-    ((kops36, "v1.33.13"), ("latest", "v1.34.10")),
-    ((kops36, "v1.34.10"), ("latest", "v1.35.7")),
-    ((kops36, "v1.35.7"), ("latest", "v1.36.3")),
+    ((kops36, "v1.33.13"), ("latest", "v1.34.11")),
+    ((kops36, "v1.34.11"), ("latest", "v1.35.8")),
+    ((kops36, "v1.35.8"), ("latest", "v1.36.4")),
     # we should have an upgrade test for every supported K8s version
     (("latest", "v1.37.0"), ("latest", "latest")),
     (("latest", "v1.36.0"), ("latest", "v1.37.0")),
