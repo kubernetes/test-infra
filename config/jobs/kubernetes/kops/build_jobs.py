@@ -2596,7 +2596,7 @@ def generate_presubmits_e2e():
             scenario='upgrade-ab',
             env={
                 'KOPS_VERSION_A': "1.35",
-                'K8S_VERSION_A': "v1.35.4",
+                'K8S_VERSION_A': "v1.35.8",
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "v1.37.0",
                 'KOPS_SKIP_E2E': '1',

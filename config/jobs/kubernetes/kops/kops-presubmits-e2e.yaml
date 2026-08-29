@@ -1922,7 +1922,7 @@ presubmits:
         - name: KOPS_VERSION_A
           value: "1.35"
         - name: K8S_VERSION_A
-          value: "v1.35.4"
+          value: "v1.35.8"
         - name: KOPS_VERSION_B
           value: "latest"
         - name: K8S_VERSION_B
