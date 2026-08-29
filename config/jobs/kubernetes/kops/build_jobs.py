@@ -2012,8 +2012,6 @@ def generate_nftables():
     for distro, distro_kops_versions in aws_distro_options.items():
         if None not in distro_kops_versions:
             continue
-        if distro in ('debian11',):
-            continue  # kube-proxy nftables mode needs kernel >= 5.13; deb11 is on 5.10
         distro_short = distro_shortener(distro)
         extra_flags = ["--set=cluster.spec.kubeProxy.proxyMode=nftables"]
         if 'arm64' in distro:

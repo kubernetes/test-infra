@@ -23,7 +23,6 @@ gce://images/rhel-cloud/rhel-10-arm64:ARM64=rhel-cloud/rhel-10-arm64-v20260714
 gce://images/fedora-cloud/fedora-cloud-43-x86-64:X86_64=fedora-cloud/fedora-cloud-43-20260729-0-x86-64
 aws://images/137112412989/al2023-ami-2*-kernel-6.12-x86_64:x86_64=137112412989/al2023-ami-2023.12.20260803.3-kernel-6.12-x86_64
 aws://images/137112412989/al2023-ami-2*-kernel-6.12-arm64:arm64=137112412989/al2023-ami-2023.12.20260803.3-kernel-6.12-arm64
-aws://images/136693071363/debian-11-amd64-*:x86_64=136693071363/debian-11-amd64-20260805-2561
 aws://images/136693071363/debian-12-amd64-*:x86_64=136693071363/debian-12-amd64-20260806-2562
 aws://images/136693071363/debian-13-amd64-*:x86_64=136693071363/debian-13-amd64-20260803-2559
 aws://images/136693071363/debian-13-arm64-*:arm64=136693071363/debian-13-arm64-20260803-2559
