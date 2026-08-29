@@ -104,10 +104,6 @@ def k8s_version_info(k8s_version):
 def create_args(kops_channel, networking, extra_flags, kops_image, distro):
     args = f"--channel={kops_channel} --networking=" + networking
 
-    if distro in ('deb11'):
-        args += " --set=cluster.spec.containerd.version=1.7.29"
-        args += " --set=cluster.spec.containerd.runc.version=1.3.4"
-
     if distro in ('cos121', 'cos121arm64'):
         args += " --set=cluster.spec.containerd.version=2.0.7"
         args += " --set=cluster.spec.containerd.runc.version=1.3.4"
@@ -333,7 +329,6 @@ gce_distro_images = {
 aws_distro_images = {
     'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-x86_64'),
     'al2023arm64': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-arm64', 'arm64'),
-    'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
     'deb12': latest_aws_image('136693071363', 'debian-12-amd64-*'),
     'deb13': latest_aws_image('136693071363', 'debian-13-amd64-*'),
     'deb13arm64': latest_aws_image('136693071363', 'debian-13-arm64-*', 'arm64'),
@@ -356,7 +351,6 @@ aws_distro_images = {
 aws_distros_ssh_user = {
     'al2023': 'ec2-user',
     'al2023arm64': 'ec2-user',
-    'deb11': 'admin',
     'deb12': 'admin',
     'deb13': 'admin',
     'deb13arm64': 'admin',
