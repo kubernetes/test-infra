@@ -13,7 +13,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260828-55731e6b15-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -42,7 +42,7 @@ presubmits:
       description: "Run inference extension verify checks"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260828-55731e6b15-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
         command:
         - runner.sh
         args:

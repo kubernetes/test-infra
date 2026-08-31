@@ -19,7 +19,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260831-6ed6668adc-master
       command:
       - runner.sh
       - dev/ci/periodics/test-load-test
@@ -48,7 +48,7 @@ periodics:
   spec:
     serviceAccountName: prow-build
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260831-6ed6668adc-master
       command:
       - runner.sh
       - dev/ci/periodics/benchmarks-kops-gcp-cilium
@@ -80,7 +80,7 @@ periodics:
   spec:
     serviceAccountName: prow-build
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260831-6ed6668adc-master
       command:
       - runner.sh
       - dev/ci/periodics/benchmarks-kops-gcp-claims
@@ -112,7 +112,7 @@ periodics:
   spec:
     serviceAccountName: prow-build
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260831-6ed6668adc-master
       command:
       - runner.sh
       - dev/ci/periodics/benchmarks-kops-gcp-kindnet
