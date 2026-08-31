@@ -27,7 +27,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260824-a5e45c393a-1.37
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260831-6ed6668adc-1.37
         args:
           - runner.sh
           - ./hack/scripts/ci/ci-e2e.sh
