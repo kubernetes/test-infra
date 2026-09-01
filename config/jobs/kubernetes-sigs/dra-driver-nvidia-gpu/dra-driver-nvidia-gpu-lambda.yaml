@@ -19,7 +19,9 @@ presubmits:
     cluster: k8s-infra-prow-build
     optional: true
     always_run: false
-    run_if_changed: '^(api/|cmd/|deployments/|hack/|scripts/|internal/|pkg/|templates/|test/|tests/|vendor/|.*\.go$|go\.mod$|go\.sum$|Makefile$|common\.mk$|versions\.mk$|VERSION$)'
+# Disable `run_if_changed` trigger so that this only runs on demand.
+# This is done temporarily to address the increased CI pressure by high volume of PRs.
+#   run_if_changed: '^(api/|cmd/|deployments/|hack/|scripts/|internal/|pkg/|templates/|test/|tests/|vendor/|.*\.go$|go\.mod$|go\.sum$|Makefile$|common\.mk$|versions\.mk$|VERSION$)'
     max_concurrency: 1
     branches:
     - ^main$
