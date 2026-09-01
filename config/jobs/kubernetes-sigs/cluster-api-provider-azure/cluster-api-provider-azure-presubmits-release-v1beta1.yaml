@@ -206,6 +206,8 @@ presubmits:
             value: \[Managed Kubernetes\]
           - name: GINKGO_SKIP
             value: ""
+          - name: AKS_KUBERNETES_VERSION
+            value: "v1.36.2"
         resources:
           limits:
             cpu: 6
