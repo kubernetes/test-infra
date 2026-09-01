@@ -734,6 +734,19 @@ def generate_misc():
                                 '--bastion',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
+        # A special test for IPv6 on GCE using Kindnet CNI.
+        # GCE IPv6 support in kOps is still a work in progress (kubernetes/kops#17840),
+        # so this job is a canary tracking that effort.
+        build_test(name_override="kops-gce-cni-kindnet-ipv6",
+                   cloud="gce",
+                   k8s_version="stable",
+                   networking="kindnet",
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--topology=private',
+                                '--gce-service-account=default',
+                                ],
+                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
         # A special test for IPv6 on Flatcar
         build_test(name_override="kops-aws-ipv6-flatcar",
                    cloud="aws",
