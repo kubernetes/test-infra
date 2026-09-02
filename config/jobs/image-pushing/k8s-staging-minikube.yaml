@@ -138,14 +138,14 @@ postsubmits:
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
-    - name: post-minikube-auto-pause-image
+    - name: post-minikube-auto-pause-hook-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
-      run_if_changed: '^(deploy/addons/auto-pause/|cmd/auto-pause/|hack/prow/image/auto-pause/|hack/prow/prow_images\.mk$)'
+      run_if_changed: '^(deploy/addons/auto-pause/|hack/prow/image/auto-pause-hook/|hack/prow/prow_images\.mk$)'
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -156,7 +156,7 @@ postsubmits:
               - --project=k8s-staging-images
               - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
-              - --gcb-config=hack/prow/image/auto-pause/cloudbuild.yaml
+              - --gcb-config=hack/prow/image/auto-pause-hook/cloudbuild.yaml
               - .
             env:
               - name: LOG_TO_STDOUT
