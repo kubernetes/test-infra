@@ -329,6 +329,7 @@ gce_distro_images = {
 aws_distro_images = {
     'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-x86_64'),
     'al2023arm64': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-arm64', 'arm64'),
+    'al2027': latest_aws_image('137112412989', 'al2027-preview-ami-2*-kernel-7.1-x86_64'),
     'deb12': latest_aws_image('136693071363', 'debian-12-amd64-*'),
     'deb13': latest_aws_image('136693071363', 'debian-13-amd64-*'),
     'deb13arm64': latest_aws_image('136693071363', 'debian-13-arm64-*', 'arm64'),
@@ -351,6 +352,7 @@ aws_distro_images = {
 aws_distros_ssh_user = {
     'al2023': 'ec2-user',
     'al2023arm64': 'ec2-user',
+    'al2027': 'ec2-user',
     'deb12': 'admin',
     'deb13': 'admin',
     'deb13arm64': 'admin',

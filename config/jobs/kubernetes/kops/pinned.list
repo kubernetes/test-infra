@@ -42,3 +42,4 @@ aws://images/099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-
 aws://images/099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-arm64-server-*:arm64=099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-arm64-server-20260806
 gce://images/cos-cloud/cos-129-lts:X86_64=cos-cloud/cos-129-19506-299-116
 gce://images/cos-cloud/cos-arm64-129-lts:ARM64=cos-cloud/cos-arm64-129-19506-299-116
+aws://images/137112412989/al2027-preview-ami-2*-kernel-7.1-x86_64:x86_64=137112412989/al2027-preview-ami-2027.0.20260903.0-kernel-7.1-x86_64
