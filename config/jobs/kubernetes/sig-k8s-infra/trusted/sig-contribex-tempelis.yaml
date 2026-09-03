@@ -13,7 +13,7 @@ postsubmits:
       testgrid-dashboards: sig-contribex-slack-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-slack-infra/tempelis:v20260505-4a08de2
+      - image: gcr.io/k8s-staging-slack-infra/tempelis:v20260903-13b20a9
         command:
         - /tempelis
         args:
