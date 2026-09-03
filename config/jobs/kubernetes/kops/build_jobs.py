@@ -2334,6 +2334,15 @@ def generate_presubmits_e2e():
             optional=True,
         ),
         presubmit_test(
+            distro='al2027',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-al2027',
+            networking='cilium',
+            tab_name='e2e-aws-al2027',
+            optional=True,
+        ),
+        presubmit_test(
             cloud='gce',
             k8s_version='stable',
             distro='deb12arm64',
