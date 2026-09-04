@@ -3,6 +3,7 @@ presubmits:
   # NOTE: When making changes to this job, please ensure that you also keep the copied jobs
   # pull-kubernetes-e2e-kind-fieldsv1string and ci-kubernetes-e2e-kind-fieldsv1string
   # in config/jobs/kubernetes/sig-api-machinery/sig-api-machinery-config.yaml in sync.
+  # Also pull-test-infra-e2e-kind below.
   - name: pull-kubernetes-e2e-kind
     cluster: k8s-infra-prow-build
     optional: false
@@ -739,3 +740,50 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+
+  kubernetes/test-infra:
+  # Keep in sync with pull-kubernetes-e2e-kind above.
+  - name: pull-test-infra-e2e-kind
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    run_if_changed: ^hack/ci/test-infra-e2e-k8s.sh$
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260831-6ed6668adc-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ../test-infra/hack/ci/test-infra-e2e.sh
+        env:
+        - name: LABEL_FILTER
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+        - name: PARALLEL
+          value: "true"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7
+            memory: 9000Mi
+          requests:
+            cpu: 7
+            memory: 9000Mi
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      description: Uses test-infra-e2e.sh to run e2e tests for on-by-default features against a latest kubernetes master cluster created with sigs.k8s.io/kind.
