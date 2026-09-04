@@ -222,6 +222,12 @@ run_tests() {
   LABEL_FILTER="${LABEL_FILTER:-}"
   FOCUS="${FOCUS:-}"
 
+  # Jobs could also set GINKGO_PARALLEL directly,
+  # but let's preserve compatibility with the original e2e-k8s.sh script.
+  if [ "${PARALLEL:-false}" = "true" ]; then
+    export GINKGO_PARALLEL=y
+  fi
+
   # setting this env prevents ginkgo e2e from trying to run provider setup
   export KUBERNETES_CONFORMANCE_TEST='y'
   # ginkgo can take forever to exit, so we run it in the background and save the
