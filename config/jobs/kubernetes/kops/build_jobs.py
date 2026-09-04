@@ -525,12 +525,6 @@ def generate_grid():
                 for kops_version in kops_versions:
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
                     distro_short = distro_shortener(distro)
-                    # Fixes in https://github.com/kubernetes/kops/pull/17940.
-                    # NOTE: this has always applied to every kops version, because the
-                    # original condition parsed as
-                    # `(kops_version == '1.34' and amazon-vpc) or cilium-eni`.
-                    if distro_short in ('deb13', 'al2023', 'al2023arm64') and networking == 'cilium-eni':
-                        continue
                     # The AWS CCM route controller races node registration and
                     # leaves some nodes without a route, which black-holes pod
                     # traffic under kubenet. Fixed by pinning CCM to v1.36.1 in
