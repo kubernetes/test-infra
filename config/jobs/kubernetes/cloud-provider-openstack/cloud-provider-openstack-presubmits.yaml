@@ -1,6 +1,6 @@
 presubmits:
   kubernetes/cloud-provider-openstack:
-  - name: openstack-cloud-controller-manager-e2e-test-release-136
+  - name: openstack-cloud-controller-manager-e2e-test
     cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
@@ -8,7 +8,9 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     always_run: false
     branches:
-      - ^release-1.36$
+      - ^master$
+      - ^release-1\.3[4-9]$
+      - ^release-1\.[4-9]\d$
     run_if_changed: '^(pkg\/util\/|pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/|Dockerfile|tests\/playbooks)'
     optional: false
     decorate: true
@@ -34,9 +36,9 @@ presubmits:
               memory: 5Gi
     annotations:
       testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
-      testgrid-tab-name: presubmit-e2e-test-release-1.36
+      testgrid-tab-name: presubmit-e2e-test
 
-  - name: openstack-cloud-controller-manager-ovn-e2e-test-release-136
+  - name: openstack-cloud-controller-manager-ovn-e2e-test
     cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
@@ -44,7 +46,9 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     always_run: false
     branches:
-     - ^release-1.36$
+      - ^master$
+      - ^release-1\.3[4-9]$
+      - ^release-1\.[4-9]\d$
     run_if_changed: '^(pkg\/util\/|pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/|Dockerfile)'
     optional: false
     decorate: true
@@ -72,9 +76,44 @@ presubmits:
             memory: 5Gi
     annotations:
       testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
-      testgrid-tab-name: presubmit-ovn-e2e-test-release-136
+      testgrid-tab-name: presubmit-ovn-e2e-test
 
-  - name: openstack-cloud-csi-cinder-e2e-test-release-136
+  # - name: openstack-cloud-controller-manager-e2e-conformance-test
+  #   cluster: k8s-infra-prow-build
+  #   labels:
+  #     preset-service-account: "true"
+  #     preset-dind-enabled: "true"
+  #     preset-kind-volume-mounts: "true"
+  #   path_alias: "k8s.io/cloud-provider-openstack"
+  #   always_run: false
+  #   branches:
+  #   - ^master$
+  #   - ^release-1\.3[4-9]$
+  #   run_if_changed: '^(pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/|Dockerfile)'
+  #   optional: false
+  #   decorate: true
+  #   decoration_config:
+  #     timeout: 3h
+  #   spec:
+  #     containers:
+  #       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260831-6ed6668adc-master
+  #         env:
+  #         - name: "BOSKOS_HOST"
+  #           value: "boskos.test-pods.svc.cluster.local"
+  #         command:
+  #         - "runner.sh"
+  #         - "./tests/ci-occm-e2e-conformance.sh"
+  #         securityContext:
+  #           privileged: true
+  #         resources:
+  #           requests:
+  #             cpu: 1
+  #             memory: "1Gi"
+  #   annotations:
+  #     testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
+  #     testgrid-tab-name: presubmit-e2e-conformance-test
+
+  - name: openstack-cloud-csi-cinder-e2e-test
     cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
@@ -82,7 +121,9 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     always_run: false
     branches:
-      - ^release-1.36$
+      - ^master$
+      - ^release-1\.3[4-9]$
+      - ^release-1\.[4-9]\d$
     run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/e2e\/csi\/cinder\/|manifests\/cinder-csi-plugin\/|Dockerfile|tests\/playbooks)'
     optional: false
     decorate: true
@@ -108,9 +149,9 @@ presubmits:
               memory: 5Gi
     annotations:
       testgrid-dashboards: provider-openstack-openstack-csi-cinder
-      testgrid-tab-name: presubmit-e2e-test-release-1.36
+      testgrid-tab-name: presubmit-e2e-test
 
-  - name: openstack-cloud-csi-manila-e2e-test-release-136
+  - name: openstack-cloud-csi-manila-e2e-test
     cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
@@ -118,7 +159,9 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     always_run: false
     branches:
-      - ^release-1.36$
+      - ^master$
+      - ^release-1\.3[4-9]$
+      - ^release-1\.[4-9]\d$
     run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/e2e\/csi\/manila\/|Dockerfile|tests\/playbooks)'
     optional: false
     decorate: true
@@ -144,15 +187,17 @@ presubmits:
               memory: 5Gi
     annotations:
       testgrid-dashboards: provider-openstack-manila-csi-plugin
-      testgrid-tab-name: presubmit-e2e-test-release-1.36
+      testgrid-tab-name: presubmit-e2e-test
 
-  - name: openstack-cloud-csi-cinder-sanity-test-release-136
+  - name: openstack-cloud-csi-cinder-sanity-test
     cluster: eks-prow-build-cluster
     always_run: false
+    branches:
+      - ^master$
+      - ^release-1\.3[4-9]$
+      - ^release-1\.[4-9]\d$
     run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/|Dockerfile|tests\/playbooks)'
     decorate: true
-    branches:
-      - ^release-1.36$
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
@@ -170,16 +215,18 @@ presubmits:
             memory: 5Gi
     annotations:
       testgrid-dashboards: provider-openstack-openstack-csi-cinder
-      testgrid-tab-name: presubmit-sanity-test-release-136
+      testgrid-tab-name: presubmit-sanity-test
       description: Run cloud-provider-openstack csi sanity tests for cinder-csi-plugin
 
-  - name: openstack-cloud-csi-manila-sanity-test-release-136
+  - name: openstack-cloud-csi-manila-sanity-test
     cluster: eks-prow-build-cluster
     always_run: false
+    branches:
+      - ^master$
+      - ^release-1\.3[4-9]$
+      - ^release-1\.[4-9]\d$
     run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/|Dockerfile|tests\/playbooks)'
     decorate: true
-    branches:
-      - ^release-1.36$
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
@@ -197,10 +244,10 @@ presubmits:
             memory: 5Gi
     annotations:
       testgrid-dashboards: provider-openstack-manila-csi-plugin
-      testgrid-tab-name: presubmit-sanity-test-release-1.36
+      testgrid-tab-name: presubmit-sanity-test
       description: Run cloud-provider-openstack csi sanity tests for manila-csi-plugin
 
-  - name: openstack-cloud-keystone-authentication-authorization-test-release-136
+  - name: openstack-cloud-keystone-authentication-authorization-test
     cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
@@ -208,7 +255,9 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     always_run: false
     branches:
-      - ^release-1.36$
+      - ^master$
+      - ^release-1\.3[4-9]$
+      - ^release-1\.[4-9]\d$
     run_if_changed: '^(pkg\/util\/|pkg\/identity\/|cmd\/k8s-keystone-auth\/|tests\/e2e\/k8s-keystone-auth\/|Dockerfile|tests\/playbooks)'
     optional: false
     decorate: true
@@ -234,4 +283,4 @@ presubmits:
               memory: 5Gi
     annotations:
       testgrid-dashboards: provider-openstack-keystone-authentication-authorization
-      testgrid-tab-name: presubmit-e2e-test-release-1.36
+      testgrid-tab-name: presubmit-e2e-test
