@@ -21,7 +21,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.26
+      base_ref: release-1.27
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -42,7 +42,7 @@ presubmits:
           - name: ADDITIONAL_ASO_CRDS
             value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
           - name: KUBERNETES_VERSION
-            value: "1.35"
+            value: "1.36" # TODO update to 1.37 once AKS supports it
           - name: AKS_TIER
             value: "Premium" # required for LTS
           - name: AKS_SUPPORT_PLAN
@@ -80,7 +80,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.26
+      base_ref: release-1.27
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -139,7 +139,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.26
+      base_ref: release-1.27
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -198,7 +198,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.26
+      base_ref: release-1.27
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -257,7 +257,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.26
+      base_ref: release-1.27
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -316,7 +316,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.26
+      base_ref: release-1.27
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -375,7 +375,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.26
+      base_ref: release-1.27
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
