@@ -5,9 +5,11 @@ dashboard_groups:
   dashboard_names:
   - sig-security-snyk-scan
   - sig-security-cve-feed
+  - sig-security-srctl
 
 # Dashboards
 #
 dashboards:
 - name: sig-security-snyk-scan
 - name: sig-security-cve-feed
+- name: sig-security-srctl
