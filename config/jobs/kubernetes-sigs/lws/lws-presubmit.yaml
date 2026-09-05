@@ -262,7 +262,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260729-f0c41ad0b9-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.36.1
