@@ -771,7 +771,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ../test-infra/hack/ci/test-infra-e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
