@@ -1,0 +1,6876 @@
+{
+  "ci-benchmark-kube-dns-master": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-benchmark-nodelocal-dns-master": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-benchmark-scheduler-perf-master": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BENCHTIME",
+      "value": "1ns"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "KUBE_CACHE_MUTATION_DETECTOR",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_KEEP_VERBOSE_TEST_OUTPUT",
+      "value": "y"
+    },
+    {
+      "name": "KUBE_PRUNE_JUNIT_TESTS",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_TIMEOUT",
+      "value": "--timeout=3h55m"
+    },
+    {
+      "name": "SHORT",
+      "value": "--short=false"
+    },
+    {
+      "name": "TEST_PREFIX",
+      "value": "BenchmarkPerfScheduling"
+    }
+  ],
+  "ci-build-and-push-k8s-at-golang-tip": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    }
+  ],
+  "ci-golang-tip-k8s-master": [
+    {
+      "name": "ALLOWED_NOTREADY_NODES",
+      "value": "1"
+    },
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_PVS",
+      "value": "false"
+    },
+    {
+      "name": "CL2_ENABLE_VIOLATIONS_FOR_API_CALL_PROMETHEUS",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_HOLLOW_NODE_LOGS",
+      "value": "true"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_TEST_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "HEAPSTER_KUBELET_TEST_ARGS",
+      "value": "--register-with-taints=monitoring=:NoSchedule"
+    },
+    {
+      "name": "HEAPSTER_MACHINE_TYPE",
+      "value": "e2-standard-8"
+    },
+    {
+      "name": "HOLLOW_PROXY_TEST_ARGS",
+      "value": "--use-real-proxier=false"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEMARK_ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "KUBEMARK_NODE_OBJECT_SIZE_BYTES",
+      "value": "15000"
+    },
+    {
+      "name": "KUBEMARK_SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_ENABLE_KONNECTIVITY_SERVICE",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_FASTBUILD",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "300"
+    },
+    {
+      "name": "KUBE_GCS_UPDATE_LATEST",
+      "value": "n"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_REAL_PROXIER",
+      "value": "false"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "ci-kubernetes-benchmark-list": [
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBECTL_PRUNE_WHITELIST_OVERRIDE",
+      "value": "core/v1/ConfigMap core/v1/Endpoints core/v1/Namespace core/v1/PersistentVolumeClaim core/v1/PersistentVolume core/v1/ReplicationController core/v1/Secret core/v1/Service batch/v1/Job batch/v1/CronJob apps/v1/DaemonSet apps/v1/Deployment apps/v1/ReplicaSet apps/v1/StatefulSet networking.k8s.io/v1/Ingress"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling --metrics-bind-address=0.0.0.0"
+    },
+    {
+      "name": "KUBE_APISERVER_GODEBUG",
+      "value": "gctrace=1"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "256"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_EXTRA_FILES",
+      "value": "cl2-*"
+    },
+    {
+      "name": "LOG_DUMP_SAVE_SERVICES",
+      "value": "containerd"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n2-standard-32"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "50GB"
+    },
+    {
+      "name": "NODE_KUBELET_TEST_ARGS",
+      "value": "--kube-reserved=cpu=1050m"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-medium"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "ci-kubernetes-benchmark-list-cbor": [
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBECTL_PRUNE_WHITELIST_OVERRIDE",
+      "value": "core/v1/ConfigMap core/v1/Endpoints core/v1/Namespace core/v1/PersistentVolumeClaim core/v1/PersistentVolume core/v1/ReplicationController core/v1/Secret core/v1/Service batch/v1/Job batch/v1/CronJob apps/v1/DaemonSet apps/v1/Deployment apps/v1/ReplicaSet apps/v1/StatefulSet networking.k8s.io/v1/Ingress"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling --metrics-bind-address=0.0.0.0"
+    },
+    {
+      "name": "KUBE_APISERVER_GODEBUG",
+      "value": "gctrace=1"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "256"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_EXTRA_FILES",
+      "value": "cl2-*"
+    },
+    {
+      "name": "LOG_DUMP_SAVE_SERVICES",
+      "value": "containerd"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n2-standard-32"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "50GB"
+    },
+    {
+      "name": "NODE_KUBELET_TEST_ARGS",
+      "value": "--kube-reserved=cpu=1050m"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-medium"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "ci-kubernetes-benchmark-list-proto": [
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBECTL_PRUNE_WHITELIST_OVERRIDE",
+      "value": "core/v1/ConfigMap core/v1/Endpoints core/v1/Namespace core/v1/PersistentVolumeClaim core/v1/PersistentVolume core/v1/ReplicationController core/v1/Secret core/v1/Service batch/v1/Job batch/v1/CronJob apps/v1/DaemonSet apps/v1/Deployment apps/v1/ReplicaSet apps/v1/StatefulSet networking.k8s.io/v1/Ingress"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling --metrics-bind-address=0.0.0.0"
+    },
+    {
+      "name": "KUBE_APISERVER_GODEBUG",
+      "value": "gctrace=1"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "256"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_EXTRA_FILES",
+      "value": "cl2-*"
+    },
+    {
+      "name": "LOG_DUMP_SAVE_SERVICES",
+      "value": "containerd"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n2-standard-32"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "50GB"
+    },
+    {
+      "name": "NODE_KUBELET_TEST_ARGS",
+      "value": "--kube-reserved=cpu=1050m"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-medium"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "ci-kubernetes-e2e-azure-dra-scalability": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AZURE_CLIENT_ID",
+      "value": "34d8e06d-d198-477e-b166-6936e58d90ae"
+    },
+    {
+      "name": "AZURE_CONTROL_PLANE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "AZURE_FEDERATED_TOKEN_FILE",
+      "value": "/var/run/secrets/azure-token/serviceaccount/token"
+    },
+    {
+      "name": "AZURE_LOCATION",
+      "value": "canadacentral"
+    },
+    {
+      "name": "AZURE_NODE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "AZURE_STORAGE_ACCOUNT",
+      "value": "k8sprowstoragecomm"
+    },
+    {
+      "name": "AZURE_SUBSCRIPTION_ID",
+      "value": "46678f10-4bbb-447e-98e8-d2829589f2d8"
+    },
+    {
+      "name": "AZURE_TENANT_ID",
+      "value": "d1aa7522-0959-442e-80ee-8c4f7fb4c184"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.99"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_JOB_RUNNING_TIME",
+      "value": "3s"
+    },
+    {
+      "name": "CL2_LONG_JOB_RUNNING_TIME",
+      "value": "45m"
+    },
+    {
+      "name": "CL2_MODE",
+      "value": "Indexed"
+    },
+    {
+      "name": "CL2_NODES_PER_NAMESPACE",
+      "value": "10"
+    },
+    {
+      "name": "CL2_REPEATS",
+      "value": "10"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "0"
+    },
+    {
+      "name": "CLUSTER_TEMPLATE",
+      "value": "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
+    },
+    {
+      "name": "CONTROL_PLANE_MACHINE_COUNT",
+      "value": "5"
+    },
+    {
+      "name": "CONTROL_PLANE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "DEPLOY_AZURE_CSI_DRIVER",
+      "value": "false"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "MONITORING_MACHINE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "NODE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "NODE_PRELOAD_IMAGES",
+      "value": "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+    },
+    {
+      "name": "PROMETHEUS_APISERVER_SCRAPE_PORT",
+      "value": "6443"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "default"
+    },
+    {
+      "name": "REGISTRY",
+      "value": "capzcicommunity.azurecr.io"
+    },
+    {
+      "name": "TEST_K8S",
+      "value": "true"
+    },
+    {
+      "name": "USE_LOCAL_KIND_REGISTRY",
+      "value": "false"
+    },
+    {
+      "name": "WINDOWS_WORKER_MACHINE_COUNT",
+      "value": "0"
+    },
+    {
+      "name": "WORKER_MACHINE_COUNT",
+      "value": "100"
+    }
+  ],
+  "ci-kubernetes-e2e-azure-dra-with-workload-scalability": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AZURE_CLIENT_ID",
+      "value": "34d8e06d-d198-477e-b166-6936e58d90ae"
+    },
+    {
+      "name": "AZURE_CONTROL_PLANE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "AZURE_FEDERATED_TOKEN_FILE",
+      "value": "/var/run/secrets/azure-token/serviceaccount/token"
+    },
+    {
+      "name": "AZURE_LOCATION",
+      "value": "canadacentral"
+    },
+    {
+      "name": "AZURE_NODE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "AZURE_STORAGE_ACCOUNT",
+      "value": "k8sprowstoragecomm"
+    },
+    {
+      "name": "AZURE_SUBSCRIPTION_ID",
+      "value": "46678f10-4bbb-447e-98e8-d2829589f2d8"
+    },
+    {
+      "name": "AZURE_TENANT_ID",
+      "value": "d1aa7522-0959-442e-80ee-8c4f7fb4c184"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_JOB_RUNNING_TIME",
+      "value": "3s"
+    },
+    {
+      "name": "CL2_LONG_JOB_RUNNING_TIME",
+      "value": "45m"
+    },
+    {
+      "name": "CL2_MODE",
+      "value": "Indexed"
+    },
+    {
+      "name": "CL2_NODES_PER_NAMESPACE",
+      "value": "10"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "0"
+    },
+    {
+      "name": "CLUSTER_TEMPLATE",
+      "value": "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
+    },
+    {
+      "name": "CONTROL_PLANE_MACHINE_COUNT",
+      "value": "5"
+    },
+    {
+      "name": "CONTROL_PLANE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "DEPLOY_AZURE_CSI_DRIVER",
+      "value": "false"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "MONITORING_MACHINE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "NODE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "NODE_PRELOAD_IMAGES",
+      "value": "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+    },
+    {
+      "name": "PROMETHEUS_APISERVER_SCRAPE_PORT",
+      "value": "6443"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "default"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "REGISTRY",
+      "value": "capzcicommunity.azurecr.io"
+    },
+    {
+      "name": "TEST_K8S",
+      "value": "true"
+    },
+    {
+      "name": "USE_LOCAL_KIND_REGISTRY",
+      "value": "false"
+    },
+    {
+      "name": "WINDOWS_WORKER_MACHINE_COUNT",
+      "value": "0"
+    },
+    {
+      "name": "WORKER_MACHINE_COUNT",
+      "value": "100"
+    }
+  ],
+  "ci-kubernetes-e2e-azure-scalability": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AZURE_CLIENT_ID",
+      "value": "34d8e06d-d198-477e-b166-6936e58d90ae"
+    },
+    {
+      "name": "AZURE_CONTROL_PLANE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "AZURE_FEDERATED_TOKEN_FILE",
+      "value": "/var/run/secrets/azure-token/serviceaccount/token"
+    },
+    {
+      "name": "AZURE_NODE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "AZURE_STORAGE_ACCOUNT",
+      "value": "k8sprowstoragecomm"
+    },
+    {
+      "name": "AZURE_SUBSCRIPTION_ID",
+      "value": "46678f10-4bbb-447e-98e8-d2829589f2d8"
+    },
+    {
+      "name": "AZURE_TENANT_ID",
+      "value": "d1aa7522-0959-442e-80ee-8c4f7fb4c184"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "0"
+    },
+    {
+      "name": "CLUSTER_TEMPLATE",
+      "value": "templates/test/dev/cluster-template-custom-builds-load.yaml"
+    },
+    {
+      "name": "CONTROL_PLANE_MACHINE_COUNT",
+      "value": "5"
+    },
+    {
+      "name": "CONTROL_PLANE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "DEPLOY_AZURE_CSI_DRIVER",
+      "value": "false"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "NODE_MACHINE_TYPE",
+      "value": "Standard_D8s_v3"
+    },
+    {
+      "name": "REGISTRY",
+      "value": "capzcicommunity.azurecr.io"
+    },
+    {
+      "name": "TEST_K8S",
+      "value": "true"
+    },
+    {
+      "name": "USE_LOCAL_KIND_REGISTRY",
+      "value": "false"
+    },
+    {
+      "name": "WINDOWS_WORKER_MACHINE_COUNT",
+      "value": "0"
+    },
+    {
+      "name": "WORKER_MACHINE_COUNT",
+      "value": "100"
+    }
+  ],
+  "ci-kubernetes-e2e-gce-100-node-dra-extended-resources-with-workload": [
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_EXTENDED_RESOURCES",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_EXTENDED_RESOURCE_NAME",
+      "value": "example.com/gpu"
+    },
+    {
+      "name": "CL2_JOB_RUNNING_TIME",
+      "value": "3s"
+    },
+    {
+      "name": "CL2_LONG_JOB_RUNNING_TIME",
+      "value": "45m"
+    },
+    {
+      "name": "CL2_MODE",
+      "value": "Indexed"
+    },
+    {
+      "name": "CL2_NODES_PER_NAMESPACE",
+      "value": "10"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBECTL_PRUNE_WHITELIST_OVERRIDE",
+      "value": "core/v1/ConfigMap core/v1/Endpoints core/v1/Namespace core/v1/PersistentVolumeClaim core/v1/PersistentVolume core/v1/ReplicationController core/v1/Secret core/v1/Service batch/v1/Job batch/v1/CronJob apps/v1/DaemonSet apps/v1/Deployment apps/v1/ReplicaSet apps/v1/StatefulSet networking.k8s.io/v1/Ingress"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling --metrics-bind-address=0.0.0.0"
+    },
+    {
+      "name": "KUBE_APISERVER_GODEBUG",
+      "value": "gctrace=1"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "256"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_EXTRA_FILES",
+      "value": "cl2-*"
+    },
+    {
+      "name": "LOG_DUMP_SAVE_SERVICES",
+      "value": "containerd"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n2-standard-32"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "50GB"
+    },
+    {
+      "name": "NODE_KUBELET_TEST_ARGS",
+      "value": "--kube-reserved=cpu=1050m"
+    },
+    {
+      "name": "NODE_PRELOAD_IMAGES",
+      "value": "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-medium"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "ci-kubernetes-e2e-gce-agentic-sandbox-continuous-burst-100": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_DURATION_SECONDS",
+      "value": "12"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_PSL_BY_ORDER",
+      "value": "false"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_QPS",
+      "value": "300"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CL2_SLEEP_FOR_CLUSTER_PREP",
+      "value": "5m"
+    },
+    {
+      "name": "CL2_WARMPOOL_SIZE",
+      "value": "3700"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-32"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KOPS_CL2_TEST_CONFIG",
+      "value": "testing/agentic-sandbox/agent-sandbox-continuous-burst.yaml"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "100"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-standard-8"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-gce-node-containerd-throughput": [
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Skylake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n1-standard-4"
+    },
+    {
+      "name": "MAX_PODS_PER_NODE",
+      "value": "128"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "100GB"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-standard-8"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-gce-node-throughput": [
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Skylake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n1-standard-4"
+    },
+    {
+      "name": "MAX_PODS_PER_NODE",
+      "value": "128"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "100GB"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-standard-8"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-gce-scale-correctness": [
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBECTL_PRUNE_WHITELIST_OVERRIDE",
+      "value": "core/v1/ConfigMap core/v1/Endpoints core/v1/Namespace core/v1/PersistentVolumeClaim core/v1/PersistentVolume core/v1/ReplicationController core/v1/Secret core/v1/Service batch/v1/Job batch/v1/CronJob apps/v1/DaemonSet apps/v1/Deployment apps/v1/ReplicaSet apps/v1/StatefulSet networking.k8s.io/v1/Ingress"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling --metrics-bind-address=0.0.0.0"
+    },
+    {
+      "name": "KUBERNETES_REGISTRY_PULL_THROUGH_BASIC_AUTH_TOKEN_PATH",
+      "value": "/etc/registry-auth/token"
+    },
+    {
+      "name": "KUBERNETES_REGISTRY_PULL_THROUGH_HOST",
+      "value": "https://us-central1-docker.pkg.dev/v2/k8s-infra-e2e-scale-5k-project/k8s-5k-scale-cache/"
+    },
+    {
+      "name": "KUBE_APISERVER_GODEBUG",
+      "value": "gctrace=1"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "256"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_EXTRA_FILES",
+      "value": "cl2-*"
+    },
+    {
+      "name": "LOG_DUMP_SAVE_SERVICES",
+      "value": "containerd"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n2-standard-32"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "50GB"
+    },
+    {
+      "name": "NODE_KUBELET_TEST_ARGS",
+      "value": "--kube-reserved=cpu=1050m"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-medium"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "ci-kubernetes-e2e-gce-scale-performance-100": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-32"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBERNETES_VERSION",
+      "value": "master"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "100"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-gce-scale-performance-100-fieldsv1string": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-32"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOFLAGS",
+      "value": "-tags=fieldsv1string"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBERNETES_VERSION",
+      "value": "master"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "100"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-gce-scale-performance-5000": [
+    {
+      "name": "ADDONS_NODE_SIZE",
+      "value": "c3-standard-44"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-scale-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_INFORMER_LATENCY_TEST",
+      "value": "false"
+    },
+    {
+      "name": "CL2_EXECSERVICE_CPU_REQUESTS",
+      "value": "8"
+    },
+    {
+      "name": "CL2_EXECSERVICE_MEMORY_REQUESTS",
+      "value": "16Gi"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CL2_REALISTIC_POD",
+      "value": "true"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-96"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_QUOTA_BACKEND_BYTES",
+      "value": "21474836480"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "5000"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-gce-scale-performance-5000-experimental": [
+    {
+      "name": "ADDONS_NODE_SIZE",
+      "value": "c3-standard-44"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-scale-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_INFORMER_LATENCY_TEST",
+      "value": "false"
+    },
+    {
+      "name": "CL2_EXECSERVICE_CPU_REQUESTS",
+      "value": "8"
+    },
+    {
+      "name": "CL2_EXECSERVICE_MEMORY_REQUESTS",
+      "value": "16Gi"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CL2_REALISTIC_POD",
+      "value": "true"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "3"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-96"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_QUOTA_BACKEND_BYTES",
+      "value": "21474836480"
+    },
+    {
+      "name": "EXPERIMENT_VARIANT",
+      "value": "HA"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "5000"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-gci-gce-benchmark-requests-1": [
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBECTL_PRUNE_WHITELIST_OVERRIDE",
+      "value": "core/v1/ConfigMap core/v1/Endpoints core/v1/Namespace core/v1/PersistentVolumeClaim core/v1/PersistentVolume core/v1/ReplicationController core/v1/Secret core/v1/Service batch/v1/Job batch/v1/CronJob apps/v1/DaemonSet apps/v1/Deployment apps/v1/ReplicaSet apps/v1/StatefulSet networking.k8s.io/v1/Ingress"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling --metrics-bind-address=0.0.0.0"
+    },
+    {
+      "name": "KUBE_APISERVER_GODEBUG",
+      "value": "gctrace=1"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "256"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_EXTRA_FILES",
+      "value": "cl2-*"
+    },
+    {
+      "name": "LOG_DUMP_SAVE_SERVICES",
+      "value": "containerd"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n2-standard-32"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "50GB"
+    },
+    {
+      "name": "NODE_KUBELET_TEST_ARGS",
+      "value": "--kube-reserved=cpu=1050m"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-medium"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "ci-kubernetes-e2e-kops-aws-500-node-dra-with-workload-amazonvpc-using-cl2": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AWS_SHARED_CREDENTIALS_FILE",
+      "value": "/etc/aws-cred/sharedCredentialsFile"
+    },
+    {
+      "name": "AWS_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "AWS_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-public"
+    },
+    {
+      "name": "CL2_JOB_RUNNING_TIME",
+      "value": "3s"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_LONG_JOB_RUNNING_TIME",
+      "value": "45m"
+    },
+    {
+      "name": "CL2_MODE",
+      "value": "Indexed"
+    },
+    {
+      "name": "CL2_NODES_PER_NAMESPACE",
+      "value": "10"
+    },
+    {
+      "name": "CL2_PROMETHEUS_KUBELET_KEEP_ONLY_DRA",
+      "value": "true"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "aws"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "amazonvpc"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c8a.12xlarge"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "KOPS_CL2_TEST_CONFIG",
+      "value": "testing/dra/config.yaml"
+    },
+    {
+      "name": "KOPS_IRSA",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "500"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "ubuntu"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "NODE_PRELOAD_IMAGES",
+      "value": "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "io2"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_APISERVER_ONLY",
+      "value": "false"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-kops-aws-5000-node-dra-with-workload-amazonvpc-using-cl2": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AWS_SHARED_CREDENTIALS_FILE",
+      "value": "/etc/aws-cred/sharedCredentialsFile"
+    },
+    {
+      "name": "AWS_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "AWS_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-public"
+    },
+    {
+      "name": "CL2_JOB_RUNNING_TIME",
+      "value": "30s"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_LONG_JOB_RUNNING_TIME",
+      "value": "240m"
+    },
+    {
+      "name": "CL2_MODE",
+      "value": "Indexed"
+    },
+    {
+      "name": "CL2_NODES_PER_NAMESPACE",
+      "value": "2500"
+    },
+    {
+      "name": "CL2_PROMETHEUS_KUBELET_KEEP_ONLY_DRA",
+      "value": "true"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "aws"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "amazonvpc"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c8i.24xlarge"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "KOPS_APISERVER_MAX_REQUESTS_INFLIGHT",
+      "value": "2700"
+    },
+    {
+      "name": "KOPS_CL2_TEST_CONFIG",
+      "value": "testing/dra/config.yaml"
+    },
+    {
+      "name": "KOPS_CONTROLLER_MANAGER_BURST",
+      "value": "1000"
+    },
+    {
+      "name": "KOPS_CONTROLLER_MANAGER_QPS",
+      "value": "1000"
+    },
+    {
+      "name": "KOPS_IRSA",
+      "value": "true"
+    },
+    {
+      "name": "KOPS_SCHEDULER_BURST",
+      "value": "1200"
+    },
+    {
+      "name": "KOPS_SCHEDULER_QPS",
+      "value": "1200"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "5000"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "ubuntu"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "NODE_PRELOAD_IMAGES",
+      "value": "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "io2"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_APISERVER_ONLY",
+      "value": "false"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-kops-aws-scale-amazonvpc-using-cl2": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AWS_SHARED_CREDENTIALS_FILE",
+      "value": "/etc/aws-cred/sharedCredentialsFile"
+    },
+    {
+      "name": "AWS_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "AWS_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-public"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "aws"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "amazonvpc"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c8i.24xlarge"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "KOPS_IRSA",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "5000"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "ubuntu"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "io2"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-kops-aws-small-scale-amazonvpc-using-cl2": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AWS_SHARED_CREDENTIALS_FILE",
+      "value": "/etc/aws-cred/sharedCredentialsFile"
+    },
+    {
+      "name": "AWS_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "AWS_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-public"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "aws"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "amazonvpc"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c8a.8xlarge"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "KOPS_IRSA",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "100"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "ubuntu"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "io2"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-kops-gce-100-node-dra-with-workload-ipalias-using-cl2": [
+    {
+      "name": "ARTIFACTS",
+      "value": "$(ARTIFACTS)"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-project"
+    },
+    {
+      "name": "CL2_JOB_RUNNING_TIME",
+      "value": "3s"
+    },
+    {
+      "name": "CL2_LONG_JOB_RUNNING_TIME",
+      "value": "45m"
+    },
+    {
+      "name": "CL2_MODE",
+      "value": "Indexed"
+    },
+    {
+      "name": "CL2_NODES_PER_NAMESPACE",
+      "value": "10"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-32"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KOPS_CL2_TEST_CONFIG",
+      "value": "testing/dra/config.yaml"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "100"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "NODE_PRELOAD_IMAGES",
+      "value": "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-e2e-kops-gce-5000-node-dra-with-workload-ipalias-using-cl2": [
+    {
+      "name": "ARTIFACTS",
+      "value": "$(ARTIFACTS)"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-scale-project"
+    },
+    {
+      "name": "CL2_JOB_RUNNING_TIME",
+      "value": "30s"
+    },
+    {
+      "name": "CL2_LONG_JOB_RUNNING_TIME",
+      "value": "240m"
+    },
+    {
+      "name": "CL2_MODE",
+      "value": "Indexed"
+    },
+    {
+      "name": "CL2_NODES_PER_NAMESPACE",
+      "value": "2500"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-96"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KOPS_APISERVER_MAX_REQUESTS_INFLIGHT",
+      "value": "2700"
+    },
+    {
+      "name": "KOPS_CL2_TEST_CONFIG",
+      "value": "testing/dra/config.yaml"
+    },
+    {
+      "name": "KOPS_CONTROLLER_MANAGER_BURST",
+      "value": "1000"
+    },
+    {
+      "name": "KOPS_CONTROLLER_MANAGER_QPS",
+      "value": "1000"
+    },
+    {
+      "name": "KOPS_SCHEDULER_BURST",
+      "value": "1200"
+    },
+    {
+      "name": "KOPS_SCHEDULER_QPS",
+      "value": "1200"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "5000"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "NODE_PRELOAD_IMAGES",
+      "value": "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "ci-kubernetes-scalability-cleanup-golang-builds-canary": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    }
+  ],
+  "maintenance-ci-scale-aws-janitor": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AWS_SHARED_CREDENTIALS_FILE",
+      "value": "/etc/aws-cred/sharedCredentialsFile"
+    },
+    {
+      "name": "AWS_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "AWS_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-public"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-kubernetes-e2e-gce-correctness": [
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBECTL_PRUNE_WHITELIST_OVERRIDE",
+      "value": "core/v1/ConfigMap core/v1/Endpoints core/v1/Namespace core/v1/PersistentVolumeClaim core/v1/PersistentVolume core/v1/ReplicationController core/v1/Secret core/v1/Service batch/v1/Job batch/v1/CronJob apps/v1/DaemonSet apps/v1/Deployment apps/v1/ReplicaSet apps/v1/StatefulSet networking.k8s.io/v1/Ingress"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling --metrics-bind-address=0.0.0.0"
+    },
+    {
+      "name": "KUBE_APISERVER_GODEBUG",
+      "value": "gctrace=1"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "256"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_EXTRA_FILES",
+      "value": "cl2-*"
+    },
+    {
+      "name": "LOG_DUMP_SAVE_SERVICES",
+      "value": "containerd"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n2-standard-32"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "50GB"
+    },
+    {
+      "name": "NODE_KUBELET_TEST_ARGS",
+      "value": "--kube-reserved=cpu=1050m"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-medium"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "pull-kubernetes-e2e-gce-master-scale-performance-100": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-32"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "100"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-kubernetes-e2e-gce-watch-list-benchmark": [
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBECTL_PRUNE_WHITELIST_OVERRIDE",
+      "value": "core/v1/ConfigMap core/v1/Endpoints core/v1/Namespace core/v1/PersistentVolumeClaim core/v1/PersistentVolume core/v1/ReplicationController core/v1/Secret core/v1/Service batch/v1/Job batch/v1/CronJob apps/v1/DaemonSet apps/v1/Deployment apps/v1/ReplicaSet apps/v1/StatefulSet networking.k8s.io/v1/Ingress"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling --metrics-bind-address=0.0.0.0"
+    },
+    {
+      "name": "KUBE_APISERVER_GODEBUG",
+      "value": "gctrace=1"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "256"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_EXTRA_FILES",
+      "value": "cl2-*"
+    },
+    {
+      "name": "LOG_DUMP_SAVE_SERVICES",
+      "value": "containerd"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n2-standard-32"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "50GB"
+    },
+    {
+      "name": "NODE_KUBELET_TEST_ARGS",
+      "value": "--kube-reserved=cpu=1050m"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-medium"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "pull-kubernetes-e2e-gce-watch-list-off-benchmark": [
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBECTL_PRUNE_WHITELIST_OVERRIDE",
+      "value": "core/v1/ConfigMap core/v1/Endpoints core/v1/Namespace core/v1/PersistentVolumeClaim core/v1/PersistentVolume core/v1/ReplicationController core/v1/Secret core/v1/Service batch/v1/Job batch/v1/CronJob apps/v1/DaemonSet apps/v1/Deployment apps/v1/ReplicaSet apps/v1/StatefulSet networking.k8s.io/v1/Ingress"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling --metrics-bind-address=0.0.0.0"
+    },
+    {
+      "name": "KUBE_APISERVER_GODEBUG",
+      "value": "gctrace=1"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "256"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_EXTRA_FILES",
+      "value": "cl2-*"
+    },
+    {
+      "name": "LOG_DUMP_SAVE_SERVICES",
+      "value": "containerd"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n2-standard-32"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "50GB"
+    },
+    {
+      "name": "NODE_KUBELET_TEST_ARGS",
+      "value": "--kube-reserved=cpu=1050m"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-medium"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "pull-kubernetes-gce-master-scale-performance-100-experimental": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "3"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-32"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "EXPERIMENT_VARIANT",
+      "value": "HA"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBE_FEATURE_GATES",
+      "value": "+EtcdRangeStream"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "100"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-kubernetes-gce-master-scale-performance-5000": [
+    {
+      "name": "ADDONS_NODE_SIZE",
+      "value": "c3-standard-44"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-scale-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_INFORMER_LATENCY_TEST",
+      "value": "false"
+    },
+    {
+      "name": "CL2_EXECSERVICE_CPU_REQUESTS",
+      "value": "8"
+    },
+    {
+      "name": "CL2_EXECSERVICE_MEMORY_REQUESTS",
+      "value": "16Gi"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CL2_REALISTIC_POD",
+      "value": "true"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-96"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_QUOTA_BACKEND_BYTES",
+      "value": "21474836480"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "5000"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-kubernetes-gce-master-scale-performance-5000-experimental": [
+    {
+      "name": "ADDONS_NODE_SIZE",
+      "value": "c3-standard-44"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-scale-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_INFORMER_LATENCY_TEST",
+      "value": "false"
+    },
+    {
+      "name": "CL2_EXECSERVICE_CPU_REQUESTS",
+      "value": "8"
+    },
+    {
+      "name": "CL2_EXECSERVICE_MEMORY_REQUESTS",
+      "value": "16Gi"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CL2_REALISTIC_POD",
+      "value": "true"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "3"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-96"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_QUOTA_BACKEND_BYTES",
+      "value": "21474836480"
+    },
+    {
+      "name": "EXPERIMENT_VARIANT",
+      "value": "HA"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "5000"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-perf-tests-benchmark-kube-dns": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-perf-tests-benchmark-list-proto": [
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBECTL_PRUNE_WHITELIST_OVERRIDE",
+      "value": "core/v1/ConfigMap core/v1/Endpoints core/v1/Namespace core/v1/PersistentVolumeClaim core/v1/PersistentVolume core/v1/ReplicationController core/v1/Secret core/v1/Service batch/v1/Job batch/v1/CronJob apps/v1/DaemonSet apps/v1/Deployment apps/v1/ReplicaSet apps/v1/StatefulSet networking.k8s.io/v1/Ingress"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling --metrics-bind-address=0.0.0.0"
+    },
+    {
+      "name": "KUBE_APISERVER_GODEBUG",
+      "value": "gctrace=1"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "256"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_EXTRA_FILES",
+      "value": "cl2-*"
+    },
+    {
+      "name": "LOG_DUMP_SAVE_SERVICES",
+      "value": "containerd"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n2-standard-32"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "50GB"
+    },
+    {
+      "name": "NODE_KUBELET_TEST_ARGS",
+      "value": "--kube-reserved=cpu=1050m"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-medium"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "pull-perf-tests-clusterloader2": [
+    {
+      "name": "APISERVER_TEST_ARGS",
+      "value": "--profiling --contention-profiling"
+    },
+    {
+      "name": "API_SERVER_TEST_LOG_LEVEL",
+      "value": "--v=3"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_SCHEDULER_THROUGHPUT_THRESHOLD",
+      "value": "90"
+    },
+    {
+      "name": "CONTROLLER_MANAGER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "CREATE_CUSTOM_NETWORK",
+      "value": "true"
+    },
+    {
+      "name": "DEPLOY_GCI_DRIVER",
+      "value": "true"
+    },
+    {
+      "name": "DUMP_TO_GCS_ONLY",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_COMPACTION_INTERVAL_SEC",
+      "value": "150"
+    },
+    {
+      "name": "ETCD_EXTRA_ARGS",
+      "value": "--enable-pprof"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBECTL_PRUNE_WHITELIST_OVERRIDE",
+      "value": "core/v1/ConfigMap core/v1/Endpoints core/v1/Namespace core/v1/PersistentVolumeClaim core/v1/PersistentVolume core/v1/ReplicationController core/v1/Secret core/v1/Service batch/v1/Job batch/v1/CronJob apps/v1/DaemonSet apps/v1/Deployment apps/v1/ReplicaSet apps/v1/StatefulSet networking.k8s.io/v1/Ingress"
+    },
+    {
+      "name": "KUBELET_TEST_ARGS",
+      "value": "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "KUBEPROXY_TEST_ARGS",
+      "value": "--profiling --metrics-bind-address=0.0.0.0"
+    },
+    {
+      "name": "KUBE_APISERVER_GODEBUG",
+      "value": "gctrace=1"
+    },
+    {
+      "name": "KUBE_ENABLE_CLUSTER_UI",
+      "value": "false"
+    },
+    {
+      "name": "KUBE_GCE_ENABLE_IP_ALIASES",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM",
+      "value": "256"
+    },
+    {
+      "name": "KUBE_MASTER_NODE_LABELS",
+      "value": "node.kubernetes.io/node-exporter-ready=true"
+    },
+    {
+      "name": "LOGROTATE_FILES_MAX_COUNT",
+      "value": "1000"
+    },
+    {
+      "name": "LOGROTATE_MAX_SIZE",
+      "value": "5G"
+    },
+    {
+      "name": "LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE",
+      "value": "50"
+    },
+    {
+      "name": "LOG_DUMP_EXTRA_FILES",
+      "value": "cl2-*"
+    },
+    {
+      "name": "LOG_DUMP_SAVE_SERVICES",
+      "value": "containerd"
+    },
+    {
+      "name": "LOG_DUMP_SSH_TIMEOUT_SECONDS",
+      "value": "3600"
+    },
+    {
+      "name": "LOG_DUMP_SYSTEMD_JOURNAL",
+      "value": "true"
+    },
+    {
+      "name": "MASTER_MIN_CPU_ARCHITECTURE",
+      "value": "Intel Ice Lake"
+    },
+    {
+      "name": "MASTER_SIZE",
+      "value": "n2-standard-32"
+    },
+    {
+      "name": "NODE_DISK_SIZE",
+      "value": "50GB"
+    },
+    {
+      "name": "NODE_KUBELET_TEST_ARGS",
+      "value": "--kube-reserved=cpu=1050m"
+    },
+    {
+      "name": "NODE_SIZE",
+      "value": "e2-medium"
+    },
+    {
+      "name": "PERF_TESTS_PRINT_COMMIT_HISTORY",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_MASTER_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_STORAGE_CLASS_PROVISIONER",
+      "value": "pd.csi.storage.gke.io"
+    },
+    {
+      "name": "REGISTER_MASTER",
+      "value": "true"
+    },
+    {
+      "name": "SCHEDULER_TEST_ARGS",
+      "value": "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    },
+    {
+      "name": "TEST_CLUSTER_DELETE_COLLECTION_WORKERS",
+      "value": "--delete-collection-workers=16"
+    },
+    {
+      "name": "TEST_CLUSTER_LOG_LEVEL",
+      "value": "--v=2"
+    },
+    {
+      "name": "TEST_CLUSTER_RESYNC_PERIOD",
+      "value": "--min-resync-period=12h"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    },
+    {
+      "name": "USE_TEST_INFRA_LOG_DUMPING",
+      "value": "true"
+    }
+  ],
+  "pull-perf-tests-ec2-500-node-dra-with-workload-amazonvpc-using-cl2": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AWS_SHARED_CREDENTIALS_FILE",
+      "value": "/etc/aws-cred/sharedCredentialsFile"
+    },
+    {
+      "name": "AWS_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "AWS_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-public"
+    },
+    {
+      "name": "CL2_JOB_RUNNING_TIME",
+      "value": "3s"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_LONG_JOB_RUNNING_TIME",
+      "value": "45m"
+    },
+    {
+      "name": "CL2_MODE",
+      "value": "Indexed"
+    },
+    {
+      "name": "CL2_NODES_PER_NAMESPACE",
+      "value": "10"
+    },
+    {
+      "name": "CL2_PROMETHEUS_KUBELET_KEEP_ONLY_DRA",
+      "value": "true"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "aws"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "amazonvpc"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c8a.12xlarge"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "KOPS_CL2_TEST_CONFIG",
+      "value": "testing/dra/config.yaml"
+    },
+    {
+      "name": "KOPS_IRSA",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "500"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "ubuntu"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "NODE_PRELOAD_IMAGES",
+      "value": "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "io2"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_APISERVER_ONLY",
+      "value": "false"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_KUBELETS",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-perf-tests-ec2-master-scale-performance-100": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AWS_SHARED_CREDENTIALS_FILE",
+      "value": "/etc/aws-cred/sharedCredentialsFile"
+    },
+    {
+      "name": "AWS_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "AWS_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-public"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "aws"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "amazonvpc"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c8i.8xlarge"
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "KOPS_IRSA",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "100"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "ubuntu"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "gp2"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-perf-tests-ec2-master-scale-performance-500": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AWS_SHARED_CREDENTIALS_FILE",
+      "value": "/etc/aws-cred/sharedCredentialsFile"
+    },
+    {
+      "name": "AWS_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "AWS_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-public"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "aws"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "amazonvpc"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c8i.12xlarge"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "KOPS_IRSA",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "500"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "ubuntu"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "gp2"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-perf-tests-ec2-master-scale-performance-5000": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "AWS_SHARED_CREDENTIALS_FILE",
+      "value": "/etc/aws-cred/sharedCredentialsFile"
+    },
+    {
+      "name": "AWS_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "AWS_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/aws-ssh/aws-ssh-public"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "aws"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "amazonvpc"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c8a.24xlarge"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "KOPS_IRSA",
+      "value": "true"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "5000"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/aws-ssh/aws-ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "ubuntu"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "gp2"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-perf-tests-gce-master-scale-performance-100": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-32"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "100"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-perf-tests-gce-master-scale-performance-100-experimental": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "3"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-32"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "EXPERIMENT_VARIANT",
+      "value": "HA"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "100"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-perf-tests-gce-master-scale-performance-5000": [
+    {
+      "name": "ADDONS_NODE_SIZE",
+      "value": "c3-standard-44"
+    },
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "BOSKOS_RESOURCE_TYPE",
+      "value": "scalability-scale-project"
+    },
+    {
+      "name": "CL2_ALLOWED_SLOW_API_CALLS",
+      "value": "1"
+    },
+    {
+      "name": "CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD",
+      "value": "99.5"
+    },
+    {
+      "name": "CL2_DELETE_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_ENABLE_API_AVAILABILITY_MEASUREMENT",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_DNS_PROGRAMMING",
+      "value": "true"
+    },
+    {
+      "name": "CL2_ENABLE_INFORMER_LATENCY_TEST",
+      "value": "false"
+    },
+    {
+      "name": "CL2_EXECSERVICE_CPU_REQUESTS",
+      "value": "8"
+    },
+    {
+      "name": "CL2_EXECSERVICE_MEMORY_REQUESTS",
+      "value": "16Gi"
+    },
+    {
+      "name": "CL2_LOAD_TEST_THROUGHPUT",
+      "value": "50"
+    },
+    {
+      "name": "CL2_RATE_LIMIT_POD_CREATION",
+      "value": "false"
+    },
+    {
+      "name": "CL2_REALISTIC_POD",
+      "value": "true"
+    },
+    {
+      "name": "CLOUD_PROVIDER",
+      "value": "gce"
+    },
+    {
+      "name": "CNI_PLUGIN",
+      "value": "gce"
+    },
+    {
+      "name": "CONTROL_PLANE_COUNT",
+      "value": "1"
+    },
+    {
+      "name": "CONTROL_PLANE_SIZE",
+      "value": "c4-standard-96"
+    },
+    {
+      "name": "ENABLE_PROMETHEUS_SERVER",
+      "value": "true"
+    },
+    {
+      "name": "ETCD_QUOTA_BACKEND_BYTES",
+      "value": "21474836480"
+    },
+    {
+      "name": "GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "GOPATH",
+      "value": "/home/prow/go"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+      "value": "/etc/ssh-key-secret/ssh-public"
+    },
+    {
+      "name": "KUBE_NODE_COUNT",
+      "value": "5000"
+    },
+    {
+      "name": "KUBE_PROXY_MODE",
+      "value": "nftables"
+    },
+    {
+      "name": "KUBE_SSH_KEY_PATH",
+      "value": "/etc/ssh-key-secret/ssh-private"
+    },
+    {
+      "name": "KUBE_SSH_USER",
+      "value": "prow"
+    },
+    {
+      "name": "NODE_MODE",
+      "value": "master"
+    },
+    {
+      "name": "PROMETHEUS_PVC_STORAGE_CLASS",
+      "value": "ssd-csi"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_ETCD",
+      "value": "true"
+    },
+    {
+      "name": "PROMETHEUS_SCRAPE_NODE_EXPORTER",
+      "value": "true"
+    },
+    {
+      "name": "TEAR_DOWN_PROMETHEUS_SERVER",
+      "value": "false"
+    },
+    {
+      "name": "USER",
+      "value": "prow"
+    }
+  ],
+  "pull-perf-tests-util-images": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "DOCKER_IN_DOCKER_ENABLED",
+      "value": "true"
+    },
+    {
+      "name": "E2E_GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS",
+      "value": "/etc/service-account/service-account.json"
+    },
+    {
+      "name": "GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+      "value": "Migrate to workload identity, contact sig-testing"
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    }
+  ],
+  "pull-perf-tests-verify-all-python": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    }
+  ],
+  "pull-perf-tests-verify-dashboard": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    }
+  ],
+  "pull-perf-tests-verify-lint": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    }
+  ],
+  "pull-perf-tests-verify-test": [
+    {
+      "name": "AWS_ROLE_SESSION_NAME",
+      "valueFrom": {
+        "fieldRef": {
+          "fieldPath": "metadata.name"
+        }
+      }
+    },
+    {
+      "name": "GOPROXY",
+      "value": "https://proxy.golang.org"
+    },
+    {
+      "name": "GOTOOLCHAIN",
+      "value": "auto"
+    }
+  ]
+}
