@@ -65,8 +65,9 @@ presubmits:
 
   - name: pull-test-infra-node-e2e-containerd-1-7-ubuntu-dra
     cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
+    # Keep this job as the TestGrid source for existing legacy release presubmits.
+    branches:
+    - ^$  # Do not run against any branch in the source repository.
     always_run: false
     run_if_changed: ^jobs/e2e_node/
     optional: true
@@ -76,10 +77,11 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
-      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 1.7 on Ubuntu
+      description: Provides TestGrid configuration for Kubernetes 1.37 and earlier DRA node tests with containerd 1.7 on Ubuntu
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
-      fork-per-release: "true"
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
+      # Existing release jobs use this TestGrid configuration, but do not fork
+      # this containerd 1.7 job into Kubernetes 1.38 or later releases.
+      fork-per-release: "false"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -118,8 +120,9 @@ presubmits:
 
   - name: pull-test-infra-node-e2e-containerd-1-7-cos-dra
     cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
+    # Keep this job as the TestGrid source for existing legacy release presubmits.
+    branches:
+    - ^$  # Do not run against any branch in the source repository.
     always_run: false
     run_if_changed: ^jobs/e2e_node/
     optional: true
@@ -129,10 +132,11 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
-      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 1.7 on COS
+      description: Provides TestGrid configuration for Kubernetes 1.37 and earlier DRA node tests with containerd 1.7 on COS
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
-      fork-per-release: "true"
-      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, ci/fast -> ci
+      # Existing release jobs use this TestGrid configuration, but do not fork
+      # this containerd 1.7 job into Kubernetes 1.38 or later releases.
+      fork-per-release: "false"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -169,7 +173,7 @@ presubmits:
             cpu: 0.5
             memory: 2Gi
 
-  - name: pull-test-infra-node-e2e-containerd-2-0-ubuntu-dra
+  - name: pull-test-infra-node-e2e-containerd-2-1-ubuntu-dra
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -225,7 +229,7 @@ presubmits:
             cpu: 0.5
             memory: 2Gi
 
-  - name: pull-test-infra-node-e2e-containerd-2-0-cos-dra
+  - name: pull-test-infra-node-e2e-containerd-2-1-cos-dra
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
