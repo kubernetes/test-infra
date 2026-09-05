@@ -420,6 +420,54 @@ periodics:
             cpu: 4
             memory: "8Gi"
 
+- interval: 24h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-test-modules-with-minimum-go
+  annotations:
+    testgrid-dashboards: sig-arch-code-organization
+    testgrid-tab-name: test-modules-with-minimum-go
+    description: Tests staging modules with the minimum Go version advertised in each module's go.mod, the way an external consumer would.
+    testgrid-alert-email: davanum@gmail.com, bentheelder@google.com
+    testgrid-num-columns-recent: '6'
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    # these tests intentionally do not require root or privileged operations
+    securityContext:
+      # NOTE: these are arbitrary non-root values. They don't exist in the
+      # image and don't need to, the tests should only write to TMPDIR / HOME.
+      runAsUser: 2001
+      runAsGroup: 2010
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+        securityContext:
+          allowPrivilegeEscalation: false
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            # the script runs go with default settings (GOTOOLCHAIN picks each
+            # module's go.mod minimum), so it needs a writable HOME / GOPATH for
+            # GOCACHE and on-demand toolchain downloads.
+            export HOME="$(mktemp -d)"
+            export GOPATH="${HOME}/go"
+            staging/test/test-modules-with-minimum-go.sh
+        resources:
+          limits:
+            cpu: 4
+            memory: "8Gi"
+          requests:
+            cpu: 4
+            memory: "8Gi"
+
 - name: ci-cgroup-systemd-containerd-node-e2e-golang-tip
   cluster: k8s-infra-prow-build
   interval: 8h
