@@ -161,6 +161,7 @@ class SwaggerEndpointMapper:
         self.swagger_spec = None
         self.path_to_operation = {}
         self.deprecated_operations = set()
+        self.pre_ga_group_operations = set()
         self.known_resource_types = set()
         self.load_swagger_spec()
 
@@ -231,6 +232,44 @@ class SwaggerEndpointMapper:
         print(f"Loaded {len(self.path_to_operation)} API operations from Swagger spec")
         if self.deprecated_operations:
             print(f"Found {len(self.deprecated_operations)} deprecated operations")
+
+        self._build_pre_ga_group_operations()
+
+    def _build_pre_ga_group_operations(self):
+        """Collect group discovery operations whose group serves no GA version.
+
+        A group discovery path, /apis/<group>/, carries no version, because it
+        is what you call to find out what the versions are. The alpha/beta
+        check on the operation id therefore never matches, and an alpha only
+        group's discovery operation reads as stable. A group is only as stable
+        as the most stable version it actually serves.
+        """
+        if not self.swagger_spec or 'paths' not in self.swagger_spec:
+            return
+
+        group_versions = {}
+        for path in self.swagger_spec['paths']:
+            parts = path.strip('/').split('/')
+            if len(parts) >= 3 and parts[0] == 'apis':
+                group_versions.setdefault(parts[1], set()).add(parts[2])
+
+        for path, methods in self.swagger_spec['paths'].items():
+            parts = path.strip('/').split('/')
+            if len(parts) != 2 or parts[0] != 'apis':
+                continue
+            versions = group_versions.get(parts[1], set())
+            # no versions at all, or the group already serves a GA one
+            if not versions or any(
+                    'alpha' not in v and 'beta' not in v for v in versions):
+                continue
+            for method, operation in methods.items():
+                if (method.lower() in ['get', 'post', 'put', 'patch', 'delete']
+                        and 'operationId' in operation):
+                    self.pre_ga_group_operations.add(operation['operationId'])
+
+        if self.pre_ga_group_operations:
+            print(f"Found {len(self.pre_ga_group_operations)} group discovery "
+                  "operations for groups with no GA version")
 
     def _extract_resource_types(self):
         """Extract resource types from Swagger paths to avoid hardcoding."""
@@ -877,6 +916,8 @@ def warn_on_missing_stable_endpoints(deprecated_operations, endpoint_counts, ine
         if not any(version in op for version in
                    ['V1alpha', 'V1beta', 'V2alpha', 'V2beta', 'V3alpha', 'V3beta', 'alpha', 'beta'])
     }
+    # Filter out group discovery operations for groups with no GA version
+    stable_missing_operations = stable_missing_operations - swagger_mapper.pre_ga_group_operations
     # Filter out ineligible endpoints from missing operations
     if ineligible_endpoints:
         stable_missing_operations = stable_missing_operations - ineligible_endpoints
