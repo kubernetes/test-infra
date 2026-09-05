@@ -98,9 +98,6 @@ periodics:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "ipv6"
@@ -181,9 +178,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-staging-test-infra/krte:v20260831-6ed6668adc-master
       env:
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "ipv6"
