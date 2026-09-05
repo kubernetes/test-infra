@@ -77,4 +77,73 @@ describe('Clusters', () => {
         expect('sorts results by build count', [ham, spam], [spam, ham], {ci: true, sort: 'total'});
         expect('sorts results by message', [first, ham, spam], [ham, spam, first], {ci: true, sort: 'message'});
     });
+
+    describe('refilter by date range', () => {
+        // Timestamp (in seconds) for a local-timezone date, matching dateToTs in model.js.
+        function ts(y, m, d, h, min, s) {
+            return new Date(y, m - 1, d, h || 0, min || 0, s || 0).getTime() / 1000;
+        }
+
+        let savedBuilds;
+        before(function() {
+            savedBuilds = builds;
+            builds = new model.Builds({
+                jobs: {
+                    'early-job': {1: 0, 2: 1},
+                    'late-job': {1: 2, 2: 3},
+                },
+                cols: {
+                    started: [
+                        ts(2026, 7, 10, 12),          // early-job build 1
+                        ts(2026, 7, 14, 23, 59, 59),  // early-job build 2
+                        ts(2026, 7, 15),              // late-job build 1
+                        ts(2026, 7, 20, 12),          // late-job build 2
+                    ],
+                    pr: ['', '', '', ''],
+                },
+                job_paths: {},
+            });
+        });
+        after(function() {
+            builds = savedBuilds;
+        });
+
+        function expect(name, expected, clustered, opts) {
+            it(name, function() {
+                var c = new model.Clusters(clustered);
+                assert.deepEqual(c.refilter(opts).data, expected);
+            });
+        }
+
+        let mixed = {text: 'mixed', key: 'mixed', id: 'abcd', tests: [
+            {name: 'timing', jobs: [
+                {name: 'early-job', builds: [1, 2]},
+                {name: 'late-job', builds: [1, 2]},
+            ]},
+        ]};
+
+        expect('keeps builds started at or after mindate', [
+            {text: 'mixed', key: 'mixed', id: 'abcd', tests: [
+                {name: 'timing', jobs: [{name: 'late-job', builds: [1, 2]}]},
+            ]},
+        ], [mixed], {ci: true, minDate: '2026-07-15'});
+        expect('keeps builds started during the whole maxdate day', [
+            {text: 'mixed', key: 'mixed', id: 'abcd', tests: [
+                {name: 'timing', jobs: [{name: 'early-job', builds: [1, 2]}]},
+            ]},
+        ], [mixed], {ci: true, maxDate: '2026-07-14'});
+        expect('combines mindate and maxdate', [
+            {text: 'mixed', key: 'mixed', id: 'abcd', tests: [
+                {name: 'timing', jobs: [{name: 'late-job', builds: [1]}]},
+            ]},
+        ], [mixed], {ci: true, minDate: '2026-07-15', maxDate: '2026-07-15'});
+        expect('drops clusters with no builds in range', [], [mixed], {ci: true, minDate: '2026-08-01'});
+
+        it('does not modify the original cluster data', function() {
+            var c = new model.Clusters([mixed]);
+            c.refilter({ci: true, minDate: '2026-07-15'});
+            assert.deepEqual(mixed.tests[0].jobs[0].builds, [1, 2]);
+            assert.deepEqual(mixed.tests[0].jobs[1].builds, [1, 2]);
+        });
+    });
 });
