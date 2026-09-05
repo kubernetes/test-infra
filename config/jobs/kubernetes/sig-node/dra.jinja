@@ -323,10 +323,10 @@ presubmits:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: {{node_package_memory}}
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: {{node_package_memory}}
           {%- else %}
           limits:
             cpu: 2
