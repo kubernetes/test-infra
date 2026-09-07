@@ -654,6 +654,76 @@ periodics:
           cpu: 3
           memory: "8Gi"
 
+- interval: 4h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-benchmark-etcd-write-throughput
+  tags:
+    - "perfDashPrefix: benchmark etcd write throughput"
+    - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: gce-benchmark-etcd-write-throughput
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=benchmark-etcd-write-throughput
+      - --extract=ci/latest
+      - --gcp-master-size=n2-standard-32
+      - --gcp-node-size=e2-standard-32
+      - --gcp-node-image=gci
+      - --gcp-nodes=3
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --metadata-sources=cl2-metadata.json
+      - --env=KUBE_GCE_PRIVATE_CLUSTER=false
+      - --env=CL2_ETCD_REPLICAS=3
+      - --env=CL2_ETCD_WRITER_REPLICAS=10
+      - --env=CL2_ETCD_WRITER_QPS=100
+      - --env=CL2_ETCD_BENCHMARK_DURATION=15m
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=3
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--enable-prometheus-server=true
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
+      - --test-cmd-args=--testconfig=testing/etcd/config.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=60m
+      - --use-logexporter
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+      resources:
+        requests:
+          cpu: 3
+          memory: "8Gi"
+        limits:
+          cpu: 3
+          memory: "8Gi"
+
+
 # Exploratory tests for resource size limit as proposed in https://github.com/kubernetes/kubernetes/issues/134375
 - cron: '1 5 * * 2,6' # Run twice a week at 21:01 PST (05:01 UTC)
   name: ci-kubernetes-e2e-gce-scale-performance-5000-experimental
