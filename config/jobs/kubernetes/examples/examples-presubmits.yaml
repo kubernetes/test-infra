@@ -14,7 +14,7 @@ presubmits:
       timeout: 30m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260907-7013e6a654-master
         command:
         - wrapper.sh
         - bash
