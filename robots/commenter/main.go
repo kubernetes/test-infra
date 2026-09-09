@@ -75,10 +75,12 @@ func flagOptions() options {
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
 	flag.BoolVar(&o.useTemplate, "template", false, templateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
-	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
-	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API Endpoint")
-	flag.StringVar(&o.token, "token", "", "Path to github token")
+	flag.Var(&o.endpoint, "endpoint", "Deprecated: prefer --github-endpoint. GitHub's API endpoint.")
+	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "Deprecated: prefer --github-graphql-endpoint. GitHub's GraphQL API endpoint.")
+	flag.StringVar(&o.token, "token", "", "Deprecated: prefer --github-token-path or --github-app-id/--github-app-private-key-path. Path to github token.")
 	flag.BoolVar(&o.random, "random", false, "Choose random issues to comment on from the query")
+
+	o.ghOpts.AddFlags(flag.CommandLine)
 	flag.Parse()
 	return o
 }
@@ -104,6 +106,10 @@ type options struct {
 	updated         time.Duration
 	confirm         bool
 	random          bool
+
+	// ghOpts enables GitHub App auth (and the standard --github-* flags)
+	// alongside the legacy --token flow. Either --token OR the ghOpts can be set, not both.
+	ghOpts flagutil.GitHubOptions
 }
 
 func parseHTMLURL(url string) (string, string, int, error) {
@@ -174,33 +180,52 @@ func main() {
 	if o.query == "" {
 		log.Fatal("empty --query")
 	}
-	if o.token == "" {
-		log.Fatal("empty --token")
-	}
 	if o.comment == "" {
 		log.Fatal("empty --comment")
 	}
 
-	if err := secret.Add(o.token); err != nil {
-		log.Fatalf("Error starting secrets agent: %v", err)
+	// Detect whether the caller uses GitHubOptions path by
+	// setting any --github-* auth flag. If not, and --token is also unset,
+	// there is no credential to use.
+	useGHOpts := o.ghOpts.TokenPath != "" || o.ghOpts.AppID != "" || o.ghOpts.AppPrivateKeyPath != ""
+	if o.token == "" && !useGHOpts {
+		log.Fatal("no GitHub credentials: set --token, --github-token-path, or --github-app-id/--github-app-private-key-path")
+	}
+	if o.token != "" && useGHOpts {
+		log.Fatal("either use --token OR --github-token-path / --github-app-* flags, not both at the same time")
 	}
 
-	var err error
-	for _, ep := range o.endpoint.Strings() {
-		_, err = url.ParseRequestURI(ep)
-		if err != nil {
-			log.Fatalf("Invalid --endpoint URL %q: %v.", ep, err)
+	var (
+		c   client
+		err error
+	)
+	if useGHOpts {
+		if err := o.ghOpts.Validate(!o.confirm); err != nil {
+			log.Fatalf("Invalid --github-* flags: %v", err)
 		}
-	}
-
-	var c client
-	if o.confirm {
-		c, err = github.NewClient(secret.GetTokenGenerator(o.token), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		c, err = o.ghOpts.GitHubClient(!o.confirm)
+		if err != nil {
+			log.Fatalf("Failed to construct GitHub client: %v", err)
+		}
 	} else {
-		c, err = github.NewDryRunClient(secret.GetTokenGenerator(o.token), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
-	}
-	if err != nil {
-		log.Fatalf("Failed to construct GitHub client: %v", err)
+		if err := secret.Add(o.token); err != nil {
+			log.Fatalf("Error starting secrets agent: %v", err)
+		}
+
+		for _, ep := range o.endpoint.Strings() {
+			if _, err := url.ParseRequestURI(ep); err != nil {
+				log.Fatalf("Invalid --endpoint URL %q: %v.", ep, err)
+			}
+		}
+
+		if o.confirm {
+			c, err = github.NewClient(secret.GetTokenGenerator(o.token), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		} else {
+			c, err = github.NewDryRunClient(secret.GetTokenGenerator(o.token), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		}
+		if err != nil {
+			log.Fatalf("Failed to construct GitHub client: %v", err)
+		}
 	}
 
 	query, err := makeQuery(o.query, o.includeArchived, o.includeClosed, o.includeLocked, o.updated)
