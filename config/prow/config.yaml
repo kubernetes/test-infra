@@ -883,6 +883,7 @@ tide:
     kubernetes-sigs/kro: rebase
     kubernetes-sigs/kube-agentic-networking: squash
     kubernetes-sigs/kube-agents: squash
+    kubernetes-sigs/kubernetes-mixin: squash
     kubernetes-sigs/kubespray: squash
     kubernetes-sigs/kueue: squash
     kubernetes-sigs/lws: squash
