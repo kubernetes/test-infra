@@ -1176,6 +1176,17 @@ require_matching_label:
   issues: true
   prs: true
   regexp: ^priority/
+- missing_label: needs-ail
+  org: kubernetes-sigs
+  repo: gateway-api
+  issues: true
+  prs: true
+  regexp: ^ail/[0-5]$
+  missing_comment: |
+    Gateway API requires that contributors are explicit about AI usage
+
+    Please define your AI usage level for this Pull Request, following the guidelines on AI-POLICY.md
+    and setting the proper AI level usage with the command `/label ail/<level>` (from 0 to 5)
 - missing_label: needs-triage
   org: kubernetes-sigs
   repo: metrics-server
