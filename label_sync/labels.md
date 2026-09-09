@@ -376,6 +376,12 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
+| <a id="ail/0" href="#ail/0">`ail/0`</a> | Categorizes a PR as having AI Influence Level 0 (human created, no AI)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="ail/1" href="#ail/1">`ail/1`</a> | Categorizes a PR as having AI Influence Level 1 (minor AI assistance)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="ail/2" href="#ail/2">`ail/2`</a> | Categorizes a PR as having AI Influence Level 2 (major AI augmentation)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="ail/3" href="#ail/3">`ail/3`</a> | Categorizes a PR as having AI Influence Level 3 (AI created, human structure)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="ail/4" href="#ail/4">`ail/4`</a> | Categorizes a PR as having AI Influence Level 4 (AI created, human basic idea)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="ail/5" href="#ail/5">`ail/5`</a> | Categorizes a PR as having AI Influence Level 5 (minimal human involvement)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="kind/gep" href="#kind/gep">`kind/gep`</a> | PRs related to Gateway Enhancement Proposal(GEP)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 
 ## Labels that apply to kubernetes-sigs/kind, for both issues and PRs
