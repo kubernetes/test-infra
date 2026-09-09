@@ -284,3 +284,32 @@ presubmits:
     annotations:
       testgrid-dashboards: provider-openstack-keystone-authentication-authorization
       testgrid-tab-name: presubmit-e2e-test
+
+  - name: openstack-cloud-helm-chart-lint
+    cluster: eks-prow-build-cluster
+    always_run: false
+    branches:
+      - ^master$
+      - ^release-1\.3[4-9]$
+      - ^release-1\.[4-9]\d$
+    run_if_changed: '^(charts\/|tests\/helm\/)'
+    decorate: true
+    path_alias: "k8s.io/cloud-provider-openstack"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260907-7013e6a654-master
+        command:
+        - make
+        args:
+        - lint-charts
+        resources:
+          limits:
+            cpu: 1
+            memory: 2Gi
+          requests:
+            cpu: 1
+            memory: 2Gi
+    annotations:
+      testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
+      testgrid-tab-name: presubmit-helm-chart-lint
+      description: Lint and unit test Helm charts for cloud-provider-openstack
