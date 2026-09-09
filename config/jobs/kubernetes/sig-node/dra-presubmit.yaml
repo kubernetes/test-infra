@@ -187,7 +187,7 @@ presubmits:
         # Normally control plane components are linked statically, which does not work with -race (needs CGO).
         # We need to override the default for components of interest.
         - name: KUBE_CGO_OVERRIDES
-          value: kube-apiserver kube-controller-manager kube-scheduler
+          value: kube-apiserver kube-controller-manager kube-scheduler kubelet
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -293,7 +293,7 @@ presubmits:
         # Normally control plane components are linked statically, which does not work with -race (needs CGO).
         # We need to override the default for components of interest.
         - name: KUBE_CGO_OVERRIDES
-          value: kube-apiserver kube-controller-manager kube-scheduler
+          value: kube-apiserver kube-controller-manager kube-scheduler kubelet
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
