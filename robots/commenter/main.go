@@ -78,6 +78,7 @@ func flagOptions() options {
 	flag.Var(&o.endpoint, "endpoint", "Deprecated: prefer --github-endpoint. GitHub's API endpoint.")
 	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "Deprecated: prefer --github-graphql-endpoint. GitHub's GraphQL API endpoint.")
 	flag.StringVar(&o.token, "token", "", "Deprecated: prefer --github-token-path or --github-app-id/--github-app-private-key-path. Path to github token.")
+	flag.StringVar(&o.githubOrg, "github-org", "", "GitHub org for search-API routing. Required when --github-app-id is used, ignored when using --token / --github-token-path.")
 	flag.BoolVar(&o.random, "random", false, "Choose random issues to comment on from the query")
 
 	o.ghOpts.AddFlags(flag.CommandLine)
@@ -103,6 +104,7 @@ type options struct {
 	endpoint        flagutil.Strings
 	graphqlEndpoint string
 	token           string
+	githubOrg       string
 	updated         time.Duration
 	confirm         bool
 	random          bool
@@ -163,7 +165,7 @@ func makeQuery(query string, includeArchived, includeClosed, includeLocked bool,
 
 type client interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 }
 
@@ -200,6 +202,11 @@ func main() {
 		err error
 	)
 	if useGHOpts {
+		if o.ghOpts.AppID != "" || o.ghOpts.AppPrivateKeyPath != "" {
+			if o.githubOrg == "" {
+				log.Fatal("--github-org is required when authenticating as a GitHub App")
+			}
+		}
 		if err := o.ghOpts.Validate(!o.confirm); err != nil {
 			log.Fatalf("Invalid --github-* flags: %v", err)
 		}
@@ -239,7 +246,7 @@ func main() {
 		asc = true
 	}
 	commenter := makeCommenter(o.comment, o.useTemplate)
-	if err := run(c, query, sort, asc, o.random, commenter, o.ceiling); err != nil {
+	if err := run(c, o.githubOrg, query, sort, asc, o.random, commenter, o.ceiling); err != nil {
 		log.Fatalf("Failed run: %v", err)
 	}
 }
@@ -258,9 +265,11 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 	}
 }
 
-func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
+func run(c client, org, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
 	log.Printf("Searching: %s", query)
-	issues, err := c.FindIssues(query, sort, asc)
+	// org="" preserves FindIssues(WithoutOrg) behavior. When using GitHub Apps
+	// org is required so the search hits the correct installation.
+	issues, err := c.FindIssuesWithOrg(org, query, sort, asc)
 	if err != nil {
 		return fmt.Errorf("search failed: %w", err)
 	}

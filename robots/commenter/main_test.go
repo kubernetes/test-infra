@@ -232,7 +232,7 @@ func (c *fakeClient) ListIssueComments(owner, repo string, number int) ([]github
 }
 
 // Fakes searching for issues, using the same signature as github.Client
-func (c *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+func (c *fakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error) {
 	if strings.Contains(query, "error") {
 		return nil, errors.New(query)
 	}
@@ -355,7 +355,7 @@ func TestRun(t *testing.T) {
 	for _, tc := range cases {
 		ignoreSorting := ""
 		ignoreOrder := false
-		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling)
+		err := run(&tc.client, "", tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling)
 		if tc.err && err == nil {
 			t.Errorf("%s: failed to received an error", tc.name)
 			continue
