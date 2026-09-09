@@ -184,6 +184,13 @@ label:
     - ci-short
     - ci-extended
     - ci-full
+    # These labels, for Gateway API, categorize AI Influence Levels
+    - ail/0
+    - ail/1
+    - ail/2
+    - ail/3
+    - ail/4
+    - ail/5
 
   restricted_labels:
     kubernetes/kubernetes:
