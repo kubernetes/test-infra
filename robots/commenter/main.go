@@ -109,8 +109,6 @@ type options struct {
 	confirm         bool
 	random          bool
 
-	// ghOpts enables GitHub App auth (and the standard --github-* flags)
-	// alongside the legacy --token flow. Either --token OR the ghOpts can be set, not both.
 	ghOpts flagutil.GitHubOptions
 }
 
@@ -169,6 +167,30 @@ type client interface {
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 }
 
+type authMode int
+
+const (
+	authLegacyToken authMode = iota
+	authGitHubOptions
+)
+
+func selectAuthMode(o options) (authMode, error) {
+	useGHOpts := o.ghOpts.TokenPath != "" || o.ghOpts.AppID != "" || o.ghOpts.AppPrivateKeyPath != ""
+	switch {
+	case o.token == "" && !useGHOpts:
+		return 0, errors.New("no GitHub credentials: set --token, --github-token-path, or --github-app-id/--github-app-private-key-path")
+	case o.token != "" && useGHOpts:
+		return 0, errors.New("--token is mutually exclusive with --github-token-path / --github-app-* flags")
+	case useGHOpts:
+		if (o.ghOpts.AppID != "" || o.ghOpts.AppPrivateKeyPath != "") && o.githubOrg == "" {
+			return 0, errors.New("--github-org is required when authenticating as a GitHub App")
+		}
+		return authGitHubOptions, nil
+	default:
+		return authLegacyToken, nil
+	}
+}
+
 // normalizeComment makes comment bodies comparable across GitHub round-trips,
 // which can differ in line endings and surrounding whitespace.
 func normalizeComment(s string) string {
@@ -186,27 +208,14 @@ func main() {
 		log.Fatal("empty --comment")
 	}
 
-	// Detect whether the caller uses GitHubOptions path by
-	// setting any --github-* auth flag. If not, and --token is also unset,
-	// there is no credential to use.
-	useGHOpts := o.ghOpts.TokenPath != "" || o.ghOpts.AppID != "" || o.ghOpts.AppPrivateKeyPath != ""
-	if o.token == "" && !useGHOpts {
-		log.Fatal("no GitHub credentials: set --token, --github-token-path, or --github-app-id/--github-app-private-key-path")
-	}
-	if o.token != "" && useGHOpts {
-		log.Fatal("either use --token OR --github-token-path / --github-app-* flags, not both at the same time")
+	mode, err := selectAuthMode(o)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	var (
-		c   client
-		err error
-	)
-	if useGHOpts {
-		if o.ghOpts.AppID != "" || o.ghOpts.AppPrivateKeyPath != "" {
-			if o.githubOrg == "" {
-				log.Fatal("--github-org is required when authenticating as a GitHub App")
-			}
-		}
+	var c client
+	switch mode {
+	case authGitHubOptions:
 		if err := o.ghOpts.Validate(!o.confirm); err != nil {
 			log.Fatalf("Invalid --github-* flags: %v", err)
 		}
@@ -214,7 +223,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Failed to construct GitHub client: %v", err)
 		}
-	} else {
+	case authLegacyToken:
 		if err := secret.Add(o.token); err != nil {
 			log.Fatalf("Error starting secrets agent: %v", err)
 		}
@@ -267,8 +276,6 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 
 func run(c client, org, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
 	log.Printf("Searching: %s", query)
-	// org="" preserves FindIssues(WithoutOrg) behavior. When using GitHub Apps
-	// org is required so the search hits the correct installation.
 	issues, err := c.FindIssuesWithOrg(org, query, sort, asc)
 	if err != nil {
 		return fmt.Errorf("search failed: %w", err)
