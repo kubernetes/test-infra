@@ -736,6 +736,8 @@ tide:
     # repos with custom tide queries below
     - kubernetes-sigs/cloud-provider-azure
     - kubernetes-sigs/cluster-api
+    - kubernetes-sigs/gateway-api
+    - kubernetes-sigs/gateway-api-conformance-images
     - kubernetes/autoscaler
     labels:
     - lgtm
@@ -864,6 +866,23 @@ tide:
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
     - do-not-merge/needs-area
+  - repos:
+    - kubernetes-sigs/gateway-api
+    - kubernetes-sigs/gateway-api-conformance-images
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-ail
   merge_method:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
