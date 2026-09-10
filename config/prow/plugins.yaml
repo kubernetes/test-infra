@@ -1185,7 +1185,6 @@ require_matching_label:
 - missing_label: needs-ail
   org: kubernetes-sigs
   repo: gateway-api
-  issues: true
   prs: true
   regexp: ^ail/[0-5]$
   missing_comment: |
@@ -1732,6 +1731,7 @@ plugins:
     - milestonestatus
     - override
     - release-note
+    - require-matching-label
   
   kubernetes-sigs/gateway-api-conformance-images:
     plugins:

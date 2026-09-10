@@ -2520,6 +2520,12 @@ repos:
         prowPlugin: label
         target: prs
         addedBy: anyone
+      - color: ededed
+        description: Indicates a PR lacks an `ail/0-5` label and requires one.
+        name: needs-ail
+        target: prs
+        prowPlugin: require-matching-label
+        addedBy: prow
   kubernetes-sigs/kind:
     labels:
       - color: 19abff
