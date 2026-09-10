@@ -843,6 +843,7 @@ presubmits:
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
         - --env=CL2_LIST_CONFIG_MAP_BYTES=100000
         - --env=CL2_LIST_CONFIG_MAP_NUMBER=10000
+        - --env=CL2_LIST_POD_NUMBER=10000
         - --env=CL2_LIST_BENCHMARK_PODS=10
         - --env=CL2_LIST_BENCHMARK_CONTENT_TYPE=proto
         - --test=false
@@ -910,6 +911,7 @@ presubmits:
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
         - --env=CL2_LIST_CONFIG_MAP_BYTES=100000
         - --env=CL2_LIST_CONFIG_MAP_NUMBER=10000
+        - --env=CL2_LIST_POD_NUMBER=10000
         - --env=CL2_LIST_BENCHMARK_PODS=10
         - --env=CL2_LIST_BENCHMARK_CONTENT_TYPE=proto
         - --env=CL2_LIST_BENCHMARK_MODE=informer
