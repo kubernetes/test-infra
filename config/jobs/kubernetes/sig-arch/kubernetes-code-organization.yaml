@@ -277,6 +277,49 @@ periodics:
           cpu: 7
           memory: 16Gi
 
+- interval: 24h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-dependencies-unwanted
+  annotations:
+    testgrid-dashboards: sig-arch-code-organization
+    testgrid-tab-name: unwanted-dependencies
+    description: Updates dependencies to latest versions and reports which unwanted modules that would pull in, and where each came from
+    testgrid-alert-email: davanum@gmail.com
+    testgrid-num-columns-recent: '6'
+    # the check is deterministic, so a single red is worth an email
+    testgrid-num-failures-to-alert: '1'
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    # this only updates and inspects dependencies, it runs no tests
+    securityContext:
+      runAsUser: 2001
+      runAsGroup: 2010
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
+      securityContext:
+        allowPrivilegeEscalation: false
+      command:
+      - runner.sh
+      - ./../test-infra/experiment/dependencies/check-unwanted-dependencies.sh
+      resources:
+        limits:
+          cpu: 4
+          memory: 12Gi
+        requests:
+          cpu: 4
+          memory: 12Gi
+
 - interval: 4h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-golang-tip
