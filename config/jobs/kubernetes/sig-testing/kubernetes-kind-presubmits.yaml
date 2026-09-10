@@ -71,7 +71,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e.sh && chmod u+x test-infra-e2e.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         - name: LABEL_FILTER
           value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
