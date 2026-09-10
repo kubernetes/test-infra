@@ -89,10 +89,11 @@ presubmits:
               - bash
               - -c
               - |
+                set -e
                 git clone --depth 1 https://github.com/kubernetes/k8s.io /tmp/base-branch
                 kind create cluster
                 helm repo add argo https://argoproj.github.io/argo-helm
-                helm upgrade --install argocd argo/argo-cd --version 10.1.2 --create-namespace --namespace argocd-diff-preview \
+                helm upgrade --install argocd argo/argo-cd --version 10.8.4 --create-namespace --namespace argocd-diff-preview \
                   --set configs.cm."kustomize\.buildOptions"="--load-restrictor LoadRestrictionsNone --enable-alpha-plugins"
                 kubectl apply -n argocd-diff-preview -f kubernetes/gke-utility/argocd/clusters.yaml || true # ignore errors from missing ES
                 kubectl apply -n argocd-diff-preview -f kubernetes/gke-utility/argocd/clusters-diff.yaml # ES based clusters
@@ -106,8 +107,9 @@ presubmits:
                   -v $(ARTIFACTS):/output \
                   -e TARGET_BRANCH=$PULL_PULL_SHA \
                   -e REPO=$REPO_OWNER/$REPO_NAME \
-                  dagandersen/argocd-diff-preview:v0.2.11 \
+                  dagandersen/argocd-diff-preview:v0.2.14 \
                   --argocd-namespace=argocd-diff-preview \
+                  --timeout=240 \
                   --create-cluster=false
 
                 echo "Successfully generated argocd diff preview at https://storage.googleapis.com/kubernetes-ci-logs/pr-logs/pull/k8s.io/$PULL_NUMBER/pull-k8sio-argocd-diff/$BUILD_ID/artifacts/diff.html"
@@ -115,8 +117,8 @@ presubmits:
               privileged: true
             resources:
               limits:
-                cpu: 2
-                memory: 6Gi
+                cpu: 4
+                memory: 8Gi
               requests:
-                cpu: 2
-                memory: 6Gi
+                cpu: 4
+                memory: 8Gi
