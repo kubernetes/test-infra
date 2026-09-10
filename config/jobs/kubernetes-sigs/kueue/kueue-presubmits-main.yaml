@@ -1523,7 +1523,7 @@ presubmits:
               limits:
                 cpu: "3500m"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-dra-main
+    - name: pull-kueue-test-e2e-dra-baseline-main
       cluster: eks-prow-build-cluster
       branches:
         - ^main
@@ -1535,8 +1535,8 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-dra-main
-        description: "Run DRA end to end tests"
+        testgrid-tab-name: pull-kueue-test-e2e-dra-baseline-main
+        description: "Run DRA baseline end to end tests"
       labels:
         preset-dind-enabled: "true"
       spec:
@@ -1551,7 +1551,7 @@ presubmits:
             args:
               - make
               - kind-image-build
-              - test-e2e-dra
+              - test-e2e-dra-baseline
             # docker-in-docker needs privileged mode
             securityContext:
               privileged: true
@@ -1630,6 +1630,45 @@ presubmits:
               - make
               - kind-image-build
               - test-e2e-dra-counter
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "3300m"
+                memory: "10Gi"
+              limits:
+                cpu: "3300m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-dra-capacity-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-dra-capacity-main
+        description: "Run DRA consumable capacity end to end tests"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-dra-capacity
             # docker-in-docker needs privileged mode
             securityContext:
               privileged: true
