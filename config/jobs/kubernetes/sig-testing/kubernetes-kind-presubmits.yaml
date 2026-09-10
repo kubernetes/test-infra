@@ -24,10 +24,10 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -74,7 +74,7 @@ presubmits:
         - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
+          value: "Feature: isEmpty && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -113,10 +113,10 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -163,10 +163,10 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -210,13 +210,15 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         # disable non-GA APIs and features
         - name: FEATURE_GATES
           value: '{"AllAlpha":false,"AllBeta":false}'
         - name: RUNTIME_CONFIG
           value: '{"api/alpha":"false", "api/beta":"false"}'
+        - name: LABEL_FILTER
+          value: "Conformance && Feature: isEmpty && !Slow && !Disruptive && !Flaky"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -253,13 +255,15 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         # disable non-GA APIs and features
         - name: FEATURE_GATES
           value: '{"AllAlpha":false,"AllBeta":false}'
         - name: RUNTIME_CONFIG
           value: '{"api/alpha":"false", "api/beta":"false"}'
+        - name: LABEL_FILTER
+          value: "Conformance && Feature: isEmpty && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -308,14 +312,14 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         - name: FEATURE_GATES
           value: '{"AllBeta":true}'
         - name: RUNTIME_CONFIG
           value: '{"api/beta":"true", "api/ga":"true"}'
         - name: LABEL_FILTER
-          value: "Feature: isSubsetOf OffByDefault && !Alpha && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isSubsetOf OffByDefault && !Alpha && !Deprecated && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -356,7 +360,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         - name: FEATURE_GATES
           value: '{"AllBeta":true}'
@@ -367,7 +371,7 @@ presubmits:
         - name: SKIP
           value: ""
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Deprecated && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -407,7 +411,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         - name: FEATURE_GATES
           value: '{"AllBeta":true}'
@@ -418,7 +422,7 @@ presubmits:
         - name: SKIP
           value: ""
         - name: LABEL_FILTER
-          value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Conformance && !Deprecated && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -458,7 +462,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
         - name: FEATURE_GATES
@@ -466,7 +470,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
         - name: LABEL_FILTER
-          value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -506,7 +510,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
         - name: FEATURE_GATES
@@ -518,7 +522,7 @@ presubmits:
         - name: SKIP
           value: ""
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isEmpty && !Deprecated && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -558,7 +562,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
         - name: FEATURE_GATES
@@ -570,7 +574,7 @@ presubmits:
         - name: SKIP
           value: ""
         - name: LABEL_FILTER
-          value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Conformance && !Deprecated && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -716,14 +720,14 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
         env:
         - name: FEATURE_GATES
           value: '{"EventedPLEG":true}'
         - name: RUNTIME_CONFIG
           value: '{"api/alpha":"true", "api/ga":"true"}'
         - name: LABEL_FILTER
-          value: "Feature: isSubsetOf EventedPLEG && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isSubsetOf EventedPLEG && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -771,7 +775,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ../test-infra/hack/ci/test-infra-e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky && !Serial"
+          value: "Feature: isEmpty && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
