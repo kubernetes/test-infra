@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- sig-cluster-lifecycle-leads
+- elmiko
+- maxcao13
+
+reviewers:
+- elmiko
+- maxcao13
