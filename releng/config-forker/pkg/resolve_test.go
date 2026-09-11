@@ -29,10 +29,10 @@ func TestParseImageRef(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name     string
-		image    string
-		wantOK   bool
-		wantRef  imageRef
+		name    string
+		image   string
+		wantOK  bool
+		wantRef imageRef
 	}{
 		{
 			name:   "standard GCR image",

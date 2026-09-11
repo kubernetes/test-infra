@@ -157,7 +157,7 @@ function setElementVisibility(id, visible) {
 function rerender(maxCount) {
   if (!clusteredAll) return;
 
-  console.log('rerender!');
+  console.debug('rerender!');
 
   setElementVisibility('load-status', false);
   setElementVisibility('clusters', true);
