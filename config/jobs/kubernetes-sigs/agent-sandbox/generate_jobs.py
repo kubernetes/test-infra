@@ -134,6 +134,14 @@ def presubmit_benchmarks_kops_gcp_claims(job):
     set_run_if_changed(job, r"^extensions/|^cmd/|^controllers/|^internal/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp")  # pylint: disable=line-too-long
 
 
+def presubmit_verify_olm_bundle(job):
+    """Optional, and auto-runs only on PRs that can affect OLM bundle
+    generation -- olm/, k8s/, APIs, sandbox-router deploy manifests, or the
+    verify script itself; anything else can still trigger it with /test."""
+    optional_presubmit(job)
+    set_run_if_changed(job, r"^(olm/|k8s/|(extensions/)?api/|sandbox-router/deploy/|dev/(ci/presubmits|tools)/verify-olm-bundle)")  # pylint: disable=line-too-long
+
+
 def presubmit_test_e2e_scalability_kwok(job):
     optional_presubmit(job)
     for c in job["spec"]["containers"]:
@@ -157,6 +165,8 @@ PRESUBMIT_OVERRIDES = {
     # its credential requirements are sorted out.
     "test-skill-eval": manual_presubmit,
     "test-e2e-scalability-kwok": presubmit_test_e2e_scalability_kwok,
+    # OLM bundle verification is new; keep optional until it is stable.
+    "verify-olm-bundle": presubmit_verify_olm_bundle,
 }
 
 
@@ -212,6 +222,7 @@ PRESUBMIT_ORDER = [
     "test-e2e-scalability-kwok",
     "lint-olm",
     "test-olm-unit",
+    "verify-olm-bundle",
 ]
 PERIODIC_ORDER = [
     "test-load-test",
@@ -229,7 +240,6 @@ EXCLUDED_PRESUBMITS = {
     "test-langchain",
     "test-mcp-server-sandbox",
     "test-policy-vap",
-    "verify-olm-bundle",
 }
 
 
