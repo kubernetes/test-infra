@@ -34,8 +34,8 @@ class PathTest(unittest.TestCase):
     def test_org_repo(self):
         def check(path, org, repo):
             actual_org, actual_repo = view_pr.org_repo(path, 'kubernetes', 'kubernetes')
-            self.assertEquals(actual_org, org)
-            self.assertEquals(actual_repo, repo)
+            self.assertEqual(actual_org, org)
+            self.assertEqual(actual_repo, repo)
 
         check('', 'kubernetes', 'kubernetes')
         check('/test-infra', 'kubernetes', 'test-infra')
@@ -47,7 +47,7 @@ class PathTest(unittest.TestCase):
     def test_pr_path(self):
         def check(org, repo, pr, path):
             actual_path = view_pr.pr_path(org, repo, pr, 'kubernetes', 'kubernetes', 'pull_prefix')
-            self.assertEquals(actual_path, '%s/%s' % ('pull_prefix', path))
+            self.assertEqual(actual_path, '%s/%s' % ('pull_prefix', path))
 
         check('kubernetes', 'kubernetes', 1234, 1234)
         check('kubernetes', 'kubernetes', 'batch', 'batch')
