@@ -23,9 +23,6 @@ presubmits:
         env:
         - name: PARALLEL
           value: "true"
-        # enable IPV6 in bootstrap image
-        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-          value: "true"
         # tell kind CI script to use DualStack
         - name: "IP_FAMILY"
           value: "dual"
@@ -191,9 +188,6 @@ presubmits:
           - -c
           - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
-        # enable IPV6 in bootstrap image
-        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-          value: "true"
         # tell kind CI script to use ipv6
         - name: "IP_FAMILY"
           value: "ipv6"
@@ -390,9 +384,6 @@ periodics:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "ipv6"
@@ -442,9 +433,6 @@ periodics:
       env:
       - name: BUILD_TYPE
         value: docker
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "dual"
@@ -590,9 +578,6 @@ periodics:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "ipv6"
@@ -645,9 +630,6 @@ periodics:
       env:
       - name: BUILD_TYPE
         value: docker
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
       - name: "IP_FAMILY"
         value: "dual"
       - name: KUBE_PROXY_MODE
@@ -737,9 +719,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-staging-test-infra/krte:v20260907-7013e6a654-master
       env:
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "ipv6"
