@@ -129,6 +129,21 @@ def version_info(module, version):
     return get_json("%s/%s/@v/%s.info" % (PROXY, module.lower(), version)) or {}
 
 
+def gomod_lines_added(module, old_version, new_version, target):
+    """Require lines naming target that new_version has and old_version does not.
+
+    Read from the proxy rather than a GitHub compare, which truncates at 250
+    commits and 300 files and so can miss go.mod entirely on a busy release.
+    """
+    before = get("%s/%s/@v/%s.mod" % (PROXY, module.lower(), old_version)) or ""
+    after = get("%s/%s/@v/%s.mod" % (PROXY, module.lower(), new_version)) or ""
+    previous = {line.strip() for line in before.splitlines()}
+    return [
+        line.strip() for line in after.splitlines()
+        if target in line and line.strip() not in previous
+    ]
+
+
 def find_introducing_version(dependant, unwanted, old_version, new_version):
     """First release of dependant, after old_version, whose go.mod requires unwanted."""
     all_versions = module_versions(dependant)
@@ -168,9 +183,9 @@ def github_repo(origin_url):
     return "%s/%s" % (match.group(1), match.group(2)) if match else None
 
 
-def github_attribution(repo, base, head, unwanted, since=None):
-    """go.mod line added, plus commits that touched go.mod. `since` bounds the
-    list to the release range instead of whatever is most recent."""
+def github_attribution(repo, base, head, since=None):
+    """Commits that touched go.mod. `since` bounds the list to the release
+    range instead of whatever is most recent."""
     out = {}
     if not repo:
         return out
@@ -178,12 +193,6 @@ def github_attribution(repo, base, head, unwanted, since=None):
     compare = get_json("%s/repos/%s/compare/%s...%s" % (GITHUB_API, repo, base, head))
     if compare:
         out["commits_in_range"] = len(compare.get("commits") or [])
-        for changed in compare.get("files") or []:
-            if changed.get("filename") == "go.mod":
-                for line in (changed.get("patch") or "").splitlines():
-                    if line.startswith("+") and unwanted in line:
-                        out["gomod_line_added"] = line.lstrip("+").strip()
-                break
 
     url = "%s/repos/%s/commits?path=go.mod&sha=%s&per_page=10" % (GITHUB_API, repo, head)
     if since:
@@ -199,6 +208,24 @@ def github_attribution(repo, base, head, unwanted, since=None):
             for c in commits[:10]
         ]
     return out
+
+
+def find_culprit(repo, commits, unwanted):
+    """The commit whose own go.mod patch adds unwanted, or None.
+
+    Only a commit we actually checked is named. A release can gain a require
+    line without any single commit adding it, when it arrives through another
+    module's bump, and guessing there produces confident nonsense.
+    """
+    for commit in commits or []:
+        detail = get_json("%s/repos/%s/commits/%s" % (GITHUB_API, repo, commit["sha"]))
+        for changed in (detail or {}).get("files") or []:
+            if changed.get("filename") != "go.mod":
+                continue
+            for line in (changed.get("patch") or "").splitlines():
+                if line.startswith("+") and unwanted in line:
+                    return commit
+    return None
 
 
 def attribute(dependant, unwanted, old_version, new_version):
@@ -231,7 +258,11 @@ def attribute(dependant, unwanted, old_version, new_version):
         if prior:
             record["compared_from"] = prior
             since = version_info(dependant, prior).get("Time")
-            record.update(github_attribution(repo, prior, introduced, unwanted, since))
+            record.update(github_attribution(repo, prior, introduced, since))
+            added = gomod_lines_added(dependant, prior, introduced, unwanted)
+            if added:
+                record["gomod_line_added"] = added[0]
+            record["culprit"] = find_culprit(repo, record.get("gomod_commits"), unwanted)
     return record
 
 
@@ -299,18 +330,21 @@ def render_text(records):
             continue
         commits = first.get("gomod_commits") or []
         added = [r for r in group if r.get("gomod_line_added")]
-        if added and commits:
-            out.append("    likely cause: %s %s" % (commits[0]["sha"], commits[0]["subject"]))
-            out.append("                  (adds the require lines directly; %d of %s commits "
-                       "in the release touched go.mod)"
+        culprit = first.get("culprit")
+        if culprit:
+            out.append("    cause:        %s %s" % (culprit["sha"], culprit["subject"]))
+            out.append("                  (verified: its own go.mod patch adds the line)")
+        elif added:
+            out.append("    cause:        unclear. the release adds the require line, but no "
+                       "commit in range")
+            out.append("                  adds it, so it arrived through another bump. "
+                       "%d of %s commits touched go.mod."
                        % (len(commits), first.get("commits_in_range", "?")))
         elif commits:
-            out.append("    likely cause: unclear, arrived transitively. %d commits touched "
-                       "go.mod, none add it directly." % len(commits))
-            out.append("                  closest candidate: %s %s"
-                       % (commits[0]["sha"], commits[0]["subject"]))
+            out.append("    cause:        unclear. %d commits touched go.mod, none add it."
+                       % len(commits))
         else:
-            out.append("    likely cause: no commit detail available for this repo")
+            out.append("    cause:        no commit detail available for this repo")
         if first.get("repo_url"):
             out.append("    upstream:     %s" % first["repo_url"])
         out.append("")
