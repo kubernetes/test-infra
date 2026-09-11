@@ -32,10 +32,10 @@ presubmits:
               - test
             resources:
               requests:
-                cpu: "4000m"
+                cpu: "3400m"
                 memory: "6Gi"
               limits:
-                cpu: "4000m"
+                cpu: "3400m"
                 memory: "6Gi"
     - name: pull-kueue-test-unit-shard-1-main
       cluster: eks-prow-build-cluster
@@ -58,7 +58,7 @@ presubmits:
               - name: GO_TEST_FLAGS
                 value: "-race -count 3"
               - name: GOMAXPROCS
-                value: "2"
+                value: "4"
               - name: UNIT_SHARD_INDEX
                 value: "1"
               - name: UNIT_TOTAL_SHARDS
@@ -69,10 +69,10 @@ presubmits:
               - test
             resources:
               requests:
-                cpu: "1800m"
+                cpu: "3400m"
                 memory: "6Gi"
               limits:
-                cpu: "1800m"
+                cpu: "3400m"
                 memory: "6Gi"
     - name: pull-kueue-test-fuzz-main
       cluster: eks-prow-build-cluster

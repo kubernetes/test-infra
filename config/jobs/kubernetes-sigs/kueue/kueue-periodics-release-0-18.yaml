@@ -39,10 +39,10 @@ periodics:
             - test
           resources:
             requests:
-              cpu: "4000m"
+              cpu: "3400m"
               memory: "6Gi"
             limits:
-              cpu: "4000m"
+              cpu: "3400m"
               memory: "6Gi"
   - interval: 12h
     name: periodic-kueue-test-unit-shard-1-release-0-18
@@ -73,7 +73,7 @@ periodics:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
             - name: GOMAXPROCS
-              value: "2"
+              value: "4"
             - name: UNIT_SHARD_INDEX
               value: "1"
             - name: UNIT_TOTAL_SHARDS
@@ -84,10 +84,10 @@ periodics:
             - test
           resources:
             requests:
-              cpu: "1800m"
+              cpu: "3400m"
               memory: "6Gi"
             limits:
-              cpu: "1800m"
+              cpu: "3400m"
               memory: "6Gi"
   - interval: 12h
     name: periodic-kueue-test-integration-shard-0-release-0-18
