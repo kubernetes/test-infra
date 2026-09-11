@@ -408,6 +408,8 @@ presets:
   env:
   - name: KUBE_NODE_COUNT
     value: "5000"
+  - name: CONTROL_PLANE_COUNT
+    value: "3"
   - name: CONTROL_PLANE_SIZE
     value: "c4-standard-96"
   - name: ADDONS_NODE_SIZE
@@ -427,8 +429,4 @@ presets:
 
 - labels:
     preset-kops-scalability-gce-experimental: "true"
-  env:
-  - name: EXPERIMENT_VARIANT
-    value: "HA"
-  - name: CONTROL_PLANE_COUNT
-    value: "3"
+  env: []

@@ -58,14 +58,17 @@ a run on TestGrid corresponds to.
 
 ### Promoting experimental -> release-blocking
 
+Edit the presets in `sig-scalability-presets.yaml`, not a job's own `env:`, so the
+jobs don't drift apart.
+
 1. Check with SIG Scalability on Slack first, to make sure the experiment slot
    isn't already in use by another contributor.
-2. Update the experiment behind `EXPERIMENT_VARIANT` on the experimental periodic
-   and presubmit, keeping the two in sync.
+2. Put the experiment, behind `EXPERIMENT_VARIANT`, in
+   `preset-kops-scalability-gce-experimental`.
 3. **Graduation bar:** once the experiment has 4 passing runs in a row, it is
    considered stable enough to graduate.
-4. Fold the variant's settings into the release-blocking job
-   `ci-kubernetes-e2e-gce-scale-performance-5000` and drop the variant.
+4. Move the settings to `preset-kops-scalability-gce-5000-node`, shared by all gce
+   5k jobs, and reset the experimental preset to `env: []`.
 
 ### Experiment history
 
@@ -74,7 +77,7 @@ track. Add new entries at the top.
 
 | Variant | Date | What it does | Owner | Status |
 | --- | --- | --- | --- | --- |
-| `HA` | 2026-08-03 | 3-replica control plane (`CONTROL_PLANE_COUNT=3`) on the 5k job, which today runs a single control plane. | @Jefftree | In Progress |
+| `HA` | 2026-08-03 | 3-replica control plane (`CONTROL_PLANE_COUNT=3`) on the 5k job, which previously ran a single control plane. | @Jefftree | Graduated |
 | `node-exporter` | 2026-07-24 | Scraping node exporter (`PROMETHEUS_SCRAPE_NODE_EXPORTER=true`) for per-node resource metrics. | @serathius | Graduated |
 | `restart-etcd36` | 2026-07-10 | RangeStream (`+EtcdRangeStream`) with HA control plane restart, on etcd 3.6.12, to gather data on RangeStream against etcd 3.6. Presubmit only. | @Jefftree | Completed |
 | `restart` | 2026-06-29 | HA control plane with restart, for tracking improvements with watch cache initialization. |  @Jefftree | In Progress |
