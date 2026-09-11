@@ -217,3 +217,35 @@ presubmits:
             limits:
               cpu: "1"
               memory: 2Gi
+  - name: pull-test-infra-krte-cgroup-snapshot
+    cluster: k8s-infra-prow-build
+    decorate: true
+    optional: true
+    run_if_changed: '^experiment/krte-cgroup-contract/'
+    decoration_config:
+      timeout: 30m
+      grace_period: 2m
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260824-a5e45c393a-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./experiment/krte-cgroup-contract && ./verify.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "2"
+            memory: 4Gi
+          limits:
+            cpu: "2"
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: krte-cgroup-snapshot
+      description: one-shot KRTE outer/dockerd/Docker-child/kind cgroup topology snapshot for kubernetes/test-infra#37775
