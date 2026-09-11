@@ -198,7 +198,11 @@ ARG KUBETEST2_VERSION
 RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
     wget -q https://storage.googleapis.com/k8s-staging-kubetest2/latest/linux-${TARGETARCH}.tgz && \
     tar xzf linux-${TARGETARCH}.tgz -C "$GOPATH/bin" && \
-    rm linux-${TARGETARCH}.tgz; \
+    rm linux-${TARGETARCH}.tgz && \
+    wget -q -P "$GOPATH/bin" https://storage.googleapis.com/k8s-staging-kops/kops/releases/kubetest2/linux/${TARGETARCH}/kubetest2-kops && \
+    wget -q -P "$GOPATH/bin" https://storage.googleapis.com/k8s-staging-kops/kops/releases/kubetest2/linux/${TARGETARCH}/kubetest2-tester-kops && \
+    chmod +x "$GOPATH/bin/kubetest2-kops" && \
+    chmod +x "$GOPATH/bin/kubetest2-tester-kops"; \
     fi
 
 # note the runner is also responsible for making docker in docker function if
