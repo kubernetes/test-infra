@@ -397,6 +397,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-metal-telco-x86-regulus-jetlag
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-metal-telco-x86-regulus-jetlag
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-microshift-release-4.22-periodics-e2e-aws-ovn-ocp-conformance
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -3907,14 +3934,41 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial
+    name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial-1of2
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial
+    test_group_name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial-1of2
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial-2of2
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial-2of2
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -4177,60 +4231,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-service-mesh-sail-operator-lpinterop-3.4-ocp-4.22-lp-interop-cr-servicemesh-aws
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-service-mesh-sail-operator-lpinterop-3.4-ocp-4.22-lp-interop-cr-servicemesh-aws
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-service-mesh-sail-operator-lpinterop-3.4-ocp-4.22-lp-interop-servicemesh-aws-fips
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-service-mesh-sail-operator-lpinterop-3.4-ocp-4.22-lp-interop-servicemesh-aws-fips
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--422
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -4323,6 +4323,8 @@ test_groups:
   name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-4.22-nightly-node-density-heavy-nutanix-24nodes
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.22-nightly-x86-olmv1-benchmark-test
   name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.22-nightly-x86-olmv1-benchmark-test
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-metal-telco-x86-regulus-jetlag
+  name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-metal-telco-x86-regulus-jetlag
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-microshift-release-4.22-periodics-e2e-aws-ovn-ocp-conformance
   name: periodic-ci-openshift-microshift-release-4.22-periodics-e2e-aws-ovn-ocp-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-microshift-release-4.22-periodics-e2e-aws-ovn-ocp-conformance-serial
@@ -4666,8 +4668,10 @@ test_groups:
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-serial
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial
-  name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial-1of2
+  name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial-1of2
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial-2of2
+  name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-techpreview-serial-2of2
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-upi
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-upi
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-vsphere-ovn-upi-serial
@@ -4687,10 +4691,6 @@ test_groups:
   name: periodic-ci-openshift-release-main-nightly-4.22-upgrade-from-stable-4.21-e2e-metal-ipi-ovn-upgrade
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-nightly-4.22-upgrade-from-stable-4.21-e2e-metal-ipi-upgrade-ovn-ipv6
   name: periodic-ci-openshift-release-main-nightly-4.22-upgrade-from-stable-4.21-e2e-metal-ipi-upgrade-ovn-ipv6
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-service-mesh-sail-operator-lpinterop-3.4-ocp-4.22-lp-interop-cr-servicemesh-aws
-  name: periodic-ci-openshift-service-mesh-sail-operator-lpinterop-3.4-ocp-4.22-lp-interop-cr-servicemesh-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-service-mesh-sail-operator-lpinterop-3.4-ocp-4.22-lp-interop-servicemesh-aws-fips
-  name: periodic-ci-openshift-service-mesh-sail-operator-lpinterop-3.4-ocp-4.22-lp-interop-servicemesh-aws-fips
 - gcs_prefix: test-platform-results/logs/periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--422
   name: periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--422
 - gcs_prefix: test-platform-results/logs/periodic-ci-rhpit-interop-tests-main-weekly_trigger-ocp-self-managed-lp-interop--fips--watcher-bot--422
