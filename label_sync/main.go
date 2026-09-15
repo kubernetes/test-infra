@@ -180,11 +180,6 @@ func gatherOptions() (opts options, deprecatedOptions bool) {
 	return o, deprecatedGitHubOptions
 }
 
-func pathExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
-}
-
 // Writes the golang text template at templatePath to outputPath using the given data
 func writeTemplate(templatePath string, outputPath string, data interface{}) error {
 	// set up template
@@ -198,21 +193,12 @@ func writeTemplate(templatePath string, outputPath string, data interface{}) err
 		return err
 	}
 
-	// ensure output path exists
-	if !pathExists(outputPath) {
-		_, err = os.Create(outputPath)
-		if err != nil {
-			return err
-		}
-	}
-
-	// open file at output path and truncate
-	f, err := os.OpenFile(outputPath, os.O_RDWR, 0644)
+	// open file at output path, creating if needed, and truncate
+	f, err := os.OpenFile(outputPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	f.Truncate(0)
 
 	// render template to output path
 	err = t.Execute(f, data)
