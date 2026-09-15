@@ -199,8 +199,8 @@ presubmits:
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}" || true; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}" || true; fi' INT
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -223,12 +223,15 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           {%- if kubelet_skew|int > 0 %}
 
           # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
