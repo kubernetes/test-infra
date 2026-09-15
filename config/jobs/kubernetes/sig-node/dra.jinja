@@ -242,8 +242,12 @@ presubmits:
           {%- if ci %}
           # Test with the most recent CI build, doesn't even need to be released yet.
           # We want to know if those are broken.
-          previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
-          curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+          previous=$(curl --fail --silent --show-error -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
+          if [[ ! "$previous" =~ ^v[0-9]+\.[0-9]+\. ]]; then
+              echo "error: unexpected CI version for $major.$previous_minor: '$previous'"
+              exit 1
+          fi
+          curl --fail --silent --show-error -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
           {%- else %}
           # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
           # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
