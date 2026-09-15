@@ -464,7 +464,7 @@ periodics:
           - --focus-regex=\[Serial\]
           - --use-dockerized-build=true
           - --target-build-arch=linux/arm64
-          - --timeout=4h0m0s
+          - --timeout=2h30m0s
           - --skip-regex=\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:NodeSwap\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]|\[Feature:OffByDefault\]
           - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/image-config-serial.yaml
