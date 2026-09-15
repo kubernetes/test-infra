@@ -5,14 +5,13 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
-    - customized-controller
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-operator-postsubmits
       testgrid-tab-name: post-etcd-operator-test
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -32,7 +31,6 @@ postsubmits:
     cluster: k8s-infra-prow-build
     branches:
     - main
-    - customized-controller
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -42,7 +40,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-operator-test-e2e
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260907-7013e6a654-master
         command:
         - wrapper.sh
         args:
@@ -64,14 +62,13 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
-    - customized-controller
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-operator-postsubmits
       testgrid-tab-name: post-etcd-operator-verify
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:

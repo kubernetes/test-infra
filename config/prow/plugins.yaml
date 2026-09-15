@@ -184,6 +184,13 @@ label:
     - ci-short
     - ci-extended
     - ci-full
+    # These labels, for Gateway API, categorize AI Influence Levels
+    - ail/0
+    - ail/1
+    - ail/2
+    - ail/3
+    - ail/4
+    - ail/5
 
   restricted_labels:
     kubernetes/kubernetes:
@@ -593,10 +600,9 @@ milestone_applier:
     release-2.6: v2.6
     release-2.5: v2.5
   kubernetes-sigs/cluster-api-provider-azure:
-    main: v1.27
+    main: v1.28
+    release-1.27: v1.27
     release-1.26: v1.26
-    release-1.25: v1.25
-    release-1.24: v1.24
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v1.1.0
     release-1.0: v1.0.0
@@ -626,7 +632,7 @@ milestone_applier:
   kubernetes-sigs/boskos:
     master: v1.23
   kubernetes/website:
-    dev-1.37: 1.37
+    dev-1.38: 1.38
   kubernetes/node-problem-detector:
     main: v1.36
     release-1.35: v1.35
@@ -1176,6 +1182,16 @@ require_matching_label:
   issues: true
   prs: true
   regexp: ^priority/
+- missing_label: needs-ail
+  org: kubernetes-sigs
+  repo: gateway-api
+  prs: true
+  regexp: ^ail/[0-5]$
+  missing_comment: |
+    Gateway API requires that contributors are explicit about AI usage
+
+    Please define your AI usage level for this Pull Request, following the guidelines on AI-POLICY.md
+    and setting the proper AI level usage with the command `/label ail/<level>` (from 0 to 5)
 - missing_label: needs-triage
   org: kubernetes-sigs
   repo: metrics-server
@@ -1715,6 +1731,7 @@ plugins:
     - milestonestatus
     - override
     - release-note
+    - require-matching-label
   
   kubernetes-sigs/gateway-api-conformance-images:
     plugins:

@@ -27,7 +27,7 @@ presubmits:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -58,10 +58,10 @@ presubmits:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
 
   - name: pull-test-infra-node-e2e-containerd-1-7-ubuntu-dra
     cluster: k8s-infra-prow-build
@@ -89,7 +89,7 @@ presubmits:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -113,10 +113,10 @@ presubmits:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
 
   - name: pull-test-infra-node-e2e-containerd-1-7-cos-dra
     cluster: k8s-infra-prow-build
@@ -144,7 +144,7 @@ presubmits:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -168,10 +168,10 @@ presubmits:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
 
   - name: pull-test-infra-node-e2e-containerd-2-1-ubuntu-dra
     cluster: k8s-infra-prow-build
@@ -200,7 +200,7 @@ presubmits:
       base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -224,10 +224,10 @@ presubmits:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
 
   - name: pull-test-infra-node-e2e-containerd-2-1-cos-dra
     cluster: k8s-infra-prow-build
@@ -256,7 +256,7 @@ presubmits:
       base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -280,7 +280,7 @@ presubmits:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi

@@ -23,10 +23,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20260831-5765df261"
-        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20260831-5765df261"
-        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20260831-5765df261"
-        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20260831-5765df261"
+        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20260913-94b6cafe5"
+        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20260913-94b6cafe5"
+        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20260913-94b6cafe5"
+        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20260913-94b6cafe5"
       gcs_configuration:
         bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
@@ -736,6 +736,8 @@ tide:
     # repos with custom tide queries below
     - kubernetes-sigs/cloud-provider-azure
     - kubernetes-sigs/cluster-api
+    - kubernetes-sigs/gateway-api
+    - kubernetes-sigs/gateway-api-conformance-images
     - kubernetes/autoscaler
     labels:
     - lgtm
@@ -864,6 +866,23 @@ tide:
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
     - do-not-merge/needs-area
+  - repos:
+    - kubernetes-sigs/gateway-api
+    - kubernetes-sigs/gateway-api-conformance-images
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-ail
   merge_method:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
@@ -883,6 +902,7 @@ tide:
     kubernetes-sigs/kro: rebase
     kubernetes-sigs/kube-agentic-networking: squash
     kubernetes-sigs/kube-agents: squash
+    kubernetes-sigs/kubernetes-mixin: squash
     kubernetes-sigs/kubespray: squash
     kubernetes-sigs/kueue: squash
     kubernetes-sigs/lws: squash

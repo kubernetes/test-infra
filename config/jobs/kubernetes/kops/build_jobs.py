@@ -525,12 +525,6 @@ def generate_grid():
                 for kops_version in kops_versions:
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
                     distro_short = distro_shortener(distro)
-                    # Fixes in https://github.com/kubernetes/kops/pull/17940.
-                    # NOTE: this has always applied to every kops version, because the
-                    # original condition parsed as
-                    # `(kops_version == '1.34' and amazon-vpc) or cilium-eni`.
-                    if distro_short in ('deb13', 'al2023', 'al2023arm64') and networking == 'cilium-eni':
-                        continue
                     # The AWS CCM route controller races node registration and
                     # leaves some nodes without a route, which black-holes pod
                     # traffic under kubenet. Fixed by pinning CCM to v1.36.1 in
@@ -732,6 +726,19 @@ def generate_misc():
                                 '--topology=private',
                                 '--dns=public',
                                 '--bastion',
+                                ],
+                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
+        # A special test for IPv6 on GCE using Kindnet CNI.
+        # GCE IPv6 support in kOps is still a work in progress (kubernetes/kops#17840),
+        # so this job is a canary tracking that effort.
+        build_test(name_override="kops-gce-cni-kindnet-ipv6",
+                   cloud="gce",
+                   k8s_version="stable",
+                   networking="kindnet",
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--topology=private',
+                                '--gce-service-account=default',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
         # A special test for IPv6 on Flatcar
@@ -2318,6 +2325,34 @@ def generate_presubmits_e2e():
             ],
             networking='amazonvpc',
             tab_name='e2e-aws-amazonvpc-u2404',
+            optional=True,
+        ),
+        presubmit_test(
+            distro='al2027',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-amazonvpc-al2027',
+            extra_flags=[
+                "--node-size=r5d.xlarge",
+                "--control-plane-size=r5d.xlarge",
+                *AMAZON_VPC_ENV_FLAGS,
+            ],
+            networking='amazonvpc',
+            tab_name='e2e-aws-amazonvpc-al2027',
+            optional=True,
+        ),
+        presubmit_test(
+            distro='al2027',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-cilium-eni-al2027',
+            extra_flags=[
+                "--node-size=r5d.xlarge",
+                "--control-plane-size=r5d.xlarge",
+                *CILIUM_ENI_EXTRA_CONFIG_FLAGS,
+            ],
+            networking='cilium-eni',
+            tab_name='e2e-aws-cilium-eni-al2027',
             optional=True,
         ),
         presubmit_test(

@@ -8,11 +8,11 @@ presubmits:
       preset-k8s-ssh: "true"
     decorate: true
     decoration_config:
-      timeout: 60m
+      timeout: 90m
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -41,11 +41,11 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      timeout: 60m
+      timeout: 90m
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -86,7 +86,7 @@ presubmits:
       timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -112,7 +112,7 @@ presubmits:
       timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -139,7 +139,7 @@ presubmits:
       timeout: 30m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -167,11 +167,11 @@ presubmits:
       preset-dind-enabled: "true"
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 150m
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:

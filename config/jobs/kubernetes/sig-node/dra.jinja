@@ -114,7 +114,7 @@ presubmits:
     {%- endif %}
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
 
@@ -313,7 +313,7 @@ presubmits:
         # Normally control plane components are linked statically, which does not work with -race (needs CGO).
         # We need to override the default for components of interest.
         - name: KUBE_CGO_OVERRIDES
-          value: kube-apiserver kube-controller-manager kube-scheduler
+          value: kube-apiserver kube-controller-manager kube-scheduler kubelet
         {%- endif %}
         {%- endif %}
         {%- if use_dind %}
@@ -335,10 +335,10 @@ presubmits:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           {%- else %}
           limits:
             cpu: 2

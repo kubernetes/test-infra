@@ -23,7 +23,7 @@ periodics:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -113,7 +113,7 @@ periodics:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -188,7 +188,7 @@ periodics:
         # Normally control plane components are linked statically, which does not work with -race (needs CGO).
         # We need to override the default for components of interest.
         - name: KUBE_CGO_OVERRIDES
-          value: kube-apiserver kube-controller-manager kube-scheduler
+          value: kube-apiserver kube-controller-manager kube-scheduler kubelet
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -222,7 +222,7 @@ periodics:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -349,7 +349,7 @@ periodics:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -476,7 +476,7 @@ periodics:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -606,7 +606,7 @@ periodics:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         - /bin/bash
@@ -656,7 +656,7 @@ periodics:
       auxiliary: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -687,10 +687,10 @@ periodics:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
 
   - name: ci-node-crio-dra-alpha-beta-features
     cluster: k8s-infra-prow-build
@@ -715,7 +715,7 @@ periodics:
       auxiliary: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -746,10 +746,10 @@ periodics:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
 
   - name: ci-node-e2e-containerd-2-1-ubuntu-dra
     cluster: k8s-infra-prow-build
@@ -780,7 +780,7 @@ periodics:
       base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -804,10 +804,10 @@ periodics:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
 
   - name: ci-node-e2e-containerd-2-1-cos-dra
     cluster: k8s-infra-prow-build
@@ -838,7 +838,7 @@ periodics:
       base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -862,10 +862,10 @@ periodics:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
 
   - name: ci-node-e2e-containerd-2-1-ubuntu-dra-alpha-beta-features
     cluster: k8s-infra-prow-build
@@ -893,7 +893,7 @@ periodics:
       base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -917,10 +917,10 @@ periodics:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
 
   - name: ci-node-e2e-containerd-2-1-cos-dra-alpha-beta-features
     cluster: k8s-infra-prow-build
@@ -948,7 +948,7 @@ periodics:
       base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260831-6ed6668adc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260907-7013e6a654-master
         command:
         - runner.sh
         args:
@@ -972,7 +972,7 @@ periodics:
           # need few resources, but only when using release packages.
           limits:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: 0.5
-            memory: 2Gi
+            memory: 1Gi
