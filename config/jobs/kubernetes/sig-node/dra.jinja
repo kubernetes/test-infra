@@ -31,8 +31,14 @@ presubmits:
     {%- if ci %}
     interval: 6h
     {%- else %}
+    {%- if legacy_release_testgrid_source %}
+    # Keep this job as the TestGrid source for existing legacy release presubmits.
+    branches:
+    - ^$  # Do not run against any branch in the source repository.
+    {%- else %}
     skip_branches:
     - release-\d+\.\d+  # per-release image
+    {%- endif %}
     always_run: false
     {%- if testinfra %}
     run_if_changed: ^jobs/e2e_node/
@@ -62,6 +68,11 @@ presubmits:
       description: {{description}}
       testgrid-alert-email: {{testgrid_alert_email}}
       {%- if not canary and ( not all_features or presubmit ) %}
+      {%- if legacy_release_testgrid_source %}
+      # Existing release jobs use this TestGrid configuration, but do not fork
+      # this containerd 1.7 job into Kubernetes 1.38 or later releases.
+      fork-per-release: "false"
+      {%- else %}
       fork-per-release: "true"
       {%- if ci %}
       fork-per-release-periodic-interval: 24h
@@ -72,6 +83,7 @@ presubmits:
           full URL here. Master keeps ci/fast; only the fork moves to ci. #}
       {%- if job_type == "node" and ( ci or testinfra ) %}
       fork-per-release-replacements: latest-fast.txt -> latest-{% raw %}{{.Version}}{% endraw %}.txt, ci/fast -> ci
+      {%- endif %}
       {%- endif %}
       {%- endif %}
     decorate: true
