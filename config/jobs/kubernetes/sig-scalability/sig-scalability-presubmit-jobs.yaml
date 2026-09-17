@@ -842,7 +842,7 @@ presubmits:
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
         - --env=CL2_LIST_CONFIG_MAP_NUMBER=0
-        - --env=CL2_LIST_POD_NUMBER=80000
+        - --env=CL2_LIST_POD_NUMBER=150000
         - --env=CL2_LIST_BENCHMARK_PODS=10
         - --env=CL2_LIST_BENCHMARK_CONTENT_TYPE=proto
         - --test=false
@@ -909,7 +909,7 @@ presubmits:
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
         - --env=CL2_LIST_CONFIG_MAP_NUMBER=0
-        - --env=CL2_LIST_POD_NUMBER=80000
+        - --env=CL2_LIST_POD_NUMBER=150000
         - --env=CL2_LIST_BENCHMARK_PODS=10
         - --env=CL2_LIST_BENCHMARK_CONTENT_TYPE=proto
         - --env=CL2_LIST_BENCHMARK_MODE=informer
