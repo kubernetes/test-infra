@@ -9,16 +9,23 @@ postsubmits:
       branches:
         - ^main$
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: sp-operator
         containers:
           - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-sp-operator
-              - --scratch-bucket=gs://k8s-staging-sp-operator-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --with-git-dir
               - .
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
+            resources:
+              requests:
+                cpu: 0.5
+                memory: 1Gi
+              limits:
+                cpu: 0.5
+                memory: 1Gi
