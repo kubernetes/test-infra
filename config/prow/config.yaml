@@ -571,6 +571,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - lint
+        cluster-api-provider-aws:
+          restrictions:
+            users:
+              - github-actions[bot]
         cluster-proportional-autoscaler:
           branches:
             gh-pages:
