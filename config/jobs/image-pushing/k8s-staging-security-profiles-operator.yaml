@@ -17,6 +17,7 @@ postsubmits:
             args:
               - --project=k8s-staging-sp-operator
               - --scratch-bucket=gs://k8s-staging-sp-operator-gcb
+              - --service-account=projects/k8s-staging-sp-operator/serviceAccounts/gcb-image-builder@k8s-staging-sp-operator.iam.gserviceaccount.com
               - --with-git-dir
               - .
             env:
