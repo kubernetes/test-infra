@@ -595,7 +595,13 @@ milestone_applier:
     release-0.4: v0.4
     release-0.3: v0.3
   kubernetes-sigs/cluster-api-provider-aws:
-    main: v2.8
+    main: v2.14
+    release-2.13: v2.13
+    release-2.12: v2.12
+    release-2.11: v2.11
+    release-2.10: v2.10
+    release-2.9: v2.9
+    release-2.8: v2.8
     release-2.7: v2.7
     release-2.6: v2.6
     release-2.5: v2.5
@@ -1732,7 +1738,7 @@ plugins:
     - override
     - release-note
     - require-matching-label
-  
+
   kubernetes-sigs/gateway-api-conformance-images:
     plugins:
     - milestone
