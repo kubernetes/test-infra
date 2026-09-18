@@ -19,4 +19,5 @@ steps:
     - gcr.io/$PROJECT_ID/alpine:latest
 substitutions:
   _GIT_TAG: '12345'
+serviceAccount: projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com
 # Manual bump to pick up alpine release: 3.19.0

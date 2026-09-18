@@ -21,6 +21,7 @@ steps:
 substitutions:
   _GIT_TAG: '12345'
   _GO_VERSION: 1.25-alpine
+serviceAccount: projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com
 images:
   - 'gcr.io/$PROJECT_ID/benchmarkjunit:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/benchmarkjunit:latest'

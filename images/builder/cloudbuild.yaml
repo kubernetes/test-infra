@@ -23,6 +23,7 @@ steps:
 substitutions:
   _GIT_TAG: '12345'
   _GO_VERSION: '1.25'
+serviceAccount: projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com
 images:
   - 'gcr.io/$PROJECT_ID/image-builder:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/image-builder:latest'

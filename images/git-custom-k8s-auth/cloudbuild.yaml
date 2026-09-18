@@ -25,3 +25,4 @@ substitutions:
   _AWS_IAM_AUTHENTICATOR_VERSION: "0.7.15"
   _AZURE_KUBELOGIN_VERSION: "0.2.17"
   _GKE_AUTH_PLUGIN_VERSION: "35.0.0"
+serviceAccount: projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com

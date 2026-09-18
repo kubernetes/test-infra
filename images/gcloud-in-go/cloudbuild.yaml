@@ -8,5 +8,6 @@ steps:
     dir: images/gcloud-in-go/
 substitutions:
   _GIT_TAG: '12345'
+serviceAccount: projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com
 images:
   - 'gcr.io/$PROJECT_ID/gcloud-in-go:$_GIT_TAG'
