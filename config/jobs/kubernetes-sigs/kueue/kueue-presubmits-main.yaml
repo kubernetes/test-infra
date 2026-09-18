@@ -1050,6 +1050,46 @@ presubmits:
               limits:
                 cpu: "6700m"
                 memory: "10Gi"
+    - name: pull-kueue-test-e2e-multikueue-extended-ray-autoscaling-main
+      cluster: eks-prow-build-cluster
+      always_run: false
+      run_if_changed: "^test/e2e/(config/multikueue/ray-autoscaling/.*|multikueue/extended/ray_autoscaling_test\\.go)$"
+      branches:
+        - ^main
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-ray-autoscaling-main
+        description: "Run extended multikueue Ray autoscaling end to end tests"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260914-588696c1be-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-multikueue-e2e-extended-ray-autoscaling
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6700m"
+                memory: "10Gi"
+              limits:
+                cpu: "6700m"
+                memory: "10Gi"
     - name: pull-kueue-test-e2e-multikueue-sequential-shard-0-main
       cluster: eks-prow-build-cluster
       branches:
