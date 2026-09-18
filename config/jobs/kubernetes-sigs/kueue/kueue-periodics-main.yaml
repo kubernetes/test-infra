@@ -416,6 +416,44 @@ periodics:
               cpu: "7"
               memory: "10Gi"
   - interval: 12h
+    name: periodic-kueue-test-multikueue-perf-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-multikueue-perf-main
+      # Enable TestGrid email alerts after calibrating expectations from at least five CI runs.
+      description: "Run periodic kueue MultiKueue performance test"
+      testgrid-num-columns-recent: '30'
+    reporter_config:
+      slack:
+        report: false
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.26
+          command:
+            - make
+          args:
+            - test-performance-multikueue
+          env:
+            - name: GOMAXPROCS
+              value: "7"
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
+              memory: "10Gi"
+  - interval: 12h
     name: periodic-kueue-test-tas-scheduling-perf-main
     cluster: eks-prow-build-cluster
     annotations:
