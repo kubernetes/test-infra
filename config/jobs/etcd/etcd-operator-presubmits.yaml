@@ -41,7 +41,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-operator-test-e2e
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20260914-588696c1be-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20260504-419d814ca6-master
         command:
         - wrapper.sh
         args:
