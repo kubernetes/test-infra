@@ -56,7 +56,7 @@ dashboards:
     test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.6-s390x
   name: redhat-openshift-ocp-release-4.6-informing
 test_groups:
-- gcs_prefix: test-platform-results/logs/promote-release-openshift-machine-os-content-e2e-aws-4.6-ppc64le
+- gcs_prefix: test-platform-results-public/logs/promote-release-openshift-machine-os-content-e2e-aws-4.6-ppc64le
   name: promote-release-openshift-machine-os-content-e2e-aws-4.6-ppc64le
-- gcs_prefix: test-platform-results/logs/promote-release-openshift-machine-os-content-e2e-aws-4.6-s390x
+- gcs_prefix: test-platform-results-public/logs/promote-release-openshift-machine-os-content-e2e-aws-4.6-s390x
   name: promote-release-openshift-machine-os-content-e2e-aws-4.6-s390x

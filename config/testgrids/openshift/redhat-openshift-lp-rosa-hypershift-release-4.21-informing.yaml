@@ -137,13 +137,13 @@ dashboards:
     test_group_name: periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.21-lp-rosa-hypershift-rhsso-aws-rosa-hypershift
   name: redhat-openshift-lp-rosa-hypershift-release-4.21-informing
 test_groups:
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-cluster-nfd-operator-release-4.21-ocp4.21-lp-rosa-hypershift-nfd-e2e-master-aws-rosa-hypershift
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-cluster-nfd-operator-release-4.21-ocp4.21-lp-rosa-hypershift-nfd-e2e-master-aws-rosa-hypershift
   name: periodic-ci-openshift-cluster-nfd-operator-release-4.21-ocp4.21-lp-rosa-hypershift-nfd-e2e-master-aws-rosa-hypershift
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.21-openshift-pipelines-ocp4.21-lp-rosa-hypershift-openshift-pipelines-aws-rosa-hypershift
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.21-openshift-pipelines-ocp4.21-lp-rosa-hypershift-openshift-pipelines-aws-rosa-hypershift
   name: periodic-ci-openshift-pipelines-release-tests-release-v1.21-openshift-pipelines-ocp4.21-lp-rosa-hypershift-openshift-pipelines-aws-rosa-hypershift
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.22-openshift-pipelines-ocp4.21-lp-rosa-hypershift-aws-rosa-hypershift
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.22-openshift-pipelines-ocp4.21-lp-rosa-hypershift-aws-rosa-hypershift
   name: periodic-ci-openshift-pipelines-release-tests-release-v1.22-openshift-pipelines-ocp4.21-lp-rosa-hypershift-aws-rosa-hypershift
-- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.21-lp-rosa-hypershift-devspaces-aws-rosa-hypershift
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.21-lp-rosa-hypershift-devspaces-aws-rosa-hypershift
   name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.21-lp-rosa-hypershift-devspaces-aws-rosa-hypershift
-- gcs_prefix: test-platform-results/logs/periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.21-lp-rosa-hypershift-rhsso-aws-rosa-hypershift
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.21-lp-rosa-hypershift-rhsso-aws-rosa-hypershift
   name: periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.21-lp-rosa-hypershift-rhsso-aws-rosa-hypershift

@@ -30,5 +30,5 @@ dashboards:
   name: redhat-openshift-okd-release-4.6-informing
 test_groups:
 - days_of_results: 60
-  gcs_prefix: test-platform-results/logs/promote-release-openshift-okd-machine-os-content-e2e-aws-4.6
+  gcs_prefix: test-platform-results-public/logs/promote-release-openshift-okd-machine-os-content-e2e-aws-4.6
   name: promote-release-openshift-okd-machine-os-content-e2e-aws-4.6
