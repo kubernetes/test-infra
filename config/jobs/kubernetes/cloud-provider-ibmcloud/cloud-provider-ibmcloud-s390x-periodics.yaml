@@ -57,6 +57,8 @@ periodics:
         args:
         - ./hack/jenkins/test-integration-dockerized.sh
         env:
+        - name: KUBE_TIMEOUT
+          value: "-timeout=15m"
         - name: SHORT
           value: --short=false
         # docker-in-docker needs privileged mode
