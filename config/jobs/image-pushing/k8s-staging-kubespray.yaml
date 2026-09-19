@@ -1,0 +1,23 @@
+postsubmits:
+  kubernetes-sigs/kubespray:
+    - name: post-kubespray-push-kubevirt-image-builder-canary
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-kubespray, sig-k8s-infra-gcb
+        testgrid-tab-name: kubevirt-image-builder-push
+      decorate: true
+      run_if_changed: '^test-infra/image-builder/.*'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --build-dir=.
+              - --gcb-config=test-infra/image-builder/cloudbuild-staging.yaml
+              - .
