@@ -1,0 +1,39 @@
+periodics:
+- name: periodic-sync-sig-node-kep-board
+  interval: 6h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-create-test-group: "true"
+    testgrid-dashboards: sig-node-kep-wrangler
+    description: Mirrors release-team-owned single-select fields (Release Status, PRR Status, Proposed Stage) from the SIG Release Enhancement Tracking board (project 264) onto the SIG Node KEP tracking board (project 265). Read-only on 264; updates existing items only on 265.
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260525-f8de63d82b-master
+      command:
+      - runner.sh
+      args:
+      - ./experiment/sig-node-kep-board-sync/sync.sh
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+      env:
+        - name: ORGANIZATION
+          value: "kubernetes"
+        - name: SOURCE_PROJECT_NUMBER
+          value: "264"
+        - name: TARGET_PROJECT_NUMBER
+          value: "265"
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: k8s-triage-robot-github-token
+              key: token
