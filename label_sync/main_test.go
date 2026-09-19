@@ -536,8 +536,8 @@ func (f *fakeClient) AddRepoLabel(org, repo, name, description, color string) er
 func (f *fakeClient) UpdateRepoLabel(org, repo, currentName, newName, description, color string) error {
 	return nil
 }
-func (f *fakeClient) DeleteRepoLabel(org, repo, label string) error { return nil }
-func (f *fakeClient) AddLabel(org, repo string, number int, label string) error  { return nil }
+func (f *fakeClient) DeleteRepoLabel(org, repo, label string) error                { return nil }
+func (f *fakeClient) AddLabel(org, repo string, number int, label string) error    { return nil }
 func (f *fakeClient) RemoveLabel(org, repo string, number int, label string) error { return nil }
 func (f *fakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error) {
 	return nil, nil
