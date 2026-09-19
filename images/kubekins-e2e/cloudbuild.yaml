@@ -67,12 +67,12 @@ substitutions:
   _KIND_VERSION: ''
   _KUBETEST2_VERSION: 'master'
   _YQ_VERSION: v4.53.3
+serviceAccount: projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com
 timeout: 7200s
 options:
   substitution_option: ALLOW_LOOSE
   # this is a large and critical CI image, builds are slow on the default 1 core
   machineType: E2_HIGHCPU_32
-serviceAccount: projects/k8s-staging-test-infra/serviceAccounts/gcb-image-builder@k8s-staging-test-infra.iam.gserviceaccount.com
 tags:
   - kubekins-e2e
   - $_CONFIG
