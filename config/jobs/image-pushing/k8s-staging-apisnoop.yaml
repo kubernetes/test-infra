@@ -21,6 +21,7 @@ postsubmits:
               - --project=k8s-staging-apisnoop
               - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --version-tag-filter=no-such-tag-*
               - apps/auditlogger
     - name: apisnoop-push-snoopdb-images
       cluster: k8s-infra-prow-build-trusted
@@ -43,6 +44,7 @@ postsubmits:
               - --project=k8s-staging-apisnoop
               - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --version-tag-filter=no-such-tag-*
               - apps/snoopdb
   kubernetes-sigs/verify-conformance:
     - name: post-verify-conformance-push-images
