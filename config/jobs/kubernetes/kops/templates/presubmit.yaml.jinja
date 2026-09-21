@@ -25,6 +25,9 @@
       {%- elif not derive_ssh_user %}
       preset-k8s-ssh: "true"
       {%- endif %}
+      {%- for preset in presets or [] %}
+      {{ preset }}: "true"
+      {%- endfor %}
     decorate: true
     decoration_config:
       timeout: {{job_timeout}}

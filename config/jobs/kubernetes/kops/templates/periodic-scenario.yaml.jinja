@@ -14,6 +14,9 @@
     {%- elif not derive_ssh_user %}
     preset-k8s-ssh: "true"
     {%- endif %}
+    {%- for preset in presets or [] %}
+    {{ preset }}: "true"
+    {%- endfor %}
   max_concurrency: 1
   decorate: true
   decoration_config:

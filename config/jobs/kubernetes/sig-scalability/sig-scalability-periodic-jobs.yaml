@@ -10,7 +10,6 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
     preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -71,7 +70,6 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
     preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -192,7 +190,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -247,7 +244,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -302,7 +298,6 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -376,7 +371,6 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -447,7 +441,6 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -519,7 +512,6 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
     timeout: 90m
