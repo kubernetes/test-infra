@@ -166,7 +166,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh

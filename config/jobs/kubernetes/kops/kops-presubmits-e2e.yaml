@@ -476,7 +476,7 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -539,7 +539,7 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -602,7 +602,7 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -665,7 +665,7 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -738,7 +738,7 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -801,7 +801,7 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -864,7 +864,7 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -927,7 +927,7 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -1545,7 +1545,7 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -2281,7 +2281,7 @@ presubmits:
       timeout: 530m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -2348,7 +2348,7 @@ presubmits:
       timeout: 70m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -2414,7 +2414,7 @@ presubmits:
       timeout: 100m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -2482,7 +2482,7 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always
@@ -2531,7 +2531,7 @@ presubmits:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
         imagePullPolicy: Always

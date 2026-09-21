@@ -26,7 +26,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -93,7 +92,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -160,7 +158,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -227,7 +224,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -294,7 +290,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
