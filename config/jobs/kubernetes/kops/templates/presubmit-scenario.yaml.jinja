@@ -26,6 +26,9 @@
       {%- elif not derive_ssh_user %}
       preset-k8s-ssh: "true"
       {%- endif %}
+      {%- for preset in presets or [] %}
+      {{ preset }}: "true"
+      {%- endfor %}
     max_concurrency: 1
     decorate: true
     decoration_config:
@@ -71,18 +74,20 @@
         {%- endif %}
         {#- Jobs without a configured key get an ephemeral one per cluster from
             kubetest2-kops, re-exported as KUBE_SSH_KEY_PATH for the e2e framework. -#}
-        {%- if cloud != "azure" and cloud != "aws" and not derive_ssh_user %}
+        {%- if cloud != "azure" and scenario != 'scalability' and cloud != "aws" and not derive_ssh_user %}
         - name: KUBE_SSH_KEY_PATH
           value: {{kops_ssh_key_path}}
         {%- endif %}
-        {%- if cloud != "azure" and not derive_ssh_user %}
+        {%- if cloud != "azure" and scenario != 'scalability' and not derive_ssh_user %}
         - name: KUBE_SSH_USER
           value: {{kops_ssh_user}}
         {%- endif %}
         - name: GINKGO_NO_COLOR
           value: "TRUE"
+        {%- if scenario != 'scalability' %}
         - name: GOPATH
           value: /home/prow/go
+        {%- endif %}
         {%- if artifacts %}
         - name: ARTIFACTS
           value: {{artifacts}}

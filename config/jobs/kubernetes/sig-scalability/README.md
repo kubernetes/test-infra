@@ -6,14 +6,14 @@ The Kubernetes Project runs 5000 node clusters to test scalability. These jobs r
 
 | Job Name  | Cloud | Frequency  |  Experimental |  Owners | Node Count (1 node = 2 cores) | Notes |
 |---|---|---|---|---|---|---|
-| ci-kubernetes-e2e-gce-scale-performance-5000  |  GCP  | Every other day  |  No |  #sig-scalability | 5000 | 
-| ec2-master-scale-performance |  AWS  | Every other day  |  No |  #sig-scalability | 5000 |
+| gce-master-scale-performance-5000 |  GCP  | Every other day  |  No |  #sig-scalability | 5000 | 
+| ec2-master-scale-performance-5000 |  AWS  | Every other day  |  No |  #sig-scalability | 5000 |
 | ec2-dra-with-workload-master-scalability-5000 |  AWS  | Every other day |  No |  #sig-node | 5000 |
 | gce-master-scale-performance-5000-experimental | GCP | Twice a week | Yes | #sig-scalability | 5000 |
 | gce-master-scale-correctness |  GCP  | Every other day  |  No |  #sig-scalability | 2000 |
 | ec2-dra-with-workload-master-scalability-500 |  AWS  | Once a day |  No |  #sig-node | 500 |
 |gce-dra-extended-resources-with-workload-master-scalability-100 | GCP | Once a day |  No |  #sig-node | 100 |
-| ec2-master-small-scale-performance |  AWS  | 4 times a day  |  No |  #sig-scalability | 100 |
+| ec2-master-scale-performance-100 |  AWS  | 4 times a day  |  No |  #sig-scalability | 100 |
 | gce-master-scale-performance-100 | GCP | Every 30 minutes | No | #sig-scalability | 100 |
 | azure-master-scalability-100 | Azure | Twice a day | No | #sig-cluster-lifecycle (capz) | 100 |
 | golang-tip-k8s-master | GCP | Once a day | No | #sig-scalability | 200* | This job uses the legacy kubemark harness and needs to be rebuilt |

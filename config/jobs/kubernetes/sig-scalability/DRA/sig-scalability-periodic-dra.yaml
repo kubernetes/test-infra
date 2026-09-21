@@ -247,7 +247,6 @@ periodics:
       preset-k8s-ssh: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-periodics: "true"
-      preset-e2e-scalability-periodics-master: "true"
     annotations:
       testgrid-dashboards: sig-scalability-dra
       testgrid-tab-name: gce-dra-extended-resources-with-workload-master-scalability-100
