@@ -45,7 +45,7 @@
   {%- endif %}
   spec:
     {%- if cloud == "gce" %}
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     {%- elif cloud == "azure" %}
     serviceAccountName: azure
     {%- endif %}
@@ -56,7 +56,6 @@
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \

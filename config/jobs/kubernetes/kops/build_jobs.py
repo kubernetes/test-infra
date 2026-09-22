@@ -1980,7 +1980,7 @@ def generate_nftables():
 def generate_versions():
     results = []
     for version in k8s_versions:
-        results.append(
+        results.extend([
             build_test(
                 cloud='aws',
                 k8s_version=version.replace('master', 'ci'),
@@ -1989,8 +1989,19 @@ def generate_versions():
                 networking='calico',
                 extra_dashboards=['kops-versions'],
                 runs_per_day=8,
+            ),
+            build_test(
+                cloud='gce',
+                distro='u2604',
+                k8s_version=version.replace('master', 'ci'),
+                kops_channel='alpha',
+                name_override=f"kops-gce-k8s-{version.replace('.', '-')}",
+                networking='gce',
+                extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
+                extra_dashboards=['kops-versions'],
+                runs_per_day=8,
             )
-        )
+        ])
     return results
 
 ######################

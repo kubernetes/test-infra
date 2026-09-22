@@ -45,7 +45,7 @@
     {%- endif %}
     spec:
       {%- if cloud == "gce" %}
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       {%- elif cloud == "azure" %}
       serviceAccountName: azure
       {%- endif %}

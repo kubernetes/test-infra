@@ -95,7 +95,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -151,7 +150,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
@@ -159,7 +158,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -223,7 +221,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -286,7 +283,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -349,7 +345,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -403,7 +398,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
@@ -411,7 +406,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -473,7 +467,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -537,7 +530,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -601,7 +593,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -664,7 +655,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -727,7 +717,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -791,7 +780,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -855,7 +843,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -1219,7 +1206,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -1282,7 +1268,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -1345,7 +1330,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -1531,7 +1515,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -1593,7 +1576,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
@@ -1601,7 +1584,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -1666,7 +1648,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -1732,7 +1713,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -1789,7 +1769,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
@@ -1797,7 +1777,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -1863,7 +1842,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -1921,7 +1899,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
@@ -1929,7 +1907,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -1995,7 +1972,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -2062,7 +2038,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -2127,7 +2102,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -2194,7 +2168,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -2252,7 +2225,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
@@ -2260,7 +2233,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -2326,7 +2298,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -2385,7 +2356,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
@@ -2393,7 +2364,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -2459,7 +2429,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -2526,7 +2495,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -2585,7 +2553,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
@@ -2593,7 +2561,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
