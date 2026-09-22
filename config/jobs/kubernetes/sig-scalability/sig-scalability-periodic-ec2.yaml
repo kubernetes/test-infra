@@ -67,7 +67,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws, sig-release-master-informing, amazon-ec2-release
-    testgrid-tab-name: ec2-master-scale-performance
+    testgrid-tab-name: ec2-master-scale-performance-5000
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com, release-team@kubernetes.io
     testgrid-days-of-results: "60"
     testgrid-num-columns-recent: "3"
@@ -129,7 +129,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws, amazon-ec2-release
-    testgrid-tab-name: ec2-master-small-scale-performance
+    testgrid-tab-name: ec2-master-scale-performance-100
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
   spec:
     containers:
@@ -139,6 +139,64 @@ periodics:
       - runner.sh
       args:
       - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7
+          memory: 24Gi
+        limits:
+          cpu: 7
+          memory: 24Gi
+
+- name: ci-kubernetes-e2e-ec2-scale-correctness-100
+  cluster: eks-prow-build-cluster
+  cron: '1 1,7,13,19 * * *' # Run every day at 01:01, 07:01, 13:01, and 19:01 UTC (4 times a day)
+  # Equivalent local times: 18:01, 00:01, 06:01, 12:01 PDT / 17:01, 23:01, 05:01, 11:01 PST / 21:01, 03:01, 09:01, 15:01 EDT
+  labels:
+    preset-aws-ssh: "true"
+    preset-aws-credential-boskos-scale-001-kops: "true"
+    preset-kops-scalability-common: "true"
+    preset-kops-scalability-ec2-common: "true"
+    preset-kops-scalability-ec2-100-node: "true"
+  decorate: true
+  decoration_config:
+    timeout: 480m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    karpenter.sh/do-not-disrupt: "true"
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2404
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/networking: amazonvpc
+    testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws, amazon-ec2-release
+    testgrid-tab-name: ec2-master-scale-correctness-100
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      env:
+        - name: SCALE_SCENARIO
+          value: correctness
       securityContext:
         privileged: true
       resources:
