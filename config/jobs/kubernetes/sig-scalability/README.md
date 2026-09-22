@@ -14,6 +14,7 @@ The Kubernetes Project runs 5000 node clusters to test scalability. These jobs r
 | ec2-dra-with-workload-master-scalability-500 |  AWS  | Once a day |  No |  #sig-node | 500 |
 |gce-dra-extended-resources-with-workload-master-scalability-100 | GCP | Once a day |  No |  #sig-node | 100 |
 | ec2-master-scale-performance-100 |  AWS  | 4 times a day  |  No |  #sig-scalability | 100 |
+| ec2-master-scale-correctness-100 |  AWS  | 4 times a day  |  No |  #sig-scalability | 100 |
 | gce-master-scale-performance-100 | GCP | Every 30 minutes | No | #sig-scalability | 100 |
 | azure-master-scalability-100 | Azure | Twice a day | No | #sig-cluster-lifecycle (capz) | 100 |
 | golang-tip-k8s-master | GCP | Once a day | No | #sig-scalability | 200* | This job uses the legacy kubemark harness and needs to be rebuilt |

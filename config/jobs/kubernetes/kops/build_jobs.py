@@ -1879,6 +1879,39 @@ def generate_presubmits_scale():
             ]
         ),
         presubmit_test(
+            name='pull-kops-ec2-master-scale-correctness-100',
+            scenario='scalability',
+            build_cluster="eks-prow-build-cluster",
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='amazonvpc',
+            always_run=False,
+            optional=True,
+            test_timeout_minutes=450,
+            use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
+            env={'SCALE_SCENARIO': 'correctness'},
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-ec2-common',
+                'preset-kops-scalability-ec2-100-node',
+            ]
+        ),
+        presubmit_test(
+            name='pull-kops-gce-master-scale-correctness-100',
+            scenario='scalability',
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='gce',
+            cloud="gce",
+            always_run=False,
+            optional=True,
+            test_timeout_minutes=450,
+            env={'SCALE_SCENARIO': 'correctness'},
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-gce-common',
+                'preset-kops-scalability-gce-100-node',
+            ]
+        ),
+        presubmit_test(
             name='pull-kops-gce-master-scale-performance-5000',
             scenario='scalability',
             # only helps with setting the right anotation test.kops.k8s.io/networking
@@ -1905,7 +1938,7 @@ def generate_presubmits_scale():
             presets=[
                 'preset-kops-scalability-common',
                 'preset-kops-scalability-gce-common',
-                'preset-kops-scalability-gce-5000-node',
+                'preset-kops-scalability-gce-100-node',
             ]
         ),
     ]
