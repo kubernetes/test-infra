@@ -69,11 +69,11 @@ presubmits:
         - name: TEST_CCM  # CAPZ config
           value: "true"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.34"
+          value: "v1.34.11"
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-machine-pool.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
@@ -137,7 +137,7 @@ presubmits:
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "standard"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.34"
+          value: "v1.34.11"
         - name: GINKGO_ARGS  # cloud-provider-azure config
           value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|ServiceAccountIssuerDiscovery --report-dir=/logs/artifacts --disable-log-dump=true
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
@@ -199,9 +199,11 @@ presubmits:
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "standard"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.34"
+          value: "v1.34.11"
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
+        - name: CLUSTER_TEMPLATE  # CAPZ config
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow.yaml
         resources:
           limits:
             cpu: 4
@@ -255,9 +257,9 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.34"
+          value: "v1.34.11"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-machine-pool.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: ENABLE_MULTI_SLB  # cloud-provider-azure config
@@ -331,9 +333,9 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.34"
+          value: "v1.34.11"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-no-win-oot-credential-provider.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-no-win-oot-credential-provider.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: CUSTOM_CLOUD_PROVIDER_CONFIG  # CAPZ config
@@ -432,13 +434,13 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.34"
+          value: "v1.34.11"
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp-lts.yaml
         resources:
           limits:
             cpu: 4
@@ -491,7 +493,7 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.34"
+          value: "v1.34.11"
         - name: FAIL_FAST
           value: "true"
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
@@ -499,7 +501,7 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp-lts.yaml
         resources:
           limits:
             cpu: 4
@@ -555,11 +557,11 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.34"
+          value: "v1.34.11"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6.yaml
         resources:
           limits:
             cpu: 4
@@ -615,13 +617,13 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.34"
+          value: "v1.34.11"
         - name: FAIL_FAST
           value: "true"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack.yaml
         resources:
           limits:
             cpu: 4
@@ -679,11 +681,11 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: KUBERNETES_VERSION  # CAPZ config
-        value: "latest-1.34"
+        value: "v1.34.11"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6.yaml
       resources:
         limits:
           cpu: 4
@@ -740,11 +742,11 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: KUBERNETES_VERSION  # CAPZ config
-        value: "latest-1.34"
+        value: "v1.34.11"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp-lts.yaml
       resources:
         limits:
           cpu: 4
@@ -801,13 +803,13 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: KUBERNETES_VERSION  # CAPZ config
-        value: "latest-1.34"
+        value: "v1.34.11"
       - name: FAIL_FAST
         value: "true"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.24/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack.yaml
       resources:
         limits:
           cpu: 4
@@ -864,13 +866,13 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: KUBERNETES_VERSION  # CAPZ config
-        value: "latest-1.34"
+        value: "v1.34.11"
       - name: FAIL_FAST
         value: "true"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp-lts.yaml
       resources:
         limits:
           cpu: 4
