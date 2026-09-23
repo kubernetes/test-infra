@@ -1824,10 +1824,10 @@ presubmits:
                 value: "7"
             resources:
               requests:
-                cpu: "6300m"
+                cpu: "7"
                 memory: "8Gi"
               limits:
-                cpu: "6300m"
+                cpu: "7"
                 memory: "8Gi"
     - name: pull-kueue-build-image-main
       cluster: eks-prow-build-cluster
