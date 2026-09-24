@@ -57,8 +57,8 @@ dashboards:
   name: redhat-openshift-okd-release-4.18-informing
 test_groups:
 - days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-okd-scos-4.18-e2e-aws-ovn-upgrade
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-okd-scos-4.18-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-main-okd-scos-4.18-e2e-aws-ovn-upgrade
 - days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-okd-scos-4.18-upgrade-from-okd-scos-4.17-e2e-aws-ovn-upgrade
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-okd-scos-4.18-upgrade-from-okd-scos-4.17-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-main-okd-scos-4.18-upgrade-from-okd-scos-4.17-e2e-aws-ovn-upgrade
