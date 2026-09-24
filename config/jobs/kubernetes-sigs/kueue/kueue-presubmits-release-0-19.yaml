@@ -1795,10 +1795,10 @@ presubmits:
             resources:
               requests:
                 cpu: "7"
-                memory: "8Gi"
+                memory: "10Gi"
               limits:
                 cpu: "7"
-                memory: "8Gi"
+                memory: "10Gi"
     - name: pull-kueue-build-image-release-0-19
       cluster: eks-prow-build-cluster
       branches:
