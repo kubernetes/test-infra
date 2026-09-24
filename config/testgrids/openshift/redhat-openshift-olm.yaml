@@ -299,25 +299,25 @@ dashboards:
     test_group_name: periodic-ci-openshift-operator-framework-olm-release-4.17-periodics-e2e-gcp-olm-flaky
   name: redhat-openshift-olm
 test_groups:
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.12-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-operator-framework-olm-release-4.12-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-release-4.12-periodics-e2e-gcp-olm
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.13-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-operator-framework-olm-release-4.13-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-release-4.13-periodics-e2e-gcp-olm
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.13-periodics-e2e-gcp-olm-flaky
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-operator-framework-olm-release-4.13-periodics-e2e-gcp-olm-flaky
   name: periodic-ci-openshift-operator-framework-olm-release-4.13-periodics-e2e-gcp-olm-flaky
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.14-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-operator-framework-olm-release-4.14-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-release-4.14-periodics-e2e-gcp-olm
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.14-periodics-e2e-gcp-olm-flaky
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-operator-framework-olm-release-4.14-periodics-e2e-gcp-olm-flaky
   name: periodic-ci-openshift-operator-framework-olm-release-4.14-periodics-e2e-gcp-olm-flaky
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.15-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-operator-framework-olm-release-4.15-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-release-4.15-periodics-e2e-gcp-olm
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.15-periodics-e2e-gcp-olm-flaky
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-operator-framework-olm-release-4.15-periodics-e2e-gcp-olm-flaky
   name: periodic-ci-openshift-operator-framework-olm-release-4.15-periodics-e2e-gcp-olm-flaky
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.16-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-operator-framework-olm-release-4.16-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-release-4.16-periodics-e2e-gcp-olm
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.16-periodics-e2e-gcp-olm-flaky
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-operator-framework-olm-release-4.16-periodics-e2e-gcp-olm-flaky
   name: periodic-ci-openshift-operator-framework-olm-release-4.16-periodics-e2e-gcp-olm-flaky
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.17-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-operator-framework-olm-release-4.17-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-release-4.17-periodics-e2e-gcp-olm
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.17-periodics-e2e-gcp-olm-flaky
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-operator-framework-olm-release-4.17-periodics-e2e-gcp-olm-flaky
   name: periodic-ci-openshift-operator-framework-olm-release-4.17-periodics-e2e-gcp-olm-flaky
