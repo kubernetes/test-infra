@@ -805,6 +805,12 @@ repos:
         name: dependencies
         target: prs
         addedBy: github
+      - color: c7def8
+        description: Categorizes issue or PR as related to a dependency update.
+        name: kind/dependency
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes/community:
     labels:
       - color: 0052cc
