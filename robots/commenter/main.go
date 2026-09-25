@@ -75,10 +75,13 @@ func flagOptions() options {
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
 	flag.BoolVar(&o.useTemplate, "template", false, templateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
-	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
-	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API Endpoint")
-	flag.StringVar(&o.token, "token", "", "Path to github token")
+	flag.Var(&o.endpoint, "endpoint", "Deprecated: prefer --github-endpoint. GitHub's API endpoint.")
+	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "Deprecated: prefer --github-graphql-endpoint. GitHub's GraphQL API endpoint.")
+	flag.StringVar(&o.token, "token", "", "Deprecated: prefer --github-token-path or --github-app-id/--github-app-private-key-path. Path to github token.")
+	flag.StringVar(&o.githubOrg, "github-org", "", "GitHub org for search-API routing. Required when --github-app-id is used, ignored when using --token / --github-token-path.")
 	flag.BoolVar(&o.random, "random", false, "Choose random issues to comment on from the query")
+
+	o.ghOpts.AddFlags(flag.CommandLine)
 	flag.Parse()
 	return o
 }
@@ -101,9 +104,12 @@ type options struct {
 	endpoint        flagutil.Strings
 	graphqlEndpoint string
 	token           string
+	githubOrg       string
 	updated         time.Duration
 	confirm         bool
 	random          bool
+
+	ghOpts flagutil.GitHubOptions
 }
 
 func parseHTMLURL(url string) (string, string, int, error) {
@@ -157,8 +163,32 @@ func makeQuery(query string, includeArchived, includeClosed, includeLocked bool,
 
 type client interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+}
+
+type authMode int
+
+const (
+	authLegacyToken authMode = iota
+	authGitHubOptions
+)
+
+func selectAuthMode(o options) (authMode, error) {
+	useGHOpts := o.ghOpts.TokenPath != "" || o.ghOpts.AppID != "" || o.ghOpts.AppPrivateKeyPath != ""
+	switch {
+	case o.token == "" && !useGHOpts:
+		return 0, errors.New("no GitHub credentials: set --token, --github-token-path, or --github-app-id/--github-app-private-key-path")
+	case o.token != "" && useGHOpts:
+		return 0, errors.New("--token is mutually exclusive with --github-token-path / --github-app-* flags")
+	case useGHOpts:
+		if (o.ghOpts.AppID != "" || o.ghOpts.AppPrivateKeyPath != "") && o.githubOrg == "" {
+			return 0, errors.New("--github-org is required when authenticating as a GitHub App")
+		}
+		return authGitHubOptions, nil
+	default:
+		return authLegacyToken, nil
+	}
 }
 
 // normalizeComment makes comment bodies comparable across GitHub round-trips,
@@ -174,33 +204,44 @@ func main() {
 	if o.query == "" {
 		log.Fatal("empty --query")
 	}
-	if o.token == "" {
-		log.Fatal("empty --token")
-	}
 	if o.comment == "" {
 		log.Fatal("empty --comment")
 	}
 
-	if err := secret.Add(o.token); err != nil {
-		log.Fatalf("Error starting secrets agent: %v", err)
-	}
-
-	var err error
-	for _, ep := range o.endpoint.Strings() {
-		_, err = url.ParseRequestURI(ep)
-		if err != nil {
-			log.Fatalf("Invalid --endpoint URL %q: %v.", ep, err)
-		}
+	mode, err := selectAuthMode(o)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	var c client
-	if o.confirm {
-		c, err = github.NewClient(secret.GetTokenGenerator(o.token), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
-	} else {
-		c, err = github.NewDryRunClient(secret.GetTokenGenerator(o.token), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
-	}
-	if err != nil {
-		log.Fatalf("Failed to construct GitHub client: %v", err)
+	switch mode {
+	case authGitHubOptions:
+		if err := o.ghOpts.Validate(!o.confirm); err != nil {
+			log.Fatalf("Invalid --github-* flags: %v", err)
+		}
+		c, err = o.ghOpts.GitHubClient(!o.confirm)
+		if err != nil {
+			log.Fatalf("Failed to construct GitHub client: %v", err)
+		}
+	case authLegacyToken:
+		if err := secret.Add(o.token); err != nil {
+			log.Fatalf("Error starting secrets agent: %v", err)
+		}
+
+		for _, ep := range o.endpoint.Strings() {
+			if _, err := url.ParseRequestURI(ep); err != nil {
+				log.Fatalf("Invalid --endpoint URL %q: %v.", ep, err)
+			}
+		}
+
+		if o.confirm {
+			c, err = github.NewClient(secret.GetTokenGenerator(o.token), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		} else {
+			c, err = github.NewDryRunClient(secret.GetTokenGenerator(o.token), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		}
+		if err != nil {
+			log.Fatalf("Failed to construct GitHub client: %v", err)
+		}
 	}
 
 	query, err := makeQuery(o.query, o.includeArchived, o.includeClosed, o.includeLocked, o.updated)
@@ -214,7 +255,7 @@ func main() {
 		asc = true
 	}
 	commenter := makeCommenter(o.comment, o.useTemplate)
-	if err := run(c, query, sort, asc, o.random, commenter, o.ceiling); err != nil {
+	if err := run(c, o.githubOrg, query, sort, asc, o.random, commenter, o.ceiling); err != nil {
 		log.Fatalf("Failed run: %v", err)
 	}
 }
@@ -233,9 +274,9 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 	}
 }
 
-func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
+func run(c client, org, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
 	log.Printf("Searching: %s", query)
-	issues, err := c.FindIssues(query, sort, asc)
+	issues, err := c.FindIssuesWithOrg(org, query, sort, asc)
 	if err != nil {
 		return fmt.Errorf("search failed: %w", err)
 	}
