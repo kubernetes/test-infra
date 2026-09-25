@@ -1,6 +1,8 @@
 steps:
-- name: golang:1.21
+- name: golang:1.25
   entrypoint: /bin/bash
+  env:
+  - GOTOOLCHAIN=auto
   args:
   - -c
   - |
@@ -9,5 +11,6 @@ steps:
     make push-misc-images REGISTRY=gcr.io/$PROJECT_ID
 substitutions:
   _GIT_TAG: '12345'
+serviceAccount: projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com
 options:
   machineType: E2_HIGHCPU_32

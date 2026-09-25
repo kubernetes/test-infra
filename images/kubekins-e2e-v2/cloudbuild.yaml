@@ -67,6 +67,8 @@ substitutions:
   _GH_VERSION: 2.96.0
   _REGISTRY: us-central1-docker.pkg.dev/k8s-staging-test-infra/images
 timeout: 3600s
+# serviceAccount: We don't set this field as this image is built in a presubmit
+# and we pass the service account via a flag when we run it as a postsubmit/periodic
 options:
   substitution_option: ALLOW_LOOSE
   # this is a large and critical CI image, builds are slow on the default 1 core
