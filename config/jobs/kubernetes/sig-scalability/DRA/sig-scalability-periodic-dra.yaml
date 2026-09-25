@@ -34,7 +34,7 @@ periodics:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260914-588696c1be-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260921-f47c1f473f-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -151,7 +151,7 @@ periodics:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260914-588696c1be-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260921-f47c1f473f-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -264,7 +264,7 @@ periodics:
         path_alias: k8s.io/perf-tests
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260914-588696c1be-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260921-f47c1f473f-master
           command:
             - runner.sh
             - /workspace/scenarios/kubernetes_e2e.py
@@ -356,7 +356,7 @@ periodics:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260921-f47c1f473f-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -463,7 +463,7 @@ periodics:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260921-f47c1f473f-master
         imagePullPolicy: Always
         command:
         - runner.sh
