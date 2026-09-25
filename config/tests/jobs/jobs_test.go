@@ -22,6 +22,7 @@ package tests
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -36,7 +37,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+
 	coreapi "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -909,6 +913,125 @@ func TestValidPresets(t *testing.T) {
 			}
 		}
 	}
+}
+
+// registeredPresetDirectories lists directories
+// for which we want to validate rendered job presets against a testdata/rendered_job_presets.json file inside that directory.
+var registeredPresetDirectories = []string{
+	"kubernetes/sig-scalability",
+}
+
+// TestRenderedJobPresets verifies that the environment variables rendered from presets
+// for all jobs in registered directories match their checked-in testdata/rendered_job_presets.json file inside each directory.
+//
+// To update the fixture file when job presets or environment variables change, run:
+//
+//	make update-rendered-job-presets
+func TestRenderedJobPresets(t *testing.T) {
+	update := os.Getenv("UPDATE_RENDERED_PRESETS") == "true"
+
+	for _, dir := range registeredPresetDirectories {
+		t.Run(dir, func(t *testing.T) {
+			testRenderedJobPresets(t, dir, update)
+		})
+	}
+}
+
+func testRenderedJobPresets(t *testing.T, dir string, update bool) {
+	jobEnvs, err := extractJobEnvs(dir)
+	if err != nil {
+		t.Fatalf("Failed to extract job envs: %v", err)
+	}
+	filePath := filepath.Join(*jobConfigPath, dir, "testdata/rendered_job_presets.json")
+
+	if len(jobEnvs) == 0 {
+		t.Fatalf("No jobs found in directory %s", dir)
+	}
+
+	if update {
+		if err := updatePresets(jobEnvs, filePath); err != nil {
+			t.Fatalf("Failed to update %s: %v", filePath, err)
+		}
+		t.Logf("Updated %s successfully (%d jobs recorded)", filePath, len(jobEnvs))
+	}
+
+	expectedData, err := os.ReadFile(filePath)
+	if err != nil {
+		t.Fatalf("Failed to read %s to update it run make update-rendered-job-presets: %v", filePath, err)
+	}
+
+	var expected map[string][]v1.EnvVar
+	if err := json.Unmarshal(expectedData, &expected); err != nil {
+		t.Fatalf("Failed to unmarshal existing %s: %v", filePath, err)
+	}
+
+	diff := cmp.Diff(expected, jobEnvs)
+	if diff != "" {
+		t.Errorf("\n%s is out of date. Detected differences (- expected from JSON, + actual rendered):\n%s\n\nIf this change in rendered environment variables is expected, run:\n   make update-rendered-job-presets\n", filePath, diff)
+	}
+}
+
+func extractJobEnvs(dir string) (map[string][]v1.EnvVar, error) {
+	jobEnvs := make(map[string][]v1.EnvVar)
+
+	for _, p := range c.Periodics {
+		err := extractEnvs(p.Name, p.SourcePath, p.Spec, dir, jobEnvs)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, presubmits := range c.PresubmitsStatic {
+		for _, p := range presubmits {
+			err := extractEnvs(p.Name, p.SourcePath, p.Spec, dir, jobEnvs)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	for _, postsubmits := range c.PostsubmitsStatic {
+		for _, p := range postsubmits {
+			err := extractEnvs(p.Name, p.SourcePath, p.Spec, dir, jobEnvs)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return jobEnvs, nil
+}
+
+func updatePresets(jobEnvs map[string][]v1.EnvVar, filePath string) error {
+	currentData, err := json.MarshalIndent(jobEnvs, "", "  ")
+	if err != nil {
+		return fmt.Errorf("Failed to marshal rendered job presets: %v", err)
+	}
+	if err := os.WriteFile(filePath, currentData, 0644); err != nil {
+		return fmt.Errorf("Failed to write rendered_job_presets.json to %s: %v", filePath, err)
+	}
+	return nil
+}
+
+func extractEnvs(name string, sourcePath string, spec *coreapi.PodSpec, targetDir string, jobEnvs map[string][]v1.EnvVar) error {
+	if spec == nil {
+		return nil
+	}
+	relativeDir, err := filepath.Rel(*jobConfigPath, filepath.Dir(sourcePath))
+	if err != nil {
+		return err
+	}
+	if !strings.HasPrefix(relativeDir, targetDir) {
+		return nil
+	}
+	envs := []v1.EnvVar{}
+	for _, container := range spec.Containers {
+		for _, e := range container.Env {
+			envs = append(envs, e)
+		}
+	}
+	sort.Slice(envs, func(i, j int) bool {
+		return envs[i].Name < envs[j].Name
+	})
+	jobEnvs[name] = envs
+	return nil
 }
 
 func hasArg(wanted string, args []string) bool {
