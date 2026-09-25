@@ -326,34 +326,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-golangci-lint
-  - name: pull-kops-verify-hashes
-    cluster: eks-prow-build-cluster
-    skip_report: false
-    run_if_changed: '^upup\/pkg\/fi\/cloudup\/runc'
-    labels:
-      preset-service-account: "true"
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260916-d0db7d7e5d-master
-        command:
-        - runner.sh
-        args:
-        - "make"
-        - "verify-hashes"
-        resources:
-          requests:
-            memory: 12Gi
-            cpu: 7
-          limits:
-            memory: 12Gi
-            cpu: 7
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: verify-hashes
   - name: pull-kops-verify-terraform
     cluster: eks-prow-build-cluster
     skip_report: false
