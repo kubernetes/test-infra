@@ -33,7 +33,8 @@ presubmits:
 
 periodics:
 - name: ci-kubernetes-build
-  interval: 1h
+  interval: 15m
+  max_concurrency: 1
   cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
@@ -45,7 +46,7 @@ periodics:
   spec:
     serviceAccountName: prow-build
     nodeSelector:
-      node.kubernetes.io/instance-type: c4d-standard-16-lssd
+      pool: build
     tolerations:
       - key: build
         operator: Exists
@@ -58,6 +59,7 @@ periodics:
       - ci-build
       - --configure-docker
       - --allow-dup=false
+      - --sign=false
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
       env:
@@ -73,17 +75,18 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 15
-          memory: 50Gi
+          cpu: 31
+          memory: 100Gi
         requests:
-          cpu: 15
-          memory: 50Gi
+          cpu: 31
+          memory: 100Gi
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes
         slug: release-managers
   annotations:
     fork-per-release: "true"
+    fork-per-release-cron: 0 * * * *
     # No replacements. "k8s-master" stopped matching when b7f6021f2a dropped
     # --extra-version-markers, and "latest-default" names the image tag, which
     # this annotation does not rewrite. To give the newest release branch the
