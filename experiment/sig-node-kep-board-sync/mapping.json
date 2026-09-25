@@ -1,0 +1,18 @@
+{
+    "_comment": "Maps single-select fields on the SOURCE project (264) to fields on the TARGET project (265). The keys are field names on 264. 'target_field' is the field name on 265; if omitted, defaults to the source field name. 'options' is an optional per-field map from source option name -> target option name; option names not listed are looked up by exact match on the target.",
+    "Status": {
+        "target_field": "Release Status"
+    },
+    "PRR Status": {
+        "target_field": "PRR Status"
+    },
+    "Stage": {
+        "target_field": "Proposed Stage",
+        "options": {
+            "Alpha": "1 - Alpha",
+            "Beta": "2 - Beta",
+            "Stable": "3 - Stable",
+            "Deprecation/Removal": "4 - Deprecation"
+        }
+    }
+}

@@ -1,0 +1,8 @@
+approvers:
+  - haircommander
+  - SergeyKanzhelev
+reviewers:
+  - haircommander
+  - SergeyKanzhelev
+labels:
+  - sig/node
