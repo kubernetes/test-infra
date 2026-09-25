@@ -1261,8 +1261,8 @@ func TestClusterName(t *testing.T) {
 func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 	jobsToFix := 0
 	numJobs := len(allStaticJobs())
-	var errs []error
 	for _, job := range c.AllPeriodics() {
+		var errs []error
 		// Only consider Pods that are release-blocking
 		if job.Spec == nil || !isKubernetesReleaseBlocking(job.JobBase) {
 			continue
@@ -1295,6 +1295,7 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 
 	for repo, postsubmits := range c.PostsubmitsStatic {
 		for _, job := range postsubmits {
+			var errs []error
 			// postsubmits triggering against repos other than kubernetes/kubernetes
 			// should not be release-blocking
 			if repo != "kubernetes/kubernetes" {
