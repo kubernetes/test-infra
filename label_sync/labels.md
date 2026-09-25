@@ -463,6 +463,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/core-autoscaler" href="#area/core-autoscaler">`area/core-autoscaler`</a> | Denotes an issue that is related to the core autoscaler and is not specific to any provider.| label | |
 | <a id="area/vertical-pod-autoscaler" href="#area/vertical-pod-autoscaler">`area/vertical-pod-autoscaler`</a> | Issues or PRs related to the Vertical Pod Autoscaler component| label | |
 | <a id="area/vertical-pod-autoscaler/prometheus" href="#area/vertical-pod-autoscaler/prometheus">`area/vertical-pod-autoscaler/prometheus`</a> | Issues and PRs related to Vertical Pod Autoscaler history from Prometheus| label | |
+| <a id="kind/dependency" href="#kind/dependency">`kind/dependency`</a> | Categorizes issue or PR as related to a dependency update.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 
 ## Labels that apply to kubernetes/autoscaler, only for PRs
 
