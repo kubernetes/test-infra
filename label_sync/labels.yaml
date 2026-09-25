@@ -646,6 +646,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to WG Node Identity.
+      name: wg/node-identity
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Node Lifecycle.
       name: wg/node-lifecycle
       target: both
