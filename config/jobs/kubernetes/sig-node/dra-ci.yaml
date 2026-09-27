@@ -196,10 +196,10 @@ periodics:
         resources:
           # With DATA RACE detection enabled, more memory is needed.
           limits:
-            cpu: 2
+            cpu: 4
             memory: 12Gi
           requests:
-            cpu: 2
+            cpu: 4
             memory: 12Gi
 
   - name: ci-kind-dra-n-1
