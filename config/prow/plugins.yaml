@@ -332,6 +332,7 @@ blockades:
   - kubernetes/endpointslice
   - kubernetes/externaljwt
   - kubernetes/kms
+  - kubernetes/ktesting
   - kubernetes/kube-aggregator
   - kubernetes/kube-controller-manager
   - kubernetes/kube-proxy

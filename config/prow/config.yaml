@@ -382,6 +382,11 @@ branch-protection:
             - build-windows-amd64
             - verify-amd64
             - verify-arm64
+        ktesting:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         kubelet:
           restrictions:
             users: []
@@ -725,6 +730,7 @@ tide:
     - kubernetes/endpointslice
     - kubernetes/externaljwt
     - kubernetes/kms
+    - kubernetes/ktesting
     - kubernetes/kube-aggregator
     - kubernetes/kube-controller-manager
     - kubernetes/kube-proxy
