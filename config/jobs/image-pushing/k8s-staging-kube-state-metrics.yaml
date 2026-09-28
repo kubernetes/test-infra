@@ -6,7 +6,7 @@ postsubmits:
         testgrid-dashboards: sig-instrumentation-image-pushes, sig-k8s-infra-gcb
       decorate: true
       branches:
-        - ^master$
+        - ^main$
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
@@ -18,4 +18,5 @@ postsubmits:
               - --project=k8s-staging-kube-state-metrics
               - --scratch-bucket=gs://k8s-staging-kube-state-metrics-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --with-git-dir
               - .
