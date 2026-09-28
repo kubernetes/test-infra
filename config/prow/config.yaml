@@ -743,6 +743,7 @@ tide:
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
+    - kubernetes/streaming
     # repos with custom tide queries below
     - kubernetes-sigs/cloud-provider-azure
     - kubernetes-sigs/cluster-api
