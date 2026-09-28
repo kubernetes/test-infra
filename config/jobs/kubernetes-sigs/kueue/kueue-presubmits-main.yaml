@@ -1085,11 +1085,11 @@ presubmits:
               privileged: true
             resources:
               requests:
-                cpu: "6700m"
-                memory: "10Gi"
+                cpu: "7"
+                memory: "16Gi"
               limits:
-                cpu: "6700m"
-                memory: "10Gi"
+                cpu: "7"
+                memory: "16Gi"
     - name: pull-kueue-test-e2e-multikueue-sequential-shard-0-main
       cluster: eks-prow-build-cluster
       branches:
