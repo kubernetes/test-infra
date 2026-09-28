@@ -191,10 +191,10 @@ presubmits:
         resources:
           # With DATA RACE detection enabled, more memory is needed.
           limits:
-            cpu: 2
+            cpu: 4
             memory: 12Gi
           requests:
-            cpu: 2
+            cpu: 4
             memory: 12Gi
 
   - name: pull-kubernetes-kind-dra-all-slow-canary
@@ -297,10 +297,10 @@ presubmits:
         resources:
           # With DATA RACE detection enabled, more memory is needed.
           limits:
-            cpu: 2
+            cpu: 4
             memory: 12Gi
           requests:
-            cpu: 2
+            cpu: 4
             memory: 12Gi
 
   - name: pull-kubernetes-kind-dra-n-1-canary
