@@ -1,0 +1,59 @@
+presets:
+###### Env variables for DRA Kops Scalability jobs.
+- labels:
+    preset-kops-scalability-dra-common: "true"
+  env:
+  - name: NODE_PRELOAD_IMAGES
+    value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+  - name: KOPS_CL2_TEST_CONFIG
+    value: testing/dra/config.yaml
+  - name: CL2_MODE
+    value: "Indexed"
+  - name: CL2_PROMETHEUS_KUBELET_KEEP_ONLY_DRA
+    value: "true"
+  - name: PROMETHEUS_SCRAPE_KUBELETS
+    value: "true"
+  - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
+    value: "false"
+
+- labels:
+    preset-kops-scalability-dra-500-node: "true"
+  env:
+  - name: KUBE_NODE_COUNT
+    value: "500"
+  - name: CONTROL_PLANE_SIZE
+    value: "c8a.12xlarge,c8i.12xlarge,c8id.12xlarge,c7a.12xlarge,c7i.12xlarge"
+  - name: CL2_NODES_PER_NAMESPACE
+    value: "10"
+  - name: CL2_JOB_RUNNING_TIME
+    value: "3s"
+  - name: CL2_LONG_JOB_RUNNING_TIME
+    value: "45m"
+  - name: KOPS_SCHEDULER_QPS
+    value: "500"
+  - name: KOPS_SCHEDULER_BURST
+    value: "500"
+
+- labels:
+    preset-kops-scalability-dra-5000-node: "true"
+  env:
+  - name: KUBE_NODE_COUNT
+    value: "5000"
+  - name: CONTROL_PLANE_SIZE
+    value: "c8a.24xlarge,c8i.24xlarge,c8id.24xlarge,c7a.24xlarge,c7i.24xlarge"
+  - name: CL2_NODES_PER_NAMESPACE
+    value: "2500"
+  - name: CL2_JOB_RUNNING_TIME
+    value: "30s"
+  - name: CL2_LONG_JOB_RUNNING_TIME
+    value: "240m"
+  - name: KOPS_CONTROLLER_MANAGER_BURST
+    value: "1000"
+  - name: KOPS_CONTROLLER_MANAGER_QPS
+    value: "1000"
+  - name: KOPS_SCHEDULER_QPS
+    value: "1200"
+  - name: KOPS_SCHEDULER_BURST
+    value: "1200"
+  - name: KOPS_APISERVER_MAX_REQUESTS_INFLIGHT
+    value: "2700"

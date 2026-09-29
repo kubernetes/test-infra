@@ -177,6 +177,7 @@ presubmits:
     optional: true
     skip_report: false
     labels:
+      preset-k8s-ssh: "true"
       preset-kops-scalability-common: "true"
       preset-kops-scalability-gce-common: "true"
       preset-kops-scalability-gce-100-node: "true"
@@ -233,6 +234,7 @@ presubmits:
     optional: false
     skip_report: false
     labels:
+      preset-k8s-ssh: "true"
       preset-kops-scalability-common: "true"
       preset-kops-scalability-gce-common: "true"
       preset-kops-scalability-gce-5000-node: "true"
@@ -287,6 +289,7 @@ presubmits:
     optional: false
     skip_report: false
     labels:
+      preset-k8s-ssh: "true"
       preset-kops-scalability-common: "true"
       preset-kops-scalability-gce-common: "true"
       preset-kops-scalability-gce-100-node: "true"

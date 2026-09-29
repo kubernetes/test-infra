@@ -23,7 +23,7 @@
       {%- elif cloud == "azure" %}
       preset-service-account: "true"
       preset-kops-azure-cred-wi: "true"
-      {%- elif not derive_ssh_user %}
+      {%- elif scenario == 'scalability' or not derive_ssh_user %}
       preset-k8s-ssh: "true"
       {%- endif %}
       {%- for preset in presets or [] %}
