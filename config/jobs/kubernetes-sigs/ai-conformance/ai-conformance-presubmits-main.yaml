@@ -1,5 +1,33 @@
 presubmits:
   kubernetes-sigs/ai-conformance:
+  - name: pull-ai-conformance-verify
+    cluster: k8s-infra-prow-build
+    always_run: true
+    optional: false
+    skip_report: false
+    branches:
+    - ^main$
+    decorate: true
+    decoration_config:
+      timeout: 15m
+    annotations:
+      testgrid-dashboards: sig-arch-ai-conformance
+      testgrid-tab-name: pull-ai-conformance-verify
+      description: "Lint AI Conformance Go code"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.25.9
+        command:
+        - make
+        args:
+        - lint
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
   - name: pull-ai-conformance-e2e-gcp
     cluster: k8s-infra-prow-build
     job_queue_name: gce-gpu-test
