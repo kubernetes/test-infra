@@ -327,11 +327,13 @@ blockades:
   - kubernetes/controller-manager
   - kubernetes/cri-api
   - kubernetes/cri-client
+  - kubernetes/cri-streaming
   - kubernetes/csi-translation-lib
   - kubernetes/dynamic-resource-allocation
   - kubernetes/endpointslice
   - kubernetes/externaljwt
   - kubernetes/kms
+  - kubernetes/ktesting
   - kubernetes/kube-aggregator
   - kubernetes/kube-controller-manager
   - kubernetes/kube-proxy
@@ -344,6 +346,7 @@ blockades:
   - kubernetes/sample-apiserver
   - kubernetes/sample-cli-plugin
   - kubernetes/sample-controller
+  - kubernetes/streaming
   blockregexps:
   - .*
   explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
