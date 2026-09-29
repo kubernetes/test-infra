@@ -16,10 +16,12 @@ periodics:
   cluster: eks-prow-build-cluster
   cron: '0 3 * * *' # Run every day at 03:00 UTC
   labels:
-    preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential-boskos-scale-001-kops: "true"
-    preset-dind-enabled: "true"
+    preset-kops-scalability-common: "true"
+    preset-kops-scalability-ec2-common: "true"
+    preset-kops-scalability-dra-common: "true"
+    preset-kops-scalability-dra-500-node: "true"
   decorate: true
   decoration_config:
     timeout: 480m
@@ -56,61 +58,6 @@ periodics:
       - runner.sh
       args:
       - ./tests/e2e/scenarios/scalability/run-test.sh
-      securityContext:
-        privileged: true
-      env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: KUBE_SSH_USER
-        value: ubuntu
-      - name: GOPATH
-        value: /home/prow/go
-      - name: CNI_PLUGIN
-        value: "amazonvpc"
-      - name: KUBE_NODE_COUNT
-        value: "500"
-      - name: CL2_LOAD_TEST_THROUGHPUT
-        value: "50"
-      - name: CL2_MODE
-        value: "Indexed"
-      - name: CL2_NODES_PER_NAMESPACE
-        value: "10"
-      - name: CL2_JOB_RUNNING_TIME
-        value: "3s"
-      - name: CL2_LONG_JOB_RUNNING_TIME
-        value: "45m"
-      - name: CL2_RATE_LIMIT_POD_CREATION
-        value: "false"
-      - name: NODE_MODE
-        value: "master"
-      - name: CONTROL_PLANE_COUNT
-        value: "1"
-      - name: CONTROL_PLANE_SIZE
-        value: "c8a.12xlarge,c8i.12xlarge,c7a.12xlarge,c7i.12xlarge,c8id.12xlarge"
-      - name: ENABLE_PROMETHEUS_SERVER
-        value: "true"
-      - name: TEAR_DOWN_PROMETHEUS_SERVER
-        value: "false"
-      - name: PROMETHEUS_SCRAPE_KUBELETS
-        value: "true"
-      - name: CL2_PROMETHEUS_KUBELET_KEEP_ONLY_DRA
-        value: "true"
-      - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
-        value: "false"
-      - name: PROMETHEUS_PVC_STORAGE_CLASS
-        value: "io2"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: KOPS_IRSA
-        value: "true"
-      - name: NODE_PRELOAD_IMAGES
-        value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-      - name: KOPS_CL2_TEST_CONFIG
-        value: testing/dra/config.yaml
-      - name: KOPS_SCHEDULER_QPS
-        value: "500"
-      - name: KOPS_SCHEDULER_BURST
-        value: "500"
       resources:
         requests:
           cpu: 7
@@ -127,10 +74,12 @@ periodics:
   cluster: eks-prow-build-cluster
   cron: "1 7 * * 2,4,6" # Tue/Thu/Sat 07:01 UTC; alternates with the 5k load test (Sun/Mon/Wed/Fri)
   labels:
-    preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential-boskos-scale-001-kops: "true"
-    preset-dind-enabled: "true"
+    preset-kops-scalability-common: "true"
+    preset-kops-scalability-ec2-common: "true"
+    preset-kops-scalability-dra-common: "true"
+    preset-kops-scalability-dra-5000-node: "true"
   decorate: true
   job_queue_name: '5k-aws-scale-test'
   decoration_config:
@@ -171,65 +120,6 @@ periodics:
       - ./tests/e2e/scenarios/scalability/run-test.sh
       securityContext:
         privileged: true
-      env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: KUBE_SSH_USER
-        value: ubuntu
-      - name: GOPATH
-        value: /home/prow/go
-      - name: CNI_PLUGIN
-        value: "amazonvpc"
-      - name: KUBE_NODE_COUNT
-        value: "5000"
-      - name: CL2_LOAD_TEST_THROUGHPUT
-        value: "50"
-      - name: CL2_MODE
-        value: "Indexed"
-      - name: CL2_NODES_PER_NAMESPACE
-        value: "2500"
-      - name: CL2_JOB_RUNNING_TIME
-        value: "30s"
-      - name: CL2_LONG_JOB_RUNNING_TIME
-        value: "240m"
-      - name: CL2_RATE_LIMIT_POD_CREATION
-        value: "false"
-      - name: NODE_MODE
-        value: "master"
-      - name: CONTROL_PLANE_COUNT
-        value: "1"
-      - name: CONTROL_PLANE_SIZE
-        value: "c8i.24xlarge"
-      - name: KOPS_CONTROLLER_MANAGER_BURST
-        value: "1000"
-      - name: KOPS_CONTROLLER_MANAGER_QPS
-        value: "1000"
-      - name: KOPS_SCHEDULER_QPS
-        value: "1200"
-      - name: KOPS_SCHEDULER_BURST
-        value: "1200"
-      - name: KOPS_APISERVER_MAX_REQUESTS_INFLIGHT
-        value: "2700"
-      - name: ENABLE_PROMETHEUS_SERVER
-        value: "true"
-      - name: TEAR_DOWN_PROMETHEUS_SERVER
-        value: "false"
-      - name: PROMETHEUS_SCRAPE_KUBELETS
-        value: "true"
-      - name: CL2_PROMETHEUS_KUBELET_KEEP_ONLY_DRA
-        value: "true"
-      - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
-        value: "false"
-      - name: PROMETHEUS_PVC_STORAGE_CLASS
-        value: "io2"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: KOPS_IRSA
-        value: "true"
-      - name: NODE_PRELOAD_IMAGES
-        value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-      - name: KOPS_CL2_TEST_CONFIG
-        value: testing/dra/config.yaml
       resources:
         requests:
           cpu: 7
@@ -246,9 +136,11 @@ presubmits:
     always_run: false
     max_concurrency: 1
     labels:
-      preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential-boskos-scale-001-kops: "true"
+      preset-kops-scalability-ec2-common: "true"
+      preset-kops-scalability-dra-common: "true"
+      preset-kops-scalability-dra-500-node: "true"
     decorate: true
     decoration_config:
       timeout: 240m
@@ -273,61 +165,6 @@ presubmits:
         - runner.sh
         args:
         - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        - name: CNI_PLUGIN
-          value: "amazonvpc"
-        - name: KUBE_NODE_COUNT
-          value: "500"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_MODE
-          value: "Indexed"
-        - name: CL2_NODES_PER_NAMESPACE
-          value: "10"
-        - name: CL2_JOB_RUNNING_TIME
-          value: "3s"
-        - name: CL2_LONG_JOB_RUNNING_TIME
-          value: "45m"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: CONTROL_PLANE_SIZE
-          value: "c8a.12xlarge,c8i.12xlarge,c7a.12xlarge,c7i.12xlarge,c8id.12xlarge"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: TEAR_DOWN_PROMETHEUS_SERVER
-          value: "false"
-        - name: PROMETHEUS_SCRAPE_KUBELETS
-          value: "true"
-        - name: CL2_PROMETHEUS_KUBELET_KEEP_ONLY_DRA
-          value: "true"
-        - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
-          value: "false"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "io2"
-        - name: CLOUD_PROVIDER
-          value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
-        - name: NODE_PRELOAD_IMAGES
-          value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-        - name: KOPS_CL2_TEST_CONFIG
-          value: testing/dra/config.yaml
-        - name: KOPS_SCHEDULER_QPS
-          value: "500"
-        - name: KOPS_SCHEDULER_BURST
-          value: "500"
         resources:
           requests:
             cpu: 7
