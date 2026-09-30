@@ -56,7 +56,7 @@ periodics:
       - --gcp-nodes=2000
       - --gcp-project-type=scalability-scale-project
       - --gcp-ssh-proxy-instance-name=gce-scale-cluster-master
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-east1-b
       - --ginkgo-parallel=40
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8 --node-schedulable-timeout=90m

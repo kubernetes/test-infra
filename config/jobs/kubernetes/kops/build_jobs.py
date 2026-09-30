@@ -1913,6 +1913,22 @@ def generate_presubmits_scale():
             ]
         ),
         presubmit_test(
+            name='pull-kops-gce-cos-master-scale-correctness-100',
+            scenario='scalability',
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='gce',
+            cloud="gce",
+            always_run=False,
+            optional=True,
+            test_timeout_minutes=450,
+            env={'SCALE_SCENARIO': 'correctness', 'INSTANCE_IMAGE': 'cos-cloud/cos-129-19506-505-8'},
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-gce-common',
+                'preset-kops-scalability-gce-100-node',
+            ]
+        ),
+        presubmit_test(
             name='pull-kops-gce-master-scale-performance-5000',
             scenario='scalability',
             # only helps with setting the right anotation test.kops.k8s.io/networking
