@@ -1313,7 +1313,7 @@ periodics:
       securityContext:
         privileged: true
     nodeSelector:
-      node.kubernetes.io/instance-type: c4d-standard-16-lssd
+      pool: build
     serviceAccountName: prow-build
     tolerations:
     - key: build
