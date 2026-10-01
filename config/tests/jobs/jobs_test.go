@@ -1355,6 +1355,22 @@ func TestK8sInfraProwBuildJobsCIPolicy(t *testing.T) {
 	t.Logf("summary: %4d/%4d jobs fail to meet k8s-infra-prow-build CI policy", jobsToFix, len(jobs))
 }
 
+// The production image promotion jobs run as their own Kubernetes service
+// account, the only one that can sign the verification summaries of promoted
+// images, so no other job may use it.
+func TestImagePromotionServiceAccountRestricted(t *testing.T) {
+	const serviceAccount = "k8s-infra-image-promotion"
+	allowed := sets.New("post-k8sio-image-promo", "ci-k8sio-image-promo")
+	for _, job := range allStaticJobs() {
+		if job.Spec == nil || job.Spec.ServiceAccountName != serviceAccount {
+			continue
+		}
+		if !allowed.Has(job.Name) || job.Cluster != "k8s-infra-prow-build-trusted" {
+			t.Errorf("%v: only %v in k8s-infra-prow-build-trusted may run as %s", job.Name, sets.List(allowed), serviceAccount)
+		}
+	}
+}
+
 // Fast builds take 20-30m, cross builds take 90m-2h. We want to pick up builds
 // containing the latest merged PRs as soon as possible for the in-development release
 func TestSigReleaseMasterBlockingOrInformingJobsMustUseFastBuilds(t *testing.T) {

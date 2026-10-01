@@ -59,7 +59,7 @@ postsubmits:
     branches:
     - ^main$
     spec:
-      serviceAccountName: k8s-infra-gcr-promoter
+      serviceAccountName: k8s-infra-image-promotion
       containers:
       - image: registry.k8s.io/artifact-promoter/kpromo:v4.6.0-0
         command:
@@ -179,7 +179,7 @@ periodics:
   spec:
     # The k8s-artifacts-prod name was chosen in
     # https://github.com/kubernetes/k8s.io/pull/695.
-    serviceAccountName: k8s-infra-gcr-promoter
+    serviceAccountName: k8s-infra-image-promotion
     containers:
     - image: registry.k8s.io/artifact-promoter/kpromo:v4.6.0-0
       command:
