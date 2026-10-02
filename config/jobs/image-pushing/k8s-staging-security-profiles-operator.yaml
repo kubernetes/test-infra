@@ -29,3 +29,39 @@ postsubmits:
               limits:
                 cpu: 0.5
                 memory: 1Gi
+    # Publishes the GitHub built spoc binaries and Helm chart of a release tag
+    # to staging, see doc/release.md#oci-artifacts. It waits up to two hours
+    # for the assets of the GitHub release.
+    - name: post-security-profiles-operator-push-release-artifacts
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-k8s-infra-gcb
+      decorate: true
+      decoration_config:
+        timeout: 4h
+      always_run: true
+      branches:
+        - ^v[0-9]+\.[0-9]+\.[0-9]+$
+      spec:
+        serviceAccountName: sp-operator
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --with-git-dir
+              - --gcb-config=cloudbuild-release.yaml
+              - --env-passthrough=PULL_BASE_REF
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+            resources:
+              requests:
+                cpu: 0.5
+                memory: 1Gi
+              limits:
+                cpu: 0.5
+                memory: 1Gi
