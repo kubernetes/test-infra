@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.6.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
         command:
         - /kpromo
         args:
@@ -61,7 +61,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.6.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
         command:
         - /kpromo
         args:
@@ -137,7 +137,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.6.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
       command:
       - /kpromo
       args:
@@ -181,7 +181,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.6.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
       command:
       - /kpromo
       args:
@@ -298,15 +298,22 @@ periodics:
     prow.k8s.io/refs.org: kubernetes
     prow.k8s.io/refs.repo: test-infra
   decorate: true
+  # Signs and attests images the promotion missed, so it must not run at the
+  # same time as the image promotion jobs, which sign as the same identity.
+  job_queue_name: "k8sio-image-promo"
   spec:
+    serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.6.0-0
+    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.7.0-0
       imagePullPolicy: Always
       command:
         - /kpromo
-        - --from-days=7
       args:
         - sigcheck
+        - --from-days=7
+        - --confirm
+        - --certificate-identity=krel-trust@k8s-releng-prod.iam.gserviceaccount.com
+        - --certificate-oidc-issuer=https://accounts.google.com
       resources:
         requests:
           cpu: 1
