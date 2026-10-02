@@ -19,3 +19,4 @@ steps:
     - gcr.io/$PROJECT_ID/git:latest
 substitutions:
   _GIT_TAG: '12345'
+serviceAccount: projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com

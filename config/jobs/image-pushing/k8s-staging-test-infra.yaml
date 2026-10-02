@@ -19,7 +19,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -29,6 +29,13 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - images/bazelbuild/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-benchmarkjunit
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^pkg/benchmarkjunit/'
@@ -45,7 +52,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -55,6 +62,13 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - pkg/benchmarkjunit/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-bigquery
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^(images/bigquery|scenarios)/'
@@ -71,7 +85,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -81,6 +95,13 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - images/bigquery/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-bootstrap
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^(images/bootstrap|scenarios)/'
@@ -95,7 +116,7 @@ postsubmits:
       - ^master$
       max_concurrency: 1
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -105,6 +126,13 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - images/bootstrap/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-gcloud-in-go
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/gcloud-in-go/'
@@ -121,7 +149,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -131,6 +159,13 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - images/gcloud-in-go/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-image-builder
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/builder/'
@@ -147,7 +182,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -157,6 +192,13 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - images/builder/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-krte
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/(krte/|kubekins-e2e-v2/variants.yaml)'
@@ -173,7 +215,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -183,6 +225,13 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - images/krte/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-kubekins-e2e
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -202,7 +251,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -212,6 +261,13 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - images/kubekins-e2e/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
 
     - name: post-test-infra-push-kubekins-e2e-v2
       cluster: k8s-infra-prow-build-trusted
@@ -232,7 +288,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -240,8 +296,15 @@ postsubmits:
           args:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
-          - --service-account=projects/k8s-staging-test-infra/serviceAccounts/gcb-image-builder@k8s-staging-test-infra.iam.gserviceaccount.com
+          - --service-account=projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com
           - images/kubekins-e2e-v2/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-alpine
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/alpine/'
@@ -255,7 +318,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -264,6 +327,13 @@ postsubmits:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
           - images/alpine/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-git
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/git/'
@@ -277,7 +347,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -286,6 +356,13 @@ postsubmits:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
           - images/git/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-git-custom-k8s-auth
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/git-custom-k8s-auth/'
@@ -299,7 +376,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -308,6 +385,13 @@ postsubmits:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
           - images/git-custom-k8s-auth/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-misc-images
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
@@ -324,7 +408,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -335,6 +419,13 @@ postsubmits:
           - --build-dir=.
           - --with-git-dir
           - .
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
 
     #
     # components, e.g. kettle/, triage/
@@ -358,7 +449,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -368,6 +459,13 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - kettle/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
     - name: post-test-infra-push-triage
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^triage/'
@@ -384,7 +482,7 @@ postsubmits:
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: test-infra
         containers:
         - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
           command:
@@ -394,6 +492,13 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --env-passthrough=PULL_BASE_REF
           - triage/
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+            limits:
+              cpu: 0.5
+              memory: 1Gi
 
 # NOTE: only certain images with external inputs should have periodics!
 periodics:
@@ -416,7 +521,7 @@ periodics:
     # avoid overloading GCB logs quota for the shared staging project
     job_queue_name: "test-infra-staging-image-push"
     spec:
-      serviceAccountName: gcb-builder
+      serviceAccountName: test-infra
       containers:
       - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
         command:
@@ -426,6 +531,13 @@ periodics:
         - --project=k8s-staging-test-infra
         - --build-dir=.
         - images/krte/
+        resources:
+          requests:
+            cpu: 0.5
+            memory: 1Gi
+          limits:
+            cpu: 0.5
+            memory: 1Gi
   - name: periodic-test-infra-push-kubekins-e2e
     cron: '0 9 * * MON' # weekly at 1am or 2am pacific on monday
     cluster: k8s-infra-prow-build-trusted
@@ -445,7 +557,7 @@ periodics:
     # avoid overloading GCB logs quota for the shared staging project
     job_queue_name: "test-infra-staging-image-push"
     spec:
-      serviceAccountName: gcb-builder
+      serviceAccountName: test-infra
       containers:
       - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
         command:
@@ -455,6 +567,13 @@ periodics:
         - --project=k8s-staging-test-infra
         - --build-dir=.
         - images/kubekins-e2e/
+        resources:
+          requests:
+            cpu: 0.5
+            memory: 1Gi
+          limits:
+            cpu: 0.5
+            memory: 1Gi
   - name: periodic-test-infra-push-kubekins-e2e-v2
     cron: '0 9 * * MON' # weekly at 1am or 2am pacific on monday
     cluster: k8s-infra-prow-build-trusted
@@ -474,7 +593,7 @@ periodics:
     # avoid overloading GCB logs quota for the shared staging project
     job_queue_name: "test-infra-staging-image-push"
     spec:
-      serviceAccountName: gcb-builder
+      serviceAccountName: test-infra
       containers:
       - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
         command:
@@ -482,5 +601,12 @@ periodics:
         args:
         - --scratch-bucket=gs://k8s-staging-test-infra-gcb
         - --project=k8s-staging-test-infra
-        - --service-account=projects/k8s-staging-test-infra/serviceAccounts/gcb-image-builder@k8s-staging-test-infra.iam.gserviceaccount.com
+        - --service-account=projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com
         - images/kubekins-e2e-v2/
+        resources:
+          requests:
+            cpu: 0.5
+            memory: 1Gi
+          limits:
+            cpu: 0.5
+            memory: 1Gi

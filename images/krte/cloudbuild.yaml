@@ -16,6 +16,7 @@ substitutions:
   _GIT_TAG: '12345'
   _CONFIG: master
   _K8S_BRANCH: master
+serviceAccount: projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com
 options:
   substitution_option: ALLOW_LOOSE
   # this is a large and critical CI image, builds are slow on the default 1 core

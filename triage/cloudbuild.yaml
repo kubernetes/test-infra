@@ -18,6 +18,7 @@ substitutions:
   # set by image-builder to branch name; we don't use this, but we
   # want strict validation of substitution vars to catch typos early
   _PULL_BASE_REF: 'main'
+serviceAccount: projects/k8s-staging-images/serviceAccounts/test-infra-sa@k8s-staging-images.iam.gserviceaccount.com
 images:
   - 'gcr.io/$PROJECT_ID/triage:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/triage:latest'
