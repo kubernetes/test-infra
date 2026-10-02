@@ -32,7 +32,7 @@ presubmits:
   - name: pull-test-infra-prow-checkconfig
     cluster: eks-prow-build-cluster
     decorate: true
-    run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
+    run_if_changed: '^(config/prow/(config|plugins).yaml$|config/prow/plugins/.*.yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
       - image: us-docker.pkg.dev/k8s-infra-prow/images/checkconfig:v20261001-ae4792128
@@ -42,6 +42,7 @@ presubmits:
         - --config-path=config/prow/config.yaml
         - --job-config-path=config/jobs
         - --plugin-config=config/prow/plugins.yaml
+        - --supplemental-plugin-config-dir=config/prow/plugins
         - --strict
         - --warnings=mismatched-tide-lenient
         - --warnings=tide-strict-branch
