@@ -17,7 +17,7 @@
 # pylint: disable=line-too-long
 skip_jobs = []
 
-image = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260928-4368685e66-master"
+image = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261002-2f91ef118a-master"
 
 k8s_versions = [
     "master",
