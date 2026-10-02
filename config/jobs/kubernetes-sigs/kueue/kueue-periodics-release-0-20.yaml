@@ -1407,11 +1407,11 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "4900m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
             limits:
-              cpu: "4900m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-multikueue-extended-ray-autoscaling-release-0-20
     cluster: eks-prow-build-cluster
@@ -1495,11 +1495,11 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "4200m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
             limits:
-              cpu: "4200m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-multikueue-sequential-shard-0-release-0-20
     cluster: eks-prow-build-cluster

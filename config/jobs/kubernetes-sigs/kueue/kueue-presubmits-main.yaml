@@ -1006,11 +1006,11 @@ presubmits:
               privileged: true
             resources:
               requests:
-                cpu: "6600m"
-                memory: "10Gi"
+                cpu: "7"
+                memory: "16Gi"
               limits:
-                cpu: "6600m"
-                memory: "10Gi"
+                cpu: "7"
+                memory: "16Gi"
     - name: pull-kueue-test-e2e-multikueue-extended-shard-1-main
       cluster: eks-prow-build-cluster
       branches:
@@ -1045,11 +1045,11 @@ presubmits:
               privileged: true
             resources:
               requests:
-                cpu: "6700m"
-                memory: "10Gi"
+                cpu: "7"
+                memory: "16Gi"
               limits:
-                cpu: "6700m"
-                memory: "10Gi"
+                cpu: "7"
+                memory: "16Gi"
     - name: pull-kueue-test-e2e-multikueue-extended-ray-autoscaling-main
       cluster: eks-prow-build-cluster
       always_run: false
