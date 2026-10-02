@@ -68,6 +68,8 @@ postsubmits:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
         - --use-prow-manifest-diff
+        - --verification-summaries
+        - --summary-signer-account=promoter-summaries@k8s-releng-prod.iam.gserviceaccount.com
         - --confirm
         - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
         - --certificate-oidc-issuer=https://accounts.google.com
@@ -189,6 +191,8 @@ periodics:
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
       - --confirm
       - --manifest-diff-since=14 days
+      - --verification-summaries
+      - --summary-signer-account=promoter-summaries@k8s-releng-prod.iam.gserviceaccount.com
       - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
       - --certificate-oidc-issuer=https://accounts.google.com
       env:
