@@ -59,7 +59,6 @@ periodics:
       - ci-build
       - --configure-docker
       - --allow-dup=false
-      - --sign=false
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
       env:
