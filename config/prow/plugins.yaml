@@ -765,6 +765,11 @@ config_updater:
       clusters:
         test-infra-trusted:
           - default
+    config/prow/plugins/**/*_pluginconfig.yaml:
+      name: plugins
+      clusters:
+        test-infra-trusted:
+          - default
     config/jobs/**/*.{yaml,yml}:
       name: job-config
       gzip: true
