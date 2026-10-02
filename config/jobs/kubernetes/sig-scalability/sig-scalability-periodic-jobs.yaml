@@ -624,6 +624,7 @@ periodics:
       - --env=CL2_LIST_BENCHMARK_PODS=10
       - --env=CL2_LIST_BENCHMARK_CONTENT_TYPE=proto
       - --env=CL2_LIST_BENCHMARK_MODE=informer
+      - --env=CL2_LIST_ENABLE_WATCHLIST=true
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
