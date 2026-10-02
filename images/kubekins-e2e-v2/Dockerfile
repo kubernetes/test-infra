@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:bookworm-20260623
+FROM debian:bookworm-20260713
 ARG TARGETARCH
 
 WORKDIR /workspace

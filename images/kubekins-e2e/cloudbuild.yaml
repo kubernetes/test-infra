@@ -66,7 +66,7 @@ substitutions:
   _K8S_BRANCH: master
   _KIND_VERSION: ''
   _KUBETEST2_VERSION: 'master'
-  _YQ_VERSION: v4.53.3
+  _YQ_VERSION: v4.54.1
 timeout: 7200s
 options:
   substitution_option: ALLOW_LOOSE
