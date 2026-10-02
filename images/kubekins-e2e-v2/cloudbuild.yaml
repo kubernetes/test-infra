@@ -59,12 +59,12 @@ substitutions:
   _GIT_TAG: '12345'
   _K8S_RELEASE: stable
   _K8S_BRANCH: master
-  _KIND_VERSION: '0.32.0'
+  _KIND_VERSION: '0.33.0'
   _KUBETEST2_VERSION: 'master'
-  _YQ_VERSION: v4.53.3
+  _YQ_VERSION: v4.54.1
   _DOCKER_VERSION: 5:29.*
-  _HELM_VERSION: v4.2.2
-  _GH_VERSION: 2.96.0
+  _HELM_VERSION: v4.2.4
+  _GH_VERSION: 2.102.0
   _REGISTRY: us-central1-docker.pkg.dev/k8s-staging-test-infra/images
 timeout: 3600s
 options:
