@@ -1251,11 +1251,11 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "6600m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
             limits:
-              cpu: "6600m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-multikueue-extended-shard-1-release-0-19
     cluster: eks-prow-build-cluster
@@ -1296,11 +1296,11 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "6700m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
             limits:
-              cpu: "6700m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-multikueue-sequential-shard-0-release-0-19
     cluster: eks-prow-build-cluster
