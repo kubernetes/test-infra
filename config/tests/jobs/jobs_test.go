@@ -1357,10 +1357,12 @@ func TestK8sInfraProwBuildJobsCIPolicy(t *testing.T) {
 
 // The production image promotion jobs run as their own Kubernetes service
 // account, the only one that can sign the verification summaries of promoted
-// images, so no other job may use it.
+// images, so no other job may use it. The signature check repairs signatures as
+// the same identity as the promotion and shares the account, although it
+// doesn't need the summary identity.
 func TestImagePromotionServiceAccountRestricted(t *testing.T) {
 	const serviceAccount = "k8s-infra-image-promotion"
-	allowed := sets.New("post-k8sio-image-promo", "ci-k8sio-image-promo")
+	allowed := sets.New("post-k8sio-image-promo", "ci-k8sio-image-promo", "periodic-release-verify-image-signatures")
 	for _, job := range allStaticJobs() {
 		if job.Spec == nil || job.Spec.ServiceAccountName != serviceAccount {
 			continue

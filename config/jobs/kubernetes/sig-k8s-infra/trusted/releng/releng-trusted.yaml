@@ -302,14 +302,14 @@ periodics:
     prow.k8s.io/refs.org: kubernetes
     prow.k8s.io/refs.repo: test-infra
   decorate: true
-  # Signs and attests images the promotion missed, so it must not run at the
-  # same time as the image promotion jobs, which sign as the same identity.
+  # Signs and attests images the promotion missed as the same identity and with
+  # the same service account as the image promotion jobs, so it must not run at
+  # the same time as them.
   job_queue_name: "k8sio-image-promo"
   spec:
-    serviceAccountName: k8s-infra-gcr-promoter
+    serviceAccountName: k8s-infra-image-promotion
     containers:
-    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.7.0-0
-      imagePullPolicy: Always
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
       command:
         - /kpromo
       args:
