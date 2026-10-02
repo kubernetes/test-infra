@@ -22,7 +22,7 @@ periodics:
     timeout: 360m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260928-4368685e66-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261002-2f91ef118a-master
       command:
       - runner.sh
       args:
@@ -68,7 +68,7 @@ periodics:
     timeout: 360m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260928-4368685e66-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261002-2f91ef118a-master
       command:
       - runner.sh
       args:
@@ -112,7 +112,7 @@ presubmits:
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260928-4368685e66-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261002-2f91ef118a-master
         command:
         - runner.sh
         args:
@@ -158,7 +158,7 @@ presubmits:
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260928-4368685e66-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261002-2f91ef118a-master
         command:
         - runner.sh
         args:

@@ -30,7 +30,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260928-4368685e66-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261002-2f91ef118a-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -84,7 +84,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260928-4368685e66-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261002-2f91ef118a-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -138,7 +138,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260928-4368685e66-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261002-2f91ef118a-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -194,7 +194,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260928-4368685e66-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261002-2f91ef118a-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -250,7 +250,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260928-4368685e66-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261002-2f91ef118a-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -309,7 +309,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260928-4368685e66-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261002-2f91ef118a-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -364,7 +364,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260928-4368685e66-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261002-2f91ef118a-master
         imagePullPolicy: Always
         command:
         - runner.sh
