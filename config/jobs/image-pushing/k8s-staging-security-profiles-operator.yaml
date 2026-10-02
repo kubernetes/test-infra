@@ -36,6 +36,13 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-k8s-infra-gcb
+      # The release managers of the Security Profiles Operator, who create the
+      # release tags, rerun the job when the GitHub release took longer than
+      # its wait window or a step failed.
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: security-profiles-operator-admins
       decorate: true
       decoration_config:
         timeout: 4h
