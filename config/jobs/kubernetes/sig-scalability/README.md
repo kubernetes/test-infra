@@ -75,8 +75,7 @@ track. Add new entries at the top.
 
 | Variant | Date | What it does | Owner | Status |
 | --- | --- | --- | --- | --- |
-| `c4d` | 2026-09-30 | Single-replica `c4d-standard-96` control plane (`CONTROL_PLANE_SIZE=c4d-standard-96`) on the 5k job via `preset-kops-scalability-gce-5000-node-c4d` to avoid variance across Intel CPU generations. | @Jefftree | In Progress |
-| `HA` | 2026-08-03 | 3-replica control plane (`CONTROL_PLANE_COUNT=3`) on the 5k job, which today runs a single control plane. | @Jefftree | Paused |
+| `HA` | 2026-08-03 | 3-replica control plane (`CONTROL_PLANE_COUNT=3`) on the 5k job, which today runs a single control plane. | @Jefftree | In Progress |
 | `node-exporter` | 2026-07-24 | Scraping node exporter (`PROMETHEUS_SCRAPE_NODE_EXPORTER=true`) for per-node resource metrics. | @serathius | Graduated |
 | `restart-etcd36` | 2026-07-10 | RangeStream (`+EtcdRangeStream`) with HA control plane restart, on etcd 3.6.12, to gather data on RangeStream against etcd 3.6. Presubmit only. | @Jefftree | Completed |
 | `restart` | 2026-06-29 | HA control plane with restart, for tracking improvements with watch cache initialization. |  @Jefftree | In Progress |
