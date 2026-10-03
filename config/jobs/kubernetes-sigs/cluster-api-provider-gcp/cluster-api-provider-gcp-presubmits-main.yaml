@@ -135,7 +135,7 @@ presubmits:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
             - name: GINKGO_FOCUS
-              value: "Workload cluster creation"
+              value: "Workload cluster creation|Autoscaling from zero"
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
