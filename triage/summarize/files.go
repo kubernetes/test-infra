@@ -323,15 +323,15 @@ func loadTests(testsFilepaths []string, memoize bool) (map[string][]failure, err
 		return tests, nil
 	}
 
-	// jsonTests temporarily stores the tests as they are retrieved from the JSON file
-	// until they can be converted to failure objects
-	jsonFailures := make([]jsonFailure, 0)
 	for _, filepath := range testsFilepaths {
+		// jsonFailures temporarily stores the failures from this file
+		// until they can be converted to failure objects
+		jsonFailures := make([]jsonFailure, 0)
+
 		file, err := os.Open(filepath)
 		if err != nil {
 			return nil, fmt.Errorf("Could not open tests file '%s': %s", filepath, err)
 		}
-		defer file.Close()
 
 		// Read each line in the file as its own JSON object
 		decoder := json.NewDecoder(file)
@@ -341,10 +341,12 @@ func loadTests(testsFilepaths []string, memoize bool) (map[string][]failure, err
 			if err := decoder.Decode(&jf); err == io.EOF {
 				break // reached EOF
 			} else if err != nil {
+				file.Close()
 				return nil, err
 			}
 			jsonFailures = append(jsonFailures, jf)
 		}
+		file.Close()
 
 		// Convert the failure information to internal failure objects and store them in tests
 		for _, jf := range jsonFailures {
