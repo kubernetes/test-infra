@@ -37,6 +37,8 @@ The web page can be accessed at https://go.k8s.io/triage with the following opti
 - `Show clusters for SIG`: filter results by the SIG assigned to the majority of the tests; allows multi-select
 - `Include results from`: toggle between CI tests, PR tests, or both
 - `Sort by`: basic sorting
+- `Only show failures started between`: only count builds that started within the given date
+  range (inclusive); useful for hiding failures that were already fixed before a given date
 - `Include filter`/`Exclude filter`: advanced regex filtering by field
 
 Note that the clusters at the top of the web page are static, and must be added/removed manually.
