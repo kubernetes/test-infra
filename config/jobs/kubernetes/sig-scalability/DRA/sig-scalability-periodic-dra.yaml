@@ -420,7 +420,7 @@ periodics:
         - name: CONTROL_PLANE_COUNT
           value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "c4-standard-96"
+          value: "c4d-standard-96"
         - name: KOPS_CONTROLLER_MANAGER_BURST
           value: "1000"
         - name: KOPS_CONTROLLER_MANAGER_QPS

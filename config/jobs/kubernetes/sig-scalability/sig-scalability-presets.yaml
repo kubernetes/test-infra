@@ -448,7 +448,7 @@ presets:
   - name: KUBE_NODE_COUNT
     value: "5000"
   - name: CONTROL_PLANE_SIZE
-    value: "c4-standard-96"
+    value: "c4d-standard-96"
   - name: ADDONS_NODE_SIZE
     value: "c3-standard-44"
   - name: BOSKOS_RESOURCE_TYPE
@@ -486,34 +486,10 @@ presets:
   #   value: "true"
 
 
-# Experimental 5k variant testing c4d-standard-96 on control plane to avoid
-# variance across Intel CPU generations and architectures.
-# Cannot extend the existing 5k preset because overriding CONTROL_PLANE_SIZE
-# causes Prow preset merging to fail on duplicate keys.
-- labels:
-    preset-kops-scalability-gce-5000-node-c4d: "true"
-  env:
-  - name: EXPERIMENT_VARIANT
-    value: "c4d"
-  - name: KUBE_NODE_COUNT
-    value: "5000"
-  - name: CONTROL_PLANE_SIZE
-    value: "c4d-standard-96"
-  - name: ADDONS_NODE_SIZE
-    value: "c3-standard-44"
-  - name: BOSKOS_RESOURCE_TYPE
-    value: "scalability-scale-project"
-  - name: CL2_ENABLE_INFORMER_LATENCY_TEST
-    value: "false"
-  - name: ETCD_QUOTA_BACKEND_BYTES
-    value: "21474836480"
-  - name: CL2_EXECSERVICE_CPU_REQUESTS
-    value: "8"
-  - name: CL2_EXECSERVICE_MEMORY_REQUESTS
-    value: "16Gi"
-  - name: CL2_REALISTIC_POD
-    value: "true"
-
 - labels:
     preset-kops-scalability-gce-experimental: "true"
-  env: []
+  env:
+  - name: EXPERIMENT_VARIANT
+    value: "HA"
+  - name: CONTROL_PLANE_COUNT
+    value: "3"
