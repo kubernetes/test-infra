@@ -930,6 +930,7 @@ tide:
     kubernetes/dashboard: squash
     kubernetes-sigs/ingress2gateway: squash
     kubernetes-sigs/node-readiness-controller: squash
+    kubernetes-sigs/node-ipam-controller: squash
   pr_status_base_urls:
     '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker
