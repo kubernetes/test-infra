@@ -766,7 +766,7 @@ periodics:
       - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
       - --env=KUBE_GCE_PRIVATE_CLUSTER=false
       - --env=CL2_PODS_BENCHMARK_POD_COUNT=10000
-      - --env=CL2_PODS_WATCH_REPLICAS=10
+      - --env=CL2_PODS_WATCH_REPLICAS=0
       - --env=CL2_PODS_WRITE_REPLICAS=10
       - --env=CL2_PODS_PATCH_QPS=100
       - --env=CL2_PODS_BENCHMARK_DURATION=15m
@@ -841,7 +841,7 @@ periodics:
       - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
       - --env=KUBE_GCE_PRIVATE_CLUSTER=false
       - --env=CL2_PODS_BENCHMARK_POD_COUNT=10000
-      - --env=CL2_PODS_WATCH_REPLICAS=10
+      - --env=CL2_PODS_WATCH_REPLICAS=0
       - --env=CL2_PODS_WRITE_REPLICAS=5
       - --env=CL2_PODS_PATCH_QPS=100
       - --env=CL2_PODS_BENCHMARK_DURATION=15m
