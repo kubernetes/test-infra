@@ -74,7 +74,7 @@ periodics:
     testgrid-num-failures-to-alert: "1"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261002-2f91ef118a-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261002-2f91ef118a-master
       imagePullPolicy: Always
       command:
       - runner.sh
