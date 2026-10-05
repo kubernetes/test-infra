@@ -308,6 +308,9 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       serviceAccountName: prow-build
+      tolerations:
+      - key: highmem
+        operator: Exists
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261002-2f91ef118a-master
         imagePullPolicy: Always
@@ -322,11 +325,11 @@ presubmits:
           value: "TRUE"
         resources:
           requests:
-            cpu: "6"
-            memory: "16Gi"
+            cpu: 7
+            memory: "40Gi"
           limits:
-            cpu: "6"
-            memory: "16Gi"
+            cpu: 7
+            memory: "40Gi"
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/distro: u2404

@@ -58,6 +58,13 @@
       {%- elif cloud == "azure" %}
       serviceAccountName: azure
       {%- endif %}
+      {%- if tolerations %}
+      tolerations:
+      {%- for toleration in tolerations %}
+      - key: {{ toleration.key }}
+        operator: {{ toleration.operator }}
+      {%- endfor %}
+      {%- endif %}
       containers:
       - image: {{image}}
         imagePullPolicy: Always
@@ -98,8 +105,8 @@
         {%- endfor %}
         resources:
           requests:
-            cpu: "6"
-            memory: "16Gi"
+            cpu: {{ resources.requests.cpu if resources and resources.requests and resources.requests.cpu is defined else '"6"' }}
+            memory: "{{ resources.requests.memory if resources and resources.requests and resources.requests.memory is defined else '16Gi' }}"
           limits:
-            cpu: "6"
-            memory: "16Gi"
+            cpu: {{ resources.limits.cpu if resources and resources.limits and resources.limits.cpu is defined else '"6"' }}
+            memory: "{{ resources.limits.memory if resources and resources.limits and resources.limits.memory is defined else '16Gi' }}"
