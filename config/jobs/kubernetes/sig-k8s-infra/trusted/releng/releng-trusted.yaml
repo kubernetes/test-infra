@@ -63,7 +63,19 @@ postsubmits:
       containers:
       - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
         command:
-        - /kpromo
+        - /bin/sh
+        - -c
+        - |
+          # Prow checks out kubernetes/k8s.io without a remote, but kpromo takes
+          # the repository of the promoter manifests, which the verification
+          # summaries need, only from its origin remote. Drop this with a release
+          # of kubernetes-sigs/promo-tools#2017.
+          repo=/home/prow/go/src/github.com/kubernetes/k8s.io
+          git -C "$repo" remote get-url origin >/dev/null 2>&1 ||
+            git -C "$repo" remote add origin https://github.com/kubernetes/k8s.io ||
+            echo "Unable to add the origin remote to $repo" >&2
+          exec /kpromo "$@"
+        - kpromo
         args:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
@@ -185,7 +197,19 @@ periodics:
     containers:
     - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
       command:
-      - /kpromo
+      - /bin/sh
+      - -c
+      - |
+        # Prow checks out kubernetes/k8s.io without a remote, but kpromo takes
+        # the repository of the promoter manifests, which the verification
+        # summaries need, only from its origin remote. Drop this with a release
+        # of kubernetes-sigs/promo-tools#2017.
+        repo=/home/prow/go/src/github.com/kubernetes/k8s.io
+        git -C "$repo" remote get-url origin >/dev/null 2>&1 ||
+          git -C "$repo" remote add origin https://github.com/kubernetes/k8s.io ||
+          echo "Unable to add the origin remote to $repo" >&2
+        exec /kpromo "$@"
+      - kpromo
       args:
       - cip
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
