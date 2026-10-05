@@ -364,7 +364,9 @@ def presubmit_test(branch='master',
                    instance_groups_overrides=None,
                    job_queue_name=None,
                    presets=None,
-                   extra_refs=None):
+                   extra_refs=None,
+                   tolerations=None,
+                   resources=None):
     # pylint: disable=too-many-statements,too-many-arguments
     kops_image = None
     kops_ssh_user = None
@@ -472,6 +474,8 @@ def presubmit_test(branch='master',
         extra_refs=extra_refs,
         job_queue_name=job_queue_name,
         derive_ssh_user=derive_ssh_user,
+        tolerations=tolerations,
+        resources=resources,
     )
 
     spec = {
@@ -1941,7 +1945,15 @@ def generate_presubmits_scale():
                 'preset-kops-scalability-common',
                 'preset-kops-scalability-gce-common',
                 'preset-kops-scalability-gce-5000-node',
-            ]
+            ],
+            tolerations=[{
+                'key': 'highmem',
+                'operator': 'Exists',
+            }],
+            resources={
+                'requests': {'cpu': 7, 'memory': '40Gi'},
+                'limits': {'cpu': 7, 'memory': '40Gi'},
+            },
         ),
         presubmit_test(
             name='pull-kops-gce-master-scale-performance-100',
