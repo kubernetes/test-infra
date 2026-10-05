@@ -326,11 +326,11 @@ presubmits:
           {%- if job_type == "e2e" and all_features %}
           # With DATA RACE detection enabled, more memory is needed.
           limits:
-            cpu: 4
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
           requests:
-            cpu: 4
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
           {%- elif ci and job_type == "node" or testinfra %}
           # E2E node jobs just control remote execution and thus
           # need few resources, but only when using release packages.

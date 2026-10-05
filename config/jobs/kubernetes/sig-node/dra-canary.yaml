@@ -191,11 +191,11 @@ presubmits:
         resources:
           # With DATA RACE detection enabled, more memory is needed.
           limits:
-            cpu: 4
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
           requests:
-            cpu: 4
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
 
   - name: pull-kubernetes-kind-dra-all-slow-canary
     cluster: eks-prow-build-cluster
@@ -297,11 +297,11 @@ presubmits:
         resources:
           # With DATA RACE detection enabled, more memory is needed.
           limits:
-            cpu: 4
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
           requests:
-            cpu: 4
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
 
   - name: pull-kubernetes-kind-dra-n-1-canary
     cluster: eks-prow-build-cluster

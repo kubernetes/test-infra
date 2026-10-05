@@ -196,11 +196,11 @@ periodics:
         resources:
           # With DATA RACE detection enabled, more memory is needed.
           limits:
-            cpu: 4
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
           requests:
-            cpu: 4
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
 
   - name: ci-kind-dra-n-1
     cluster: eks-prow-build-cluster
