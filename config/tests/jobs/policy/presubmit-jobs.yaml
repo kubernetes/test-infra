@@ -177,8 +177,6 @@ optional_and_run_if_changed:
       run_if_changed: /staging/src/k8s.io/component-base/logs/
     - name: pull-kubernetes-local-e2e
       run_if_changed: local-up-cluster
-    - name: pull-kubernetes-node-e2e-containerd-1-7-dra
-      run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     - name: pull-kubernetes-node-e2e-containerd-2-0-dra
       run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     - name: pull-kubernetes-node-e2e-containerd-2-0-dra-alpha-beta-features
