@@ -465,54 +465,6 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/test-infra
     repo: test-infra
-  interval: 24h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-node-e2e-containerd-1-7-dra-1-35
-  spec:
-    containers:
-    - args:
-      - kubetest2
-      - noop
-      - --test=node
-      - --
-      - --repo-root=.
-      - --gcp-zone=us-central1-b
-      - --parallelism=1
-      - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
-      - --timeout=60m
-      - --skip-regex=
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
-      command:
-      - runner.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261002-2f91ef118a-1.35
-      name: ""
-      resources:
-        limits:
-          cpu: "2"
-          memory: 6Gi
-        requests:
-          cpu: "2"
-          memory: 6Gi
-- annotations:
-    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
-    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-1.35-informing
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 1h30m0s
-  extra_refs:
-  - base_ref: release-1.35
-    org: kubernetes
-    path_alias: k8s.io/kubernetes
-    repo: kubernetes
-    workdir: true
-  - base_ref: master
-    org: kubernetes
-    path_alias: k8s.io/test-infra
-    repo: test-infra
   - base_ref: release/2.1
     org: containerd
     repo: containerd
@@ -2411,51 +2363,6 @@ presubmits:
           value: /go
         - name: KUBE_SSH_USER
           value: core
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261002-2f91ef118a-1.35
-        name: ""
-        resources:
-          limits:
-            cpu: "2"
-            memory: 6Gi
-          requests:
-            cpu: "2"
-            memory: 6Gi
-  - always_run: false
-    branches:
-    - release-1.35
-    cluster: k8s-infra-prow-build
-    context: pull-kubernetes-node-e2e-containerd-1-7-dra
-    decorate: true
-    decoration_config:
-      timeout: 1h30m0s
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      path_alias: k8s.io/test-infra
-      repo: test-infra
-    labels:
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    name: pull-kubernetes-node-e2e-containerd-1-7-dra
-    optional: true
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - args:
-        - kubetest2
-        - noop
-        - --test=node
-        - --
-        - --repo-root=.
-        - --gcp-zone=us-central1-b
-        - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
-        - --timeout=60m
-        - --skip-regex=
-        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
-        command:
-        - runner.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261002-2f91ef118a-1.35
         name: ""
         resources:
