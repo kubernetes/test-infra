@@ -132,15 +132,13 @@ RUN mkdir /docker-graph
 
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
 # The invocation at the end is to prevent download failures downloads as in the bug.
-# TODO(porridge): bump CFSSL_VERSION to one where cfssljson supports the -version flag and test it as well.
 ARG CFSSL_VERSION
-RUN if [ "${TARGETARCH}" != "ppc64le" ]; then \
-    wget -q -O cfssl "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssl_${CFSSL_VERSION}_linux_${TARGETARCH}" && \
+RUN wget -q -O cfssl "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssl_${CFSSL_VERSION}_linux_${TARGETARCH}" && \
     wget -q -O cfssljson "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssljson_${CFSSL_VERSION}_linux_${TARGETARCH}" && \
     chmod +x cfssl cfssljson && \
     mv cfssl cfssljson /usr/local/bin && \
-    cfssl version; \
-    fi
+    cfssl version && \
+    cfssljson -version;
 
 # replace kubectl with one from K8S_RELEASE
 ARG K8S_RELEASE=latest
