@@ -54,7 +54,7 @@ substitutions:
   _AWS_ECR_REGISTRY: 468814281478.dkr.ecr.us-east-2.amazonaws.com
   _AWS_REGION: us-east-2
   _AWS_ROLE_ARN: arn:aws:iam::468814281478:role/cloudbuild
-  _CFSSL_VERSION: 1.6.5
+  _CFSSL_VERSION: 1.7.1
   _CONFIG: master
   _GIT_TAG: '12345'
   _K8S_RELEASE: stable
