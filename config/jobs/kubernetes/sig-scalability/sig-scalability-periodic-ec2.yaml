@@ -73,6 +73,9 @@ periodics:
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "1"
   spec:
+    tolerations:
+      - key: highmem
+        operator: Exists
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261005-65725656a4-master
       imagePullPolicy: Always
@@ -85,10 +88,10 @@ periodics:
       resources:
         requests:
           cpu: 7
-          memory: 24Gi
+          memory: 40Gi
         limits:
           cpu: 7
-          memory: 24Gi
+          memory: 40Gi
 
 - name: ci-kubernetes-e2e-ec2-scale-performance-100
   tags:
@@ -245,6 +248,9 @@ periodics:
     testgrid-tab-name: ec2-master-scale-correctness-2000
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
   spec:
+    tolerations:
+    - key: highmem
+      operator: Exists
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261005-65725656a4-master
       imagePullPolicy: Always
@@ -260,7 +266,7 @@ periodics:
       resources:
         requests:
           cpu: 7
-          memory: 24Gi
+          memory: 40Gi
         limits:
           cpu: 7
-          memory: 24Gi
+          memory: 40Gi

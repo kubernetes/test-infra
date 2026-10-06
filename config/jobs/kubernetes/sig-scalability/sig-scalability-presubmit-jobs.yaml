@@ -558,7 +558,6 @@ presubmits:
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
-        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -782,6 +781,9 @@ presubmits:
       testgrid-dashboards: presubmits-kubernetes-scalability
       testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-5000
     spec:
+      tolerations:
+      - key: highmem
+        operator: Exists
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261005-65725656a4-master
         command:
@@ -792,11 +794,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 5
-            memory: 16Gi
+            cpu: 7
+            memory: 40Gi
           limits:
-            cpu: 5
-            memory: 16Gi
+            cpu: 7
+            memory: 40Gi
 
   - name: pull-perf-tests-gce-master-scale-performance-100
     cluster: k8s-infra-prow-build
