@@ -1866,7 +1866,15 @@ def generate_presubmits_scale():
                 'preset-kops-scalability-common',
                 'preset-kops-scalability-ec2-common',
                 'preset-kops-scalability-ec2-5000-node',
-            ]
+            ],
+            tolerations=[{
+                'key': 'highmem',
+                'operator': 'Exists',
+            }],
+            resources={
+                'requests': {'cpu': 7, 'memory': '40Gi'},
+                'limits': {'cpu': 7, 'memory': '40Gi'},
+            },
         ),
         presubmit_test(
             name='pull-kops-ec2-master-scale-performance-100',
