@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.1-0
         command:
         - /kpromo
         args:
@@ -61,7 +61,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-image-promotion
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.1-0
         command:
         - /kpromo
         args:
@@ -139,7 +139,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.1-0
       command:
       - /kpromo
       args:
@@ -183,14 +183,17 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-image-promotion
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.1-0
       command:
       - /kpromo
       args:
       - cip
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
       - --confirm
-      - --manifest-diff-since=14 days
+      # For one run 30 instead of 14 days, so that the repair writes the
+      # verification summaries of the digests that v4.7.0 promoted without
+      # them (kubernetes-sigs/promo-tools#2021). Set back to 14 days after it.
+      - --manifest-diff-since=30 days
       - --verification-summaries
       - --summary-signer-account=promoter-summaries@k8s-releng-prod.iam.gserviceaccount.com
       - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
@@ -309,7 +312,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-image-promotion
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.7.1-0
       command:
         - /kpromo
       args:
