@@ -101,8 +101,6 @@ periodics:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      prow.k8s.io/refs.org: kubernetes
-      prow.k8s.io/refs.repo: kubernetes
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
       description: Runs E2E tests for Dynamic Resource Allocation alpha and beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
@@ -111,6 +109,11 @@ periodics:
     decoration_config:
       timeout: 90m
     extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261005-65725656a4-master
@@ -121,19 +124,14 @@ periodics:
         - -xce
         - |
           set -o pipefail
-          # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
-          revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/fast/latest-fast.txt)
-          # Report what was tested.
-          echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
-          # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
-          hash=${revision/*+/}
-          kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
-          kind_node_source="https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           # Read declaration and registration names, including aliases to staging constants.
           # Older releases keep versioned specs in a separate file, so accept declarations too.
-          features=( $( curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/pkg/features/kube_features.go" | sed -nE -e 's/^[[:space:]]*(DRA[[:alnum:]_]+)[[:space:]]+featuregate\.Feature[[:space:]]*=.*/\1/p' -e 's/^[[:space:]]*([[:alnum:]_]+\.)?(DRA[[:alnum:]_]+):[[:space:]]*\{.*/\2/p' | sort -u ) )
+          features=( $( cat pkg/features/kube_features.go | sed -nE -e 's/^[[:space:]]*(DRA[[:alnum:]_]+)[[:space:]]+featuregate\.Feature[[:space:]]*=.*/\1/p' -e 's/^[[:space:]]*([[:alnum:]_]+\.)?(DRA[[:alnum:]_]+):[[:space:]]*\{.*/\2/p' | sort -u ) )
           # These extra features are dependencies for some DRA features but only
           # valid for Kubernetes 1.35+. Additional features here should not
           # affect behavior of tests that don't require them.
@@ -141,9 +139,9 @@ periodics:
             features+=('GenericWorkload')
           fi
           : "Enabling DRA feature(s): ${features[*]}."
-          curl --fail --silent --show-error --location "https://dl.k8s.io/ci/fast/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
-          ginkgo=kubernetes/test/bin/ginkgo
-          e2e_test=kubernetes/test/bin/e2e.test
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           kind build node-image --image=dra/node:latest "${kind_node_source}"
