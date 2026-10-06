@@ -1059,6 +1059,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     always_run: false
     optional: true
+    run_if_changed: ^clusterloader2/testing/write-throughput/.*$
     max_concurrency: 1
     labels:
       preset-service-account: "true"
