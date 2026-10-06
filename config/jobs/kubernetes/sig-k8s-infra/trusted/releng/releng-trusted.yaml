@@ -190,10 +190,7 @@ periodics:
       - cip
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
       - --confirm
-      # For one run 30 instead of 14 days, so that the repair writes the
-      # verification summaries of the digests that v4.7.0 promoted without
-      # them (kubernetes-sigs/promo-tools#2021). Set back to 14 days after it.
-      - --manifest-diff-since=30 days
+      - --manifest-diff-since=14 days
       - --verification-summaries
       - --summary-signer-account=promoter-summaries@k8s-releng-prod.iam.gserviceaccount.com
       - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
