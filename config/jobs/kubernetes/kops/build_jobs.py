@@ -799,6 +799,13 @@ def generate_misc():
                    extra_flags=['--set=cluster.spec.cloudProvider.aws.useIPBasedNodeNames=true'],
                    extra_dashboards=['kops-misc']),
 
+        # Run the e2e suite with the cgroupfs cgroup driver for the kubelet and containerd
+        build_test(name_override="kops-aws-cgroupfs",
+                   cloud="aws",
+                   runs_per_day=1,
+                   extra_flags=['--set=cluster.spec.kubelet.cgroupDriver=cgroupfs'],
+                   extra_dashboards=['kops-misc']),
+
         build_test(name_override="kops-scenario-terraform",
                    cloud="aws",
                    distro="u2404arm64",
@@ -2539,6 +2546,15 @@ def generate_presubmits_e2e():
             networking="cilium",
             always_run=False,
             extra_flags=["--set=cluster.spec.cloudProvider.aws.useIPBasedNodeNames=true"],
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-cgroupfs",
+            cloud="aws",
+            tab_name="e2e-aws-cgroupfs",
+            extra_flags=["--set=cluster.spec.kubelet.cgroupDriver=cgroupfs"],
+            always_run=False,
+            optional=True,
         ),
 
         presubmit_test(
