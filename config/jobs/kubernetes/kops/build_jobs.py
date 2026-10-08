@@ -1978,6 +1978,43 @@ def generate_presubmits_scale():
                 'preset-kops-scalability-gce-100-node',
             ]
         ),
+        presubmit_test(
+            name='pull-kops-gce-agent-sandbox-benchmark',
+            scenario='agent-sandbox',
+            cloud='gce',
+            networking='cilium',
+            always_run=False,
+            optional=True,
+            test_timeout_minutes=120,
+            env={
+                'STRESS_NODE_COUNT': '3',
+                'STRESS_CONTROL_PLANE_SIZE': 'c3-standard-8',
+                'STRESS_PHASES': 'fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80',
+            },
+            resources={
+                'requests': {'cpu': 7, 'memory': '14Gi'},
+                'limits': {'cpu': 7, 'memory': '14Gi'},
+            },
+        ),
+        presubmit_test(
+            name='pull-kops-gce-agent-sandbox-benchmark-cgroupfs',
+            scenario='agent-sandbox',
+            cloud='gce',
+            networking='cilium',
+            always_run=False,
+            optional=True,
+            test_timeout_minutes=120,
+            env={
+                'CGROUP_DRIVER': 'cgroupfs',
+                'STRESS_NODE_COUNT': '3',
+                'STRESS_CONTROL_PLANE_SIZE': 'c3-standard-8',
+                'STRESS_PHASES': 'fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80',
+            },
+            resources={
+                'requests': {'cpu': 7, 'memory': '14Gi'},
+                'limits': {'cpu': 7, 'memory': '14Gi'},
+            },
+        ),
     ]
     return results
 
