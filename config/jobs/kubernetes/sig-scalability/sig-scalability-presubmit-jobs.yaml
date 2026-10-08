@@ -352,7 +352,7 @@ presubmits:
         - --gcp-master-size=n2-standard-32
         - --gcp-node-size=e2-standard-32
         - --gcp-node-image=gci
-        - --gcp-nodes=1
+        - --gcp-nodes=3
         - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --provider=gce
@@ -368,7 +368,7 @@ presubmits:
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--nodes=1
+        - --test-cmd-args=--nodes=3
         - --test-cmd-args=--provider=gce
         - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
         - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
@@ -1017,7 +1017,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-kops-scalability-common: "true"
       preset-kops-scalability-gce-common: "true"
-      preset-kops-benchmark-list-gce-1-node: "true"
+      preset-kops-benchmark-list-gce-3-node: "true"
       preset-kops-benchmark-list-informer: "true"
     decorate: true
     decoration_config:
