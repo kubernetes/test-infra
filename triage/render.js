@@ -273,6 +273,12 @@ ${text.slice(0, Math.min(text.length, 1500))}
   return [title, body];
 }
 
+// The Repo filter accepts regular expressions. Only a literal owner/repo can
+// safely identify a single destination for a new issue.
+function issueRepositoryForFilter(value) {
+  return /^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/.test(value) ? value : 'kubernetes/kubernetes';
+}
+
 // Render a section for each cluster, including the text, a graph, and expandable sections
 // to dive into failures for each test or job.
 function renderCluster(top, cluster) {
@@ -321,7 +327,8 @@ function renderCluster(top, cluster) {
     let [title, body] = makeGitHubIssue(id, text, owner, latestBuilds);
     title = encodeURIComponent(title);
     body = encodeURIComponent(body);
-    fileBug.href = `https://github.com/kubernetes/kubernetes/issues/new?body=${body}&title=${title}`;
+    const repo = issueRepositoryForFilter(document.getElementById('filter-include-repo').value);
+    fileBug.href = `https://github.com/${repo}/issues/new?body=${body}&title=${title}`;
   })
 
   var clusterJobs = addElement(list, 'li');
@@ -512,5 +519,6 @@ if (typeof module !== 'undefined' && module.exports) {
     makeBuckets: makeBuckets,
     sparkLinePath: sparkLinePath,
     spyglassURLForBuild: spyglassURLForBuild,
+    issueRepositoryForFilter: issueRepositoryForFilter,
   }
 }
