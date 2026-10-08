@@ -276,7 +276,8 @@ ${text.slice(0, Math.min(text.length, 1500))}
 // The Repo filter accepts regular expressions. Only a literal owner/repo can
 // safely identify a single destination for a new issue.
 function issueRepositoryForFilter(value) {
-  return /^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/.test(value) ? value : 'kubernetes/kubernetes';
+  const match = /^[A-Za-z0-9-]+\/([A-Za-z0-9._-]+)$/.exec(value);
+  return match && match[1] !== '.' && match[1] !== '..' ? value : 'kubernetes/kubernetes';
 }
 
 // Render a section for each cluster, including the text, a graph, and expandable sections
