@@ -164,7 +164,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24 * * *
-    fork-per-release-replacements: "KUBERNETES_VERSION=master -> KUBERNETES_VERSION={{.Version}}, gce-100Nodes-master -> gce-100Nodes-{{.Version}}"
+    fork-per-release-replacements: "K8S_VERSION=https://dl.k8s.io/ci/latest.txt -> K8S_VERSION=https://dl.k8s.io/ci/latest-{{.Version}}.txt, gce-100Nodes-master -> gce-100Nodes-{{.Version}}"
     testgrid-dashboards: sig-release-master-blocking, sig-scalability-gce, kops-misc
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     description: "Uses kubetest2 to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with kops"
@@ -181,8 +181,8 @@ periodics:
       securityContext:
         privileged: true
       env:
-      - name: KUBERNETES_VERSION
-        value: master
+      - name: K8S_VERSION
+        value: https://dl.k8s.io/ci/latest.txt
       resources:
         requests:
           cpu: 2

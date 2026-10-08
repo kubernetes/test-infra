@@ -1126,8 +1126,8 @@ periodics:
         value: prow
       - name: GOPATH
         value: /home/prow/go
-      - name: KUBERNETES_VERSION
-        value: "1.36"
+      - name: K8S_VERSION
+        value: https://dl.k8s.io/ci/latest-1.36.txt
       - name: CNI_PLUGIN
         value: gce
       - name: KUBE_NODE_COUNT

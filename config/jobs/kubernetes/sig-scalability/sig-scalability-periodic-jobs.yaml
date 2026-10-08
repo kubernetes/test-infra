@@ -1047,8 +1047,8 @@ periodics:
       env:
       - name: GOFLAGS
         value: "-tags=fieldsv1string"
-      - name: KUBERNETES_VERSION
-        value: master
+      - name: K8S_VERSION
+        value: https://dl.k8s.io/ci/latest.txt
       resources:
         requests:
           cpu: 2
