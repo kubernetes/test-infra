@@ -1148,6 +1148,10 @@ periodics:
         value: c4-standard-32
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
         value: "true"
+      - name: PROMETHEUS_SCRAPE_KUBELETS
+        value: "true"
+      - name: CL2_ENABLE_KUBELET_MEASUREMENTS
+        value: "true"
       - name: CL2_ENABLE_DNS_PROGRAMMING
         value: "true"
       - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
