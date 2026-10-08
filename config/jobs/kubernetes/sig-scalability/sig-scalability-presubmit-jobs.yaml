@@ -208,6 +208,7 @@ presubmits:
         - --provider=gce
         - --metadata-sources=cl2-metadata.json
         - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=ETCD_QUOTA_BACKEND_BYTES=8589934592
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
         - --env=CL2_PODS_BENCHMARK_POD_COUNT=10000
@@ -1096,6 +1097,7 @@ presubmits:
         - --provider=gce
         - --metadata-sources=cl2-metadata.json
         - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=ETCD_QUOTA_BACKEND_BYTES=8589934592
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
         - --env=CL2_PODS_BENCHMARK_POD_COUNT=10000
