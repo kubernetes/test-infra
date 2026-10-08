@@ -1086,6 +1086,68 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    fork-per-release-cron: 1 20 * * *, 1 17 * * 1,4, 1 17 * * 1
+    karpenter.sh/do-not-disrupt: "true"
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/networking: amazonvpc
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
+    testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws, amazon-ec2-release, sig-release-job-config-errors
+    testgrid-tab-name: ec2-1.36-scale-performance-100
+  cluster: eks-prow-build-cluster
+  cron: 1 22 * * *
+  decorate: true
+  decoration_config:
+    timeout: 8h0m0s
+  extra_refs:
+  - base_ref: release-1.36
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  - base_ref: release-1.36
+    org: kubernetes
+    path_alias: k8s.io/perf-tests
+    repo: perf-tests
+  - base_ref: master
+    org: kubernetes
+    path_alias: k8s.io/kops
+    repo: kops
+    workdir: true
+  labels:
+    preset-aws-credential-boskos-scale-001-kops: "true"
+    preset-aws-ssh: "true"
+    preset-kops-scalability-common: "true"
+    preset-kops-scalability-ec2-100-node: "true"
+    preset-kops-scalability-ec2-common: "true"
+  name: ci-kubernetes-e2e-ec2-scale-performance-100-1-36
+  spec:
+    containers:
+    - args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      command:
+      - runner.sh
+      env:
+      - name: K8S_VERSION
+        value: https://dl.k8s.io/ci/latest-1.36.txt
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261005-65725656a4-1.36
+      imagePullPolicy: Always
+      name: ""
+      resources:
+        limits:
+          cpu: "7"
+          memory: 24Gi
+        requests:
+          cpu: "7"
+          memory: 24Gi
+      securityContext:
+        privileged: true
+  tags:
+  - 'perfDashPrefix: aws-100Nodes-1.36'
+  - 'perfDashBuildsCount: 270'
+  - 'perfDashJobType: performance'
+- annotations:
     fork-per-release-cron: 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.36-blocking, sig-scalability-gce, kops-misc
