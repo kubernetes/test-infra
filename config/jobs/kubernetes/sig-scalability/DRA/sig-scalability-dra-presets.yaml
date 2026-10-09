@@ -41,6 +41,8 @@ presets:
     value: "5000"
   - name: CONTROL_PLANE_SIZE
     value: "c8a.24xlarge,c8i.24xlarge,c8id.24xlarge,c7a.24xlarge,c7i.24xlarge"
+  - name: ETCD_EXPERIMENTAL_WATCH_PROGRESS_NOTIFY_INTERVAL
+    value: "5s"
   - name: CL2_NODES_PER_NAMESPACE
     value: "2500"
   - name: CL2_JOB_RUNNING_TIME
