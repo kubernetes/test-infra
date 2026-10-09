@@ -360,7 +360,7 @@ periodics:
           cpu: 2
           memory: 6Gi
 
-- interval: 4h
+- interval: 24h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-benchmark-list-json
   tags:
@@ -398,7 +398,7 @@ periodics:
       - --gcp-master-size=n2-standard-32
       - --gcp-node-size=e2-standard-32
       - --gcp-node-image=gci
-      - --gcp-nodes=1
+      - --gcp-nodes=3
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
@@ -411,7 +411,7 @@ periodics:
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--nodes=1
+      - --test-cmd-args=--nodes=3
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
       - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
@@ -647,7 +647,7 @@ periodics:
           cpu: 3
           memory: "8Gi"
 
-- interval: 4h
+- interval: 24h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-benchmark-list-cbor
   tags:
@@ -685,7 +685,7 @@ periodics:
       - --gcp-master-size=n2-standard-32
       - --gcp-node-size=e2-standard-32
       - --gcp-node-image=gci
-      - --gcp-nodes=1
+      - --gcp-nodes=3
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
@@ -699,7 +699,7 @@ periodics:
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--nodes=1
+      - --test-cmd-args=--nodes=3
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
       - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
