@@ -1897,6 +1897,10 @@ plugins:
     plugins:
     - release-note
 
+  kubernetes-sigs/node-ipam-controller:
+    plugins:
+      - release-note
+
 external_plugins:
   kubernetes:
   - name: needs-rebase
