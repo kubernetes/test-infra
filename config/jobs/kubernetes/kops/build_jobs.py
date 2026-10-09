@@ -546,13 +546,13 @@ def generate_grid():
                     if 'arm64' in distro:
                         if networking in ['cilium-eni', 'amazon-vpc']:
                             extra_flags.extend([
-                                "--node-size=t4g.large",
-                                "--control-plane-size=t4g.large",
+                                "--node-size=t4g.large,t4g.xlarge",
+                                "--control-plane-size=t4g.large,t4g.xlarge",
                             ])
                         else:
                             extra_flags.extend([
-                                "--node-size=m6g.large",
-                                "--control-plane-size=m6g.large",
+                                "--node-size=m6g.large,m6g.xlarge",
+                                "--control-plane-size=m6g.large,m6g.xlarge",
                             ])
                     elif networking in ['cilium-eni', 'amazon-vpc']:
                         extra_flags = ['--node-size=t3.large']
@@ -688,8 +688,8 @@ def generate_misc():
                    k8s_version="ci",
                    networking="cilium",
                    runs_per_day=1,
-                   extra_flags=["--node-size=m6g.large",
-                                "--control-plane-size=m6g.large"],
+                   extra_flags=["--node-size=m6g.large,m6g.xlarge",
+                                "--control-plane-size=m6g.large,m6g.xlarge"],
                    extra_dashboards=['kops-network-plugins']),
         build_test(name_override="kops-gce-cni-cilium-k8s-ci",
                    cloud="gce",
@@ -1127,8 +1127,8 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
-                       "--node-size=r5d.xlarge",
-                       "--control-plane-size=r5d.xlarge",
+                       "--node-size=r5d.xlarge,r5d.2xlarge",
+                       "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                        *AMAZON_VPC_ENV_FLAGS,
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -1151,8 +1151,8 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
-                       "--node-size=r5d.xlarge",
-                       "--control-plane-size=r5d.xlarge",
+                       "--node-size=r5d.xlarge,r5d.2xlarge",
+                       "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                        *AMAZON_VPC_ENV_FLAGS,
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -1217,8 +1217,8 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
-                       "--node-size=r5d.xlarge",
-                       "--control-plane-size=r5d.xlarge",
+                       "--node-size=r5d.xlarge,r5d.2xlarge",
+                       "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                        *AMAZON_VPC_ENV_FLAGS,
                        "--set=cluster.spec.containerd.installCriCtl=true",
                        "--set=spec.kubeAPIServer.logLevel=4",
@@ -1374,8 +1374,8 @@ def generate_conformance():
                 name_override=f"kops-aws-conformance-arm64-{version.replace('.', '-')}",
                 networking='calico',
                 distro="u2404arm64",
-                extra_flags=["--node-size=t4g.large",
-                             "--control-plane-size=t4g.large",
+                extra_flags=["--node-size=t4g.large,t4g.xlarge",
+                             "--control-plane-size=t4g.large,t4g.xlarge",
                              "--set=cluster.spec.updatePolicy=external",
                              "--set=cluster.spec.networking.calico.wireguardEnabled=false"],
                 test_parallelism=1,
@@ -1432,8 +1432,8 @@ def generate_distros():
         extra_flags = []
         if 'arm64' in distro:
             extra_flags.extend([
-                "--node-size=m6g.large",
-                "--control-plane-size=m6g.large"
+                "--node-size=m6g.large,m6g.xlarge",
+                "--control-plane-size=m6g.large,m6g.xlarge"
             ])
         if 'rhel10' in distro or 'rocky10' in distro:
             extra_flags.extend([
@@ -1464,8 +1464,8 @@ def generate_presubmits_distros():
         extra_flags = []
         if 'arm64' in distro:
             extra_flags.extend([
-                "--node-size=m6g.large",
-                "--control-plane-size=m6g.large"
+                "--node-size=m6g.large,m6g.xlarge",
+                "--control-plane-size=m6g.large,m6g.xlarge"
             ])
         cilium_extra_flags = list(extra_flags)
         if 'rhel10' in distro or 'rocky10' in distro:
@@ -2037,8 +2037,8 @@ def generate_nftables():
         extra_flags = ["--set=cluster.spec.kubeProxy.proxyMode=nftables"]
         if 'arm64' in distro:
             extra_flags.extend([
-                "--node-size=m6g.large",
-                "--control-plane-size=m6g.large"
+                "--node-size=m6g.large,m6g.xlarge",
+                "--control-plane-size=m6g.large,m6g.xlarge"
             ])
         results.append(
             build_test(
@@ -2198,7 +2198,7 @@ def generate_presubmits_network_plugins():
                 optional = True
             aws_extra_flags = [
                 "--control-plane-size=c6g.large",
-                "--node-size=t4g.large"
+                "--node-size=t4g.large,t4g.xlarge"
             ]
             if plugin == 'amazonvpc':
                 aws_extra_flags.extend(AMAZON_VPC_ENV_FLAGS)
@@ -2322,8 +2322,8 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-amazonvpc',
             extra_flags=[
-                "--node-size=r5d.xlarge",
-                "--control-plane-size=r5d.xlarge",
+                "--node-size=r5d.xlarge,r5d.2xlarge",
+                "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                 *AMAZON_VPC_ENV_FLAGS,
                 "--set=spec.kubeAPIServer.logLevel=4",
                 "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -2340,8 +2340,8 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-amazonvpc-u2404',
             extra_flags=[
-                "--node-size=r5d.xlarge",
-                "--control-plane-size=r5d.xlarge",
+                "--node-size=r5d.xlarge,r5d.2xlarge",
+                "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                 *AMAZON_VPC_ENV_FLAGS,
                 "--set=spec.kubeAPIServer.logLevel=4",
                 "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -2358,8 +2358,8 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-amazonvpc-al2027',
             extra_flags=[
-                "--node-size=r5d.xlarge",
-                "--control-plane-size=r5d.xlarge",
+                "--node-size=r5d.xlarge,r5d.2xlarge",
+                "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                 *AMAZON_VPC_ENV_FLAGS,
             ],
             networking='amazonvpc',
@@ -2372,8 +2372,8 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-cilium-eni-al2027',
             extra_flags=[
-                "--node-size=r5d.xlarge",
-                "--control-plane-size=r5d.xlarge",
+                "--node-size=r5d.xlarge,r5d.2xlarge",
+                "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                 *CILIUM_ENI_EXTRA_CONFIG_FLAGS,
             ],
             networking='cilium-eni',
@@ -2557,8 +2557,8 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro="u2404arm64",
             networking="calico",
-            extra_flags=["--node-size=m6g.large",
-                         "--control-plane-size=m6g.large"],
+            extra_flags=["--node-size=m6g.large,m6g.xlarge",
+                         "--control-plane-size=m6g.large,m6g.xlarge"],
         ),
 
         presubmit_test(
