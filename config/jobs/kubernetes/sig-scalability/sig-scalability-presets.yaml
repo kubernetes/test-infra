@@ -473,7 +473,7 @@ presets:
     value: "false"
   - name: ETCD_QUOTA_BACKEND_BYTES
     value: "21474836480"
-  - name: ETCD_EXPERIMENTAL_WATCH_PROGRESS_NOTIFY_INTERVAL
+  - name: ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL
     value: "5s"
   - name: CL2_EXECSERVICE_CPU_REQUESTS
     value: "8"
@@ -495,7 +495,7 @@ presets:
     value: "false"
   - name: ETCD_QUOTA_BACKEND_BYTES
     value: "21474836480"
-  - name: ETCD_EXPERIMENTAL_WATCH_PROGRESS_NOTIFY_INTERVAL
+  - name: ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL
     value: "5s"
   # Test them before applying it to EC2 scale jobs
   # - name: CL2_EXECSERVICE_CPU_REQUESTS
