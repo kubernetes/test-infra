@@ -77,7 +77,7 @@ periodics:
       - key: highmem
         operator: Exists
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261006-705822de48-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -139,7 +139,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261006-705822de48-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -197,7 +197,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261006-705822de48-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -258,7 +258,7 @@ periodics:
     - key: highmem
       operator: Exists
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261006-705822de48-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
       imagePullPolicy: Always
       command:
       - runner.sh
