@@ -45,7 +45,7 @@ presubmits:
       description: "Run jobset integration tests"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.26
+      - image: public.ecr.aws/docker/library/golang:1.27
         command:
         - make
         args:
@@ -76,7 +76,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.34.0
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.26
+              value: public.ecr.aws/docker/library/golang:1.27
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -112,7 +112,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.35.0
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.26
+              value: public.ecr.aws/docker/library/golang:1.27
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -148,7 +148,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.36.1
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.26
+              value: public.ecr.aws/docker/library/golang:1.27
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -184,7 +184,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.37.0
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.26
+              value: public.ecr.aws/docker/library/golang:1.27
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
