@@ -1843,7 +1843,7 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-scheduling
         testgrid-tab-name: pull-kueue-build-cli-main
-        description: "构建并打包 Kueue CLI 的 Linux/macOS amd64/arm64 发布产物"
+        description: "Build and package Kueue CLI artifacts for Linux/macOS amd64/arm64"
       spec:
         containers:
           - image: public.ecr.aws/docker/library/golang:1.27-bookworm
