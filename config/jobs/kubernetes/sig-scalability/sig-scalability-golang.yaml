@@ -33,7 +33,7 @@ periodics:
     testgrid-tab-name: build-and-push-k8s-at-golang-tip
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261005-65725656a4-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261005-65725656a4-master
       command:
       - runner.sh
       args:
@@ -50,82 +50,67 @@ periodics:
           cpu: 4
           memory: "16Gi"
 
-- cron: "0 1 * * *"
-  name: ci-golang-tip-k8s-master
-  cluster: k8s-infra-prow-build
+- name: ci-kubernetes-e2e-ec2-scale-performance-golang-tip-500
   tags:
   - "perfDashPrefix: golang-tip-k8s-master"
   - "perfDashJobType: performance"
   - "perfDashBuildsCount: 500"
+  cluster: eks-prow-build-cluster
+  cron: "0 11 * * *"
   labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-    preset-e2e-kubemark-common: "true"
-    preset-e2e-kubemark-gce-scale: "true"
-    preset-e2e-scalability-periodics: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential-boskos-scale-001-kops: "true"
+    preset-kops-scalability-common: "true"
+    preset-kops-scalability-ec2-common: "true"
+    preset-kops-scalability-ec2-500-node: "true"
   decorate: true
   decoration_config:
-    timeout: 240m
+    timeout: 120m
   extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: perf-tests
     base_ref: master
     path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
   annotations:
-    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, go-kubernetes-scalability-tickets@googlegroups.com
-    testgrid-dashboards: sig-scalability-golang
-    testgrid-num-failures-to-alert: "3"
-    testgrid-tab-name: golang-tip-k8s-master
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2404
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/networking: amazonvpc
+    testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws, sig-scalability-golang, amazon-ec2-release
+    testgrid-tab-name: ec2-master-scale-performance-golang-tip-500
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com, release-team@kubernetes.io
+    testgrid-days-of-results: "60"
+    testgrid-num-columns-recent: "3"
+    testgrid-num-failures-to-alert: "1"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261005-65725656a4-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261005-65725656a4-master
+      imagePullPolicy: Always
       command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=gce-golang
-      - --env=CL2_LOAD_TEST_THROUGHPUT=50
-      - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=200 --kube-api-burst=200
-      - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=200 --kube-api-burst=200
-      - --extract=gs://k8s-infra-scale-golang-builds/ci/latest.txt
-      - --gcp-master-size=n2-standard-4
-      - --gcp-node-size=e2-standard-8
-      - --gcp-nodes=50
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
-      - --tear-down-previous
-      - --provider=gce
-      - --kubemark
-      - --kubemark-nodes=2500
-      - --kubemark-master-size=n2-standard-64
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/golang/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
-      - --test-cmd-args=--nodes=2500
-      - --test-cmd-args=--provider=kubemark
-      - --test-cmd-args=--report-dir=$(ARTIFACTS)
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
-      - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/golang/custom_api_call_thresholds.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=210m
-      - --use-logexporter
-      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+      - ./tests/e2e/scenarios/scalability/run-test.sh
       env:
-      - name: CL2_ENABLE_VIOLATIONS_FOR_API_CALL_PROMETHEUS
-        value: "true"
-      # docker-in-docker needs privilged mode
+      - name: K8S_VERSION
+        value: https://storage.googleapis.com/k8s-infra-scale-golang-builds/ci/latest.txt
+      - name: KOPS_ARCH
+        value: amd64 # this k8s build doesn't build all arches :(
       securityContext:
         privileged: true
       resources:
         requests:
-          cpu: 6
-          memory: "16Gi"
+          cpu: 7
+          memory: 24Gi
         limits:
-          cpu: 6
-          memory: "16Gi"
+          cpu: 7
+          memory: 24Gi

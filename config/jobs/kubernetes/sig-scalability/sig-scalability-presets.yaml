@@ -451,6 +451,14 @@ presets:
     value: "true"
 
 - labels:
+    preset-kops-scalability-ec2-500-node: "true"
+  env:
+  - name: KUBE_NODE_COUNT
+    value: "500"
+  - name: CONTROL_PLANE_SIZE
+    value: "c8a.12xlarge,c8i.12xlarge,c8id.12xlarge,c7a.12xlarge,c7i.12xlarge"
+
+- labels:
     preset-kops-scalability-ec2-2000-node: "true"
   env:
   - name: KUBE_NODE_COUNT

@@ -218,7 +218,7 @@ periodics:
 
 - name: ci-kubernetes-e2e-ec2-scale-correctness-2000
   cluster: eks-prow-build-cluster
-  cron: '0 0,12 * * *' # Run every day at 00:00 and 12:00 UTC (2 times a day)
+  cron: '0 0 * * *' # Run every day at 00:00 and 12:00 UTC (2 times a day)
   labels:
     preset-aws-ssh: "true"
     preset-aws-credential-boskos-scale-001-kops: "true"
