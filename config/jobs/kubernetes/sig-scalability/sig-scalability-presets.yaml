@@ -405,6 +405,10 @@ presets:
     value: "c4-standard-32"
   - name: BOSKOS_RESOURCE_TYPE
     value: "scalability-project"
+  - name: PROMETHEUS_SCRAPE_KUBELETS
+    value: "true"
+  - name: CL2_ENABLE_KUBELET_MEASUREMENTS
+    value: "true"
 
 - labels:
     preset-kops-benchmark-list-gce-1-node: "true"
@@ -441,6 +445,10 @@ presets:
     value: "100"
   - name: CONTROL_PLANE_SIZE
     value: "c8a.8xlarge,c8i.8xlarge,c8id.8xlarge,c7a.8xlarge"
+  - name: PROMETHEUS_SCRAPE_KUBELETS
+    value: "true"
+  - name: CL2_ENABLE_KUBELET_MEASUREMENTS
+    value: "true"
 
 - labels:
     preset-kops-scalability-ec2-2000-node: "true"
