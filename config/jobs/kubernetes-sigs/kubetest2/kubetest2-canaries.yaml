@@ -270,3 +270,36 @@ presubmits:
         - "./kubetest2-kind/ci-tests/buildupdown.sh"
         securityContext:
           privileged: true
+
+  - name: pull-kubetest2-local-build-up-down-arm64
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/kubetest2
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 12Gi
+          requests:
+            cpu: 4
+            memory: 12Gi
+        command:
+        - runner.sh
+        args:
+        - "./kubetest2-local/ci-tests/buildupdown.sh"
+        securityContext:
+          privileged: true
