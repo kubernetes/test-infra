@@ -14,13 +14,16 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:bookworm-20260713
+FROM debian:trixie-20260918
 ARG TARGETARCH
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
 ENV WORKSPACE=/workspace \
     TERM=xterm
+
+# hint to kubetest2 that it is in CI
+ENV KUBETEST_IN_DOCKER="true"
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
@@ -45,8 +48,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     procps \
     python3 \
-    python3-distutils \
-    python3-gflags \
     python3-pip \
     python3-venv \
     python3-yaml \
@@ -59,7 +60,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     graphviz \
     bc \
     && rm -rf /var/lib/apt/lists/* \
-    && python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip uv setuptools wheel
+    && python3 -m pip install --ignore-installed --no-cache-dir --break-system-packages --upgrade pip uv setuptools wheel
 
 # Install gcloud and awscli
 RUN if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ]; then \
@@ -91,8 +92,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https \
     ca-certificates \
     curl \
-    gnupg2 \
-    software-properties-common \
+    gnupg \
     lsb-release && \
     rm -rf /var/lib/apt/lists/*
 

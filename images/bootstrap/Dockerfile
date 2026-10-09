@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:bookworm-20260623
+FROM debian:trixie-20260918
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
@@ -41,8 +41,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     procps \
     python3 \
-    python3-distutils \
-    python3-gflags \
     python3-pip \
     python3-venv \
     python3-yaml \
@@ -85,7 +83,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     gnupg2 \
-    software-properties-common \
     lsb-release && \
     rm -rf /var/lib/apt/lists/*
 
