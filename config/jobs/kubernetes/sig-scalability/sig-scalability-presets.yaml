@@ -411,10 +411,10 @@ presets:
     value: "true"
 
 - labels:
-    preset-kops-benchmark-list-gce-1-node: "true"
+    preset-kops-benchmark-list-gce-3-node: "true"
   env:
   - name: KUBE_NODE_COUNT
-    value: "1"
+    value: "3"
   - name: NODE_SIZE
     value: "e2-standard-32"
   - name: CONTROL_PLANE_SIZE
