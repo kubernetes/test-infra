@@ -401,6 +401,8 @@ periodics:
           value: gce
         - name: KUBE_NODE_COUNT
           value: "5000"
+        - name: ETCD_EXPERIMENTAL_WATCH_PROGRESS_NOTIFY_INTERVAL
+          value: "5s"
         - name: CL2_MODE
           value: "Indexed"
         - name: CL2_NODES_PER_NAMESPACE
