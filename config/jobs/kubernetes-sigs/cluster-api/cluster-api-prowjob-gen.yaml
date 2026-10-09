@@ -32,7 +32,7 @@
 prow_ignored:
   branches:
     main:
-      testImage: "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261006-705822de48-1.37"
+      testImage: "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-1.37"
       interval: "3h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.34.11"
@@ -51,7 +51,7 @@ prow_ignored:
         - from: "1.37"
           to: "1.38"
     release-1.14:
-      testImage: "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261006-705822de48-1.36"
+      testImage: "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-1.36"
       interval: "4h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.33.7"
@@ -72,7 +72,7 @@ prow_ignored:
         - from: "1.37"
           to: "1.38"
     release-1.13:
-      testImage: "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261006-705822de48-1.35"
+      testImage: "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-1.35"
       interval: "4h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.32.8"
