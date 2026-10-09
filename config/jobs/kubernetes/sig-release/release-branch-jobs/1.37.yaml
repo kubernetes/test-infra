@@ -1320,8 +1320,8 @@ periodics:
       command:
       - runner.sh
       env:
-      - name: KUBERNETES_VERSION
-        value: "1.37"
+      - name: K8S_VERSION
+        value: https://dl.k8s.io/ci/latest-1.37.txt
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261005-65725656a4-1.37
       name: ""
       resources:
