@@ -49,8 +49,6 @@ periodics:
               value: aws-instance.yaml
             - name: FOCUS
               value: \[NodeConformance\]
-            - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
             limits:
               cpu: 7
@@ -99,8 +97,6 @@ periodics:
               value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-arm64.yaml
-            - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -154,8 +150,6 @@ periodics:
               value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-arm64-serial.yaml
-            - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -204,8 +198,6 @@ periodics:
               value: aws-instance-serial.yaml
             - name: SKIP
               value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]|\[Feature:OffByDefault\]
-            - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
             limits:
               cpu: 7
