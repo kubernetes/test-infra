@@ -19,6 +19,7 @@ periodics:
       - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
       - --plugin-config=config/prow/plugins.yaml
+      - --supplemental-plugin-config-dir=config/prow/plugins
       - --strict
       - --warnings=mismatched-tide-lenient
       - --warnings=tide-strict-branch
