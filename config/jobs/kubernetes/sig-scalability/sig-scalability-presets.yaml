@@ -439,6 +439,34 @@ presets:
     value: "1"
 
 - labels:
+    preset-kops-benchmark-write-throughput-gce-1-node: "true"
+  env:
+  - name: KUBE_NODE_COUNT
+    value: "1"
+  - name: NODE_SIZE
+    value: "e2-standard-32"
+  - name: CONTROL_PLANE_SIZE
+    value: "c4-standard-32"
+  - name: BOSKOS_RESOURCE_TYPE
+    value: "scalability-project"
+  - name: PROMETHEUS_SCRAPE_MASTER_KUBELETS
+    value: "true"
+  - name: ETCD_QUOTA_BACKEND_BYTES
+    value: "17179869184"
+  - name: KUBE_FEATURE_GATES
+    value: "DetectCacheInconsistency=false"
+  - name: KOPS_CL2_TEST_CONFIG
+    value: "testing/write-throughput/config.yaml"
+  - name: CL2_PODS_BENCHMARK_POD_COUNT
+    value: "10000"
+  - name: CL2_PODS_WATCH_REPLICAS
+    value: "0"
+  - name: CL2_PODS_PATCH_QPS
+    value: "100"
+  - name: CL2_PODS_BENCHMARK_DURATION
+    value: "15m"
+
+- labels:
     preset-kops-scalability-ec2-100-node: "true"
   env:
   - name: KUBE_NODE_COUNT
