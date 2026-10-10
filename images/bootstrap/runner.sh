@@ -48,7 +48,9 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     sysctl net.ipv6.conf.all.disable_ipv6=0
     sysctl net.ipv6.conf.all.forwarding=1
     # enable ipv6 iptables
-    modprobe -v ip6table_nat
+    if ! modprobe ip6table_nat 2>/dev/null; then
+      echo "INFO: Could not load ip6table_nat. This is expected on some kernel versions and can usually be ignored."
+    fi
 
     # Fix ulimit issue
     sed -i 's|ulimit -Hn|ulimit -n|' /etc/init.d/docker || true
