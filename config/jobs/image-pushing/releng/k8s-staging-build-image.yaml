@@ -108,14 +108,14 @@ postsubmits:
         testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
       decorate: true
       decoration_config:
-        timeout: 4h
+        timeout: 1h
       run_if_changed: '^images\/build\/cross\/'
       branches:
         - ^main$
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: build-image
         containers:
           - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
             command:
@@ -126,12 +126,22 @@ postsubmits:
               - --env-passthrough=REGISTRY
               - --build-dir=.
               - --with-git-dir
+              - --worker-pool=projects/k8s-staging-images/locations/us-central1/workerPools/c3-highcpu-44
+              - --service-account=projects/k8s-staging-images/serviceAccounts/build-image-sva@k8s-staging-images.iam.gserviceaccount.com
+              - --region=us-central1
               - images/build/cross
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
               - name: REGISTRY
-                value: "gcr.io/k8s-staging-build-image"
+                value: "us-central1-docker.pkg.dev/k8s-staging-images/build-image"
+            resources:
+              requests:
+                cpu: 1
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 1Gi
       rerun_auth_config:
         github_team_slugs:
           - org: kubernetes
