@@ -486,7 +486,7 @@ periodics:
       - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
       - --timeout=60m
       - --skip-regex=
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
       command:
       - runner.sh
@@ -2408,7 +2408,7 @@ presubmits:
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex=
-        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
         command:
         - runner.sh
@@ -2457,7 +2457,7 @@ presubmits:
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex=
-        - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
         command:
         - runner.sh
@@ -2546,7 +2546,7 @@ presubmits:
       - args:
         - --deployment=node
         - --gcp-zone=us-central1-b
-        - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+        - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
@@ -2595,8 +2595,6 @@ presubmits:
           value: config
         - name: IMAGE_CONFIG_FILE
           value: aws-instance.yaml
-        - name: TEST_ARGS
-          value: --kubelet-flags="--cgroup-driver=systemd"
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261005-65725656a4-1.35
         name: ""
         resources:
@@ -2645,8 +2643,6 @@ presubmits:
           value: config
         - name: IMAGE_CONFIG_FILE
           value: aws-instance-arm64.yaml
-        - name: TEST_ARGS
-          value: --kubelet-flags="--cgroup-driver=systemd"
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261005-65725656a4-1.35
         name: ""
         resources:
@@ -2697,8 +2693,6 @@ presubmits:
           value: config
         - name: IMAGE_CONFIG_FILE
           value: aws-instance-arm64.yaml
-        - name: TEST_ARGS
-          value: --kubelet-flags="--cgroup-driver=systemd"
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261005-65725656a4-1.35
         name: ""
         resources:
@@ -2745,7 +2739,7 @@ presubmits:
         - --use-dockerized-build=true
         - --target-build-arch=linux/arm64
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:NodeSwap\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
-        - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/image-config-serial.yaml
         - --timeout=180m
         command:
@@ -2795,7 +2789,7 @@ presubmits:
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
-        - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
         command:
         - runner.sh
@@ -2842,8 +2836,6 @@ presubmits:
           value: aws-instance.yaml
         - name: SKIP
           value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:PodLevelResources\]
-        - name: TEST_ARGS
-          value: --kubelet-flags="--cgroup-driver=systemd"
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261005-65725656a4-1.35
         name: ""
         resources:
