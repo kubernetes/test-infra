@@ -24,6 +24,7 @@ import (
 	"testing"
 	"time"
 
+	"sigs.k8s.io/prow/pkg/flagutil"
 	"sigs.k8s.io/prow/pkg/github"
 )
 
@@ -212,6 +213,8 @@ type fakeClient struct {
 	issues   []github.Issue
 	// existingComments maps an issue number to the comments already on it.
 	existingComments map[int][]github.IssueComment
+	// orgSeen captures the org argument passed to FindIssuesWithOrg.
+	orgSeen string
 }
 
 // Fakes Creating a client, using the same signature as github.Client
@@ -232,7 +235,8 @@ func (c *fakeClient) ListIssueComments(owner, repo string, number int) ([]github
 }
 
 // Fakes searching for issues, using the same signature as github.Client
-func (c *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+func (c *fakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error) {
+	c.orgSeen = org
 	if strings.Contains(query, "error") {
 		return nil, errors.New(query)
 	}
@@ -355,7 +359,7 @@ func TestRun(t *testing.T) {
 	for _, tc := range cases {
 		ignoreSorting := ""
 		ignoreOrder := false
-		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling)
+		err := run(&tc.client, "", tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling)
 		if tc.err && err == nil {
 			t.Errorf("%s: failed to received an error", tc.name)
 			continue
@@ -437,5 +441,87 @@ func TestMakeCommenter(t *testing.T) {
 		if err == nil && tc.err {
 			t.Errorf("%s: failed to raise an exception", tc.name)
 		}
+	}
+}
+
+func TestSelectAuthMode(t *testing.T) {
+	cases := []struct {
+		name     string
+		opts     options
+		expected authMode
+		err      bool
+	}{
+		{
+			name:     "legacy --token",
+			opts:     options{token: "/etc/token"},
+			expected: authLegacyToken,
+		},
+		{
+			name:     "ghOpts token-path",
+			opts:     options{ghOpts: flagutil.GitHubOptions{TokenPath: "/etc/gh-token"}},
+			expected: authGitHubOptions,
+		},
+		{
+			name: "ghOpts app auth with --github-org",
+			opts: options{
+				githubOrg: "kubernetes",
+				ghOpts:    flagutil.GitHubOptions{AppID: "42", AppPrivateKeyPath: "/etc/key"},
+			},
+			expected: authGitHubOptions,
+		},
+		{
+			name: "no credentials errors",
+			opts: options{},
+			err:  true,
+		},
+		{
+			name: "--token with --github-token-path errors",
+			opts: options{
+				token:  "/etc/token",
+				ghOpts: flagutil.GitHubOptions{TokenPath: "/etc/gh-token"},
+			},
+			err: true,
+		},
+		{
+			name: "--token with --github-app-id errors",
+			opts: options{
+				token:     "/etc/token",
+				githubOrg: "kubernetes",
+				ghOpts:    flagutil.GitHubOptions{AppID: "42", AppPrivateKeyPath: "/etc/key"},
+			},
+			err: true,
+		},
+		{
+			name: "app auth without --github-org errors",
+			opts: options{ghOpts: flagutil.GitHubOptions{AppID: "42", AppPrivateKeyPath: "/etc/key"}},
+			err:  true,
+		},
+		{
+			name: "app private-key-path without --github-org errors",
+			opts: options{ghOpts: flagutil.GitHubOptions{AppPrivateKeyPath: "/etc/key"}},
+			err:  true,
+		},
+	}
+	for _, tc := range cases {
+		got, err := selectAuthMode(tc.opts)
+		if err != nil && !tc.err {
+			t.Errorf("%s: unexpected err: %v", tc.name, err)
+		}
+		if err == nil && tc.err {
+			t.Errorf("%s: failed to raise an exception", tc.name)
+		}
+		if err == nil && got != tc.expected {
+			t.Errorf("%s: mode = %v, want %v", tc.name, got, tc.expected)
+		}
+	}
+}
+
+func TestRunPassesOrg(t *testing.T) {
+	fc := &fakeClient{}
+	if err := run(fc, "kubernetes", "hello", "", false, false, makeCommenter("x", false), 0); err != nil {
+		t.Fatalf("run: %v", err)
+	}
+	if fc.orgSeen != "kubernetes" {
+		t.Errorf("FindIssuesWithOrg received org=%q, want %q", fc.orgSeen, "kubernetes")
 	}
 }
