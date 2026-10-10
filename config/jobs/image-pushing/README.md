@@ -40,7 +40,7 @@ desired.
 ### Build example
 
 If your build process is driven by a Makefile or similar, you can use GCB to
-invoke that. We provide the [`gcr.io/k8s-staging-test-infra/gcb-docker-gcloud` image][gcb-docker-gcloud],
+invoke that. We provide the [`registry.k8s.io/releng/gcb-docker-gcloud` image][gcb-docker-gcloud],
 which contains components that are likely to be useful for your builds. This image supports multiarch docker builds without additional commands.
 A sample `cloudbuild.yaml` using `make` to build and push might look like this:
 
@@ -54,13 +54,15 @@ timeout: 1200s
 options:
   substitution_option: ALLOW_LOOSE
 steps:
-  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:latest
+  - name: registry.k8s.io/releng/gcb-docker-gcloud:v20260806 # don't forget to bump it periodically
     env:
     - TAG=$_GIT_TAG
     - BASE_REF=$_PULL_BASE_REF
     args:
     - make
     - build
+serviceAccount: projects/k8s-staging-images/serviceAccounts/[SA_NAME]@k8s-staging-images.iam.gserviceaccount.com
+# [SA_NAME] is [REGISTRY_NAME]-sa, where REGISTRY_NAME is the value you put in registries.tf
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
   # can be used as a substitution
@@ -112,7 +114,7 @@ postsubmits:
         # Build semver tags, too
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: REGISTRY_NAME # This the name you put in registries.tf
         containers:
           - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
             command:
