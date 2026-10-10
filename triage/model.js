@@ -16,6 +16,12 @@ function tsToString(ts) {
   return new Date(ts * 1000).toLocaleString();
 }
 
+// Parse a YYYY-MM-DD date string into a timestamp (in seconds) at local midnight.
+function dateToTs(date) {
+  let [y, m, d] = date.split('-').map(Number);
+  return new Date(y, m - 1, d).getTime() / 1000;
+}
+
 // Store information about individual builds.
 class Builds {
   constructor(dict) {
@@ -209,6 +215,10 @@ class Clusters {
 
   // Return a new Clusters object, with the given filters applied.
   refilter(opts) {
+    // Restrict builds to those started within [minDate, maxDate], inclusive on both ends.
+    var filterDates = Boolean(opts.minDate || opts.maxDate);
+    var minStarted = opts.minDate ? dateToTs(opts.minDate) : 0;
+    var maxStarted = opts.maxDate ? dateToTs(opts.maxDate) + 60 * 60 * 24 : Infinity;
     var out = [];
     for (let cluster of this.data) {
       if ((opts.reText && !opts.reText.test(cluster.text)) ||
@@ -236,6 +246,16 @@ class Clusters {
                 (opts.reXRepo && opts.reXRepo.test(repo))) {
               continue;
             }
+          }
+          if (filterDates) {
+            let buildsOut = job.builds.filter(number => {
+              let build = builds.get(job.name, number);
+              return build && build.started >= minStarted && build.started < maxStarted;
+            });
+            if (buildsOut.length === 0) {
+              continue;
+            }
+            job = Object.assign({}, job, {builds: buildsOut});
           }
           if (job.name.startsWith("pr:")) {
             if (opts.pr) jobsOut.push(job);

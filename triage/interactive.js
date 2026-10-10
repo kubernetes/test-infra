@@ -50,6 +50,8 @@ function readOptions() {
     date: read('date'),
     ci: read('job-ci'),
     pr: read('job-pr'),
+    minDate: read('min-date'),
+    maxDate: read('max-date'),
     reText: read('filter-include-text'),
     reJob: read('filter-include-job'),
     reTest: read('filter-include-test'),
@@ -67,6 +69,8 @@ function readOptions() {
   if (opts.date) url += '&date=' + opts.date;
   if (!opts.ci) url += '&ci=0';
   if (opts.pr) url += '&pr=1';
+  if (opts.minDate) url += '&mindate=' + opts.minDate;
+  if (opts.maxDate) url += '&maxdate=' + opts.maxDate;
   if (opts.sig.length) url += '&sig=' + opts.sig.join(',');
   for (var name of ["text", "job", "test", "repo", "xtext", "xjob", "xtest", "xrepo"]) {
     var re = (name[0] == 'x') ?
@@ -125,6 +129,8 @@ function setOptionsFromURL() {
   write('date', qs.date);
   write('job-ci', qs.ci);
   write('job-pr', qs.pr);
+  write('min-date', qs.mindate);
+  write('max-date', qs.maxdate);
   write('filter-include-text', qs.text);
   write('filter-include-job', qs.job);
   write('filter-include-test', qs.test);
