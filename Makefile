@@ -69,6 +69,9 @@ update-unit: update-go-unit
 .PHONY: update-config-fixture
 update-config-fixture:
 	UPDATE_FIXTURE_DATA=true hack/make-rules/go-test/unit.sh ./config/tests/...
+.PHONY: update-rendered-job-presets
+update-rendered-job-presets:
+	hack/update-rendered-job-presets.sh
 # ======================== Image Building/Publishing ===========================
 # Build and publish miscellaneous images that get pushed to the specified REGISTRY.
 # The full set of images covered by these targets is configured in
