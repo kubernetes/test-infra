@@ -992,9 +992,24 @@ periodics:
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       - --env=KUBE_GCE_PRIVATE_CLUSTER=false
-      - --env=CL2_ETCD_REPLICAS=3
+      - --env=CL2_ETCD_REPLICAS=1
+      - --env=CL2_ETCD_VERSION=3.7.2-0
+      - --env=CL2_ETCD_QUOTA_BACKEND_BYTES=34359738368
+      - --env=CL2_ETCD_STORAGE_SIZE=64Gi
+      - --env=CL2_ETCD_STORAGE_CLASS=ssd
+      - --env=CL2_ETCD_INIT=true
+      - --env=CL2_ETCD_INIT_QPS=0
+      - --env=CL2_ETCD_INIT_CONCURRENCY=50
+      - --env=CL2_ETCD_INIT_TIMEOUT=15m
       - --env=CL2_ETCD_WRITER_REPLICAS=10
       - --env=CL2_ETCD_WRITER_QPS=100
+      - --env=CL2_ETCD_WRITER_CONCURRENCY=10
+      - --env=CL2_ETCD_KEY_COUNT=150000
+      - --env=CL2_ETCD_PAYLOAD_TYPE=pod
+      - --env=CL2_ETCD_COMPACT_INTERVAL=90s
+      - --env=CL2_ETCD_COMPACT_PHYSICAL=true
+      - --env=CL2_ETCD_DEFRAG_INTERVAL=0s
+      - --env=CL2_ETCD_KEY_PREFIX=/registry/pods/default/pod-
       - --env=CL2_ETCD_BENCHMARK_DURATION=15m
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
