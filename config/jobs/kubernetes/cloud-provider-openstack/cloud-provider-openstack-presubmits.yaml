@@ -1,6 +1,6 @@
 presubmits:
   kubernetes/cloud-provider-openstack:
-  - name: cloud-provider-openstack-build-images
+  - name: cloud-provider-openstack-build-images-amd64
     cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
@@ -34,8 +34,8 @@ presubmits:
           docker buildx create --name multiarch --driver docker-container --use
           docker buildx inspect --bootstrap
 
-          # Build all platforms without exporting images or pushing to a registry.
-          make build-multiarch-images
+          # Build one platform without exporting images or pushing to a registry.
+          make build-multiarch-images ARCHS=amd64
         # Docker-in-Docker and binfmt registration require privileged mode.
         securityContext:
           privileged: true
@@ -48,8 +48,161 @@ presubmits:
             memory: 5Gi
     annotations:
       testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager, provider-openstack-openstack-csi-cinder, provider-openstack-manila-csi-plugin, provider-openstack-keystone-authentication-authorization
-      testgrid-tab-name: presubmit-build-images
-      description: Build cloud-provider-openstack container images for all platforms without publishing
+      testgrid-tab-name: presubmit-build-images-amd64
+      description: Build cloud-provider-openstack container images for amd64 without publishing
+
+  - name: cloud-provider-openstack-build-images-arm64
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-dind-enabled: "true"
+    path_alias: "k8s.io/cloud-provider-openstack"
+    always_run: false
+    branches:
+      - ^master$
+      - ^release-1\.3[7-9]$
+      - ^release-1\.[4-9]\d$
+    run_if_changed: '(^|/)(Dockerfile[^/]*|requirements\.txt)$|^Makefile$'
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+
+          # Register emulators for Dockerfile stages that run on non-native platforms.
+          BINFMT_IMAGE=tonistiigi/binfmt@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0  # qemu-v10.2.3
+          docker run --privileged --rm "${BINFMT_IMAGE}" --install arm64,ppc64le,s390x
+          docker buildx create --name multiarch --driver docker-container --use
+          docker buildx inspect --bootstrap
+
+          # Build one platform without exporting images or pushing to a registry.
+          make build-multiarch-images ARCHS=arm64
+        # Docker-in-Docker and binfmt registration require privileged mode.
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 5Gi
+          requests:
+            cpu: 2
+            memory: 5Gi
+    annotations:
+      testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager, provider-openstack-openstack-csi-cinder, provider-openstack-manila-csi-plugin, provider-openstack-keystone-authentication-authorization
+      testgrid-tab-name: presubmit-build-images-arm64
+      description: Build cloud-provider-openstack container images for arm64 without publishing
+
+  - name: cloud-provider-openstack-build-images-ppc64le
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-dind-enabled: "true"
+    path_alias: "k8s.io/cloud-provider-openstack"
+    always_run: false
+    branches:
+      - ^master$
+      - ^release-1\.3[7-9]$
+      - ^release-1\.[4-9]\d$
+    run_if_changed: '(^|/)(Dockerfile[^/]*|requirements\.txt)$|^Makefile$'
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+
+          # Register emulators for Dockerfile stages that run on non-native platforms.
+          BINFMT_IMAGE=tonistiigi/binfmt@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0  # qemu-v10.2.3
+          docker run --privileged --rm "${BINFMT_IMAGE}" --install arm64,ppc64le,s390x
+          docker buildx create --name multiarch --driver docker-container --use
+          docker buildx inspect --bootstrap
+
+          # Build one platform without exporting images or pushing to a registry.
+          make build-multiarch-images ARCHS=ppc64le
+        # Docker-in-Docker and binfmt registration require privileged mode.
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 5Gi
+          requests:
+            cpu: 2
+            memory: 5Gi
+    annotations:
+      testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager, provider-openstack-openstack-csi-cinder, provider-openstack-manila-csi-plugin, provider-openstack-keystone-authentication-authorization
+      testgrid-tab-name: presubmit-build-images-ppc64le
+      description: Build cloud-provider-openstack container images for ppc64le without publishing
+
+  - name: cloud-provider-openstack-build-images-s390x
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-dind-enabled: "true"
+    path_alias: "k8s.io/cloud-provider-openstack"
+    always_run: false
+    branches:
+      - ^master$
+      - ^release-1\.3[7-9]$
+      - ^release-1\.[4-9]\d$
+    run_if_changed: '(^|/)(Dockerfile[^/]*|requirements\.txt)$|^Makefile$'
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+
+          # Register emulators for Dockerfile stages that run on non-native platforms.
+          BINFMT_IMAGE=tonistiigi/binfmt@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0  # qemu-v10.2.3
+          docker run --privileged --rm "${BINFMT_IMAGE}" --install arm64,ppc64le,s390x
+          docker buildx create --name multiarch --driver docker-container --use
+          docker buildx inspect --bootstrap
+
+          # Build one platform without exporting images or pushing to a registry.
+          make build-multiarch-images ARCHS=s390x
+        # Docker-in-Docker and binfmt registration require privileged mode.
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 5Gi
+          requests:
+            cpu: 2
+            memory: 5Gi
+    annotations:
+      testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager, provider-openstack-openstack-csi-cinder, provider-openstack-manila-csi-plugin, provider-openstack-keystone-authentication-authorization
+      testgrid-tab-name: presubmit-build-images-s390x
+      description: Build cloud-provider-openstack container images for s390x without publishing
 
   - name: openstack-cloud-controller-manager-e2e-test
     cluster: k8s-infra-prow-build
