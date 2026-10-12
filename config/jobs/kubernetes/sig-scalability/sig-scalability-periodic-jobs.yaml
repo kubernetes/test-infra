@@ -180,6 +180,49 @@ periodics:
           cpu: 6
           memory: "24Gi"
 
+- name: ci-benchmark-apiserver-request-cost-master
+  cluster: k8s-infra-prow-build
+  tags:
+  - "perfDashPrefix: apiserver-request-cost-benchmark"
+  - "perfDashJobType: generic"
+  interval: 4h
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: apiserver-request-cost
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  decoration_config:
+    timeout: 60m
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
+      command:
+      - runner.sh
+      args:
+      - ./hack/jenkins/test-integration-dockerized.sh
+      env:
+      - name: WHAT
+        value: ./test/integration/apiserver/flowcontrol/cost
+      - name: KUBE_CACHE_MUTATION_DETECTOR
+        value: "false"
+      - name: KUBE_TIMEOUT
+        value: --timeout=45m
+      - name: SHORT
+        value: --short=false
+      - name: KUBE_TEST_ARGS
+        value: "-run=^$ -bench=^BenchmarkRequestCost$ -benchtime=1x"
+      resources:
+        requests:
+          cpu: 4
+          memory: "16Gi"
+        limits:
+          cpu: 4
+          memory: "16Gi"
+
 - name: ci-benchmark-kube-dns-master
   cluster: k8s-infra-prow-build
   interval: 2h
