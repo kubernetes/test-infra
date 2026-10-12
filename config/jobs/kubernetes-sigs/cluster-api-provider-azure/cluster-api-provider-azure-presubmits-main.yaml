@@ -318,6 +318,75 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  # Manual experiment using the fixture introduced by
+  # https://github.com/kubernetes-sigs/cluster-api-provider-azure/pull/6709.
+  # Keep opt-in until Azure provisioning, conformance, and cleanup are established.
+  - name: pull-cluster-api-provider-azure-conformance-kine-postgres
+    cluster: eks-prow-build-cluster
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 6h
+      grace_period: 30m
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: azure
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260608-c0707d679d-1.32
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set +x
+          set -euo pipefail
+          if [[ ! -f ./scripts/ci-kine-conformance.sh ]]; then
+            echo "This checkout requires the Kine fixture from kubernetes-sigs/cluster-api-provider-azure#6709." >&2
+            exit 1
+          fi
+          : "${AZURE_FEDERATED_TOKEN_FILE:?Azure workload-identity token is required}"
+          bash ./hack/ensure-azcli.sh
+          # ensure-azcli only logs in when installing the CLI; also authenticate preinstalled CLIs.
+          az login --service-principal \
+            --username "${AZURE_CLIENT_ID}" \
+            --tenant "${AZURE_TENANT_ID}" \
+            --federated-token "$(cat "${AZURE_FEDERATED_TOKEN_FILE}")" \
+            --output none
+          exec bash ./scripts/ci-kine-conformance.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: v1.35.4
+        - name: CONFORMANCE_FLAVOR
+          value: kine-postgres
+        - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
+          value: "1"
+        - name: IP_FAMILY
+          value: ipv4
+        - name: SKIP_CLEANUP
+          value: "false"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-conformance-kine-postgres-main
+      description: Manually validates Kubernetes conformance using an experimental Kine/PostgreSQL datastore on Azure instead of etcd.
   - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
