@@ -1408,7 +1408,6 @@ presubmits:
       always_run: false
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
         timeout: 1h
@@ -1449,7 +1448,6 @@ presubmits:
       always_run: false
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
         timeout: 1h
@@ -1490,7 +1488,6 @@ presubmits:
       always_run: false
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
         timeout: 1h
@@ -1531,7 +1528,6 @@ presubmits:
       always_run: false
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
       decorate: true
       decoration_config:
         timeout: 1h
