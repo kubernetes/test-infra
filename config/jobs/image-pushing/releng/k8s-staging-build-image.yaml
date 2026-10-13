@@ -14,7 +14,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
               - /run.sh
             args:
@@ -48,7 +48,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
               - /run.sh
             args:
@@ -83,7 +83,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
               - /run.sh
             args:
@@ -117,7 +117,7 @@ postsubmits:
       spec:
         serviceAccountName: build-image
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
               - /run.sh
             args:
@@ -160,7 +160,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
               - /run.sh
             args:
