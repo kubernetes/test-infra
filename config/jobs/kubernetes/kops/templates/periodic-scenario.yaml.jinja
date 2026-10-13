@@ -65,10 +65,10 @@
       imagePullPolicy: Always
       resources:
         limits:
-          cpu: "4"
-          memory: 6Gi
+          cpu: {{ resources.limits.cpu if resources and resources.limits and resources.limits.cpu is defined else '"4"' }}
+          memory: {{ resources.limits.memory if resources and resources.limits and resources.limits.memory is defined else '6Gi' }}
         requests:
-          cpu: "4"
-          memory: 6Gi
+          cpu: {{ resources.requests.cpu if resources and resources.requests and resources.requests.cpu is defined else '"4"' }}
+          memory: {{ resources.requests.memory if resources and resources.requests and resources.requests.memory is defined else '6Gi' }}
       securityContext:
         privileged: true
