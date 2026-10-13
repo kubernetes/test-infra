@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-sdk:575.0.0-alpine
-COPY builder run.sh /
+FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:588.0.0-alpine
+ARG TARGETARCH
+COPY builder-${TARGETARCH} /builder
+COPY run.sh /
 CMD ["/run.sh"]

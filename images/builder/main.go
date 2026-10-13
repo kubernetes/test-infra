@@ -17,17 +17,20 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/google/uuid"
@@ -154,7 +157,7 @@ func (o *options) uploadBuildDir(targetBucket string) (string, error) {
 	u := uuid.New()
 	uploaded := fmt.Sprintf("%s/%s.tgz", targetBucket, u.String())
 	log.Printf("Uploading %s to %s...\n", name, uploaded)
-	if err := runCmd("gsutil", "cp", name, uploaded); err != nil {
+	if err := runCmd("gcloud", "storage", "cp", name, uploaded); err != nil {
 		return "", fmt.Errorf("failed to upload files: %s", err)
 	}
 
@@ -173,7 +176,7 @@ func getExtraSubs(o options) map[string]string {
 	return subs
 }
 
-func runSingleJob(o options, jobName, uploaded, version string, subs map[string]string) error {
+func runSingleJob(ctx context.Context, o options, jobName, uploaded, version string, subs map[string]string) error {
 	s := make([]string, 0, len(subs)+1)
 	for k, v := range subs {
 		s = append(s, fmt.Sprintf("_%s=%s", k, v))
@@ -197,6 +200,10 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 
 	if o.workerPool != "" {
 		args = append(args, "--worker-pool", o.workerPool)
+	}
+
+	if o.workerRelease != "" {
+		args = append(args, "--worker-release", o.workerRelease)
 	}
 
 	if o.serviceAccount != "" {
@@ -229,7 +236,12 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 		args = append(args, "--suppress-logs")
 	}
 
-	cmd := exec.Command("gcloud", args...)
+	cmd := exec.CommandContext(ctx, "gcloud", args...)
+	// Own process group so a terminal Ctrl-C isn't delivered twice; a second SIGINT aborts gcloud's cancel.
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	// gcloud cancels the in-flight build when it receives SIGINT while waiting on it.
+	cmd.Cancel = func() error { return cmd.Process.Signal(os.Interrupt) }
+	cmd.WaitDelay = time.Minute
 
 	var logFilePath string
 	if o.logDir != "" {
@@ -290,7 +302,7 @@ func getVariants(o options) (variants, error) {
 	return v.Variants, nil
 }
 
-func runBuildJobs(o options) []error {
+func runBuildJobs(ctx context.Context, o options) []error {
 	var uploaded string
 	if o.scratchBucket != "" {
 		if !o.noSource {
@@ -321,7 +333,7 @@ func runBuildJobs(o options) []error {
 
 	if len(vs) == 0 {
 		log.Println("No variants.yaml, starting single build job...")
-		if err := runSingleJob(o, "build", uploaded, tag, getExtraSubs(o)); err != nil {
+		if err := runSingleJob(ctx, o, "build", uploaded, tag, getExtraSubs(o)); err != nil {
 			return []error{err}
 		}
 		var imageName, _ = getImageName(o, tag, "")
@@ -342,7 +354,7 @@ func runBuildJobs(o options) []error {
 		go func(job string, vc map[string]string) {
 			defer w.Done()
 			log.Printf("Starting job %q...\n", job)
-			if err := runSingleJob(o, job, uploaded, tag, mergeMaps(extraSubs, vc)); err != nil {
+			if err := runSingleJob(ctx, o, job, uploaded, tag, mergeMaps(extraSubs, vc)); err != nil {
 				errors = append(errors, fmt.Errorf("job %q failed: %w", job, err))
 				log.Printf("Job %q failed: %v\n", job, err)
 			} else {
@@ -374,6 +386,7 @@ type options struct {
 	suppressLogs     bool
 	machineType      string
 	workerPool       string
+	workerRelease    string
 	region           string
 	serviceAccount   string
 
@@ -409,6 +422,7 @@ func parseFlags() options {
 	flag.StringVar(&o.region, "region", "global", "If specified, use the given region for the GCB build, otherwise 'global' is used.")
 	flag.StringVar(&o.machineType, "machine-type", "", "If specified, use the given machine type for the GCB build.")
 	flag.StringVar(&o.workerPool, "worker-pool", "", "If specified, use the given worker pool for the GCB build.")
+	flag.StringVar(&o.workerRelease, "worker-release", "", "If specified, use the given release channel (rapid, regular, stable) or version for the GCB build worker image.")
 	flag.StringVar(&o.serviceAccount, "service-account", "", "If specified, use the given service account for the GCB build.")
 
 	flag.Parse()
@@ -455,7 +469,9 @@ func main() {
 		log.Fatalf("Failed to chdir to build directory (%s): %v", o.buildDir, err)
 	}
 
-	errors := runBuildJobs(o)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	errors := runBuildJobs(ctx, o)
+	stop()
 	if len(errors) != 0 {
 		log.Fatalf("Failed to run some build jobs: %v", errors)
 	}

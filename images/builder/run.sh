@@ -27,7 +27,7 @@ fi
 echo "Running..."
 if [ -n "${ARTIFACTS}" ] && [ -z "${LOG_TO_STDOUT}" ]; then
   echo "\$ARTIFACTS is set, sending logs to ${ARTIFACTS}"
-  /builder --log-dir="${ARTIFACTS}" "$@"
+  exec /builder --log-dir="${ARTIFACTS}" "$@"
 else
-  /builder "$@"
+  exec /builder "$@"
 fi
