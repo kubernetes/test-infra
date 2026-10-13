@@ -25,6 +25,7 @@ dashboard_groups:
   - kops-distro-u2404
   - kops-distro-u2510
   - kops-distro-u2604
+  - kops-distro-u2610
   - kops-distro-umini2404
   - kops-distro-cos121
   - kops-distro-cos125
@@ -78,6 +79,7 @@ dashboards:
 - name: kops-distro-u2404
 - name: kops-distro-u2510
 - name: kops-distro-u2604
+- name: kops-distro-u2610
 - name: kops-distro-umini2404
 - name: kops-distro-cos121
 - name: kops-distro-cos125

@@ -49,6 +49,8 @@ aws_distro_options = {
     "ubuntu2510arm64": kops_versions,
     "ubuntu2604": kops_versions,
     "ubuntu2604arm64": kops_versions,
+    "ubuntu2610": drop_unsupported_versions(kops_versions, ['1.35', '1.36', '1.37']),
+    "ubuntu2610arm64": drop_unsupported_versions(kops_versions, ['1.35', '1.36', '1.37']),
     "al2023": kops_versions,
     "al2023arm64": kops_versions,
     "al2027": drop_unsupported_versions(kops_versions, ['1.35', '1.36']),

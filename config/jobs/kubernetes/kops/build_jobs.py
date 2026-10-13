@@ -531,6 +531,9 @@ def generate_grid():
     # pylint: disable=too-many-nested-blocks
     for networking in network_plugins_periodics['supports_aws']:
         for distro, kops_versions in aws_distro_options.items():
+            # Ubuntu 26.10 is only tested by the distro jobs for now
+            if distro.startswith('ubuntu2610'):
+                continue
             for k8s_version in [v for v in k8s_versions if v != 'master']:
                 for kops_version in kops_versions:
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
