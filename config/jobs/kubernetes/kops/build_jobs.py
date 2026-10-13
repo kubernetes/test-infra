@@ -116,7 +116,8 @@ def build_test(cloud='aws',
                alert_num_failures=None,
                job_queue_name=None,
                presets=None,
-               extra_refs=None):
+               extra_refs=None,
+               resources=None):
     # pylint: disable=too-many-statements,too-many-arguments
     if kops_version is None:
         kops_deploy_url = marker_updown_green(None)
@@ -273,6 +274,7 @@ def build_test(cloud='aws',
         presets=presets,
         job_queue_name=job_queue_name,
         derive_ssh_user=derive_ssh_user,
+        resources=resources,
     )
 
     spec = {
@@ -1322,6 +1324,29 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
     ]
+
+    for cloud in ['aws', 'azure', 'gce']:
+        for cgroup_driver in ['systemd', 'cgroupfs']:
+            results.append(
+                build_test(name_override=f"kops-{cloud}-agent-sandbox-benchmark-{cgroup_driver}",
+                           cloud=cloud,
+                           networking='cilium',
+                           k8s_version='stable',
+                           feature_flags=['Azure'] if cloud == 'azure' else (),
+                           scenario='agent-sandbox',
+                           runs_per_day=3,
+                           test_timeout_minutes=120,
+                           extra_dashboards=['kops-misc'],
+                           env={
+                               'CGROUP_DRIVER': cgroup_driver,
+                               'STRESS_NODE_COUNT': '3',
+                               'STRESS_PHASES': 'fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80',
+                           },
+                           resources={
+                               'requests': {'cpu': 7, 'memory': '14Gi'},
+                               'limits': {'cpu': 7, 'memory': '14Gi'},
+                           }),
+            )
     return results
 
 
@@ -1988,44 +2013,31 @@ def generate_presubmits_scale():
                 'preset-kops-scalability-gce-100-node',
             ]
         ),
-        presubmit_test(
-            name='pull-kops-gce-agent-sandbox-benchmark',
-            scenario='agent-sandbox',
-            cloud='gce',
-            networking='cilium',
-            always_run=False,
-            optional=True,
-            test_timeout_minutes=120,
-            env={
-                'STRESS_NODE_COUNT': '3',
-                'STRESS_CONTROL_PLANE_SIZE': 'c3-standard-8',
-                'STRESS_PHASES': 'fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80',
-            },
-            resources={
-                'requests': {'cpu': 7, 'memory': '14Gi'},
-                'limits': {'cpu': 7, 'memory': '14Gi'},
-            },
-        ),
-        presubmit_test(
-            name='pull-kops-gce-agent-sandbox-benchmark-cgroupfs',
-            scenario='agent-sandbox',
-            cloud='gce',
-            networking='cilium',
-            always_run=False,
-            optional=True,
-            test_timeout_minutes=120,
-            env={
-                'CGROUP_DRIVER': 'cgroupfs',
-                'STRESS_NODE_COUNT': '3',
-                'STRESS_CONTROL_PLANE_SIZE': 'c3-standard-8',
-                'STRESS_PHASES': 'fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80',
-            },
-            resources={
-                'requests': {'cpu': 7, 'memory': '14Gi'},
-                'limits': {'cpu': 7, 'memory': '14Gi'},
-            },
-        ),
     ]
+
+    for cloud in ['aws', 'azure', 'gce']:
+        for cgroup_driver in ['systemd', 'cgroupfs']:
+            results.append(
+                presubmit_test(
+                    name=f'pull-kops-{cloud}-agent-sandbox-benchmark-{cgroup_driver}',
+                    scenario='agent-sandbox',
+                    cloud=cloud,
+                    networking='cilium',
+                    feature_flags=['Azure'] if cloud == 'azure' else (),
+                    always_run=False,
+                    optional=True,
+                    test_timeout_minutes=120,
+                    env={
+                        'CGROUP_DRIVER': cgroup_driver,
+                        'STRESS_NODE_COUNT': '3',
+                        'STRESS_PHASES': 'fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80',
+                    },
+                    resources={
+                        'requests': {'cpu': 7, 'memory': '14Gi'},
+                        'limits': {'cpu': 7, 'memory': '14Gi'},
+                    },
+                )
+            )
     return results
 
 #################################
