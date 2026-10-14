@@ -21,7 +21,7 @@ steps:
       dnf update -y && dnf install docker -y -q > /dev/null 2>&1
       aws sts get-caller-identity --profile cloudbuild
       aws ecr get-login-password --profile cloudbuild | docker login --username AWS --password-stdin "$_AWS_ECR_REGISTRY"
-  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260205-38cfa9523f
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20260729-0b834bafc6
     args:
     - bash
     - -c
@@ -54,17 +54,17 @@ substitutions:
   _AWS_ECR_REGISTRY: 468814281478.dkr.ecr.us-east-2.amazonaws.com
   _AWS_REGION: us-east-2
   _AWS_ROLE_ARN: arn:aws:iam::468814281478:role/cloudbuild
-  _CFSSL_VERSION: 1.6.5
+  _CFSSL_VERSION: 1.7.1
   _CONFIG: master
   _GIT_TAG: '12345'
   _K8S_RELEASE: stable
   _K8S_BRANCH: master
-  _KIND_VERSION: '0.32.0'
+  _KIND_VERSION: '0.33.0'
   _KUBETEST2_VERSION: 'master'
-  _YQ_VERSION: v4.53.3
+  _YQ_VERSION: v4.54.1
   _DOCKER_VERSION: 5:29.*
-  _HELM_VERSION: v4.2.2
-  _GH_VERSION: 2.96.0
+  _HELM_VERSION: v4.2.4
+  _GH_VERSION: 2.102.0
   _REGISTRY: us-central1-docker.pkg.dev/k8s-staging-test-infra/images
 timeout: 3600s
 options:

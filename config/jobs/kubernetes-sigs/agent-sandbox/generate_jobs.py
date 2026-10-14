@@ -42,7 +42,7 @@ import sys
 
 import yaml
 
-IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master"  # pylint: disable=line-too-long
+IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260831-6ed6668adc-master"  # pylint: disable=line-too-long
 DASHBOARD = "sig-apps-agent-sandbox"
 REPO_ORG = "kubernetes-sigs"
 REPO_NAME = "agent-sandbox"
@@ -50,13 +50,13 @@ REPO_NAME = "agent-sandbox"
 # Skip presubmits when only docs/site/metadata changed.
 SKIP_DOCS = (
     r"^(docs|site|\.agents)/|\.md$"
-    r"|^(\.gitignore|LICENSE|netlify\.toml|OWNERS|\.coderabbit\.yaml|SECURITY_CONTACTS|cloudbuild\.yaml)$"  # pylint: disable=line-too-long
+    r"|^(\.gitignore|LICENSE|netlify\.toml|(.*/)?OWNERS|\.coderabbit\.yaml|SECURITY_CONTACTS|cloudbuild\.yaml)$"  # pylint: disable=line-too-long
     r"|^\.github/"
 )
 # Variant that still runs for site/ changes (used by the autogen check).
 SKIP_DOCS_ALLOW_SITE = (
     r"^(docs|\.agents)/|\.md$"
-    r"|^(\.gitignore|LICENSE|netlify\.toml|OWNERS|\.coderabbit\.yaml|SECURITY_CONTACTS|cloudbuild\.yaml)$"  # pylint: disable=line-too-long
+    r"|^(\.gitignore|LICENSE|netlify\.toml|(.*/)?OWNERS|\.coderabbit\.yaml|SECURITY_CONTACTS|cloudbuild\.yaml)$"  # pylint: disable=line-too-long
     r"|^\.github/"
 )
 
@@ -134,6 +134,23 @@ def presubmit_benchmarks_kops_gcp_claims(job):
     set_run_if_changed(job, r"^extensions/|^cmd/|^controllers/|^internal/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp")  # pylint: disable=line-too-long
 
 
+def presubmit_verify_olm_bundle(job):
+    """Optional, and auto-runs only on PRs that can affect OLM bundle
+    generation -- olm/, k8s/, APIs, sandbox-router deploy manifests, or the
+    verify script itself; anything else can still trigger it with /test."""
+    optional_presubmit(job)
+    set_run_if_changed(job, r"^(olm/|k8s/|(extensions/)?api/|sandbox-router/deploy/|dev/(ci/presubmits|tools)/verify-olm-bundle)")  # pylint: disable=line-too-long
+
+
+def presubmit_test_e2e_scalability_kwok(job):
+    optional_presubmit(job)
+    for c in job["spec"]["containers"]:
+        c["resources"] = {
+            "requests": {"cpu": 7, "memory": "27Gi"},
+            "limits": {"cpu": 7, "memory": "27Gi"},
+        }
+
+
 PRESUBMIT_OVERRIDES = {
     "test-autogen-up-to-date": presubmit_test_autogen_up_to_date,
     "test-unit": presubmit_test_unit,
@@ -147,6 +164,9 @@ PRESUBMIT_OVERRIDES = {
     # Not wired up in prow before this generator existed; keep manual until
     # its credential requirements are sorted out.
     "test-skill-eval": manual_presubmit,
+    "test-e2e-scalability-kwok": presubmit_test_e2e_scalability_kwok,
+    # OLM bundle verification is new; keep optional until it is stable.
+    "verify-olm-bundle": presubmit_verify_olm_bundle,
 }
 
 
@@ -207,23 +227,54 @@ def is_gcp(script_name):
     return "gcp" in script_name
 
 
-# Scripts that predate the generator, in the order the hand-written config
-# listed them. Purely cosmetic: keeps the generated files ordered like the
-# originals (new scripts append after, alphabetically) so diffs stay small.
-LEGACY_PRESUBMIT_ORDER = ["test-autogen-up-to-date", "test-unit", "lint-go", "lint-api", "test-e2e"]
-LEGACY_PERIODIC_ORDER = ["test-load-test", "test-migration"]
+# Presubmit scripts in the order they appear in the generated config.
+# Preserves existing order so diffs stay small and deterministic.
+# New scripts not listed here append after, alphabetically.
+PRESUBMIT_ORDER = [
+    "test-autogen-up-to-date",
+    "test-unit",
+    "lint-go",
+    "lint-api",
+    "test-e2e",
+    "benchmarks-kops-gcp-cilium",
+    "benchmarks-kops-gcp-claims",
+    "benchmarks-kops-gcp-kindnet",
+    "test-skill-eval",
+    "test-e2e-scalability-kwok",
+    "lint-olm",
+    "test-olm-unit",
+    "verify-olm-bundle",
+]
+PERIODIC_ORDER = [
+    "test-load-test",
+    "benchmarks-kops-gcp-cilium",
+    "benchmarks-kops-gcp-claims",
+    "benchmarks-kops-gcp-kindnet",
+]
+
+# Scripts in dev/ci/presubmits that are not yet enabled as Prow presubmits.
+# Excluded to avoid generating unconfigured or experimental jobs until ready.
+EXCLUDED_PRESUBMITS = {
+    "test-analytics-tool",
+    "test-e2e-gemini-cu-sandbox",
+    "test-e2e-python-runtime-sandbox",
+    "test-langchain",
+    "test-mcp-server-sandbox",
+    "test-policy-vap",
+}
 
 
-def discover(srcdir, legacy_order):
+def discover(srcdir, order, excluded=None):
     if not srcdir.is_dir():
         return []
+    excluded = excluded or set()
     names = [
         p.name for p in srcdir.iterdir()
-        if p.is_file() and p.stat().st_mode & 0o111
+        if p.is_file() and p.stat().st_mode & 0o111 and p.name not in excluded
     ]
     def sort_key(name):
-        if name in legacy_order:
-            return (0, legacy_order.index(name))
+        if name in order:
+            return (0, order.index(name))
         return (1, name)
     return sorted(names, key=sort_key)
 
@@ -358,6 +409,14 @@ HEADER = """\
 # dev/ci/periodics in the agent-sandbox repository.
 """
 
+FOOTER = """\
+
+# AUTOGENERATED by generate_jobs.py; do not edit directly.
+# Do not append jobs manually to this file.
+# Regenerate with:
+#   ./generate_jobs.py --agent-sandbox-dir=<path to agent-sandbox checkout>
+"""
+
 
 class JobDumper(yaml.SafeDumper):
     pass
@@ -383,6 +442,7 @@ def write_yaml(path, doc):
         # width: never wrap scalars; the config's long regexes stay on one
         # line like the hand-written originals.
         yaml.dump(doc, f, Dumper=JobDumper, sort_keys=False, default_flow_style=False, width=100000)
+        f.write(FOOTER)
     print(f"wrote {path}")
 
 
@@ -396,10 +456,10 @@ def main():
     args = parser.parse_args()
 
     presubmits_dir = args.agent_sandbox_dir / "dev" / "ci" / "presubmits"
-    presubmit_scripts = discover(presubmits_dir, LEGACY_PRESUBMIT_ORDER)
+    presubmit_scripts = discover(presubmits_dir, PRESUBMIT_ORDER, EXCLUDED_PRESUBMITS)
 
     periodics_dir = args.agent_sandbox_dir / "dev" / "ci" / "periodics"
-    periodic_scripts = discover(periodics_dir, LEGACY_PERIODIC_ORDER)
+    periodic_scripts = discover(periodics_dir, PERIODIC_ORDER)
     if not presubmit_scripts and not periodic_scripts:
         print(f"error: no dev/ci scripts found under {args.agent_sandbox_dir}", file=sys.stderr)
         return 1

@@ -24,14 +24,14 @@ presubmits:
   - name: presubmit-mcp-lifecycle-operator-e2e-test
     cluster: eks-prow-build-cluster
     always_run: true
-    optional: true
+    optional: false
     decorate: true
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:

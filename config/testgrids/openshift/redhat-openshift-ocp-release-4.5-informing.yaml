@@ -29,5 +29,5 @@ dashboards:
     test_group_name: release-openshift-origin-installer-launch-ovirt
   name: redhat-openshift-ocp-release-4.5-informing
 test_groups:
-- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-ovirt
+- gcs_prefix: test-platform-results-public/logs/release-openshift-origin-installer-launch-ovirt
   name: release-openshift-origin-installer-launch-ovirt

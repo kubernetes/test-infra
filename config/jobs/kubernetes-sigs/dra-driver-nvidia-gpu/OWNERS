@@ -1,0 +1,19 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+# Synced to the OWNERS file in sigs.k8s.io/dra-driver-nvidia-gpu as of 08/31/26
+
+reviewers:
+  - klueska
+  - shivamerla
+  - dims
+  - cdesiniotis
+  - guptaNswati
+  - tariq1890
+  - varunrsekar
+  - shengnuo
+  - visheshtanksale
+
+approvers:
+  - dims
+  - shivamerla
+  - varunrsekar
+  - klueska

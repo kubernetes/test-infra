@@ -14,6 +14,7 @@
 
 import os
 import zlib
+from concurrent.futures import ThreadPoolExecutor # pylint: disable=no-name-in-module
 
 # We support rapid focus on a few tests of high concern
 # This should be used for temporary tests we are evaluating,
@@ -103,10 +104,6 @@ def k8s_version_info(k8s_version):
 def create_args(kops_channel, networking, extra_flags, kops_image, distro):
     args = f"--channel={kops_channel} --networking=" + networking
 
-    if distro in ('deb11'):
-        args += " --set=cluster.spec.containerd.version=1.7.29"
-        args += " --set=cluster.spec.containerd.runc.version=1.3.4"
-
     if distro in ('cos121', 'cos121arm64'):
         args += " --set=cluster.spec.containerd.version=2.0.7"
         args += " --set=cluster.spec.containerd.runc.version=1.3.4"
@@ -162,29 +159,82 @@ def latest_aws_image(owner, name, arch='x86_64'):
 
     import boto3 # pylint: disable=import-error, import-outside-toplevel
 
-    client = boto3.client('ec2', region_name='us-east-1')
-    response = client.describe_images(
-        Owners=[owner],
-        Filters=[
-            {
-                'Name': 'name',
-                'Values': [
-                    name,
-                ],
-            },
-            {
-                'Name': 'architecture',
-                'Values': [
-                    arch
-                ],
-            },
-        ],
-    )
-    images = []
-    for image in response['Images']:
-        images.append(image['ImageLocation'].replace('amazon', owner))
-    images.sort(reverse=True)
-    image = images[0]
+    # Some AMIs are present in some regions but not others (e.g. not yet
+    # replicated everywhere), so prefer images that exist in every region
+    # jobs may run in. These are the regions used by the AWS zone picker in
+    # kops/tests/e2e/kubetest2-kops/aws/zones.go — keep the two in sync.
+    regions = [
+        'ap-northeast-1',
+        'ap-northeast-2',
+        'ap-south-1',
+        'ap-southeast-1',
+        'ap-southeast-2',
+        'ca-central-1',
+        'eu-central-1',
+        'eu-west-1',
+        'eu-west-2',
+        'eu-west-3',
+        'sa-east-1',
+        'us-east-1',
+        'us-east-2',
+        'us-west-2',
+    ]
+    def region_images(region):
+        # boto3 sessions are not thread-safe, so each worker gets its own
+        client = boto3.session.Session().client('ec2', region_name=region)
+        response = client.describe_images(
+            Owners=[owner],
+            Filters=[
+                {
+                    'Name': 'name',
+                    'Values': [
+                        name,
+                    ],
+                },
+                {
+                    'Name': 'architecture',
+                    'Values': [
+                        arch
+                    ],
+                },
+            ],
+        )
+        return {
+            image['ImageLocation'].replace('amazon', owner)
+            for image in response['Images']
+        }
+
+    with ThreadPoolExecutor(max_workers=len(regions)) as executor:
+        images_by_region = dict(zip(regions, executor.map(region_images, regions)))
+
+    all_images = set.union(*images_by_region.values())
+    if not all_images:
+        raise Exception(f"no image matching {name} ({arch}) found in any region: {regions}")
+    common_images = set.intersection(*images_by_region.values())
+    if common_images:
+        image = sorted(common_images, reverse=True)[0]
+    else:
+        # Fall back to the latest image from the regions that have one
+        empty_regions = [
+            region for region, region_images in images_by_region.items()
+            if not region_images
+        ]
+        print(f"WARNING: no image matching {name} ({arch}) is present in all regions, "
+              f"missing from: {empty_regions}")
+        image = sorted(all_images, reverse=True)[0]
+
+    for newer in sorted((i for i in all_images if i > image), reverse=True):
+        missing_regions = [
+            region for region, region_images in images_by_region.items()
+            if newer not in region_images
+        ]
+        print(f"WARNING: newer image {newer} not present in regions: {missing_regions}")
+    missing_regions = [
+        region for region, region_images in images_by_region.items()
+        if image not in region_images
+    ]
+    if missing_regions:
+        print(f"WARNING: image {image} not found in regions: {missing_regions}")
     set_pinned(pin, image)
     return image
 
@@ -257,14 +307,19 @@ gce_distro_images = {
     "deb13": latest_gce_image("debian-cloud", "debian-13"),
     "deb13arm64": latest_gce_image("debian-cloud", "debian-13-arm64", "ARM64"),
     "u2204": latest_gce_image("ubuntu-os-cloud", "ubuntu-2204-lts"),
+    "u2204arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2204-lts-arm64", "ARM64"),
     "u2404": latest_gce_image("ubuntu-os-cloud", "ubuntu-2404-lts-amd64"),
     "u2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2404-lts-arm64", "ARM64"),
+    "u2604": latest_gce_image("ubuntu-os-cloud", "ubuntu-2604-lts-amd64"),
+    "u2604arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2604-lts-arm64", "ARM64"),
     "umini2404": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-amd64"),
     "umini2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-arm64", "ARM64"),
     "cos121": latest_gce_image("cos-cloud", "cos-121-lts"),
     "cos121arm64": latest_gce_image("cos-cloud", "cos-arm64-121-lts", "ARM64"),
     "cos125": latest_gce_image("cos-cloud", "cos-125-lts"),
     "cos125arm64": latest_gce_image("cos-cloud", "cos-arm64-125-lts", "ARM64"),
+    "cos129": latest_gce_image("cos-cloud", "cos-129-lts"),
+    "cos129arm64": latest_gce_image("cos-cloud", "cos-arm64-129-lts", "ARM64"),
     "cosdev": latest_gce_image("cos-cloud", "cos-dev"),
     "cosdevarm64": latest_gce_image("cos-cloud", "cos-arm64-dev", "ARM64"),
     "rocky10": latest_gce_image("rocky-linux-cloud", "rocky-linux-10-optimized-gcp"),
@@ -277,7 +332,8 @@ gce_distro_images = {
 aws_distro_images = {
     'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-x86_64'),
     'al2023arm64': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-arm64', 'arm64'),
-    'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
+    'al2027': latest_aws_image('137112412989', 'al2027-preview-ami-2*-kernel-7.1-x86_64'),
+    'al2027arm64': latest_aws_image('137112412989', 'al2027-preview-ami-2*-kernel-7.1-arm64', 'arm64'), # pylint: disable=line-too-long
     'deb12': latest_aws_image('136693071363', 'debian-12-amd64-*'),
     'deb13': latest_aws_image('136693071363', 'debian-13-amd64-*'),
     'deb13arm64': latest_aws_image('136693071363', 'debian-13-arm64-*', 'arm64'),
@@ -295,12 +351,15 @@ aws_distro_images = {
     'u2510arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
     'u2604': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2604arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
+    'u2610': latest_aws_image('099720109477', 'ubuntu/images-testing/hvm-ssd-gp3/ubuntu-stonking-daily-amd64-server-*'), # pylint: disable=line-too-long
+    'u2610arm64': latest_aws_image('099720109477', 'ubuntu/images-testing/hvm-ssd-gp3/ubuntu-stonking-daily-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
 }
 
 aws_distros_ssh_user = {
     'al2023': 'ec2-user',
     'al2023arm64': 'ec2-user',
-    'deb11': 'admin',
+    'al2027': 'ec2-user',
+    'al2027arm64': 'ec2-user',
     'deb12': 'admin',
     'deb13': 'admin',
     'deb13arm64': 'admin',
@@ -320,4 +379,6 @@ aws_distros_ssh_user = {
     'u2510arm64': 'ubuntu',
     'u2604': 'ubuntu',
     'u2604arm64': 'ubuntu',
+    'u2610': 'ubuntu',
+    'u2610arm64': 'ubuntu',
 }

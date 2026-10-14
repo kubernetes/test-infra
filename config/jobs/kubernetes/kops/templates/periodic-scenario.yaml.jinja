@@ -5,14 +5,18 @@
   labels:
     {%- if cloud == "aws" %}
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     {%- if build_cluster == "k8s-infra-kops-prow-build" %}
     preset-k8s-kops-aws-credential: "true"
     {%- endif %}
     {%- elif cloud == "azure" %}
     preset-service-account: "true"
     preset-kops-azure-cred-wi: "true"
+    {%- elif not derive_ssh_user %}
+    preset-k8s-ssh: "true"
     {%- endif %}
+    {%- for preset in presets or [] %}
+    {{ preset }}: "true"
+    {%- endfor %}
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -35,7 +39,7 @@
   {%- endif %}
   spec:
     {%- if cloud == "gce" %}
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     {%- elif cloud == "azure" %}
     serviceAccountName: azure
     {%- elif build_cluster != "default" %}
@@ -61,10 +65,10 @@
       imagePullPolicy: Always
       resources:
         limits:
-          cpu: "4"
-          memory: 6Gi
+          cpu: {{ resources.limits.cpu if resources and resources.limits and resources.limits.cpu is defined else '"4"' }}
+          memory: {{ resources.limits.memory if resources and resources.limits and resources.limits.memory is defined else '6Gi' }}
         requests:
-          cpu: "4"
-          memory: 6Gi
+          cpu: {{ resources.requests.cpu if resources and resources.requests and resources.requests.cpu is defined else '"4"' }}
+          memory: {{ resources.requests.memory if resources and resources.requests and resources.requests.memory is defined else '6Gi' }}
       securityContext:
         privileged: true

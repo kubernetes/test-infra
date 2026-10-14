@@ -318,6 +318,75 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  # Manual experiment using the fixture introduced by
+  # https://github.com/kubernetes-sigs/cluster-api-provider-azure/pull/6709.
+  # Keep opt-in until Azure provisioning, conformance, and cleanup are established.
+  - name: pull-cluster-api-provider-azure-conformance-kine-postgres
+    cluster: eks-prow-build-cluster
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 6h
+      grace_period: 30m
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: azure
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260608-c0707d679d-1.32
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set +x
+          set -euo pipefail
+          if [[ ! -f ./scripts/ci-kine-conformance.sh ]]; then
+            echo "This checkout requires the Kine fixture from kubernetes-sigs/cluster-api-provider-azure#6709." >&2
+            exit 1
+          fi
+          : "${AZURE_FEDERATED_TOKEN_FILE:?Azure workload-identity token is required}"
+          bash ./hack/ensure-azcli.sh
+          # ensure-azcli only logs in when installing the CLI; also authenticate preinstalled CLIs.
+          az login --service-principal \
+            --username "${AZURE_CLIENT_ID}" \
+            --tenant "${AZURE_TENANT_ID}" \
+            --federated-token "$(cat "${AZURE_FEDERATED_TOKEN_FILE}")" \
+            --output none
+          exec bash ./scripts/ci-kine-conformance.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: v1.35.4
+        - name: CONFORMANCE_FLAVOR
+          value: kine-postgres
+        - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
+          value: "1"
+        - name: IP_FAMILY
+          value: ipv4
+        - name: SKIP_CLEANUP
+          value: "false"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-conformance-kine-postgres-main
+      description: Manually validates Kubernetes conformance using an experimental Kine/PostgreSQL datastore on Azure instead of etcd.
   - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -732,7 +801,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -875,6 +944,8 @@ presubmits:
             value: ""
           - name: MGMT_CLUSTER_TYPE
             value: "aks"
+          - name: AKS_MGMT_KUBERNETES_VERSION
+            value: "1.36"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -988,3 +1059,56 @@ presubmits:
       testgrid-tab-name: capz-pr-e2e-multikueue-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
       description: Runs MultiKueue end-to-end tests on AKS clusters.
+  - name: pull-cluster-api-provider-azure-e2e-pod-subnet
+    cluster: eks-prow-build-cluster
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: azure
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260608-c0707d679d-1.32
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-e2e.sh
+        env:
+          - name: GINKGO_FOCUS
+            value: \[Karpenter\]
+          - name: GINKGO_SKIP
+            value: ""
+          # The flavor provisions Karpenter's workload identity and role assignments through ASO.
+          # These CRDs are not part of the set CAPZ installs by default.
+          - name: ADDITIONAL_ASO_CRDS
+            value: "managedidentity.azure.com/UserAssignedIdentity;managedidentity.azure.com/FederatedIdentityCredential;authorization.azure.com/RoleAssignment"
+          # Pre-release build of Azure/karpenter-provider-azure#1855, which adds Azure CNI pod
+          # subnet support. The Helm chart is the released upstream one; only the controller
+          # image is overridden. Drop both once pod subnet support ships in a release.
+          - name: KARPENTER_IMAGE_REPOSITORY
+            value: "ghcr.io/willie-yao/karpenter"
+          - name: KARPENTER_IMAGE_TAG
+            value: "pr1855-10d3bf7"
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-e2e-pod-subnet-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs the Azure CNI pod subnet end-to-end test with self-hosted Karpenter on AKS.

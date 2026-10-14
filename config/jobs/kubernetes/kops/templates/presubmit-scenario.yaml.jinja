@@ -15,7 +15,6 @@
     labels:
       {%- if cloud == "aws" %}
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       {%- if use_preset_for_account_creds %}
       {{use_preset_for_account_creds}}: "true"
       {%- elif not boskos_resource_type %}
@@ -24,9 +23,12 @@
       {%- elif cloud == "azure" %}
       preset-service-account: "true"
       preset-kops-azure-cred-wi: "true"
-      {%- else %}
+      {%- elif scenario == 'scalability' or not derive_ssh_user %}
       preset-k8s-ssh: "true"
       {%- endif %}
+      {%- for preset in presets or [] %}
+      {{ preset }}: "true"
+      {%- endfor %}
     max_concurrency: 1
     decorate: true
     decoration_config:
@@ -52,9 +54,16 @@
     {%- endif %}
     spec:
       {%- if cloud == "gce" %}
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       {%- elif cloud == "azure" %}
       serviceAccountName: azure
+      {%- endif %}
+      {%- if tolerations %}
+      tolerations:
+      {%- for toleration in tolerations %}
+      - key: {{ toleration.key }}
+        operator: {{ toleration.operator }}
+      {%- endfor %}
       {%- endif %}
       containers:
       - image: {{image}}
@@ -70,16 +79,22 @@
         - name: KOPS_FEATURE_FLAGS
           value: "{{kops_feature_flags}}"
         {%- endif %}
-        {%- if cloud != "azure" %}
+        {#- Jobs without a configured key get an ephemeral one per cluster from
+            kubetest2-kops, re-exported as KUBE_SSH_KEY_PATH for the e2e framework. -#}
+        {%- if cloud != "azure" and scenario != 'scalability' and cloud != "aws" and not derive_ssh_user %}
         - name: KUBE_SSH_KEY_PATH
           value: {{kops_ssh_key_path}}
+        {%- endif %}
+        {%- if cloud != "azure" and scenario != 'scalability' and not derive_ssh_user %}
         - name: KUBE_SSH_USER
           value: {{kops_ssh_user}}
         {%- endif %}
         - name: GINKGO_NO_COLOR
           value: "TRUE"
+        {%- if scenario != 'scalability' %}
         - name: GOPATH
           value: /home/prow/go
+        {%- endif %}
         {%- if artifacts %}
         - name: ARTIFACTS
           value: {{artifacts}}
@@ -90,8 +105,8 @@
         {%- endfor %}
         resources:
           requests:
-            cpu: "6"
-            memory: "16Gi"
+            cpu: {{ resources.requests.cpu if resources and resources.requests and resources.requests.cpu is defined else '"6"' }}
+            memory: "{{ resources.requests.memory if resources and resources.requests and resources.requests.memory is defined else '16Gi' }}"
           limits:
-            cpu: "6"
-            memory: "16Gi"
+            cpu: {{ resources.limits.cpu if resources and resources.limits and resources.limits.cpu is defined else '"6"' }}
+            memory: "{{ resources.limits.memory if resources and resources.limits and resources.limits.memory is defined else '16Gi' }}"

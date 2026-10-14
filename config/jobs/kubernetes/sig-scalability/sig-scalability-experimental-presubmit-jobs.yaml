@@ -40,7 +40,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -50,8 +50,6 @@ presubmits:
         env:
         - name: KUBE_FEATURE_GATES
           value: "+EtcdRangeStream"
-        - name: CONTROL_PLANE_COUNT
-          value: "3"
         resources:
           requests:
             cpu: 5
@@ -87,7 +85,7 @@ presubmits:
       testgrid-tab-name: gce-watch-list-off-benchmark
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -152,7 +150,7 @@ presubmits:
       testgrid-tab-name: gce-watch-list-benchmark
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -204,6 +202,7 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
+      preset-kops-scalability-common: "true"
       preset-kops-scalability-gce-common: "true"
       preset-kops-scalability-gce-5000-node: "true"
       preset-kops-scalability-gce-experimental: "true"
@@ -229,16 +228,13 @@ presubmits:
         - key: highmem
           operator: Exists
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
         - ./tests/e2e/scenarios/scalability/run-test.sh
         securityContext:
           privileged: true
-        env:
-        - name: CONTROL_PLANE_COUNT
-          value: "3"
         resources:
           requests:
             cpu: 7

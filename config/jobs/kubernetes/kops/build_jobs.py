@@ -115,7 +115,9 @@ def build_test(cloud='aws',
                alert_email=None,
                alert_num_failures=None,
                job_queue_name=None,
-               extra_refs=None):
+               presets=None,
+               extra_refs=None,
+               resources=None):
     # pylint: disable=too-many-statements,too-many-arguments
     if kops_version is None:
         kops_deploy_url = marker_updown_green(None)
@@ -126,8 +128,6 @@ def build_test(cloud='aws',
         kops_deploy_url = marker_updown_green(kops_version)
 
     if should_skip_newer_k8s(k8s_version, kops_version):
-        return None
-    if networking == 'kopeio' and distro in ('flatcar', 'flatcararm64'):
         return None
 
     if extra_flags is None:
@@ -143,7 +143,6 @@ def build_test(cloud='aws',
     if cloud == 'aws':
         kops_image = aws_distro_images[distro]
         kops_ssh_user = aws_distros_ssh_user[distro]
-        kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
         if build_cluster is None:
             build_cluster = 'k8s-infra-kops-prow-build'
 
@@ -208,6 +207,10 @@ def build_test(cloud='aws',
     if env is None:
         env = {}
 
+    derive_ssh_user = (cloud == 'gce'
+                       and kops_version not in ('1.35', '1.36')
+                       and env.get('KOPS_VERSION_A') not in ('1.35', '1.36'))
+
     tmpl_file = "periodic.yaml.jinja"
     if scenario is not None:
         tmpl_file = "periodic-scenario.yaml.jinja"
@@ -215,8 +218,10 @@ def build_test(cloud='aws',
             env['KOPS_STATE_STORE'] = "s3://k8s-kops-ci-prow-state-store"
             if 'KOPS_DNS_DOMAIN' not in env:
                 env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
-        env['CLOUD_PROVIDER'] = cloud
-        env['KUBE_SSH_USER'] = kops_ssh_user
+        if scenario != "scalability":
+            env['CLOUD_PROVIDER'] = cloud
+        if not derive_ssh_user:
+            env['KUBE_SSH_USER'] = kops_ssh_user
         if not cluster_name:
             # scenario scripts often need to reference the cluster name outside of kubetest2-kops.
             # Since kubetest2-kops defaults to generating one automatically, the easiest way to
@@ -266,7 +271,10 @@ def build_test(cloud='aws',
         storage_e2e_cred=storage_e2e_cred,
         instance_groups_overrides=instance_groups_overrides,
         extra_refs=extra_refs,
+        presets=presets,
         job_queue_name=job_queue_name,
+        derive_ssh_user=derive_ssh_user,
+        resources=resources,
     )
 
     spec = {
@@ -357,7 +365,10 @@ def presubmit_test(branch='master',
                    alert_num_failures=None,
                    instance_groups_overrides=None,
                    job_queue_name=None,
-                   extra_refs=None):
+                   presets=None,
+                   extra_refs=None,
+                   tolerations=None,
+                   resources=None):
     # pylint: disable=too-many-statements,too-many-arguments
     kops_image = None
     kops_ssh_user = None
@@ -370,7 +381,6 @@ def presubmit_test(branch='master',
         else:
             kops_image = aws_distro_images[distro]
             kops_ssh_user = aws_distros_ssh_user[distro]
-        kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
         if build_cluster is None:
             build_cluster = 'k8s-infra-kops-prow-build'
 
@@ -416,10 +426,15 @@ def presubmit_test(branch='master',
     if env is None:
         env = {}
 
+    derive_ssh_user = (cloud == 'gce'
+                       and branch not in ('release-1.33', 'release-1.34', 'release-1.35', 'release-1.36')
+                       and env.get('KOPS_VERSION_A') not in ('1.34', '1.35', '1.36'))
+
     tmpl_file = "presubmit.yaml.jinja"
     if scenario is not None:
         tmpl_file = "presubmit-scenario.yaml.jinja"
-        env['CLOUD_PROVIDER'] = cloud
+        if scenario != "scalability":
+            env['CLOUD_PROVIDER'] = cloud
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
 
@@ -453,12 +468,16 @@ def presubmit_test(branch='master',
         template_path=template_path,
         boskos_resource_type=boskos_resource_type,
         use_preset_for_account_creds=use_preset_for_account_creds,
+        presets=presets,
         build_cluster=build_cluster,
         test_args=test_args,
         cluster_name=cluster_name,
         instance_groups_overrides=instance_groups_overrides,
         extra_refs=extra_refs,
         job_queue_name=job_queue_name,
+        derive_ssh_user=derive_ssh_user,
+        tolerations=tolerations,
+        resources=resources,
     )
 
     spec = {
@@ -514,56 +533,38 @@ def generate_grid():
     # pylint: disable=too-many-nested-blocks
     for networking in network_plugins_periodics['supports_aws']:
         for distro, kops_versions in aws_distro_options.items():
+            # Ubuntu 26.10 is only tested by the distro jobs for now
+            if distro.startswith('ubuntu2610'):
+                continue
             for k8s_version in [v for v in k8s_versions if v != 'master']:
-                # kopeio/networking-agent doesn't have multi-arch builds yet
-                if 'arm64' in distro and networking == 'kopeio':
-                    continue
                 for kops_version in kops_versions:
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
                     distro_short = distro_shortener(distro)
-                    if kops_version == '1.33':
-                        # kindnet pre-1.0 requires GLIBC_2.32
-                        if distro == 'debian11' and networking == 'kindnet':
-                            continue
-                        # Fixes for these were backported to 1.34 in https://github.com/kubernetes/kops/pull/17935
-                        # but not to any earlier kops versions.
-                        if ((distro_short in ('al2023', 'al2023arm64', 'u2204', 'u2404', 'u2510', 'u2204arm64', 'u2404arm64', 'u2510arm64', 'deb12', 'deb13') and networking == 'amazon-vpc') or
-                        (distro_short in ('u2404', 'u2510', 'u2404arm64', 'u2510arm64', 'deb13', 'al2023', 'al2023arm64') and networking == 'cilium-eni')):
-                            continue
-                        # Fixes for these were backported to 1.34 in https://github.com/kubernetes/kops/issues/17914
-                        # but not to any earlier kops versions.
-                        if networking_arg == 'kube-router' and distro_short in ('deb13', 'al2023', 'al2023arm64', 'rhel9', 'flatcar'):
-                            continue
-                    # Fixes in https://github.com/kubernetes/kops/pull/17940
-                    # but not backported to earlier kops versions.
-                    if kops_version == '1.34' and (distro_short in ('deb13', 'al2023', 'al2023arm64') and networking == 'amazon-vpc') or (distro_short in ('deb13', 'al2023', 'al2023arm64') and networking == 'cilium-eni'):
-                        continue
-                    # Tests flake due to cilium 1.16 config issue. Fixed with cilium 1.18 in kops 1.34+
-                    # "Unable to connect to kvstore: timed out while waiting for etcd session"
-                    if kops_version == '1.33' and networking == 'cilium-etcd':
-                        continue
-                    # Fixes in https://github.com/kubernetes/kops/pull/18269
-                    # but not backported to earlier kops versions
-                    if kops_version in ('1.33', '1.34') and networking in ('amazon-vpc', 'cilium-eni') and distro_short in ('deb11', 'rhel9'):
+                    # The AWS CCM route controller races node registration and
+                    # leaves some nodes without a route, which black-holes pod
+                    # traffic under kubenet. Fixed by pinning CCM to v1.36.1 in
+                    # https://github.com/kubernetes/kops/pull/18649, not backported
+                    # to release-1.35.
+                    if kops_version == '1.35' and networking == 'kubenet':
                         continue
                     extra_flags = []
                     if 'arm64' in distro:
                         if networking in ['cilium-eni', 'amazon-vpc']:
                             extra_flags.extend([
-                                "--node-size=t4g.large",
-                                "--control-plane-size=t4g.large",
+                                "--node-size=t4g.large,t4g.xlarge",
+                                "--control-plane-size=t4g.large,t4g.xlarge",
                             ])
                         else:
                             extra_flags.extend([
-                                "--node-size=m6g.large",
-                                "--control-plane-size=m6g.large",
+                                "--node-size=m6g.large,m6g.xlarge",
+                                "--control-plane-size=m6g.large,m6g.xlarge",
                             ])
                     elif networking in ['cilium-eni', 'amazon-vpc']:
                         extra_flags = ['--node-size=t3.large']
                     if networking == 'amazon-vpc':
                         extra_flags.extend(AMAZON_VPC_ENV_FLAGS)
                     # extraConfig field added in kops 1.34; older versions reject the --set.
-                    if networking == 'cilium-eni' and kops_version != '1.33':
+                    if networking == 'cilium-eni':
                         extra_flags.extend(CILIUM_ENI_EXTRA_CONFIG_FLAGS)
                     if networking == 'kubenet':
                         extra_flags.extend([
@@ -571,24 +572,25 @@ def generate_grid():
                         ])
                     if 'rhel10' in distro or 'rocky10' in distro:
                         if networking == 'kuberouter':
-                            # Missing support for nftables
-                            # https://github.com/cloudnativelabs/kube-router/issues/2034
-                            continue
-                        if networking == 'amazon-vpc':
+                            # kube-router's network policy controller enforces policies with
+                            # nftables instead of iptables and ipsets when useNFTablesForNetpol
+                            # is set. https://github.com/cloudnativelabs/kube-router/issues/2034
+                            if kops_version in ('1.35', '1.36'):
+                                continue
+                            extra_flags.extend([
+                                "--set=cluster.spec.networking.kubeRouter.useNFTablesForNetpol=true",
+                            ])
+                        elif networking == 'amazon-vpc':
                             # RHEL10/Rocky10 kernels removed xt_comment and xt_conntrack modules;
                             # the AWS VPC CNI requires these for iptables-nft SNAT rules.
                             continue
-                        if networking == 'calico':
-                            # Calico BPF mode takes over kube-proxy's role; from
-                            # v3.31 felix also binds the kube-proxy healthz port,
-                            # so kube-proxy must be disabled to avoid the conflict.
-                            # https://docs.tigera.io/calico-enterprise/latest/operations/ebpf/install#disable-kube-proxy-or-avoid-conflicts
+                        elif networking == 'calico':
+                            # https://github.com/kubernetes/kops/issues/17915
                             # Felix's iptables-nft dataplane goes through the
                             # nft_compat shim on these distros and loses BGP
                             # session state; switch Felix to native nftables.
                             extra_flags.extend([
-                                "--set=cluster.spec.kubeProxy.enabled=false",
-                                "--set=cluster.spec.networking.calico.bpfEnabled=true",
+                                "--set=cluster.spec.kubeProxy.proxyMode=nftables",
                                 "--set=cluster.spec.networking.calico.nftablesMode=Enabled",
                             ])
                         else:
@@ -616,7 +618,7 @@ def generate_grid():
             for k8s_version in [v for v in k8s_versions if v != 'master']:
                 for kops_version in kops_versions:
                     # cilium-etcd + gce support was added in kops 1.36+
-                    if networking == 'cilium-etcd' and kops_version in ('1.33', '1.34', '1.35'):
+                    if networking == 'cilium-etcd' and kops_version == '1.35':
                         continue
                     distro_short = distro_shortener(distro)
                     extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
@@ -634,16 +636,12 @@ def generate_grid():
                         ])
                     if 'rhel10' in distro or 'rocky10' in distro:
                         if networking == 'calico':
-                            # Calico BPF mode takes over kube-proxy's role; from
-                            # v3.31 felix also binds the kube-proxy healthz port,
-                            # so kube-proxy must be disabled to avoid the conflict.
-                            # https://docs.tigera.io/calico-enterprise/latest/operations/ebpf/install#disable-kube-proxy-or-avoid-conflicts
+                            # https://github.com/kubernetes/kops/issues/17915
                             # Felix's iptables-nft dataplane goes through the
                             # nft_compat shim on these distros and loses BGP
                             # session state; switch Felix to native nftables.
                             extra_flags.extend([
-                                "--set=cluster.spec.kubeProxy.enabled=false",
-                                "--set=cluster.spec.networking.calico.bpfEnabled=true",
+                                "--set=cluster.spec.kubeProxy.proxyMode=nftables",
                                 "--set=cluster.spec.networking.calico.nftablesMode=Enabled",
                             ])
                         else:
@@ -685,7 +683,7 @@ def generate_misc():
                        'KOPS_VERSION': "v1.33.1",
                        'K8S_VERSION': "v1.33.5",
                        'KOPS_SKIP_E2E': '1',
-                       'KOPS_CONTROL_PLANE_SIZE': '3',
+                       'KOPS_CONTROL_PLANE_COUNT': '3',
                    }),
 
         # Test Cilium against ci k8s test suite
@@ -695,8 +693,8 @@ def generate_misc():
                    k8s_version="ci",
                    networking="cilium",
                    runs_per_day=1,
-                   extra_flags=["--node-size=m6g.large",
-                                "--control-plane-size=m6g.large"],
+                   extra_flags=["--node-size=m6g.large,m6g.xlarge",
+                                "--control-plane-size=m6g.large,m6g.xlarge"],
                    extra_dashboards=['kops-network-plugins']),
         build_test(name_override="kops-gce-cni-cilium-k8s-ci",
                    cloud="gce",
@@ -745,6 +743,19 @@ def generate_misc():
                                 '--bastion',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
+        # A special test for IPv6 on GCE using Kindnet CNI.
+        # GCE IPv6 support in kOps is still a work in progress (kubernetes/kops#17840),
+        # so this job is a canary tracking that effort.
+        build_test(name_override="kops-gce-cni-kindnet-ipv6",
+                   cloud="gce",
+                   k8s_version="stable",
+                   networking="kindnet",
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--topology=private',
+                                '--gce-service-account=default',
+                                ],
+                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
         # A special test for IPv6 on Flatcar
         build_test(name_override="kops-aws-ipv6-flatcar",
                    cloud="aws",
@@ -791,6 +802,13 @@ def generate_misc():
                    runs_per_day=3,
                    networking="cilium",
                    extra_flags=['--set=cluster.spec.cloudProvider.aws.useIPBasedNodeNames=true'],
+                   extra_dashboards=['kops-misc']),
+
+        # Run the e2e suite with the cgroupfs cgroup driver for the kubelet and containerd
+        build_test(name_override="kops-aws-cgroupfs",
+                   cloud="aws",
+                   runs_per_day=1,
+                   extra_flags=['--set=cluster.spec.kubelet.cgroupDriver=cgroupfs'],
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-scenario-terraform",
@@ -845,7 +863,7 @@ def generate_misc():
                    runs_per_day=1,
                    test_timeout_minutes=240,
                    scenario="keypair-rotation",
-                   env={'KOPS_CONTROL_PLANE_SIZE': '3'},
+                   env={'KOPS_CONTROL_PLANE_COUNT': '3'},
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-metrics-server",
@@ -939,9 +957,7 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=1,
                    scenario="karpenter",
-                   env = {
-                    "OVERRIDES": "--ipv6 --topology=private --bastion",
-                   },
+                   extra_flags=["--ipv6", "--topology=private", "--bastion"],
                    extra_dashboards=["kops-misc", "kops-ipv6"]),
 
         # [sig-storage, @jsafrane] Test SELinux features, because kops
@@ -1083,10 +1099,10 @@ def generate_misc():
                    ],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
-                   test_timeout_minutes=200,
+                   test_timeout_minutes=400,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
-                   runs_per_day=6),
+                   runs_per_day=3),
 
         build_test(name_override="ci-kubernetes-kops-al2023-aws-conformance-canary",
                    cloud="aws",
@@ -1116,8 +1132,8 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
-                       "--node-size=r5d.xlarge",
-                       "--control-plane-size=r5d.xlarge",
+                       "--node-size=r5d.xlarge,r5d.2xlarge",
+                       "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                        *AMAZON_VPC_ENV_FLAGS,
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -1140,8 +1156,8 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
-                       "--node-size=r5d.xlarge",
-                       "--control-plane-size=r5d.xlarge",
+                       "--node-size=r5d.xlarge,r5d.2xlarge",
+                       "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                        *AMAZON_VPC_ENV_FLAGS,
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -1191,7 +1207,7 @@ def generate_misc():
                        "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Disruptive\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]|\[sig-cloud-provider-gcp\]',
+                   skip_regex=r'\[Flaky\]|\[Feature:.+\]|\[KubeUp\]',
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
@@ -1206,9 +1222,10 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
-                       "--node-size=r5d.xlarge",
-                       "--control-plane-size=r5d.xlarge",
+                       "--node-size=r5d.xlarge,r5d.2xlarge",
+                       "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                        *AMAZON_VPC_ENV_FLAGS,
+                       "--set=cluster.spec.containerd.installCriCtl=true",
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
@@ -1307,6 +1324,29 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
     ]
+
+    for cloud in ['aws', 'azure', 'gce']:
+        for cgroup_driver in ['systemd', 'cgroupfs']:
+            results.append(
+                build_test(name_override=f"kops-{cloud}-agent-sandbox-benchmark-{cgroup_driver}",
+                           cloud=cloud,
+                           networking='cilium',
+                           k8s_version='stable',
+                           feature_flags=['Azure'] if cloud == 'azure' else (),
+                           scenario='agent-sandbox',
+                           runs_per_day=3,
+                           test_timeout_minutes=120,
+                           extra_dashboards=['kops-misc'],
+                           env={
+                               'CGROUP_DRIVER': cgroup_driver,
+                               'STRESS_NODE_COUNT': '3',
+                               'STRESS_PHASES': 'fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80',
+                           },
+                           resources={
+                               'requests': {'cpu': 7, 'memory': '14Gi'},
+                               'limits': {'cpu': 7, 'memory': '14Gi'},
+                           }),
+            )
     return results
 
 
@@ -1343,9 +1383,11 @@ def generate_conformance():
                 networking='calico',
                 distro="u2404",
                 extra_flags=["--node-size=t3.large",
-                             "--control-plane-size=t3.large"],
+                             "--control-plane-size=t3.large",
+                             "--set=cluster.spec.updatePolicy=external",
+                             "--set=cluster.spec.networking.calico.wireguardEnabled=false"],
                 test_parallelism=1,
-                test_timeout_minutes=150,
+                test_timeout_minutes=200,
                 extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-ec2'],
                 runs_per_day=1,
                 focus_regex=r'\[Conformance\]',
@@ -1360,10 +1402,12 @@ def generate_conformance():
                 name_override=f"kops-aws-conformance-arm64-{version.replace('.', '-')}",
                 networking='calico',
                 distro="u2404arm64",
-                extra_flags=["--node-size=t4g.large",
-                             "--control-plane-size=t4g.large"],
+                extra_flags=["--node-size=t4g.large,t4g.xlarge",
+                             "--control-plane-size=t4g.large,t4g.xlarge",
+                             "--set=cluster.spec.updatePolicy=external",
+                             "--set=cluster.spec.networking.calico.wireguardEnabled=false"],
                 test_parallelism=1,
-                test_timeout_minutes=150,
+                test_timeout_minutes=200,
                 extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-arm64', 'conformance-ec2'],
                 runs_per_day=1,
                 focus_regex=r'\[Conformance\]',
@@ -1379,8 +1423,10 @@ def generate_conformance():
                 networking='calico',
                 distro="u2404",
                 feature_flags=['Azure'],
+                extra_flags=["--set=cluster.spec.updatePolicy=external",
+                             "--set=cluster.spec.networking.calico.wireguardEnabled=false"],
                 test_parallelism=1,
-                test_timeout_minutes=150,
+                test_timeout_minutes=200,
                 extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-azure'],
                 runs_per_day=2,
                 focus_regex=r'\[Conformance\]',
@@ -1407,13 +1453,15 @@ def generate_conformance():
 ###############################
 def generate_distros():
     results = []
-    for distro, _ in aws_distro_options.items():
+    for distro, distro_kops_versions in aws_distro_options.items():
+        if None not in distro_kops_versions:
+            continue
         distro_short = distro_shortener(distro)
         extra_flags = []
         if 'arm64' in distro:
             extra_flags.extend([
-                "--node-size=m6g.large",
-                "--control-plane-size=m6g.large"
+                "--node-size=m6g.large,m6g.xlarge",
+                "--control-plane-size=m6g.large,m6g.xlarge"
             ])
         if 'rhel10' in distro or 'rocky10' in distro:
             extra_flags.extend([
@@ -1437,13 +1485,15 @@ def generate_distros():
 ###############################
 def generate_presubmits_distros():
     results = []
-    for distro, _ in aws_distro_options.items():
+    for distro, distro_kops_versions in aws_distro_options.items():
+        if None not in distro_kops_versions:
+            continue
         distro_short = distro_shortener(distro)
         extra_flags = []
         if 'arm64' in distro:
             extra_flags.extend([
-                "--node-size=m6g.large",
-                "--control-plane-size=m6g.large"
+                "--node-size=m6g.large,m6g.xlarge",
+                "--control-plane-size=m6g.large,m6g.xlarge"
             ])
         cilium_extra_flags = list(extra_flags)
         if 'rhel10' in distro or 'rocky10' in distro:
@@ -1474,7 +1524,9 @@ def generate_presubmits_distros():
                 always_run=False,
             )
         )
-    for distro, _ in gce_distro_options.items():
+    for distro, distro_kops_versions in gce_distro_options.items():
+        if None not in distro_kops_versions:
+            continue
         distro_short = distro_shortener(distro)
         extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
         if 'arm64' in distro:
@@ -1629,7 +1681,7 @@ def generate_upgrades():
             'K8S_VERSION_B': k8s_b,
             'KOPS_SKIP_E2E': '1',
             'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-            'KOPS_CONTROL_PLANE_SIZE': '3',
+            'KOPS_CONTROL_PLANE_COUNT': '3',
         }
 
         results.append(
@@ -1694,7 +1746,7 @@ def generate_periodics_upgrades_dns_none():
                     'KOPS_VERSION_B': kops_b,
                     'K8S_VERSION_B': k8s_b,
                     'KOPS_SKIP_E2E': '1',
-                    'KOPS_CONTROL_PLANE_SIZE': '3',
+                    'KOPS_CONTROL_PLANE_COUNT': '3',
                 },
             ))
     return results
@@ -1824,7 +1876,7 @@ def generate_presubmits_upgrades_dns_none():
                     'KOPS_VERSION_B': kops_b,
                     'K8S_VERSION_B': k8s_b,
                     'KOPS_SKIP_E2E': '1',
-                    'KOPS_CONTROL_PLANE_SIZE': '3',
+                    'KOPS_CONTROL_PLANE_COUNT': '3',
                 },
             ))
     return results
@@ -1845,29 +1897,19 @@ def generate_presubmits_scale():
             test_timeout_minutes=450,
             job_queue_name="5k-aws-scale-test",
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
-            env={
-                'CNI_PLUGIN': "amazonvpc",
-                'KUBE_NODE_COUNT': "5000",
-                'CL2_LOAD_TEST_THROUGHPUT': "50",
-                'CL2_DELETE_TEST_THROUGHPUT': "50",
-                'CL2_RATE_LIMIT_POD_CREATION': "false",
-                'NODE_MODE': "master",
-                'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "c8i.24xlarge",
-                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
-                'CL2_ENABLE_DNS_PROGRAMMING': "true",
-                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
-                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
-                'CL2_ALLOWED_SLOW_API_CALLS': "1",
-                'ENABLE_PROMETHEUS_SERVER': "true",
-                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "io2",
-                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
-                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
-                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
-                'CL2_ENABLE_DNSTESTS': "false",
-                'CL2_USE_ADVANCED_DNSTEST': "false",
-            }
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-ec2-common',
+                'preset-kops-scalability-ec2-5000-node',
+            ],
+            tolerations=[{
+                'key': 'highmem',
+                'operator': 'Exists',
+            }],
+            resources={
+                'requests': {'cpu': 7, 'memory': '40Gi'},
+                'limits': {'cpu': 7, 'memory': '40Gi'},
+            },
         ),
         presubmit_test(
             name='pull-kops-ec2-master-scale-performance-100',
@@ -1878,28 +1920,60 @@ def generate_presubmits_scale():
             always_run=False,
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
-            env={
-                'CNI_PLUGIN': "amazonvpc",
-                'KUBE_NODE_COUNT': "100",
-                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
-                'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "c8i.8xlarge",
-                'CL2_LOAD_TEST_THROUGHPUT': "50",
-                'CL2_DELETE_TEST_THROUGHPUT': "50",
-                'CL2_RATE_LIMIT_POD_CREATION': "false",
-                'NODE_MODE': "master",
-                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
-                'CL2_ENABLE_DNS_PROGRAMMING': "true",
-                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
-                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
-                'CL2_ALLOWED_SLOW_API_CALLS': "1",
-                'ENABLE_PROMETHEUS_SERVER': "true",
-                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "io2",
-                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
-                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
-                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
-            }
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-ec2-common',
+                'preset-kops-scalability-ec2-100-node',
+            ]
+        ),
+        presubmit_test(
+            name='pull-kops-ec2-master-scale-correctness-100',
+            scenario='scalability',
+            build_cluster="eks-prow-build-cluster",
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='amazonvpc',
+            always_run=False,
+            optional=True,
+            test_timeout_minutes=450,
+            use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
+            env={'SCALE_SCENARIO': 'correctness'},
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-ec2-common',
+                'preset-kops-scalability-ec2-100-node',
+            ]
+        ),
+        presubmit_test(
+            name='pull-kops-gce-master-scale-correctness-100',
+            scenario='scalability',
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='gce',
+            cloud="gce",
+            always_run=False,
+            optional=True,
+            test_timeout_minutes=450,
+            env={'SCALE_SCENARIO': 'correctness'},
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-gce-common',
+                'preset-kops-scalability-gce-100-node',
+            ]
+        ),
+        presubmit_test(
+            name='pull-kops-gce-cos-master-scale-correctness-100',
+            scenario='scalability',
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='gce',
+            cloud="gce",
+            always_run=False,
+            optional=True,
+            test_timeout_minutes=450,
+            env={'SCALE_SCENARIO': 'correctness', 'INSTANCE_IMAGE': 'cos-cloud/cos-129-19506-505-8'},
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-gce-common',
+                'preset-kops-scalability-gce-100-node',
+            ]
         ),
         presubmit_test(
             name='pull-kops-gce-master-scale-performance-5000',
@@ -1910,31 +1984,19 @@ def generate_presubmits_scale():
             always_run=False,
             job_queue_name="5k-gce-scale-test",
             test_timeout_minutes=450,
-            env={
-                'CNI_PLUGIN': "gce",
-                'KUBE_NODE_COUNT': "5000",
-                'CL2_LOAD_TEST_THROUGHPUT': "50",
-                'CL2_DELETE_TEST_THROUGHPUT': "50",
-                'CL2_RATE_LIMIT_POD_CREATION': "false",
-                'NODE_MODE': "master",
-                'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "c4-standard-96",
-                'KUBE_PROXY_MODE': 'nftables',
-                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
-                'CL2_ENABLE_DNS_PROGRAMMING': "true",
-                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
-                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
-                'CL2_ALLOWED_SLOW_API_CALLS': "1",
-                'ENABLE_PROMETHEUS_SERVER': "true",
-                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
-                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
-                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
-                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
-                'CL2_ENABLE_DNSTESTS': "false",
-                'CL2_USE_ADVANCED_DNSTEST': "false",
-                'BOSKOS_RESOURCE_TYPE': "scalability-scale-project",
-            }
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-gce-common',
+                'preset-kops-scalability-gce-5000-node',
+            ],
+            tolerations=[{
+                'key': 'highmem',
+                'operator': 'Exists',
+            }],
+            resources={
+                'requests': {'cpu': 7, 'memory': '40Gi'},
+                'limits': {'cpu': 7, 'memory': '40Gi'},
+            },
         ),
         presubmit_test(
             name='pull-kops-gce-master-scale-performance-100',
@@ -1945,64 +2007,37 @@ def generate_presubmits_scale():
             always_run=False,
             run_if_changed=r'^tests\/e2e\/scenarios\/scalability\/run-test.sh',
             test_timeout_minutes=450,
-            env={
-                'CNI_PLUGIN': "gce",
-                'KUBE_NODE_COUNT': "100",
-                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
-                'CONTROL_PLANE_COUNT': "1",
-                'KUBE_PROXY_MODE': 'nftables',
-                'CONTROL_PLANE_SIZE': "c4-standard-32",
-                'CL2_LOAD_TEST_THROUGHPUT': "50",
-                'CL2_DELETE_TEST_THROUGHPUT': "50",
-                'CL2_RATE_LIMIT_POD_CREATION': "false",
-                'NODE_MODE': "master",
-                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
-                'CL2_ENABLE_DNS_PROGRAMMING': "true",
-                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
-                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
-                'CL2_ALLOWED_SLOW_API_CALLS': "1",
-                'ENABLE_PROMETHEUS_SERVER': "true",
-                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
-                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
-                'BOSKOS_RESOURCE_TYPE': "scalability-scale-project",
-                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
-                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
-            }
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-gce-common',
+                'preset-kops-scalability-gce-100-node',
+            ]
         ),
-        presubmit_test(
-            name='pull-kops-gce-master-scale-kindnet-performance-100',
-            scenario='scalability',
-            # only helps with setting the right anotation test.kops.k8s.io/networking
-            networking='gce',
-            cloud="gce",
-            always_run=False,
-            test_timeout_minutes=450,
-            env={
-                'CNI_PLUGIN': "kindnet",
-                'KUBE_PROXY_MODE': 'nftables',
-                'KUBE_NODE_COUNT': "100",
-                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
-                'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "c3-standard-88",
-                'CL2_LOAD_TEST_THROUGHPUT': "50",
-                'CL2_DELETE_TEST_THROUGHPUT': "50",
-                'CL2_RATE_LIMIT_POD_CREATION': "false",
-                'NODE_MODE': "master",
-                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
-                'CL2_ENABLE_DNS_PROGRAMMING': "true",
-                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
-                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
-                'CL2_ALLOWED_SLOW_API_CALLS': "1",
-                'ENABLE_PROMETHEUS_SERVER': "true",
-                'TEAR_DOWN_PROMETHEUS_SERVER': "false",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
-                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
-                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
-                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
-            }
-        )
     ]
+
+    for cloud in ['aws', 'azure', 'gce']:
+        for cgroup_driver in ['systemd', 'cgroupfs']:
+            results.append(
+                presubmit_test(
+                    name=f'pull-kops-{cloud}-agent-sandbox-benchmark-{cgroup_driver}',
+                    scenario='agent-sandbox',
+                    cloud=cloud,
+                    networking='cilium',
+                    feature_flags=['Azure'] if cloud == 'azure' else (),
+                    always_run=False,
+                    optional=True,
+                    test_timeout_minutes=120,
+                    env={
+                        'CGROUP_DRIVER': cgroup_driver,
+                        'STRESS_NODE_COUNT': '3',
+                        'STRESS_PHASES': 'fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80',
+                    },
+                    resources={
+                        'requests': {'cpu': 7, 'memory': '14Gi'},
+                        'limits': {'cpu': 7, 'memory': '14Gi'},
+                    },
+                )
+            )
     return results
 
 #################################
@@ -2010,15 +2045,15 @@ def generate_presubmits_scale():
 #################################
 def generate_nftables():
     results = []
-    for distro, _ in aws_distro_options.items():
-        if distro in ('debian'):
-            continue  # nftables not supported on these distros
+    for distro, distro_kops_versions in aws_distro_options.items():
+        if None not in distro_kops_versions:
+            continue
         distro_short = distro_shortener(distro)
         extra_flags = ["--set=cluster.spec.kubeProxy.proxyMode=nftables"]
         if 'arm64' in distro:
             extra_flags.extend([
-                "--node-size=m6g.large",
-                "--control-plane-size=m6g.large"
+                "--node-size=m6g.large,m6g.xlarge",
+                "--control-plane-size=m6g.large,m6g.xlarge"
             ])
         results.append(
             build_test(
@@ -2033,7 +2068,9 @@ def generate_nftables():
                 runs_per_day=3,
             )
         )
-    for distro, _ in gce_distro_options.items():
+    for distro, distro_kops_versions in gce_distro_options.items():
+        if None not in distro_kops_versions:
+            continue
         distro_short = distro_shortener(distro)
         extra_flags = [
             "--set=cluster.spec.kubeProxy.proxyMode=nftables",
@@ -2072,7 +2109,7 @@ def generate_nftables():
 def generate_versions():
     results = []
     for version in k8s_versions:
-        results.append(
+        results.extend([
             build_test(
                 cloud='aws',
                 k8s_version=version.replace('master', 'ci'),
@@ -2081,8 +2118,19 @@ def generate_versions():
                 networking='calico',
                 extra_dashboards=['kops-versions'],
                 runs_per_day=8,
+            ),
+            build_test(
+                cloud='gce',
+                distro='u2604',
+                k8s_version=version.replace('master', 'ci'),
+                kops_channel='alpha',
+                name_override=f"kops-gce-k8s-{version.replace('.', '-')}",
+                networking='gce',
+                extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
+                extra_dashboards=['kops-versions'],
+                runs_per_day=8,
             )
-        )
+        ])
     return results
 
 ######################
@@ -2090,7 +2138,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.36', '1.35', '1.34', '1.33']:
+    for version in ['master', '1.37', '1.36', '1.35', '1.34']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
@@ -2116,7 +2164,7 @@ def generate_pipeline():
 ######################
 def generate_presubmits_branch():
     results = []
-    for version in ['1.36', '1.35', '1.34', '1.33']:
+    for version in ['1.37', '1.36', '1.35', '1.34', '1.33']:
         results.extend([
             presubmit_test(
                 name=f"pull-kops-e2e-k8s-aws-calico-{version.replace('.', '-')}",
@@ -2165,7 +2213,7 @@ def generate_presubmits_network_plugins():
                 optional = True
             aws_extra_flags = [
                 "--control-plane-size=c6g.large",
-                "--node-size=t4g.large"
+                "--node-size=t4g.large,t4g.xlarge"
             ]
             if plugin == 'amazonvpc':
                 aws_extra_flags.extend(AMAZON_VPC_ENV_FLAGS)
@@ -2289,8 +2337,8 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-amazonvpc',
             extra_flags=[
-                "--node-size=r5d.xlarge",
-                "--control-plane-size=r5d.xlarge",
+                "--node-size=r5d.xlarge,r5d.2xlarge",
+                "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                 *AMAZON_VPC_ENV_FLAGS,
                 "--set=spec.kubeAPIServer.logLevel=4",
                 "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -2307,8 +2355,8 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-amazonvpc-u2404',
             extra_flags=[
-                "--node-size=r5d.xlarge",
-                "--control-plane-size=r5d.xlarge",
+                "--node-size=r5d.xlarge,r5d.2xlarge",
+                "--control-plane-size=r5d.xlarge,r5d.2xlarge",
                 *AMAZON_VPC_ENV_FLAGS,
                 "--set=spec.kubeAPIServer.logLevel=4",
                 "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -2317,6 +2365,34 @@ def generate_presubmits_e2e():
             ],
             networking='amazonvpc',
             tab_name='e2e-aws-amazonvpc-u2404',
+            optional=True,
+        ),
+        presubmit_test(
+            distro='al2027',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-amazonvpc-al2027',
+            extra_flags=[
+                "--node-size=r5d.xlarge,r5d.2xlarge",
+                "--control-plane-size=r5d.xlarge,r5d.2xlarge",
+                *AMAZON_VPC_ENV_FLAGS,
+            ],
+            networking='amazonvpc',
+            tab_name='e2e-aws-amazonvpc-al2027',
+            optional=True,
+        ),
+        presubmit_test(
+            distro='al2027',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-cilium-eni-al2027',
+            extra_flags=[
+                "--node-size=r5d.xlarge,r5d.2xlarge",
+                "--control-plane-size=r5d.xlarge,r5d.2xlarge",
+                *CILIUM_ENI_EXTRA_CONFIG_FLAGS,
+            ],
+            networking='cilium-eni',
+            tab_name='e2e-aws-cilium-eni-al2027',
             optional=True,
         ),
         presubmit_test(
@@ -2496,8 +2572,8 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro="u2404arm64",
             networking="calico",
-            extra_flags=["--node-size=m6g.large",
-                         "--control-plane-size=m6g.large"],
+            extra_flags=["--node-size=m6g.large,m6g.xlarge",
+                         "--control-plane-size=m6g.large,m6g.xlarge"],
         ),
 
         presubmit_test(
@@ -2522,6 +2598,15 @@ def generate_presubmits_e2e():
             networking="cilium",
             always_run=False,
             extra_flags=["--set=cluster.spec.cloudProvider.aws.useIPBasedNodeNames=true"],
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-cgroupfs",
+            cloud="aws",
+            tab_name="e2e-aws-cgroupfs",
+            extra_flags=["--set=cluster.spec.kubelet.cgroupDriver=cgroupfs"],
+            always_run=False,
+            optional=True,
         ),
 
         presubmit_test(
@@ -2579,32 +2664,10 @@ def generate_presubmits_e2e():
             networking="cilium",
             kops_channel="alpha",
             scenario="karpenter",
-            env = {
-                "OVERRIDES": "--ipv6 --topology=private --bastion",
-            },
+            extra_flags=["--ipv6", "--topology=private", "--bastion"],
         ),
         presubmit_test(
-            name="pull-kops-aws-upgrade-k134-ko134-to-k136-kolatest-many-addons",
-            optional=True,
-            distro='u2404',
-            networking='cilium',
-            k8s_version='stable',
-            kops_channel='alpha',
-            test_timeout_minutes=150,
-            run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)',
-            scenario='upgrade-ab',
-            env={
-                'KOPS_VERSION_A': "1.34",
-                'K8S_VERSION_A': "v1.34.7",
-                'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.36.0",
-                'KOPS_SKIP_E2E': '1',
-                'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-                'KOPS_CONTROL_PLANE_SIZE': '3',
-            }
-        ),
-        presubmit_test(
-            name="pull-kops-aws-upgrade-k135-ko135-to-k136-kolatest-many-addons",
+            name="pull-kops-aws-upgrade-k135-ko135-to-k137-kolatest-many-addons",
             optional=True,
             distro='u2404',
             networking='cilium',
@@ -2615,12 +2678,32 @@ def generate_presubmits_e2e():
             scenario='upgrade-ab',
             env={
                 'KOPS_VERSION_A': "1.35",
-                'K8S_VERSION_A': "v1.35.4",
+                'K8S_VERSION_A': "v1.35.8",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.36.0",
+                'K8S_VERSION_B': "v1.37.0",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-                'KOPS_CONTROL_PLANE_SIZE': '3',
+                'KOPS_CONTROL_PLANE_COUNT': '3',
+            }
+        ),
+        presubmit_test(
+            name="pull-kops-aws-upgrade-k136-ko136-to-k137-kolatest-many-addons",
+            optional=True,
+            distro='u2404',
+            networking='cilium',
+            k8s_version='stable',
+            kops_channel='alpha',
+            test_timeout_minutes=150,
+            run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)',
+            scenario='upgrade-ab',
+            env={
+                'KOPS_VERSION_A': "1.36",
+                'K8S_VERSION_A': "v1.36.4",
+                'KOPS_VERSION_B': "latest",
+                'K8S_VERSION_B': "v1.37.0",
+                'KOPS_SKIP_E2E': '1',
+                'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
+                'KOPS_CONTROL_PLANE_COUNT': '3',
             }
         ),
         presubmit_test(

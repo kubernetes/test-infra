@@ -5,9 +5,9 @@ presubmits:
     always_run: true
     optional: true
     cluster: k8s-infra-prow-build
+    path_alias: sigs.k8s.io/kubetest2
     labels:
       preset-dind-enabled: "true"
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-testing-canaries
@@ -17,8 +17,9 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
+      serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         resources:
           limits:
             cpu: 4
@@ -38,9 +39,9 @@ presubmits:
     always_run: true
     optional: true
     cluster: k8s-infra-prow-build
+    path_alias: sigs.k8s.io/kubetest2
     labels:
       preset-dind-enabled: "true"
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-testing-canaries
@@ -50,8 +51,9 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
+      serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         resources:
           limits:
             cpu: 4
@@ -63,21 +65,55 @@ presubmits:
         - "runner.sh"
         args:
         - "./kubetest2-gce/ci-tests/updown-legacy.sh"
-        securityContext:
-          privileged: true
+
+  - name: pull-kubetest2-gce-clusterloader2
+    decorate: true
+    always_run: true
+    optional: true
+    cluster: k8s-infra-prow-build
+    path_alias: sigs.k8s.io/kubetest2
+    labels:
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+        command:
+        - "runner.sh"
+        args:
+        - "./kubetest2-gce/ci-tests/clusterloader2.sh"
 
   - name: pull-kubetest2-gke-up-down-singlecluster
     decorate: true
     always_run: true
     cluster: k8s-infra-prow-build
+    path_alias: sigs.k8s.io/kubetest2
     labels:
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-testing-canaries
     spec:
+      serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         resources:
           limits:
             cpu: 4
@@ -96,14 +132,15 @@ presubmits:
     decorate: true
     always_run: true
     cluster: k8s-infra-prow-build
+    path_alias: sigs.k8s.io/kubetest2
     labels:
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-testing-canaries
     spec:
+      serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         resources:
           limits:
             cpu: 4
@@ -140,7 +177,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         resources:
           limits:
             cpu: 4
@@ -160,12 +197,11 @@ presubmits:
           make install-all;
           cd ${GOPATH}/src/sigs.k8s.io/provider-aws-test-infra;
           AMI_ID=$(aws ssm get-parameters --names \;
-            /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id \;
+            /aws/service/canonical/ubuntu/server/26.04/stable/current/amd64/hvm/ebs-gp3/ami-id \;
             --query 'Parameters[0].[Value]' --output text);
           kubetest2 noop --test=node -- \;
             --provider=aws --repo-root=. --instance-type=m6a.large --focus-regex="\[NodeConformance\]" \;
-            --test-args='--kubelet-flags="--cgroup-driver=systemd"' \;
-            --images=$AMI_ID --user-data-file=config/ubuntu2404.yaml
+            --images=$AMI_ID --user-data-file=config/ubuntu2604.yaml
 
   - name: pull-kubetest2-gce-node-e2e
     decorate: true
@@ -184,13 +220,13 @@ presubmits:
     decoration_config:
       timeout: 65m
     labels:
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-testing-canaries
     spec:
+      serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         resources:
           limits:
             cpu: 4
@@ -219,7 +255,7 @@ presubmits:
       testgrid-dashboards: sig-testing-canaries
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         resources:
           limits:
             cpu: 4
@@ -231,5 +267,38 @@ presubmits:
         - runner.sh
         args:
         - "./kubetest2-kind/ci-tests/buildupdown.sh"
+        securityContext:
+          privileged: true
+
+  - name: pull-kubetest2-local-build-up-down-arm64
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/kubetest2
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 12Gi
+          requests:
+            cpu: 4
+            memory: 12Gi
+        command:
+        - runner.sh
+        args:
+        - "./kubetest2-local/ci-tests/buildupdown.sh"
         securityContext:
           privileged: true

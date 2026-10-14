@@ -6,14 +6,16 @@ The Kubernetes Project runs 5000 node clusters to test scalability. These jobs r
 
 | Job Name  | Cloud | Frequency  |  Experimental |  Owners | Node Count (1 node = 2 cores) | Notes |
 |---|---|---|---|---|---|---|
-| ci-kubernetes-e2e-gce-scale-performance-5000  |  GCP  | Every other day  |  No |  #sig-scalability | 5000 | 
-| ec2-master-scale-performance |  AWS  | Every other day  |  No |  #sig-scalability | 5000 |
+| gce-master-scale-performance-5000 |  GCP  | Every other day  |  No |  #sig-scalability | 5000 | 
+| ec2-master-scale-performance-5000 |  AWS  | Every other day  |  No |  #sig-scalability | 5000 |
 | ec2-dra-with-workload-master-scalability-5000 |  AWS  | Every other day |  No |  #sig-node | 5000 |
 | gce-master-scale-performance-5000-experimental | GCP | Twice a week | Yes | #sig-scalability | 5000 |
 | gce-master-scale-correctness |  GCP  | Every other day  |  No |  #sig-scalability | 2000 |
+| ec2-master-scale-correctness |  AWS  | Every other day  |  No |  #sig-scalability | 2000 |
 | ec2-dra-with-workload-master-scalability-500 |  AWS  | Once a day |  No |  #sig-node | 500 |
 |gce-dra-extended-resources-with-workload-master-scalability-100 | GCP | Once a day |  No |  #sig-node | 100 |
-| ec2-master-small-scale-performance |  AWS  | 4 times a day  |  No |  #sig-scalability | 100 |
+| ec2-master-scale-performance-100 |  AWS  | 4 times a day  |  No |  #sig-scalability | 100 |
+| ec2-master-scale-correctness-100 |  AWS  | 4 times a day  |  No |  #sig-scalability | 100 |
 | gce-master-scale-performance-100 | GCP | Every 30 minutes | No | #sig-scalability | 100 |
 | azure-master-scalability-100 | Azure | Twice a day | No | #sig-cluster-lifecycle (capz) | 100 |
 | golang-tip-k8s-master | GCP | Once a day | No | #sig-scalability | 200* | This job uses the legacy kubemark harness and needs to be rebuilt |
@@ -74,6 +76,9 @@ track. Add new entries at the top.
 
 | Variant | Date | What it does | Owner | Status |
 | --- | --- | --- | --- | --- |
+| `c4d` | 2026-09-30 | Single-replica `c4d-standard-96` control plane (`CONTROL_PLANE_SIZE=c4d-standard-96`) on the 5k job to avoid variance across Intel CPU generations. | @Jefftree | Graduated |
+| `HA` | 2026-08-03 | 3-replica control plane (`CONTROL_PLANE_COUNT=3`) on the 5k job, which today runs a single control plane. | @Jefftree | In Progress |
+| `node-exporter` | 2026-07-24 | Scraping node exporter (`PROMETHEUS_SCRAPE_NODE_EXPORTER=true`) for per-node resource metrics. | @serathius | Graduated |
 | `restart-etcd36` | 2026-07-10 | RangeStream (`+EtcdRangeStream`) with HA control plane restart, on etcd 3.6.12, to gather data on RangeStream against etcd 3.6. Presubmit only. | @Jefftree | Completed |
 | `restart` | 2026-06-29 | HA control plane with restart, for tracking improvements with watch cache initialization. |  @Jefftree | In Progress |
 | `etcd36` | 2026-06-26 | Testing the 5k job on etcd 3.6.12. | @Jefftree | Completed |

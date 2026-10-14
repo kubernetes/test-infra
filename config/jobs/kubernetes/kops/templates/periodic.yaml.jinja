@@ -4,7 +4,6 @@
   labels:
     {%- if cloud == "aws" %}
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     {%- if not boskos_resource_type %}
     preset-k8s-kops-aws-credential: "true"
     {%- endif %}
@@ -15,13 +14,15 @@
     preset-service-account: "true"
     preset-do-credential: "true"
     preset-do-spaces-credential: "true"
-    preset-do-ssh: "true"
-    {%- else %}
+    {%- elif not derive_ssh_user %}
     preset-k8s-ssh: "true"
     {%- endif %}
     {%- if storage_e2e_cred %}
     preset-storage-e2e-service-account: "true"
     {%- endif %}
+    {%- for preset in presets or [] %}
+    {{ preset }}: "true"
+    {%- endfor %}
   cluster: {{build_cluster}}
   decorate: true
   decoration_config:
@@ -44,7 +45,7 @@
   {%- endif %}
   spec:
     {%- if cloud == "gce" %}
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     {%- elif cloud == "azure" %}
     serviceAccountName: azure
     {%- endif %}
@@ -55,7 +56,6 @@
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -120,9 +120,15 @@
           {%- endif %}
           --parallel={{test_parallelism}}
       env:
-      {%- if cloud != "azure" and cloud != "do" %}
+      {#- Jobs without a configured key get an ephemeral one per cluster from
+          kubetest2-kops, re-exported as KUBE_SSH_KEY_PATH for the e2e framework. -#}
+      {%- if cloud != "azure" and cloud != "do" and cloud != "aws" and not derive_ssh_user %}
       - name: KUBE_SSH_KEY_PATH
         value: {{kops_ssh_key_path}}
+      {%- endif %}
+      {#- Without KUBE_SSH_USER, kubetest2-kops asks the cluster which user kops
+          registered the SSH key for. -#}
+      {%- if cloud != "azure" and cloud != "do" and not derive_ssh_user %}
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
       {%- endif %}

@@ -56,7 +56,7 @@ dashboards:
     test_group_name: periodic-ci-red-hat-storage-ocs-ci-master-odf-ocp4.21-lp-interop-odf-interop-aws-fips
   name: redhat-openshift-lp-interop-release-4.21-informing
 test_groups:
-- gcs_prefix: test-platform-results/logs/periodic-ci-RedHatQE-interop-testing-master-ibm-fusion-access-operator-ocp4.21-lp-interop-ibm-fusion-access-operator-ipi-ocp421
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-RedHatQE-interop-testing-master-ibm-fusion-access-operator-ocp4.21-lp-interop-ibm-fusion-access-operator-ipi-ocp421
   name: periodic-ci-RedHatQE-interop-testing-master-ibm-fusion-access-operator-ocp4.21-lp-interop-ibm-fusion-access-operator-ipi-ocp421
-- gcs_prefix: test-platform-results/logs/periodic-ci-red-hat-storage-ocs-ci-master-odf-ocp4.21-lp-interop-odf-interop-aws-fips
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-red-hat-storage-ocs-ci-master-odf-ocp4.21-lp-interop-odf-interop-aws-fips
   name: periodic-ci-red-hat-storage-ocs-ci-master-odf-ocp4.21-lp-interop-odf-interop-aws-fips

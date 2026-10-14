@@ -16,7 +16,79 @@ limitations under the License.
 
 package rotator
 
-import "testing"
+import (
+	"testing"
+
+	v1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/prow/pkg/config"
+)
+
+func TestRotateSuffix(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{
+			name: "tier suffix rotates",
+			in:   "ci-kubernetes-e2e-gce-cos-default-beta",
+			want: "ci-kubernetes-e2e-gce-cos-default-stable1",
+		},
+		{
+			name: "beta feature gates stay",
+			in:   "pull-kubernetes-e2e-kind-alpha-beta-features",
+			want: "pull-kubernetes-e2e-kind-alpha-beta-features",
+		},
+		{
+			name: "beta without a dash stays",
+			in:   "pull-kubernetes-betabeta",
+			want: "pull-kubernetes-betabeta",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := rotateSuffix(tt.in, "beta", "stable1"); got != tt.want {
+				t.Errorf("rotateSuffix() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUpdateJobBaseArgs(t *testing.T) {
+	t.Parallel()
+
+	job := config.JobBase{
+		Name: "ci-kubernetes-e2e-gce-cos-default-beta",
+		Spec: &v1.PodSpec{
+			Containers: []v1.Container{{
+				Args: []string{
+					"--extra-version-markers=k8s-beta",
+					"--runtime-config=api/alpha=true,api/beta=true",
+				},
+			}},
+		},
+	}
+
+	updateJobBase(&job, "beta", "stable1")
+
+	if want := "ci-kubernetes-e2e-gce-cos-default-stable1"; job.Name != want {
+		t.Errorf("Name = %v, want %v", job.Name, want)
+	}
+
+	want := []string{
+		"--extra-version-markers=k8s-stable1",
+		"--runtime-config=api/alpha=true,api/beta=true",
+	}
+	for idx, arg := range job.Spec.Containers[0].Args {
+		if arg != want[idx] {
+			t.Errorf("Args[%d] = %v, want %v", idx, arg, want[idx])
+		}
+	}
+}
 
 func TestUpdateGenericVersionMarker(t *testing.T) {
 	t.Parallel()

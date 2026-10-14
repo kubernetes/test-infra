@@ -2,7 +2,7 @@ presubmits:
   kubernetes-sigs/cluster-api-provider-ibmcloud:
   - name: pull-cluster-api-provider-ccm-image
     cluster: eks-prow-build-cluster
-    run_if_changed: '^hack/ccm/'
+    run_if_changed: '^hack/release/ccm/'
     branches:
       - ^main$
     decorate: true
@@ -18,14 +18,14 @@ presubmits:
         - bash
         - -c
         - |
-          pushd hack/ccm
+          pushd hack/release/ccm
           make build-image-linux-amd64
           make build-image-linux-ppc64le
           popd
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.35
         imagePullPolicy: IfNotPresent
         resources:
           limits:

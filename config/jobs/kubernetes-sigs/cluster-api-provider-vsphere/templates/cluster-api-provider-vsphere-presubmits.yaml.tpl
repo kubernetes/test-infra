@@ -195,7 +195,7 @@ presubmits:
       testgrid-tab-name: pr-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
       description: Runs all e2e tests
 {{ if eq $mode "supervisor" -}}
-{{ if not (or (eq $.branch "release-1.14") (eq $.branch "release-1.15")) -}}
+{{ if not (eq $.branch "release-1.15") -}}
 {{ range $i, $matrix := $.config.Other.vmOperator -}}
 {{ $vmOperatorVersion := $matrix.version -}}
 {{ $vmOperatorApiVersion := $matrix.apiVersion }}

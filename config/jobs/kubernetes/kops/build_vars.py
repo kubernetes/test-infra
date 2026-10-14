@@ -17,21 +17,21 @@
 # pylint: disable=line-too-long
 skip_jobs = []
 
-image = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master"
+image = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master"
 
 k8s_versions = [
     "master",
-    "1.33",
-    "1.34",
     "1.35",
+    "1.36",
+    "1.37",
 ]
 
 # kOps versions tested
 kops_versions = [
     None,  # maps to latest
-    "1.33",
-    "1.34",
     "1.35",
+    "1.36",
+    "1.37",
 ]
 
 def drop_unsupported_versions(original_list, version_to_drop):
@@ -39,32 +39,39 @@ def drop_unsupported_versions(original_list, version_to_drop):
 
 # AWS distributions
 aws_distro_options = {
-    "debian11": kops_versions,
     "debian12": kops_versions,
     "debian13": kops_versions,
     "ubuntu2204": kops_versions,
     "ubuntu2204arm64": kops_versions,
     "ubuntu2404": kops_versions,
     "ubuntu2404arm64": kops_versions,
-    "ubuntu2510": drop_unsupported_versions(kops_versions, ['1.33', '1.34']),
-    "ubuntu2510arm64": drop_unsupported_versions(kops_versions, ['1.33', '1.34']),
-    "ubuntu2604": drop_unsupported_versions(kops_versions, ['1.33', '1.34']),
-    "ubuntu2604arm64": drop_unsupported_versions(kops_versions, ['1.33', '1.34']),
+    "ubuntu2510": kops_versions,
+    "ubuntu2510arm64": kops_versions,
+    "ubuntu2604": kops_versions,
+    "ubuntu2604arm64": kops_versions,
+    "ubuntu2610": drop_unsupported_versions(kops_versions, ['1.35', '1.36', '1.37']),
+    "ubuntu2610arm64": drop_unsupported_versions(kops_versions, ['1.35', '1.36', '1.37']),
     "al2023": kops_versions,
     "al2023arm64": kops_versions,
+    "al2027": drop_unsupported_versions(kops_versions, ['1.35', '1.36']),
+    "al2027arm64": drop_unsupported_versions(kops_versions, ['1.35', '1.36']),
     "rhel9": kops_versions,
-    "rhel10arm64": drop_unsupported_versions(kops_versions, ['1.33', '1.34']),
+    "rhel10arm64": kops_versions,
     "rocky9": kops_versions,
-    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.33', '1.34']),
+    "rocky10arm64": kops_versions,
     "flatcar": kops_versions,
 }
 
 # GCE distributions
 gce_distro_options = {
-    "cos121": kops_versions,
-    "cos121arm64": kops_versions,
+    # COS 121 was pinned down to containerd 2.0.7 and cannot reach the 2.1.0 floor
+    # kops 1.37 requires.
+    "cos121": ['1.35'],
+    "cos121arm64": ['1.35'],
     "cos125": kops_versions,
     "cos125arm64": kops_versions,
+    "cos129": drop_unsupported_versions(kops_versions, ['1.35']),
+    "cos129arm64": drop_unsupported_versions(kops_versions, ['1.35']),
     "cosdev": kops_versions,
     "cosdevarm64": kops_versions,
     "debian12": kops_versions,
@@ -74,11 +81,13 @@ gce_distro_options = {
     "ubuntu2204": kops_versions,
     "ubuntu2404": kops_versions,
     "ubuntu2404arm64": kops_versions,
+    "ubuntu2604": kops_versions,
+    "ubuntu2604arm64": kops_versions,
     "ubuntuminimal2404": kops_versions,
     "ubuntuminimal2404arm64": kops_versions,
-    "rhel10": drop_unsupported_versions(kops_versions, ['1.33', '1.34']),
-    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.33', '1.34']),
-    "rocky10": drop_unsupported_versions(kops_versions, ['1.33', '1.34']),
+    "rhel10": kops_versions,
+    "rocky10arm64": kops_versions,
+    "rocky10": kops_versions,
 }
 
 
@@ -93,7 +102,6 @@ network_plugins_periodics = {
         "cilium-eni",
         "flannel",
         "kindnet",
-        "kopeio",
         "kubenet",
         "kuberouter",
     ],
@@ -105,7 +113,6 @@ network_plugins_periodics = {
         "cilium-eni",
         "flannel",
         "kindnet",
-        "kopeio",
         "kubenet",
         "kuberouter",
     ],
@@ -134,39 +141,34 @@ network_plugins_presubmits = {
 
 
 # Upgrade test versions
-kops31 = "v1.31.0"
-kops32 = "v1.32.4"
-kops33 = "v1.33.2"
-kops34 = "v1.34.2"
-kops35 = "v1.35.0"
+kops35 = "v1.35.2"
+kops36 = "v1.36.2"
 
 upgrade_versions_list = [
     #  kops    k8s          kops      k8s
-    # 1.34 release branch
-    ((kops34, "v1.34.6"), ("1.34", "v1.34.7")),
     # 1.35 release branch
-    ((kops34, "v1.34.7"), ("1.35", "v1.35.4")),
-    ((kops35, "v1.35.4"), ("1.35", "v1.35.4")),
-    # kOps 1.33 upgrade to latest
-    ((kops33, "v1.31.14"), ("latest", "v1.32.13")),
-    ((kops33, "v1.32.13"), ("latest", "v1.33.11")),
-    # kOps 1.34 upgrade to latest
-    ((kops34, "v1.30.14"), ("latest", "v1.31.14")),
-    ((kops34, "v1.31.14"), ("latest", "v1.32.13")),
-    ((kops34, "v1.32.13"), ("latest", "v1.33.11")),
-    ((kops34, "v1.33.11"), ("latest", "v1.34.7")),
+    ((kops35, "v1.35.7"), ("1.35", "v1.35.8")),
+    # 1.36 release branch
+    ((kops35, "v1.35.8"), ("1.36", "v1.36.4")),
+    ((kops36, "v1.36.3"), ("1.36", "v1.36.4")),
+    # 1.37 release branch
+    ((kops36, "v1.36.4"), ("1.37", "v1.37.0")),
     # kOps 1.35 upgrade to latest
     ((kops35, "v1.31.14"), ("latest", "v1.32.13")),
-    ((kops35, "v1.32.13"), ("latest", "v1.33.11")),
-    ((kops35, "v1.33.11"), ("latest", "v1.34.7")),
-    ((kops35, "v1.34.7"), ("latest", "v1.35.4")),
+    ((kops35, "v1.32.13"), ("latest", "v1.33.13")),
+    ((kops35, "v1.33.13"), ("latest", "v1.34.11")),
+    ((kops35, "v1.34.11"), ("latest", "v1.35.8")),
+    # kOps 1.36 upgrade to latest
+    ((kops36, "v1.32.13"), ("latest", "v1.33.13")),
+    ((kops36, "v1.33.13"), ("latest", "v1.34.11")),
+    ((kops36, "v1.34.11"), ("latest", "v1.35.8")),
+    ((kops36, "v1.35.8"), ("latest", "v1.36.4")),
     # we should have an upgrade test for every supported K8s version
-    (("latest", "v1.34.0"), ("latest", "latest")),
+    (("latest", "v1.37.0"), ("latest", "latest")),
+    (("latest", "v1.36.0"), ("latest", "v1.37.0")),
+    (("latest", "v1.35.0"), ("latest", "v1.36.0")),
     (("latest", "v1.34.0"), ("latest", "v1.35.0")),
     (("latest", "v1.33.0"), ("latest", "v1.34.0")),
-    (("latest", "v1.32.0"), ("latest", "v1.33.0")),
-    (("latest", "v1.31.0"), ("latest", "v1.32.0")),
-    (("latest", "v1.30.0"), ("latest", "v1.31.0")),
     # kOps latest should always be able to upgrade from stable to latest and stable to ci
     (("latest", "stable"), ("latest", "latest")),
     (("latest", "stable"), ("latest", "ci")),

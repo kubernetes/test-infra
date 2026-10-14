@@ -20,7 +20,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -70,7 +70,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -81,7 +81,7 @@ periodics:
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=8 --skip="" --label-filter="!Flaky && Serial && NodeConformance"
+          - --test_args=--nodes=8 --skip="" --label-filter="!Flaky && !Slow && Serial && NodeConformance"
           - --timeout=80m
         env:
           - name: GOPATH
@@ -101,13 +101,13 @@ periodics:
 
 - name: ci-kubernetes-node-e2e-containerd-slow
   cluster: k8s-infra-prow-build
-  interval: 2h
+  interval: 2h30m
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 130m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -120,7 +120,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -131,8 +131,8 @@ periodics:
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=8 --skip="" --label-filter="!Flaky && Slow && NodeConformance"
-          - --timeout=80m
+          - --test_args=--nodes=8 --timeout=110m --skip="" --label-filter="!Flaky && Slow && NodeConformance"
+          - --timeout=120m
         env:
           - name: GOPATH
             value: /go
@@ -170,7 +170,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -178,12 +178,13 @@ periodics:
       - --deployment=node
       - --gcp-zone=us-central1-b
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
-      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
       - --node-tests=true
       - --provider=gce
       # *Manager jobs are skipped because they have corresponding test lanes with the right image
       # These jobs in serial get partially skipped and are long jobs.
-      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[Feature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]|\[Feature:OffByDefault\]"
+      # Slow tests are skipped here and run in ci-kubernetes-node-kubelet-serial-containerd-slow.
+      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[Feature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]|\[Feature:OffByDefault\]"
       - --timeout=240m
       env:
       - name: GOPATH
@@ -199,7 +200,59 @@ periodics:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-kubelet-serial-containerd
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature|Feature:OffByDefault)"
+    description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Slow|Benchmark|Node*Feature|Feature:OffByDefault)"
+
+- name: ci-kubernetes-node-kubelet-serial-containerd-slow
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 260m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+      command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --deployment=node
+      - --gcp-zone=us-central1-b
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      # *Manager jobs are skipped because they have corresponding test lanes with the right image
+      # These jobs in serial get partially skipped and are long jobs.
+      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\].*\[Slow\]|\[Slow\].*\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[Feature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]|\[Feature:OffByDefault\]"
+      - --timeout=240m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-release-blocking
+    testgrid-tab-name: node-kubelet-serial-containerd-slow
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+    description: "Uses kubetest to run slow serial node-e2e tests (+Serial+Slow, -Flaky|Benchmark|Node*Feature|Feature:OffByDefault)"
 
 - name: ci-kubernetes-node-kubelet-containerd-flaky
   cluster: k8s-infra-prow-build
@@ -222,7 +275,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -230,7 +283,7 @@ periodics:
       - --deployment=node
       - --gcp-zone=us-central1-b
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
-      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=1 --timeout=4h --focus="\[Flaky\]" --skip="\[Benchmark\]|\[Feature:Eviction\]|\[Feature:OffByDefault\]"
@@ -278,7 +331,7 @@ periodics:
     description: "OWNER: sig-node; runs serial node-e2e tests with CRI-O (+Serial, -Flaky|Slow|Disruptive|Benchmark|Node*Feature|Feature:OffByDefault)"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
         - runner.sh
       args:
@@ -338,7 +391,7 @@ periodics:
     description: "OWNER: sig-node; runs slow and disruptive serial node-e2e tests with CRI-O (+Serial+Slow|Disruptive, -Flaky|Benchmark|Node*Feature|Feature:OffByDefault)"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
         - runner.sh
       args:
@@ -397,7 +450,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -413,7 +466,7 @@ periodics:
           - --target-build-arch=linux/arm64
           - --timeout=4h0m0s
           - --skip-regex=\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:NodeSwap\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]|\[Feature:OffByDefault\]
-          - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/image-config-serial.yaml
         securityContext:
           privileged: true
@@ -454,7 +507,7 @@ periodics:
     description: Executes E2E suite with swap enabled on Fedora
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
         - runner.sh
       args:
@@ -511,7 +564,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -563,7 +616,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
         - runner.sh
       args:
@@ -620,7 +673,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -673,7 +726,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
         - runner.sh
       args:
@@ -729,7 +782,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -779,7 +832,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -787,7 +840,7 @@ periodics:
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
       - --deployment=node
       - --gcp-zone=us-central1-b
-      - '--node-test-args=--standalone-mode=true --feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+      - '--node-test-args=--standalone-mode=true --feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[Feature:StandaloneMode\]" --skip="\[Flaky\]|\[Serial\]"
@@ -833,7 +886,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -841,7 +894,7 @@ periodics:
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
       - --deployment=node
       - --gcp-zone=us-central1-b
-      - '--node-test-args=--standalone-mode=true --feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+      - '--node-test-args=--standalone-mode=true --feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[Feature:StandaloneMode\]" --skip="\[Flaky\]"
@@ -889,7 +942,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -897,7 +950,7 @@ periodics:
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
       - --deployment=node
       - --gcp-zone=us-central1-b
-      - '--node-test-args=--feature-gates=AllAlpha=true,EventedPLEG=false,PodAndContainerStatsFromCRI=true,GenericWorkload=true --service-feature-gates=AllAlpha=true,AllBeta=true --runtime-config=api/all=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --feature-gates=PodAndContainerStatsFromCRI=true" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+      - '--node-test-args=--feature-gates=AllAlpha=true,EventedPLEG=false,PodAndContainerStatsFromCRI=true,GenericWorkload=true --service-feature-gates=AllAlpha=true,AllBeta=true --runtime-config=api/all=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --feature-gates=PodAndContainerStatsFromCRI=true" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[Feature:.+\]" --skip="\[Flaky\]|\[Serial\]|\[Slow\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]"
@@ -943,7 +996,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -951,7 +1004,7 @@ periodics:
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
       - --deployment=node
       - --gcp-zone=us-central1-b
-      - '--node-test-args=--feature-gates=AllAlpha=true,EventedPLEG=false,PodAndContainerStatsFromCRI=true,GenericWorkload=true --service-feature-gates=AllAlpha=true,AllBeta=true --runtime-config=api/all=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --feature-gates=PodAndContainerStatsFromCRI=true" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+      - '--node-test-args=--feature-gates=AllAlpha=true,EventedPLEG=false,PodAndContainerStatsFromCRI=true,GenericWorkload=true --service-feature-gates=AllAlpha=true,AllBeta=true --runtime-config=api/all=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --feature-gates=PodAndContainerStatsFromCRI=true" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[Feature:.+\]" --skip="\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]" --label-filter="Slow"
@@ -997,7 +1050,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -1005,7 +1058,7 @@ periodics:
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
       - --deployment=node
       - --gcp-zone=us-central1-b
-      - '--node-test-args=--standalone-mode=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+      - '--node-test-args=--standalone-mode=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[Feature:StandaloneMode\]" --skip="\[Flaky\]|\[Serial\]|\[Feature:OffByDefault\]"
@@ -1051,7 +1104,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -1059,7 +1112,7 @@ periodics:
           - --deployment=node
           - --gcp-zone=us-central1-b
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
-          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --skip="" --focus="\[Feature:TopologyManager\]"
@@ -1100,7 +1153,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -1108,7 +1161,7 @@ periodics:
           - --deployment=node
           - --gcp-zone=us-central1-b
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
-          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --skip="\[Feature:OffByDefault\]" --focus="\[Feature:CPUManager\]"
@@ -1149,7 +1202,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -1157,7 +1210,7 @@ periodics:
           - --deployment=node
           - --gcp-zone=us-central1-b
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
-          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --skip="" --focus="\[Feature:MemoryManager\]"
@@ -1203,7 +1256,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -1211,7 +1264,7 @@ periodics:
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
           - --deployment=node
           - --gcp-zone=us-central1-b
-          - '--node-test-args=--cri-proxy-enabled=true  --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+          - '--node-test-args=--cri-proxy-enabled=true  --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           - --node-tests=true
           - --provider=gce
           # all criproxy tests are serial, but no need to specify it
@@ -1259,7 +1312,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -1267,7 +1320,7 @@ periodics:
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
           - --deployment=node
           - --gcp-zone=us-central1-b
-          - '--node-test-args=--cri-proxy-enabled=true --feature-gates=AllAlpha=true,AllBeta=true --service-feature-gates=AllAlpha=true,AllBeta=true --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+          - '--node-test-args=--cri-proxy-enabled=true --feature-gates=AllAlpha=true,AllBeta=true --service-feature-gates=AllAlpha=true,AllBeta=true --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           - --node-tests=true
           - --provider=gce
           # all criproxy tests are serial, but no need to specify it
@@ -1292,7 +1345,7 @@ periodics:
 #    preset-k8s-ssh: "true"
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --timeout=90

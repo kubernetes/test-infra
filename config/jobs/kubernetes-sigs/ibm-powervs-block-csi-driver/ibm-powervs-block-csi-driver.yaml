@@ -16,7 +16,7 @@ presubmits:
         - ^main$
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             command:
               - runner.sh
             args:
@@ -47,7 +47,7 @@ presubmits:
         - ^main$
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             command:
               - runner.sh
             args:
@@ -76,7 +76,7 @@ presubmits:
         - ^main$
       spec:
         containers:
-          - image: 'public.ecr.aws/docker/library/golang:1.25'
+          - image: 'public.ecr.aws/docker/library/golang:1.26'
             command:
               - make
             args:
@@ -102,7 +102,7 @@ presubmits:
         - ^main$
       spec:
         containers:
-          - image: 'public.ecr.aws/docker/library/golang:1.25'
+          - image: 'public.ecr.aws/docker/library/golang:1.26'
             command:
               - make
             args:

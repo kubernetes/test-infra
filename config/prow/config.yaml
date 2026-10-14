@@ -23,10 +23,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20260728-850dcba9b"
-        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20260728-850dcba9b"
-        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20260728-850dcba9b"
-        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20260728-850dcba9b"
+        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20261013-985126490"
+        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20261013-985126490"
+        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20261013-985126490"
+        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20261013-985126490"
       gcs_configuration:
         bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
@@ -103,7 +103,7 @@ deck:
           - FAILED. See logs
           - failed to acquire k8s binaries
           - failed to solve
-          - (FAIL|Failure \[)\b
+          - (FAIL|FAILED|Failure \[)\b
           - fatal error
           - flag provided but not defined
           - Full Stack Trace
@@ -382,6 +382,11 @@ branch-protection:
             - build-windows-amd64
             - verify-amd64
             - verify-arm64
+        ktesting:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         kubelet:
           restrictions:
             users: []
@@ -548,6 +553,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        aws-fsx-openzfs-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
         cluster-api:
           required_status_checks:
             contexts:
@@ -567,6 +576,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - lint
+        cluster-api-provider-aws:
+          restrictions:
+            users:
+              - github-actions[bot]
         cluster-proportional-autoscaler:
           branches:
             gh-pages:
@@ -717,6 +730,7 @@ tide:
     - kubernetes/endpointslice
     - kubernetes/externaljwt
     - kubernetes/kms
+    - kubernetes/ktesting
     - kubernetes/kube-aggregator
     - kubernetes/kube-controller-manager
     - kubernetes/kube-proxy
@@ -729,9 +743,12 @@ tide:
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
+    - kubernetes/streaming
     # repos with custom tide queries below
     - kubernetes-sigs/cloud-provider-azure
     - kubernetes-sigs/cluster-api
+    - kubernetes-sigs/gateway-api
+    - kubernetes-sigs/gateway-api-conformance-images
     - kubernetes/autoscaler
     labels:
     - lgtm
@@ -748,31 +765,6 @@ tide:
     - do-not-merge/work-in-progress
   - repos:
     - kubernetes/kubernetes
-    excludedBranches:
-    - master
-    - release-1.37
-    labels:
-    - lgtm
-    - approved
-    - "cncf-cla: yes"
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/cherry-pick-not-approved
-    - do-not-merge/contains-merge-commits
-    - do-not-merge/hold
-    - do-not-merge/invalid-commit-message
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/needs-kind
-    - do-not-merge/needs-sig
-    - do-not-merge/release-note-label-needed
-    - do-not-merge/work-in-progress
-  - repos:
-    - kubernetes/kubernetes
-    milestone: v1.37
-    includedBranches:
-    - master
-    - release-1.37
     labels:
     - lgtm
     - approved
@@ -885,41 +877,62 @@ tide:
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
     - do-not-merge/needs-area
+  - repos:
+    - kubernetes-sigs/gateway-api
+    - kubernetes-sigs/gateway-api-conformance-images
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-ail
   merge_method:
+    kubernetes/cloud-provider-gcp: squash
+    kubernetes/cloud-provider-openstack: squash
+    kubernetes/dashboard: squash
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
     kubernetes-sigs/agent-sandbox: squash
+    kubernetes-sigs/cloud-provider-azure: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
     kubernetes-sigs/devops-bench: squash
     kubernetes-sigs/external-dns: squash
+    kubernetes-sigs/gateway-api: squash
+    kubernetes-sigs/gateway-api-conformance-images: squash
+    kubernetes-sigs/gateway-api-inference-extension: squash
     kubernetes-sigs/ibm-vpc-block-csi-driver: squash
     kubernetes-sigs/inference-perf: squash
+    kubernetes-sigs/ingress2gateway: squash
     kubernetes-sigs/jobset: squash
     kubernetes-sigs/karpenter: squash
     kubernetes-sigs/kernel-module-management: rebase
     kubernetes-sigs/kjob: squash
-    kubernetes-sigs/krew-index: squash
     kubernetes-sigs/krew: squash
+    kubernetes-sigs/krew-index: squash
     kubernetes-sigs/kro: rebase
     kubernetes-sigs/kube-agentic-networking: squash
     kubernetes-sigs/kube-agents: squash
+    kubernetes-sigs/kubernetes-mixin: squash
     kubernetes-sigs/kubespray: squash
     kubernetes-sigs/kueue: squash
     kubernetes-sigs/lws: squash
     kubernetes-sigs/mcp-lifecycle-operator: squash
-    kubernetes-sigs/gateway-api-inference-extension: squash
+    kubernetes-sigs/model-serving-signals: squash
+    kubernetes-sigs/node-ipam-controller: squash
+    kubernetes-sigs/node-readiness-controller: squash
     kubernetes-sigs/resource-state-metrics: rebase
     kubernetes-sigs/security-profiles-operator: rebase
-    kubernetes-sigs/gateway-api: squash
-    kubernetes-sigs/gateway-api-conformance-images: squash
     kubernetes-sigs/vsphere-csi-driver: squash
-    kubernetes-sigs/cloud-provider-azure: squash
-    kubernetes/cloud-provider-gcp: squash
-    kubernetes/cloud-provider-openstack: squash
-    kubernetes/dashboard: squash
-    kubernetes-sigs/ingress2gateway: squash
-    kubernetes-sigs/node-readiness-controller: squash
+    kubernetes-sigs/workload-class: squash
   pr_status_base_urls:
     '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker
@@ -936,6 +949,14 @@ tide:
             from-branch-protection: true
           cluster-api-provider-vsphere:
             from-branch-protection: true
+          kueue:
+            optional-contexts:
+            # Netlify checks can fail intermittently, making the PR stuck and requiring a push from the PR owner.
+            # Website changes remain gated by pull-kueue-verify-website-links-preview-main.
+            - deploy/netlify
+            - Header rules
+            - Pages changed
+            - Redirect rules
           kubespray:
             from-branch-protection: true
   batch_size_limit:

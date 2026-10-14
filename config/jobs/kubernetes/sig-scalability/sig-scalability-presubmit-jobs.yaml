@@ -35,7 +35,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -76,7 +76,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -148,7 +148,7 @@ presubmits:
         - key: highmem
           operator: Exists
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -162,6 +162,385 @@ presubmits:
           limits:
             cpu: 7
             memory: "40Gi"
+
+  - name: pull-kubernetes-benchmark-write-throughput
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-benchmark-write-throughput
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=benchmark-write-throughput
+        - --gcp-master-size=n2-standard-32
+        - --gcp-node-size=e2-standard-32
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --gcp-project-type=scalability-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --metadata-sources=cl2-metadata.json
+        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=ETCD_QUOTA_BACKEND_BYTES=17179869184
+        - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
+        - --env=KUBE_GCE_PRIVATE_CLUSTER=false
+        - --env=CL2_PODS_BENCHMARK_POD_COUNT=10000
+        - --env=CL2_PODS_WATCH_REPLICAS=0
+        - --env=CL2_PODS_WRITE_REPLICAS=20
+        - --env=CL2_PODS_PATCH_QPS=100
+        - --env=CL2_PODS_BENCHMARK_DURATION=15m
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=1
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+        - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+        - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+        - --test-cmd-args=--prometheus-scrape-etcd=true
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
+        - --test-cmd-args=--testconfig=testing/write-throughput/config.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=90m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 6
+            memory: "16Gi"
+          limits:
+            cpu: 6
+            memory: "16Gi"
+
+  - name: pull-kubernetes-benchmark-write-throughput-idle-watchers
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-benchmark-write-throughput-idle-watchers
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=benchmark-write-throughput
+        - --gcp-master-size=n2-standard-32
+        - --gcp-node-size=e2-standard-32
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --gcp-project-type=scalability-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --metadata-sources=cl2-metadata.json
+        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=ETCD_QUOTA_BACKEND_BYTES=17179869184
+        - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
+        - --env=KUBE_GCE_PRIVATE_CLUSTER=false
+        - --env=CL2_PODS_BENCHMARK_POD_COUNT=10000
+        - --env=CL2_PODS_WATCH_REPLICAS=0
+        - --env=CL2_CONFIGMAPS_WATCH_REPLICAS=25
+        - --env=CL2_CONFIGMAPS_WATCHES_PER_REPLICA=2000
+        - --env=CL2_PODS_WRITE_REPLICAS=20
+        - --env=CL2_PODS_PATCH_QPS=100
+        - --env=CL2_PODS_BENCHMARK_DURATION=15m
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=1
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+        - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+        - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+        - --test-cmd-args=--prometheus-scrape-etcd=true
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
+        - --test-cmd-args=--testconfig=testing/write-throughput/config.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=90m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 6
+            memory: "16Gi"
+          limits:
+            cpu: 6
+            memory: "16Gi"
+
+  - name: pull-kubernetes-benchmark-write-throughput-500qps-10kpods-10kb # Lower throughput version to prevent watch terminations
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-benchmark-write-throughput-500qps-10kpods-10kb
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=benchmark-write-throughput
+        - --gcp-master-size=n2-standard-32
+        - --gcp-node-size=e2-standard-32
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --gcp-project-type=scalability-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --metadata-sources=cl2-metadata.json
+        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
+        - --env=KUBE_GCE_PRIVATE_CLUSTER=false
+        - --env=CL2_PODS_BENCHMARK_POD_COUNT=10000
+        - --env=CL2_PODS_WATCH_REPLICAS=0
+        - --env=CL2_PODS_WRITE_REPLICAS=5
+        - --env=CL2_PODS_PATCH_QPS=100
+        - --env=CL2_PODS_BENCHMARK_DURATION=15m
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=1
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+        - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+        - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+        - --test-cmd-args=--prometheus-scrape-etcd=true
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
+        - --test-cmd-args=--testconfig=testing/write-throughput/config.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=90m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 6
+            memory: "16Gi"
+          limits:
+            cpu: 6
+            memory: "16Gi"
+
+  - name: pull-kubernetes-benchmark-watchlist-proto-informer
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-benchmark-watchlist-proto-informer
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=benchmark-list-informer
+        - --gcp-master-size=n2-standard-32
+        - --gcp-node-size=e2-standard-32
+        - --gcp-node-image=gci
+        - --gcp-nodes=3
+        - --gcp-project-type=scalability-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --metadata-sources=cl2-metadata.json
+        - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
+        - --env=KUBE_GCE_PRIVATE_CLUSTER=false
+        - --env=CL2_LIST_CONFIG_MAP_NUMBER=0
+        - --env=CL2_LIST_POD_NUMBER=150000
+        - --env=CL2_LIST_BENCHMARK_PODS=10
+        - --env=CL2_LIST_BENCHMARK_CONTENT_TYPE=proto
+        - --env=CL2_LIST_BENCHMARK_MODE=informer
+        - --env=CL2_LIST_ENABLE_WATCHLIST=true
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=3
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+        - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+        - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
+        - --test-cmd-args=--testconfig=testing/list/config.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=90m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 6
+            memory: "16Gi"
+          limits:
+            cpu: 6
+            memory: "16Gi"
+
+  - name: pull-kubernetes-benchmark-watchlist-proto-http
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-benchmark-watchlist-proto-http
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=benchmark-list-informer
+        - --gcp-master-size=n2-standard-32
+        - --gcp-node-size=e2-standard-32
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --gcp-project-type=scalability-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --metadata-sources=cl2-metadata.json
+        - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
+        - --env=KUBE_GCE_PRIVATE_CLUSTER=false
+        - --env=CL2_LIST_CONFIG_MAP_NUMBER=0
+        - --env=CL2_LIST_POD_NUMBER=150000
+        - --env=CL2_LIST_BENCHMARK_PODS=10
+        - --env=CL2_LIST_BENCHMARK_CONTENT_TYPE=proto
+        - --env=CL2_LIST_BENCHMARK_MODE=http
+        - --env=CL2_LIST_ENABLE_WATCHLIST=true
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=1
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+        - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+        - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
+        - --test-cmd-args=--testconfig=testing/list/config.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=90m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 6
+            memory: "16Gi"
+          limits:
+            cpu: 6
+            memory: "16Gi"
 
   kubernetes/perf-tests:
   - name: pull-perf-tests-benchmark-kube-dns
@@ -189,7 +568,7 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -243,7 +622,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -260,7 +639,6 @@ presubmits:
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
-        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -306,7 +684,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -355,7 +733,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-test
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - verify/test.sh
         resources:
@@ -416,10 +794,11 @@ presubmits:
     cluster: eks-prow-build-cluster
     run_if_changed: ^clusterloader2/.*$
     labels:
-      preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential-boskos-scale-001-kops: "true"
-      preset-dind-enabled: "true"
+      preset-kops-scalability-common: "true"
+      preset-kops-scalability-ec2-common: "true"
+      preset-kops-scalability-ec2-100-node: "true"
     decorate: true
     max_concurrency: 3
     decoration_config:
@@ -440,135 +819,13 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-100
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
         - ./tests/e2e/scenarios/scalability/run-test.sh
         securityContext:
           privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        - name: CNI_PLUGIN
-          value: "amazonvpc"
-        - name: KUBE_NODE_COUNT
-          value: "100"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_DELETE_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: CONTROL_PLANE_SIZE
-          value: "c8i.8xlarge"
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        - name: CL2_ALLOWED_SLOW_API_CALLS
-          value: "1"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: TEAR_DOWN_PROMETHEUS_SERVER
-          value: "false"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
-        - name: CLOUD_PROVIDER
-          value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
-        resources:
-          requests:
-            cpu: 5
-            memory: 16Gi
-          limits:
-            cpu: 5
-            memory: 16Gi
-
-  - name: pull-perf-tests-ec2-master-scale-performance-500
-    cluster: eks-prow-build-cluster
-    always_run: false
-    labels:
-      preset-aws-ssh: "true"
-      preset-aws-credential-boskos-scale-001-kops: "true"
-    decorate: true
-    decoration_config:
-      timeout: 100m
-    path_alias: k8s.io/perf-tests
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    - org: kubernetes
-      repo: kops
-      base_ref: master
-      workdir: true
-      path_alias: k8s.io/kops
-    annotations:
-      testgrid-dashboards: presubmits-kubernetes-scalability
-      testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-500
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/scalability/run-test.sh
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        - name: CNI_PLUGIN
-          value: "amazonvpc"
-        - name: KUBE_NODE_COUNT
-          value: "500"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_DELETE_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: CONTROL_PLANE_SIZE
-          value: "c8i.12xlarge"
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        - name: CL2_ALLOWED_SLOW_API_CALLS
-          value: "1"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: TEAR_DOWN_PROMETHEUS_SERVER
-          value: "false"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
-        - name: CLOUD_PROVIDER
-          value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
             cpu: 5
@@ -584,6 +841,9 @@ presubmits:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential-boskos-scale-001-kops: "true"
+      preset-kops-scalability-common: "true"
+      preset-kops-scalability-ec2-common: "true"
+      preset-kops-scalability-ec2-5000-node: "true"
     decorate: true
     decoration_config:
       timeout: 480m
@@ -602,68 +862,31 @@ presubmits:
       testgrid-dashboards: presubmits-kubernetes-scalability
       testgrid-tab-name: pull-perf-tests-ec2-master-scale-performance-5000
     spec:
+      tolerations:
+      - key: highmem
+        operator: Exists
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
         - ./tests/e2e/scenarios/scalability/run-test.sh
         securityContext:
           privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        - name: CNI_PLUGIN
-          value: "amazonvpc"
-        - name: KUBE_NODE_COUNT
-          value: "5000"
-        - name: CL2_LOAD_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_DELETE_TEST_THROUGHPUT
-          value: "50"
-        - name: CL2_RATE_LIMIT_POD_CREATION
-          value: "false"
-        - name: NODE_MODE
-          value: "master"
-        - name: CONTROL_PLANE_COUNT
-          value: "1"
-        - name: CONTROL_PLANE_SIZE
-          value: "c8a.24xlarge"
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        - name: CL2_ALLOWED_SLOW_API_CALLS
-          value: "1"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: TEAR_DOWN_PROMETHEUS_SERVER
-          value: "false"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
-        - name: CLOUD_PROVIDER
-          value: "aws"
-        - name: KOPS_IRSA
-          value: "true"
         resources:
           requests:
-            cpu: 5
-            memory: 16Gi
+            cpu: 7
+            memory: 40Gi
           limits:
-            cpu: 5
-            memory: 16Gi
+            cpu: 7
+            memory: 40Gi
 
   - name: pull-perf-tests-gce-master-scale-performance-100
     cluster: k8s-infra-prow-build
     run_if_changed: ^clusterloader2/.*$
     labels:
       preset-k8s-ssh: "true"
+      preset-kops-scalability-common: "true"
       preset-kops-scalability-gce-common: "true"
       preset-kops-scalability-gce-100-node: "true"
     decorate: true
@@ -687,7 +910,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -708,6 +931,7 @@ presubmits:
     optional: true
     labels:
       preset-k8s-ssh: "true"
+      preset-kops-scalability-common: "true"
       preset-kops-scalability-gce-common: "true"
       preset-kops-scalability-gce-100-node: "true"
       preset-kops-scalability-gce-experimental: "true"
@@ -732,16 +956,13 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
         - ./tests/e2e/scenarios/scalability/run-test.sh
         securityContext:
           privileged: true
-        env:
-        - name: CONTROL_PLANE_COUNT
-          value: "3"
         resources:
           requests:
             cpu: 5
@@ -755,6 +976,7 @@ presubmits:
     always_run: false
     labels:
       preset-k8s-ssh: "true"
+      preset-kops-scalability-common: "true"
       preset-kops-scalability-gce-common: "true"
       preset-kops-scalability-gce-5000-node: "true"
     decorate: true
@@ -782,7 +1004,7 @@ presubmits:
         - key: highmem
           operator: Exists
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -824,7 +1046,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-benchmark-list-proto
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -841,8 +1063,8 @@ presubmits:
         - --metadata-sources=cl2-metadata.json
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
-        - --env=CL2_LIST_CONFIG_MAP_BYTES=100000
-        - --env=CL2_LIST_CONFIG_MAP_NUMBER=10000
+        - --env=CL2_LIST_CONFIG_MAP_NUMBER=0
+        - --env=CL2_LIST_POD_NUMBER=150000
         - --env=CL2_LIST_BENCHMARK_PODS=10
         - --env=CL2_LIST_BENCHMARK_CONTENT_TYPE=proto
         - --test=false
@@ -855,6 +1077,125 @@ presubmits:
         - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/list/config.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=60m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+        resources:
+          requests:
+            cpu: 3
+            memory: "8Gi"
+          limits:
+            cpu: 3
+            memory: "8Gi"
+
+  - name: pull-perf-tests-benchmark-list-informer
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    labels:
+      preset-k8s-ssh: "true"
+      preset-kops-scalability-common: "true"
+      preset-kops-scalability-gce-common: "true"
+      preset-kops-benchmark-list-gce-3-node: "true"
+      preset-kops-benchmark-list-informer: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/perf-tests
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      path_alias: k8s.io/kops
+      workdir: true
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-benchmark-list-informer
+    spec:
+      serviceAccountName: prow-build
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        env:
+        - name: CL2_LIST_BENCHMARK_CONTENT_TYPE
+          value: "proto"
+        resources:
+          requests:
+            cpu: 3
+            memory: "8Gi"
+          limits:
+            cpu: 3
+            memory: "8Gi"
+
+  - name: pull-perf-tests-benchmark-write-throughput
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    run_if_changed: ^clusterloader2/testing/write-throughput/.*$
+    max_concurrency: 1
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/perf-tests
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-benchmark-write-throughput
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --cluster=benchmark-write-throughput
+        - --extract=ci/latest
+        - --gcp-master-size=n2-standard-32
+        - --gcp-node-size=e2-standard-32
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --gcp-project-type=scalability-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --metadata-sources=cl2-metadata.json
+        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=ETCD_QUOTA_BACKEND_BYTES=8589934592
+        - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
+        - --env=KUBE_GCE_PRIVATE_CLUSTER=false
+        - --env=CL2_PODS_BENCHMARK_POD_COUNT=10000
+        - --env=CL2_PODS_WATCH_REPLICAS=0
+        - --env=CL2_PODS_WRITE_REPLICAS=10
+        - --env=CL2_PODS_PATCH_QPS=100
+        - --env=CL2_PODS_BENCHMARK_DURATION=15m
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=1
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+        - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+        - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+        - --test-cmd-args=--prometheus-scrape-etcd=true
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
+        - --test-cmd-args=--testconfig=testing/write-throughput/config.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=60m
         - --use-logexporter

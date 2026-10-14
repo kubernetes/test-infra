@@ -1,17 +1,23 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
+- anndono
 - andyzhangx
 - brendandburns
 - feiskyer
 - karataliu
 - khenidak
+- Liunardy
+- nilo19
 approvers:
+- anndono
 - andyzhangx
 - brendandburns
 - feiskyer
 - karataliu
 - khenidak
+- Liunardy
+- nilo19
 emeritus_approvers:
 - chewong
 - CecileRobertMichon

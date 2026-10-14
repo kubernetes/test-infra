@@ -15,7 +15,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
           - "runner.sh"
           - "./scripts/ci-k8s-e2e-node-test.sh"
@@ -29,8 +29,6 @@ periodics:
         env:
           - name: VM_LOCATION
             value: northeurope
-          - name: CONTAINERD_VERSION
-            value: "nightly"
   annotations:
     testgrid-dashboards: sig-windows-signal
     testgrid-tab-name: windows-e2e-node-master
@@ -65,7 +63,7 @@ presubmits:
       spec:
         serviceAccountName: azure
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             command:
               - "runner.sh"
               - "./scripts/ci-k8s-e2e-node-test.sh"
@@ -79,8 +77,6 @@ presubmits:
             env:
               - name: VM_LOCATION
                 value: northeurope
-              - name: CONTAINERD_VERSION
-                value: "nightly"
       annotations:
         fork-per-release: "true"
         testgrid-dashboards: sig-windows-presubmit
@@ -107,7 +103,7 @@ presubmits:
       spec:
         serviceAccountName: azure
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             command:
               - "runner.sh"
               - "./scripts/ci-k8s-e2e-node-test.sh"
@@ -121,8 +117,6 @@ presubmits:
             env:
               - name: VM_LOCATION
                 value: northeurope
-              - name: CONTAINERD_VERSION
-                value: "nightly"
       annotations:
         testgrid-dashboards: sig-windows-presubmit
         testgrid-tab-name: pr-k8s-sig-windows-e2enode

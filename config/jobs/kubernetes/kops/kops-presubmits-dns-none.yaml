@@ -13,7 +13,6 @@ presubmits:
     skip_report: false
     labels:
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
@@ -21,7 +20,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -34,7 +33,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260626' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -45,8 +44,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
         - name: GINKGO_NO_COLOR
@@ -89,7 +86,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -146,15 +143,14 @@ presubmits:
     optional: true
     skip_report: false
     labels:
-      preset-k8s-ssh: "true"
     decorate: true
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -168,7 +164,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260626' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260807' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -179,10 +175,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
         - name: GINKGO_NO_COLOR
           value: "TRUE"
         - name: GOPATH
@@ -217,14 +209,13 @@ presubmits:
       preset-service-account: "true"
       preset-do-credential: "true"
       preset-do-spaces-credential: "true"
-      preset-do-ssh: "true"
     decorate: true
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -281,7 +272,6 @@ presubmits:
     skip_report: false
     labels:
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
@@ -289,7 +279,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -302,7 +292,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260626' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -313,8 +303,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
         - name: GINKGO_NO_COLOR
@@ -357,7 +345,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -414,15 +402,14 @@ presubmits:
     optional: true
     skip_report: false
     labels:
-      preset-k8s-ssh: "true"
     decorate: true
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -436,7 +423,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260626' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
+            --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260807' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -447,10 +434,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
         - name: GINKGO_NO_COLOR
           value: "TRUE"
         - name: GOPATH
@@ -485,14 +468,13 @@ presubmits:
       preset-service-account: "true"
       preset-do-credential: "true"
       preset-do-spaces-credential: "true"
-      preset-do-ssh: "true"
     decorate: true
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh

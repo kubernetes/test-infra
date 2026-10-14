@@ -4,14 +4,15 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
+    skip_if_only_changed: '^site/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
     annotations:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -33,7 +34,8 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
+    skip_if_only_changed: '^site/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -42,7 +44,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -62,7 +64,8 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
+    skip_if_only_changed: '^site/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -73,7 +76,7 @@ presubmits:
       nodeSelector:
         kubernetes.io/arch: arm64
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -92,7 +95,8 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
+    skip_if_only_changed: '^site/|^netlify\.toml$'
     optional: true
     labels:
       preset-dind-enabled: "true"
@@ -104,7 +108,7 @@ presubmits:
       nodeSelector:
         kubernetes.io/arch: arm64
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -123,7 +127,8 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
+    skip_if_only_changed: '^site/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -132,7 +137,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -153,7 +158,8 @@ presubmits:
     optional: true
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
+    skip_if_only_changed: '^site/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -162,7 +168,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -182,7 +188,8 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
+    skip_if_only_changed: '^site/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -191,7 +198,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -211,7 +218,8 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
+    skip_if_only_changed: '^site/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -220,7 +228,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -241,7 +249,8 @@ presubmits:
     optional: true
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
+    skip_if_only_changed: '^site/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -250,7 +259,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -270,7 +279,8 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
+    skip_if_only_changed: '^site/|^netlify\.toml$'
     optional: true
     labels:
       preset-dind-enabled: "true"
@@ -280,7 +290,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -300,7 +310,8 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
-    always_run: true
+    always_run: false
+    skip_if_only_changed: '^site/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -309,7 +320,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -339,7 +350,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:

@@ -7,13 +7,13 @@ presubmits:
   kubernetes-sigs/agent-sandbox:
   - name: presubmit-test-autogen-up-to-date
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - dev/ci/presubmits/test-autogen-up-to-date
         resources:
@@ -30,11 +30,11 @@ presubmits:
       testgrid-num-columns-recent: "30"
   - name: presubmit-agent-sandbox-test-unit
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - dev/ci/presubmits/test-unit
         resources:
@@ -53,7 +53,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - dev/ci/presubmits/lint-go
         resources:
@@ -72,7 +72,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - dev/ci/presubmits/lint-api
         resources:
@@ -87,14 +87,14 @@ presubmits:
       testgrid-tab-name: presubmit-lint-api
   - name: presubmit-agent-sandbox-test-e2e
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - dev/ci/presubmits/test-e2e
@@ -112,7 +112,7 @@ presubmits:
       testgrid-tab-name: presubmit-test-e2e
   - name: presubmit-agent-sandbox-benchmarks-kops-gcp-cilium
     cluster: k8s-infra-prow-build
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     optional: true
     labels:
@@ -121,7 +121,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - dev/ci/presubmits/benchmarks-kops-gcp-cilium
@@ -151,7 +151,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260712-9b391474f6-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - dev/ci/presubmits/benchmarks-kops-gcp-claims
@@ -172,7 +172,7 @@ presubmits:
       testgrid-tab-name: presubmit-benchmarks-kops-gcp-claims
   - name: presubmit-agent-sandbox-benchmarks-kops-gcp-kindnet
     cluster: k8s-infra-prow-build
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     optional: true
     labels:
@@ -181,7 +181,7 @@ presubmits:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - dev/ci/presubmits/benchmarks-kops-gcp-kindnet
@@ -202,13 +202,13 @@ presubmits:
       testgrid-tab-name: presubmit-benchmarks-kops-gcp-kindnet
   - name: presubmit-agent-sandbox-test-skill-eval
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     always_run: false
     optional: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - dev/ci/presubmits/test-skill-eval
         resources:
@@ -223,7 +223,7 @@ presubmits:
       testgrid-tab-name: presubmit-test-skill-eval
   - name: presubmit-agent-sandbox-test-e2e-scalability-kwok
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     optional: true
     labels:
@@ -231,7 +231,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - dev/ci/presubmits/test-e2e-scalability-kwok
@@ -240,10 +240,73 @@ presubmits:
         resources:
           requests:
             cpu: 7
-            memory: 14Gi
+            memory: 27Gi
           limits:
             cpu: 7
-            memory: 14Gi
+            memory: 27Gi
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
       testgrid-tab-name: presubmit-test-e2e-scalability-kwok
+  - name: presubmit-agent-sandbox-lint-olm
+    cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - dev/ci/presubmits/lint-olm
+        resources:
+          requests:
+            cpu: 4
+            memory: 8Gi
+          limits:
+            cpu: 4
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-lint-olm
+  - name: presubmit-agent-sandbox-test-olm-unit
+    cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - dev/ci/presubmits/test-olm-unit
+        resources:
+          requests:
+            cpu: 4
+            memory: 8Gi
+          limits:
+            cpu: 4
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-test-olm-unit
+  - name: presubmit-agent-sandbox-verify-olm-bundle
+    cluster: eks-prow-build-cluster
+    run_if_changed: ^(olm/|k8s/|(extensions/)?api/|sandbox-router/deploy/|dev/(ci/presubmits|tools)/verify-olm-bundle)
+    decorate: true
+    optional: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - dev/ci/presubmits/verify-olm-bundle
+        resources:
+          requests:
+            cpu: 4
+            memory: 8Gi
+          limits:
+            cpu: 4
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-verify-olm-bundle
+
+# AUTOGENERATED by generate_jobs.py; do not edit directly.
+# Do not append jobs manually to this file.
+# Regenerate with:
+#   ./generate_jobs.py --agent-sandbox-dir=<path to agent-sandbox checkout>

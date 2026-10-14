@@ -26,14 +26,14 @@ periodics:
   spec:
     serviceAccountName: aws-shared-testing-role
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       resources:
         limits:
           cpu: 2
-          memory: 4Gi
+          memory: 8Gi
         requests:
           cpu: 2
-          memory: 4Gi
+          memory: 8Gi
       command:
       - runner.sh
       args:
@@ -69,14 +69,14 @@ periodics:
   spec:
     serviceAccountName: aws-shared-testing-role
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       resources:
         limits:
           cpu: 2
-          memory: 4Gi
+          memory: 8Gi
         requests:
           cpu: 2
-          memory: 4Gi
+          memory: 8Gi
       command:
       - runner.sh
       args:
@@ -113,7 +113,7 @@ periodics:
   spec:
     serviceAccountName: aws-shared-testing-role
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       resources:
         limits:
           cpu: 7
@@ -193,7 +193,7 @@ periodics:
   spec:
     serviceAccountName: aws-shared-testing-role
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       resources:
         limits:
           cpu: 7

@@ -1,4 +1,4 @@
-{{- if not (has $.branch (list "release-2.9" "release-2.10")) }}
+{{- if not (has $.branch (list "release-2.11")) }}
 periodics:
 - name: periodic-cluster-api-provider-aws-e2e{{ if ne $.branch "main" }}-{{ ReplaceAll $.branch "." "-" }}{{ end }}
   cluster: eks-prow-build-cluster

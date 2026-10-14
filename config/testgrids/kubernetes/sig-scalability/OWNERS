@@ -2,9 +2,11 @@
 
 reviewers:
 - mborsz
+- serathius
 - wojtek-t
 approvers:
 - mborsz
+- serathius
 - wojtek-t
 emeritus_approvers:
 - shyamjvs

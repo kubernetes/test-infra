@@ -157,6 +157,7 @@ larger set of contributors to apply/remove them.
 | <a id="wg/iot-edge" href="#wg/iot-edge">`wg/iot-edge`</a> | Categorizes an issue or PR as relevant to WG IOT Edge.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="wg/multitenancy" href="#wg/multitenancy">`wg/multitenancy`</a> | Categorizes an issue or PR as relevant to WG Multitenancy.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="wg/naming" href="#wg/naming">`wg/naming`</a> | Categorizes an issue or PR as relevant to WG Naming.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="wg/node-identity" href="#wg/node-identity">`wg/node-identity`</a> | Categorizes an issue or PR as relevant to WG Node Identity.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="wg/node-lifecycle" href="#wg/node-lifecycle">`wg/node-lifecycle`</a> | Categorizes an issue or PR as relevant to WG Node Lifecycle.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="wg/policy" href="#wg/policy">`wg/policy`</a> | Categorizes an issue or PR as relevant to WG Policy.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="wg/reliability" href="#wg/reliability">`wg/reliability`</a> | Categorizes an issue or PR as relevant to WG Reliability| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
@@ -376,7 +377,14 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
+| <a id="ail/0" href="#ail/0">`ail/0`</a> | Categorizes a PR as having AI Influence Level 0 (human created, no AI)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="ail/1" href="#ail/1">`ail/1`</a> | Categorizes a PR as having AI Influence Level 1 (minor AI assistance)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="ail/2" href="#ail/2">`ail/2`</a> | Categorizes a PR as having AI Influence Level 2 (major AI augmentation)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="ail/3" href="#ail/3">`ail/3`</a> | Categorizes a PR as having AI Influence Level 3 (AI created, human structure)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="ail/4" href="#ail/4">`ail/4`</a> | Categorizes a PR as having AI Influence Level 4 (AI created, human basic idea)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="ail/5" href="#ail/5">`ail/5`</a> | Categorizes a PR as having AI Influence Level 5 (minimal human involvement)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="kind/gep" href="#kind/gep">`kind/gep`</a> | PRs related to Gateway Enhancement Proposal(GEP)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="needs-ail" href="#needs-ail">`needs-ail`</a> | Indicates a PR lacks an `ail/0-5` label and requires one.| prow |  [require-matching-label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/require-matching-label) |
 
 ## Labels that apply to kubernetes-sigs/kind, for both issues and PRs
 
@@ -455,6 +463,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/core-autoscaler" href="#area/core-autoscaler">`area/core-autoscaler`</a> | Denotes an issue that is related to the core autoscaler and is not specific to any provider.| label | |
 | <a id="area/vertical-pod-autoscaler" href="#area/vertical-pod-autoscaler">`area/vertical-pod-autoscaler`</a> | Issues or PRs related to the Vertical Pod Autoscaler component| label | |
 | <a id="area/vertical-pod-autoscaler/prometheus" href="#area/vertical-pod-autoscaler/prometheus">`area/vertical-pod-autoscaler/prometheus`</a> | Issues and PRs related to Vertical Pod Autoscaler history from Prometheus| label | |
+| <a id="kind/dependency" href="#kind/dependency">`kind/dependency`</a> | Categorizes issue or PR as related to a dependency update.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 
 ## Labels that apply to kubernetes/autoscaler, only for PRs
 

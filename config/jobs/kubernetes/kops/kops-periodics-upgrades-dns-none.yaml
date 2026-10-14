@@ -8,7 +8,6 @@ periodics:
   cron: '13 3-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
@@ -40,7 +39,7 @@ periodics:
         value: "v1.36.1"
       - name: KOPS_SKIP_E2E
         value: "1"
-      - name: KOPS_CONTROL_PLANE_SIZE
+      - name: KOPS_CONTROL_PLANE_COUNT
         value: "3"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
@@ -54,7 +53,7 @@ periodics:
         value: "e2e-e5b7b461c1-2dc58.tests-kops-aws.k8s.io"
       - name: KOPS_EXTRA_FLAGS
         value: "--networking=cilium --dns=none --api-loadbalancer-type=public"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -116,7 +115,7 @@ periodics:
         value: "v1.36.1"
       - name: KOPS_SKIP_E2E
         value: "1"
-      - name: KOPS_CONTROL_PLANE_SIZE
+      - name: KOPS_CONTROL_PLANE_COUNT
         value: "3"
       - name: CLOUD_PROVIDER
         value: "azure"
@@ -126,7 +125,7 @@ periodics:
         value: "e2e-4598fd796c-34102.tests-kops-aws.k8s.io"
       - name: KOPS_EXTRA_FLAGS
         value: "--networking=cilium --dns=none --api-loadbalancer-type=public"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -155,6 +154,7 @@ periodics:
   cluster: k8s-infra-prow-build
   cron: '41 3-23/8 * * *'
   labels:
+    preset-k8s-ssh: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -166,7 +166,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
@@ -185,7 +185,7 @@ periodics:
         value: "v1.36.1"
       - name: KOPS_SKIP_E2E
         value: "1"
-      - name: KOPS_CONTROL_PLANE_SIZE
+      - name: KOPS_CONTROL_PLANE_COUNT
         value: "3"
       - name: CLOUD_PROVIDER
         value: "gce"
@@ -195,7 +195,7 @@ periodics:
         value: "e2e-8a27998798-3ab4f.tests-kops-aws.k8s.io"
       - name: KOPS_EXTRA_FLAGS
         value: "--networking=cilium --dns=none --api-loadbalancer-type=public --gce-service-account=default"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       resources:
         limits:

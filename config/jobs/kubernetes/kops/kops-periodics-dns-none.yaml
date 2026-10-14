@@ -7,7 +7,6 @@ periodics:
   cron: '35 2-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -27,12 +26,11 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260626' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -41,13 +39,11 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -93,7 +89,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -110,7 +105,7 @@ periodics:
       env:
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -136,7 +131,6 @@ periodics:
 - name: e2e-kops-gce-dns-none
   cron: '25 4-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -148,7 +142,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
@@ -156,13 +150,12 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260626' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260807' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -171,13 +164,9 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
-      - name: KUBE_SSH_USER
-        value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -205,7 +194,6 @@ periodics:
     preset-service-account: "true"
     preset-do-credential: "true"
     preset-do-spaces-credential: "true"
-    preset-do-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -224,7 +212,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -241,7 +228,7 @@ periodics:
       env:
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -267,7 +254,6 @@ periodics:
   cron: '41 3-23/8 * * *'
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
     preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
@@ -287,12 +273,11 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260626' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -301,13 +286,11 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -353,7 +336,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -370,7 +352,7 @@ periodics:
       env:
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -396,7 +378,6 @@ periodics:
 - name: e2e-kops-gce-dns-none-ha
   cron: '15 1-23/8 * * *'
   labels:
-    preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -408,7 +389,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    serviceAccountName: k8s-kops-test
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
@@ -416,13 +397,12 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260626' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260807' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -431,13 +411,9 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
-      - name: KUBE_SSH_USER
-        value: prow
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -465,7 +441,6 @@ periodics:
     preset-service-account: "true"
     preset-do-credential: "true"
     preset-do-spaces-credential: "true"
-    preset-do-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -484,7 +459,6 @@ periodics:
       - bash
       - -c
       - |
-        make test-e2e-install
         kubetest2 kops \
           -v 2 \
           --up --down \
@@ -501,7 +475,7 @@ periodics:
       env:
       - name: GINKGO_NO_COLOR
         value: "TRUE"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       resources:
         limits:

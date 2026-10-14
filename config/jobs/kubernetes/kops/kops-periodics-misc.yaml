@@ -5,7 +5,6 @@ periodics:
     preset-service-account: "true"
     preset-do-credential: "true"
     preset-do-spaces-credential: "true"
-    preset-do-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -18,7 +17,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -62,7 +61,6 @@ periodics:
     preset-service-account: "true"
     preset-do-credential: "true"
     preset-do-spaces-credential: "true"
-    preset-do-ssh: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
@@ -75,7 +73,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       imagePullPolicy: Always
       command:
       - runner.sh

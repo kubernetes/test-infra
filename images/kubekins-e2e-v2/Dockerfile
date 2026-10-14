@@ -14,13 +14,16 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:bookworm-20260623
+FROM debian:trixie-20260918
 ARG TARGETARCH
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
 ENV WORKSPACE=/workspace \
     TERM=xterm
+
+# hint to kubetest2 that it is in CI
+ENV KUBETEST_IN_DOCKER="true"
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
@@ -45,8 +48,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     procps \
     python3 \
-    python3-distutils \
-    python3-gflags \
     python3-pip \
     python3-venv \
     python3-yaml \
@@ -59,7 +60,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     graphviz \
     bc \
     && rm -rf /var/lib/apt/lists/* \
-    && python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip uv setuptools wheel
+    && python3 -m pip install --ignore-installed --no-cache-dir --break-system-packages --upgrade pip uv setuptools wheel
 
 # Install gcloud and awscli
 RUN if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ]; then \
@@ -91,8 +92,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https \
     ca-certificates \
     curl \
-    gnupg2 \
-    software-properties-common \
+    gnupg \
     lsb-release && \
     rm -rf /var/lib/apt/lists/*
 
@@ -132,15 +132,13 @@ RUN mkdir /docker-graph
 
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
 # The invocation at the end is to prevent download failures downloads as in the bug.
-# TODO(porridge): bump CFSSL_VERSION to one where cfssljson supports the -version flag and test it as well.
 ARG CFSSL_VERSION
-RUN if [ "${TARGETARCH}" != "ppc64le" ]; then \
-    wget -q -O cfssl "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssl_${CFSSL_VERSION}_linux_${TARGETARCH}" && \
+RUN wget -q -O cfssl "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssl_${CFSSL_VERSION}_linux_${TARGETARCH}" && \
     wget -q -O cfssljson "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssljson_${CFSSL_VERSION}_linux_${TARGETARCH}" && \
     chmod +x cfssl cfssljson && \
     mv cfssl cfssljson /usr/local/bin && \
-    cfssl version; \
-    fi
+    cfssl version && \
+    cfssljson -version;
 
 # replace kubectl with one from K8S_RELEASE
 ARG K8S_RELEASE=latest
@@ -198,7 +196,11 @@ ARG KUBETEST2_VERSION
 RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
     wget -q https://storage.googleapis.com/k8s-staging-kubetest2/latest/linux-${TARGETARCH}.tgz && \
     tar xzf linux-${TARGETARCH}.tgz -C "$GOPATH/bin" && \
-    rm linux-${TARGETARCH}.tgz; \
+    rm linux-${TARGETARCH}.tgz && \
+    wget -nv -P "$GOPATH/bin" https://storage.googleapis.com/k8s-staging-kops/kops/releases/branches/master/kubetest2/linux/${TARGETARCH}/kubetest2-kops && \
+    wget -nv -P "$GOPATH/bin" https://storage.googleapis.com/k8s-staging-kops/kops/releases/branches/master/kubetest2/linux/${TARGETARCH}/kubetest2-tester-kops && \
+    chmod +x "$GOPATH/bin/kubetest2-kops" && \
+    chmod +x "$GOPATH/bin/kubetest2-tester-kops"; \
     fi
 
 # note the runner is also responsible for making docker in docker function if

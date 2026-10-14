@@ -30,11 +30,6 @@ dashboards:
     base_options: width=10
     alert_options:
       alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
-  - name: pull-kubernetes-e2e-kind-ipv6
-    test_group_name: pull-kubernetes-e2e-kind-ipv6
-    base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
   - name: pull-kubernetes-node-e2e-containerd
     test_group_name: pull-kubernetes-node-e2e-containerd
     base_options: width=10
@@ -67,6 +62,11 @@ dashboards:
     base_options: width=10
 - name: presubmits-kubernetes-nonblocking
   dashboard_tab:
+  - name: pull-kubernetes-e2e-kind-ipv6
+    test_group_name: pull-kubernetes-e2e-kind-ipv6
+    base_options: width=10
+    alert_options:
+      alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
   - name: pull-cos-containerd-e2e-ubuntu-gce
     test_group_name: pull-cos-containerd-e2e-ubuntu-gce
     base_options: width=10

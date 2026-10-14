@@ -29,5 +29,5 @@ dashboards:
     test_group_name: periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-rosa-hypershift-rhsso-aws-rosa-hypershift
   name: redhat-openshift-lp-rosa-hypershift-release-4.18-informing
 test_groups:
-- gcs_prefix: test-platform-results/logs/periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-rosa-hypershift-rhsso-aws-rosa-hypershift
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-rosa-hypershift-rhsso-aws-rosa-hypershift
   name: periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-rosa-hypershift-rhsso-aws-rosa-hypershift

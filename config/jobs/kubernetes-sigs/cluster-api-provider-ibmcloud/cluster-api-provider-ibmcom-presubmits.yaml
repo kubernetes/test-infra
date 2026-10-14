@@ -15,11 +15,11 @@ presubmits:
       containers:
       - command:
         - "runner.sh"
-        - "./scripts/ci-make.sh"
+        - "./hack/scripts/ci/ci-make.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.36
         imagePullPolicy: Always
         resources:
           limits:
@@ -43,10 +43,10 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.36
         imagePullPolicy: Always
         command:
-        - "./scripts/ci-test.sh"
+        - "./hack/scripts/ci/ci-test.sh"
         resources:
           limits:
             cpu: "2"
@@ -71,14 +71,14 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.36
         imagePullPolicy: Always
         env:
         - name: "IBMCLOUD_API_KEY"
           value: "dummyApiKey"
         command:
         - "runner.sh"
-        - "./scripts/ci-smoke-test.sh"
+        - "./hack/scripts/ci/ci-smoke-test.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -103,9 +103,9 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.36
         command:
-        - "./scripts/ci-build.sh"
+        - "./hack/scripts/ci/ci-build.sh"
         resources:
           limits:
             memory: "6Gi"
@@ -129,7 +129,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.36
           command:
             - "runner.sh"
             - "make"
@@ -161,7 +161,7 @@ presubmits:
       - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.36
         command:
           - runner.sh
         args:
@@ -169,7 +169,7 @@ presubmits:
           - -c
           - |
             result=0
-            ./scripts/ci-test-coverage.sh || result=$?
+            ./hack/scripts/ci/ci-test-coverage.sh || result=$?
             cp cover.* ${ARTIFACTS}
             cd ../../k8s.io/test-infra/gopherage
             GO111MODULE=on go build .
@@ -196,11 +196,11 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.36
         command:
           - runner.sh
         args:
-          - ./scripts/ci-apidiff.sh
+          - ./hack/scripts/ci/ci-apidiff.sh
         resources:
           limits:
             cpu: "2"

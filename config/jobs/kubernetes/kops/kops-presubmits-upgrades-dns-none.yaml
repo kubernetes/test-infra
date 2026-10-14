@@ -13,7 +13,6 @@ presubmits:
     skip_report: false
     labels:
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       preset-k8s-kops-aws-credential: "true"
     max_concurrency: 1
     decorate: true
@@ -22,7 +21,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -31,8 +30,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
         - name: KUBE_SSH_USER
           value: ubuntu
         - name: GINKGO_NO_COLOR
@@ -49,7 +46,7 @@ presubmits:
           value: "v1.36.1"
         - name: KOPS_SKIP_E2E
           value: "1"
-        - name: KOPS_CONTROL_PLANE_SIZE
+        - name: KOPS_CONTROL_PLANE_COUNT
           value: "3"
         - name: CLOUD_PROVIDER
           value: "aws"
@@ -92,7 +89,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -117,7 +114,7 @@ presubmits:
           value: "v1.36.1"
         - name: KOPS_SKIP_E2E
           value: "1"
-        - name: KOPS_CONTROL_PLANE_SIZE
+        - name: KOPS_CONTROL_PLANE_COUNT
           value: "3"
         - name: CLOUD_PROVIDER
           value: "azure"
@@ -158,9 +155,9 @@ presubmits:
       timeout: 150m
     path_alias: k8s.io/kops
     spec:
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -187,7 +184,7 @@ presubmits:
           value: "v1.36.1"
         - name: KOPS_SKIP_E2E
           value: "1"
-        - name: KOPS_CONTROL_PLANE_SIZE
+        - name: KOPS_CONTROL_PLANE_COUNT
           value: "3"
         - name: CLOUD_PROVIDER
           value: "gce"

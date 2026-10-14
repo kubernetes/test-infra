@@ -24,7 +24,7 @@ presubmits:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -46,8 +46,8 @@ presubmits:
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}" || true; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}" || true; fi' INT
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -70,12 +70,15 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
@@ -112,7 +115,7 @@ presubmits:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -126,8 +129,9 @@ presubmits:
           kind_node_source=.
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
-          # Which DRA features exist can change over time.
-          features=( $( grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/' ) )
+          # Read declaration and registration names, including aliases to staging constants.
+          # Older releases keep versioned specs in a separate file, so accept declarations too.
+          features=( $( cat pkg/features/kube_features.go | sed -nE -e 's/^[[:space:]]*(DRA[[:alnum:]_]+)[[:space:]]+featuregate\.Feature[[:space:]]*=.*/\1/p' -e 's/^[[:space:]]*([[:alnum:]_]+\.)?(DRA[[:alnum:]_]+):[[:space:]]*\{.*/\2/p' | sort -u ) )
           # These extra features are dependencies for some DRA features but only
           # valid for Kubernetes 1.35+. Additional features here should not
           # affect behavior of tests that don't require them.
@@ -142,8 +146,8 @@ presubmits:
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}" || true; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}" || true; fi' INT
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -166,12 +170,15 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit -logcheck-data-races &
           GINKGO_E2E_PID=$!
@@ -183,18 +190,18 @@ presubmits:
         # Normally control plane components are linked statically, which does not work with -race (needs CGO).
         # We need to override the default for components of interest.
         - name: KUBE_CGO_OVERRIDES
-          value: kube-apiserver kube-controller-manager kube-scheduler
+          value: kube-apiserver kube-controller-manager kube-scheduler kubelet
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           # With DATA RACE detection enabled, more memory is needed.
           limits:
-            cpu: 2
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
           requests:
-            cpu: 2
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
 
   - name: pull-kubernetes-kind-dra-all-slow-canary
     cluster: eks-prow-build-cluster
@@ -217,7 +224,7 @@ presubmits:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -231,8 +238,9 @@ presubmits:
           kind_node_source=.
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
-          # Which DRA features exist can change over time.
-          features=( $( grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/' ) )
+          # Read declaration and registration names, including aliases to staging constants.
+          # Older releases keep versioned specs in a separate file, so accept declarations too.
+          features=( $( cat pkg/features/kube_features.go | sed -nE -e 's/^[[:space:]]*(DRA[[:alnum:]_]+)[[:space:]]+featuregate\.Feature[[:space:]]*=.*/\1/p' -e 's/^[[:space:]]*([[:alnum:]_]+\.)?(DRA[[:alnum:]_]+):[[:space:]]*\{.*/\2/p' | sort -u ) )
           # These extra features are dependencies for some DRA features but only
           # valid for Kubernetes 1.35+. Additional features here should not
           # affect behavior of tests that don't require them.
@@ -247,8 +255,8 @@ presubmits:
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}" || true; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}" || true; fi' INT
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -271,12 +279,15 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit -logcheck-data-races &
           GINKGO_E2E_PID=$!
@@ -288,18 +299,18 @@ presubmits:
         # Normally control plane components are linked statically, which does not work with -race (needs CGO).
         # We need to override the default for components of interest.
         - name: KUBE_CGO_OVERRIDES
-          value: kube-apiserver kube-controller-manager kube-scheduler
+          value: kube-apiserver kube-controller-manager kube-scheduler kubelet
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           # With DATA RACE detection enabled, more memory is needed.
           limits:
-            cpu: 2
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
           requests:
-            cpu: 2
-            memory: 12Gi
+            cpu: 3.5
+            memory: 13Gi
 
   - name: pull-kubernetes-kind-dra-n-1-canary
     cluster: eks-prow-build-cluster
@@ -322,7 +333,7 @@ presubmits:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -344,8 +355,8 @@ presubmits:
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}" || true; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}" || true; fi' INT
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -368,12 +379,15 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
           # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
@@ -460,7 +474,7 @@ presubmits:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -482,8 +496,8 @@ presubmits:
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}" || true; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}" || true; fi' INT
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -506,12 +520,15 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
           # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
@@ -598,7 +615,7 @@ presubmits:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -620,8 +637,8 @@ presubmits:
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
-          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}" || true; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}" || true; fi' INT
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -644,12 +661,15 @@ presubmits:
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
 
-          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          # Install cleanup before create, so a partially created --retain cluster still gets its logs.
           atexit () {
-              kind export logs "${ARTIFACTS}/kind"
-              kind delete cluster
+              rc=$?
+              kind export logs "${ARTIFACTS}/kind" || true
+              kind delete cluster || true
+              exit "${rc}"
           }
           trap atexit EXIT
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
 
           # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
           # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
@@ -736,7 +756,7 @@ presubmits:
     extra_refs:
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - /bin/bash
@@ -786,7 +806,7 @@ presubmits:
       auxiliary: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -844,7 +864,7 @@ presubmits:
       auxiliary: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -876,109 +896,7 @@ presubmits:
             cpu: 2
             memory: 6Gi
 
-  - name: pull-kubernetes-node-e2e-containerd-1-7-ubuntu-dra-canary
-    cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
-      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 1.7 on Ubuntu
-      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-      auxiliary: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
-        command:
-        - runner.sh
-        args:
-        - kubetest2
-        - noop
-        - --test=node
-        - --
-        - --build-binaries
-        - --repo-root=.
-        - --gcp-zone=us-central1-b
-        - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
-        - --timeout=60m
-        - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7-ubuntu.yaml
-        resources:
-          limits:
-            cpu: 2
-            memory: 6Gi
-          requests:
-            cpu: 2
-            memory: 6Gi
-
-  - name: pull-kubernetes-node-e2e-containerd-1-7-cos-dra-canary
-    cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
-      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 1.7 on COS
-      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-      auxiliary: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
-        command:
-        - runner.sh
-        args:
-        - kubetest2
-        - noop
-        - --test=node
-        - --
-        - --build-binaries
-        - --repo-root=.
-        - --gcp-zone=us-central1-b
-        - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
-        - --timeout=60m
-        - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7-cos.yaml
-        resources:
-          limits:
-            cpu: 2
-            memory: 6Gi
-          requests:
-            cpu: 2
-            memory: 6Gi
-
-  - name: pull-kubernetes-node-e2e-containerd-2-0-ubuntu-dra-canary
+  - name: pull-kubernetes-node-e2e-containerd-2-1-ubuntu-dra-canary
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -1007,7 +925,7 @@ presubmits:
       base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -1022,7 +940,7 @@ presubmits:
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config-ubuntu.yaml
         resources:
           limits:
@@ -1032,7 +950,7 @@ presubmits:
             cpu: 2
             memory: 6Gi
 
-  - name: pull-kubernetes-node-e2e-containerd-2-0-cos-dra-canary
+  - name: pull-kubernetes-node-e2e-containerd-2-1-cos-dra-canary
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -1061,7 +979,7 @@ presubmits:
       base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -1076,7 +994,7 @@ presubmits:
         - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config-cos.yaml
         resources:
           limits:
@@ -1086,109 +1004,7 @@ presubmits:
             cpu: 2
             memory: 6Gi
 
-  - name: pull-kubernetes-node-e2e-containerd-1-7-ubuntu-dra-alpha-beta-features-canary
-    cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
-      description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 1.7 on Ubuntu and with all feature gates enabled (including non-DRA feature gates)
-      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-      auxiliary: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
-        command:
-        - runner.sh
-        args:
-        - kubetest2
-        - noop
-        - --test=node
-        - --
-        - --build-binaries
-        - --repo-root=.
-        - --gcp-zone=us-central1-b
-        - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow'
-        - --timeout=60m
-        - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7-ubuntu.yaml
-        resources:
-          limits:
-            cpu: 2
-            memory: 6Gi
-          requests:
-            cpu: 2
-            memory: 6Gi
-
-  - name: pull-kubernetes-node-e2e-containerd-1-7-cos-dra-alpha-beta-features-canary
-    cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
-      description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 1.7 on COS and with all feature gates enabled (including non-DRA feature gates)
-      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-      auxiliary: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
-        command:
-        - runner.sh
-        args:
-        - kubetest2
-        - noop
-        - --test=node
-        - --
-        - --build-binaries
-        - --repo-root=.
-        - --gcp-zone=us-central1-b
-        - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow'
-        - --timeout=60m
-        - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7-cos.yaml
-        resources:
-          limits:
-            cpu: 2
-            memory: 6Gi
-          requests:
-            cpu: 2
-            memory: 6Gi
-
-  - name: pull-kubernetes-node-e2e-containerd-2-0-ubuntu-dra-alpha-beta-features-canary
+  - name: pull-kubernetes-node-e2e-containerd-2-1-ubuntu-dra-alpha-beta-features-canary
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -1217,7 +1033,7 @@ presubmits:
       base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -1232,7 +1048,7 @@ presubmits:
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config-ubuntu.yaml
         resources:
           limits:
@@ -1242,7 +1058,7 @@ presubmits:
             cpu: 2
             memory: 6Gi
 
-  - name: pull-kubernetes-node-e2e-containerd-2-0-cos-dra-alpha-beta-features-canary
+  - name: pull-kubernetes-node-e2e-containerd-2-1-cos-dra-alpha-beta-features-canary
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -1271,7 +1087,7 @@ presubmits:
       base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -1286,7 +1102,7 @@ presubmits:
         - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config-cos.yaml
         resources:
           limits:

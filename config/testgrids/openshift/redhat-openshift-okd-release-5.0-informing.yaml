@@ -165,19 +165,19 @@ dashboards:
   name: redhat-openshift-okd-release-5.0-informing
 test_groups:
 - days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-okd-scos-5.0-e2e-agent-single-node-ipv6
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-okd-scos-5.0-e2e-agent-single-node-ipv6
   name: periodic-ci-openshift-release-main-okd-scos-5.0-e2e-agent-single-node-ipv6
 - days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-okd-scos-5.0-e2e-aws-ovn-techpreview
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-okd-scos-5.0-e2e-aws-ovn-techpreview
   name: periodic-ci-openshift-release-main-okd-scos-5.0-e2e-aws-ovn-techpreview
 - days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-okd-scos-5.0-e2e-aws-ovn-upgrade
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-okd-scos-5.0-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-main-okd-scos-5.0-e2e-aws-ovn-upgrade
 - days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-okd-scos-5.0-e2e-gcp
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-okd-scos-5.0-e2e-gcp
   name: periodic-ci-openshift-release-main-okd-scos-5.0-e2e-gcp
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-okd-scos-5.0-e2e-vsphere-ovn
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-okd-scos-5.0-e2e-vsphere-ovn
   name: periodic-ci-openshift-release-main-okd-scos-5.0-e2e-vsphere-ovn
 - days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-main-okd-scos-5.0-upgrade-from-okd-scos-4.22-e2e-aws-ovn-upgrade
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-okd-scos-5.0-upgrade-from-okd-scos-4.22-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-main-okd-scos-5.0-upgrade-from-okd-scos-4.22-e2e-aws-ovn-upgrade

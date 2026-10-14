@@ -20,7 +20,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -28,7 +28,7 @@ periodics:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
             - name: GOMAXPROCS
-              value: "4"
+              value: "7"
             - name: UNIT_SHARD_INDEX
               value: "0"
             - name: UNIT_TOTAL_SHARDS
@@ -39,11 +39,11 @@ periodics:
             - test
           resources:
             requests:
-              cpu: "4000m"
-              memory: "6Gi"
+              cpu: "7000m"
+              memory: "10Gi"
             limits:
-              cpu: "4000m"
-              memory: "6Gi"
+              cpu: "7000m"
+              memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-unit-shard-1-main
     cluster: eks-prow-build-cluster
@@ -65,7 +65,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -73,7 +73,7 @@ periodics:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
             - name: GOMAXPROCS
-              value: "2"
+              value: "4"
             - name: UNIT_SHARD_INDEX
               value: "1"
             - name: UNIT_TOTAL_SHARDS
@@ -84,10 +84,10 @@ periodics:
             - test
           resources:
             requests:
-              cpu: "1800m"
+              cpu: "3400m"
               memory: "6Gi"
             limits:
-              cpu: "1800m"
+              cpu: "3400m"
               memory: "6Gi"
   - interval: 24h
     name: periodic-kueue-test-fuzz-main
@@ -107,7 +107,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -120,10 +120,10 @@ periodics:
             - test-fuzz
           resources:
             requests:
-              cpu: "1"
+              cpu: "400m"
               memory: "6Gi"
             limits:
-              cpu: "1"
+              cpu: "400m"
               memory: "6Gi"
   - interval: 24h
     name: periodic-kueue-verify-website-links-main
@@ -146,10 +146,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -186,7 +186,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -200,7 +200,7 @@ periodics:
             - name: INTEGRATION_SHARD_INDEX
               value: "0"
             - name: INTEGRATION_TOTAL_SHARDS
-              value: "3"
+              value: "4"
           resources:
             requests:
               cpu: "7000m"
@@ -229,7 +229,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -243,7 +243,7 @@ periodics:
             - name: INTEGRATION_SHARD_INDEX
               value: "1"
             - name: INTEGRATION_TOTAL_SHARDS
-              value: "3"
+              value: "4"
           resources:
             requests:
               cpu: "7000m"
@@ -272,7 +272,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -286,13 +286,56 @@ periodics:
             - name: INTEGRATION_SHARD_INDEX
               value: "2"
             - name: INTEGRATION_TOTAL_SHARDS
-              value: "3"
+              value: "4"
           resources:
             requests:
-              cpu: "7000m"
+              cpu: "3500m"
               memory: "14Gi"
             limits:
-              cpu: "7000m"
+              cpu: "3500m"
+              memory: "14Gi"
+  - interval: 12h
+    name: periodic-kueue-test-integration-shard-3-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-integration-shard-3-main
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kueue test-integration shard 3"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.26
+          command:
+            - make
+          args:
+            - test-integration
+          env:
+            - name: GOMAXPROCS
+              value: "7"
+            - name: INTEGRATION_SHARD_INDEX
+              value: "3"
+            - name: INTEGRATION_TOTAL_SHARDS
+              value: "4"
+          resources:
+            requests:
+              cpu: "3500m"
+              memory: "14Gi"
+            limits:
+              cpu: "3500m"
               memory: "14Gi"
   - interval: 12h
     name: periodic-kueue-test-integration-multikueue-main
@@ -315,7 +358,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -328,11 +371,11 @@ periodics:
               value: "4"
           resources:
             requests:
-              cpu: "3800m"
-              memory: "12Gi"
+              cpu: "2500m"
+              memory: "14Gi"
             limits:
-              cpu: "3800m"
-              memory: "12Gi"
+              cpu: "2500m"
+              memory: "14Gi"
   - interval: 12h
     name: periodic-kueue-test-scheduling-perf-main
     cluster: eks-prow-build-cluster
@@ -354,7 +397,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -364,13 +407,51 @@ periodics:
             - test-performance-scheduler
           env:
             - name: GOMAXPROCS
-              value: "5"
+              value: "7"
           resources:
             requests:
-              cpu: "4500m"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "4500m"
+              cpu: "7"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-multikueue-perf-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-multikueue-perf-main
+      # Enable TestGrid email alerts after calibrating expectations from at least five CI runs.
+      description: "Run periodic kueue MultiKueue performance test"
+      testgrid-num-columns-recent: '30'
+    reporter_config:
+      slack:
+        report: false
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.26
+          command:
+            - make
+          args:
+            - test-performance-multikueue
+          env:
+            - name: GOMAXPROCS
+              value: "7"
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-tas-scheduling-perf-main
@@ -393,7 +474,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -403,13 +484,52 @@ periodics:
             - test-tas-performance-scheduler
           env:
             - name: GOMAXPROCS
-              value: "6"
+              value: "7"
           resources:
             requests:
-              cpu: "5100m"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "5100m"
+              cpu: "7"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-tas-dra-scheduling-perf-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-tas-dra-scheduling-perf-main
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kueue test-tas-dra-scheduling-perf"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.26
+          command:
+            - make
+          args:
+            - test-tas-dra-performance-scheduler
+          env:
+            - name: GOMAXPROCS
+              value: "7"
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-large-scale-scheduling-perf-main
@@ -432,7 +552,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
         - image: public.ecr.aws/docker/library/golang:1.26
@@ -471,10 +591,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.34"
@@ -492,10 +612,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "5200m"
+              cpu: "3800m"
               memory: "10Gi"
             limits:
-              cpu: "5200m"
+              cpu: "3800m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-extended-shard-0-main-1-34
@@ -518,10 +638,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.34"
@@ -539,10 +659,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "4500m"
+              cpu: "3400m"
               memory: "10Gi"
             limits:
-              cpu: "4500m"
+              cpu: "3400m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-extended-shard-1-main-1-34
@@ -565,10 +685,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.34"
@@ -586,10 +706,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "3900m"
+              cpu: "3800m"
               memory: "10Gi"
             limits:
-              cpu: "3900m"
+              cpu: "3800m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-extended-shard-2-main-1-34
@@ -612,10 +732,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.34"
@@ -633,10 +753,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "4900m"
+              cpu: "3400m"
               memory: "10Gi"
             limits:
-              cpu: "4900m"
+              cpu: "3400m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-baseline-main-1-35
@@ -659,10 +779,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.35"
@@ -680,10 +800,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "5600m"
+              cpu: "3800m"
               memory: "10Gi"
             limits:
-              cpu: "5600m"
+              cpu: "3800m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-extended-shard-0-main-1-35
@@ -706,10 +826,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.35"
@@ -727,10 +847,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "5000m"
+              cpu: "3400m"
               memory: "10Gi"
             limits:
-              cpu: "5000m"
+              cpu: "3400m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-extended-shard-1-main-1-35
@@ -753,10 +873,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.35"
@@ -774,10 +894,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "4500m"
+              cpu: "3700m"
               memory: "10Gi"
             limits:
-              cpu: "4500m"
+              cpu: "3700m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-extended-shard-2-main-1-35
@@ -800,10 +920,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.35"
@@ -821,10 +941,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "5000m"
+              cpu: "3500m"
               memory: "10Gi"
             limits:
-              cpu: "5000m"
+              cpu: "3500m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-baseline-main-1-36
@@ -847,10 +967,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.36"
@@ -868,10 +988,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "6400m"
+              cpu: "4200m"
               memory: "10Gi"
             limits:
-              cpu: "6400m"
+              cpu: "4200m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-extended-shard-0-main-1-36
@@ -894,10 +1014,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.36"
@@ -915,10 +1035,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "5200m"
+              cpu: "4900m"
               memory: "10Gi"
             limits:
-              cpu: "5200m"
+              cpu: "4900m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-extended-shard-1-main-1-36
@@ -941,10 +1061,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.36"
@@ -962,10 +1082,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "7000m"
+              cpu: "5100m"
               memory: "10Gi"
             limits:
-              cpu: "7000m"
+              cpu: "5100m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-extended-shard-2-main-1-36
@@ -988,10 +1108,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.36"
@@ -1009,10 +1129,198 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "6600m"
+              cpu: "4900m"
               memory: "10Gi"
             limits:
-              cpu: "6600m"
+              cpu: "4900m"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-baseline-main-1-37
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-baseline-main-1-37
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kueue baseline end to end tests for Kubernetes 1.37"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+          env:
+            - name: E2E_K8S_VERSION
+              value: "1.37"
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e-baseline
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "4200m"
+              memory: "10Gi"
+            limits:
+              cpu: "4200m"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-extended-shard-0-main-1-37
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-0-main-1-37
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kueue extended end to end tests shard 0 for Kubernetes 1.37"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+          env:
+            - name: E2E_K8S_VERSION
+              value: "1.37"
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e-extended-shard-0
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "4900m"
+              memory: "10Gi"
+            limits:
+              cpu: "4900m"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-extended-shard-1-main-1-37
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-1-main-1-37
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kueue extended end to end tests shard 1 for Kubernetes 1.37"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+          env:
+            - name: E2E_K8S_VERSION
+              value: "1.37"
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e-extended-shard-1
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "5100m"
+              memory: "10Gi"
+            limits:
+              cpu: "5100m"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-extended-shard-2-main-1-37
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-2-main-1-37
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kueue extended end to end tests shard 2 for Kubernetes 1.37"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+          env:
+            - name: E2E_K8S_VERSION
+              value: "1.37"
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e-extended-shard-2
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "4900m"
+              memory: "10Gi"
+            limits:
+              cpu: "4900m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-multikueue-baseline-main
@@ -1035,13 +1343,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1082,13 +1388,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1103,11 +1407,54 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "6600m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
             limits:
-              cpu: "6600m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-multikueue-extended-ray-autoscaling-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-multikueue-extended-ray-autoscaling-main
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic extended multikueue Ray autoscaling end to end tests"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+          env:
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-multikueue-e2e-extended-ray-autoscaling
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "7"
+              memory: "16Gi"
+            limits:
+              cpu: "7"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-multikueue-extended-shard-1-main
     cluster: eks-prow-build-cluster
@@ -1129,13 +1476,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1150,11 +1495,11 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "6700m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
             limits:
-              cpu: "6700m"
-              memory: "10Gi"
+              cpu: "7"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-multikueue-sequential-shard-0-main
     cluster: eks-prow-build-cluster
@@ -1176,13 +1521,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1223,13 +1566,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1270,13 +1611,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1291,10 +1630,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "6000m"
+              cpu: "4000m"
               memory: "10Gi"
             limits:
-              cpu: "6000m"
+              cpu: "4000m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-tas-extended-shard-0-main
@@ -1317,13 +1656,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1338,10 +1675,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "4100m"
+              cpu: "3700m"
               memory: "10Gi"
             limits:
-              cpu: "4100m"
+              cpu: "3700m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-tas-extended-shard-1-main
@@ -1364,13 +1701,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1385,11 +1720,147 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "6500m"
+              cpu: "4800m"
               memory: "10Gi"
             limits:
-              cpu: "6500m"
+              cpu: "4800m"
               memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-tas-was-baseline-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-tas-was-baseline-main
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic tas was baseline end to end tests"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+          env:
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-tas-was-e2e-baseline
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "4000m"
+              memory: "10Gi"
+            limits:
+              cpu: "4000m"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-tas-was-extended-shard-0-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-tas-was-extended-shard-0-main
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic tas was extended end to end tests shard 0"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+          env:
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-tas-was-e2e-extended-shard-0
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "3700m"
+              memory: "10Gi"
+            limits:
+              cpu: "3700m"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-tas-was-extended-shard-1-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-tas-was-extended-shard-1-main
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic tas was extended end to end tests shard 1"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+          env:
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-tas-was-e2e-extended-shard-1
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "4800m"
+              memory: "10Gi"
+            limits:
+              cpu: "4800m"
+              memory: "10Gi"
+
   - interval: 12h
     name: periodic-kueue-test-e2e-sequential-baseline-shard-0-main
     cluster: eks-prow-build-cluster
@@ -1411,13 +1882,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1458,13 +1927,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1505,13 +1972,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1526,10 +1991,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "4500m"
+              cpu: "3200m"
               memory: "10Gi"
             limits:
-              cpu: "4500m"
+              cpu: "3200m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-sequential-extended-shard-1-main
@@ -1552,13 +2017,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1573,10 +2036,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "5200m"
+              cpu: "3100m"
               memory: "10Gi"
             limits:
-              cpu: "5200m"
+              cpu: "3100m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-certmanager-main
@@ -1599,13 +2062,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1620,20 +2081,20 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "3500m"
+              cpu: "3700m"
               memory: "10Gi"
             limits:
-              cpu: "3500m"
+              cpu: "3700m"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-e2e-dra-main
+    name: periodic-kueue-test-e2e-dra-baseline-main
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-dra-main
+      testgrid-tab-name: periodic-kueue-test-e2e-dra-baseline-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
-      description: "Run periodic DRA end to end tests"
+      description: "Run periodic DRA baseline end to end tests"
       testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
@@ -1646,13 +2107,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1661,16 +2120,16 @@ periodics:
           args:
             - make
             - kind-image-build
-            - test-e2e-dra
+            - test-e2e-dra-baseline
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
           resources:
             requests:
-              cpu: "3900m"
+              cpu: "4100m"
               memory: "10Gi"
             limits:
-              cpu: "3900m"
+              cpu: "4100m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-multikueue-dra-main
@@ -1693,13 +2152,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1714,10 +2171,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "6600m"
+              cpu: "5000m"
               memory: "10Gi"
             limits:
-              cpu: "6600m"
+              cpu: "5000m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-dra-counter-main
@@ -1740,13 +2197,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1761,10 +2216,55 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "3300m"
+              cpu: "4000m"
               memory: "10Gi"
             limits:
-              cpu: "3300m"
+              cpu: "4000m"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-dra-capacity-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-dra-capacity-main
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic DRA consumable capacity end to end tests"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+      pod_unscheduled_timeout: 14m
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+          env:
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e-dra-capacity
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "4000m"
+              memory: "10Gi"
+            limits:
+              cpu: "4000m"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-k8s-main-was
@@ -1787,10 +2287,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1830,13 +2330,11 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           env:
-            - name: E2E_K8S_VERSION
-              value: "1.35"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -1851,10 +2349,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "3700m"
+              cpu: "3600m"
               memory: "10Gi"
             limits:
-              cpu: "3700m"
+              cpu: "3600m"
               memory: "10Gi"
   - interval: 24h
     name: periodic-kueue-verify-ci-build-times-main
@@ -1877,10 +2375,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 1h
-      pod_unscheduled_timeout: 10m
+      pod_unscheduled_timeout: 14m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:

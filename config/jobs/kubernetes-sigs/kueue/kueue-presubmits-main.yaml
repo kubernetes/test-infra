@@ -8,7 +8,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -21,7 +21,7 @@ presubmits:
               - name: GO_TEST_FLAGS
                 value: "-race -count 3"
               - name: GOMAXPROCS
-                value: "4"
+                value: "7"
               - name: UNIT_SHARD_INDEX
                 value: "0"
               - name: UNIT_TOTAL_SHARDS
@@ -32,11 +32,11 @@ presubmits:
               - test
             resources:
               requests:
-                cpu: "4000m"
-                memory: "6Gi"
+                cpu: "7000m"
+                memory: "10Gi"
               limits:
-                cpu: "4000m"
-                memory: "6Gi"
+                cpu: "7000m"
+                memory: "10Gi"
     - name: pull-kueue-test-unit-shard-1-main
       cluster: eks-prow-build-cluster
       branches:
@@ -45,7 +45,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -58,7 +58,7 @@ presubmits:
               - name: GO_TEST_FLAGS
                 value: "-race -count 3"
               - name: GOMAXPROCS
-                value: "2"
+                value: "4"
               - name: UNIT_SHARD_INDEX
                 value: "1"
               - name: UNIT_TOTAL_SHARDS
@@ -69,10 +69,10 @@ presubmits:
               - test
             resources:
               requests:
-                cpu: "1800m"
+                cpu: "3400m"
                 memory: "6Gi"
               limits:
-                cpu: "1800m"
+                cpu: "3400m"
                 memory: "6Gi"
     - name: pull-kueue-test-fuzz-main
       cluster: eks-prow-build-cluster
@@ -83,7 +83,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -114,7 +114,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -133,7 +133,7 @@ presubmits:
               - name: INTEGRATION_SHARD_INDEX
                 value: "0"
               - name: INTEGRATION_TOTAL_SHARDS
-                value: "3"
+                value: "4"
             resources:
               requests:
                 cpu: "7000m"
@@ -149,7 +149,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -168,7 +168,7 @@ presubmits:
               - name: INTEGRATION_SHARD_INDEX
                 value: "1"
               - name: INTEGRATION_TOTAL_SHARDS
-                value: "3"
+                value: "4"
             resources:
               requests:
                 cpu: "7000m"
@@ -184,7 +184,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -203,7 +203,42 @@ presubmits:
               - name: INTEGRATION_SHARD_INDEX
                 value: "2"
               - name: INTEGRATION_TOTAL_SHARDS
+                value: "4"
+            resources:
+              requests:
+                cpu: "7000m"
+                memory: "14Gi"
+              limits:
+                cpu: "7000m"
+                memory: "14Gi"
+    - name: pull-kueue-test-integration-shard-3-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-integration-shard-3-main
+        description: "Run kueue test-integration shard 3"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.26
+            command:
+              - make
+            args:
+              - test-integration
+            env:
+              - name: GOMAXPROCS
+                value: "7"
+              - name: INTEGRATION_SHARD_INDEX
                 value: "3"
+              - name: INTEGRATION_TOTAL_SHARDS
+                value: "4"
             resources:
               requests:
                 cpu: "7000m"
@@ -219,7 +254,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -238,10 +273,10 @@ presubmits:
             resources:
               requests:
                 cpu: "3800m"
-                memory: "12Gi"
+                memory: "14Gi"
               limits:
                 cpu: "3800m"
-                memory: "12Gi"
+                memory: "14Gi"
     - name: pull-kueue-test-e2e-baseline-main-1-34
       cluster: eks-prow-build-cluster
       branches:
@@ -250,7 +285,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -260,7 +295,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.34"
@@ -291,7 +326,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -301,7 +336,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.34"
@@ -332,7 +367,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -342,7 +377,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.34"
@@ -373,7 +408,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -383,7 +418,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.34"
@@ -414,7 +449,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -424,7 +459,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -455,7 +490,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -465,7 +500,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -496,7 +531,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -506,7 +541,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -537,7 +572,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -547,7 +582,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.35"
@@ -578,7 +613,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -588,10 +623,51 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.36"
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-baseline
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6400m"
+                memory: "10Gi"
+              limits:
+                cpu: "6400m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-baseline-main-1-37
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-baseline-main-1-37
+        description: "Run kueue baseline end to end tests for Kubernetes 1.37"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: E2E_K8S_VERSION
+                value: "1.37"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -619,7 +695,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -629,10 +705,51 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.36"
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-extended-shard-0
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "5200m"
+                memory: "10Gi"
+              limits:
+                cpu: "5200m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-extended-shard-0-main-1-37
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-0-main-1-37
+        description: "Run kueue extended end to end tests shard 0 for Kubernetes 1.37"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: E2E_K8S_VERSION
+                value: "1.37"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -660,7 +777,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -670,10 +787,51 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.36"
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-extended-shard-1
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "7000m"
+                memory: "10Gi"
+              limits:
+                cpu: "7000m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-extended-shard-1-main-1-37
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-1-main-1-37
+        description: "Run kueue extended end to end tests shard 1 for Kubernetes 1.37"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: E2E_K8S_VERSION
+                value: "1.37"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -701,7 +859,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -711,10 +869,51 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: E2E_K8S_VERSION
                 value: "1.36"
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-extended-shard-2
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6600m"
+                memory: "10Gi"
+              limits:
+                cpu: "6600m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-extended-shard-2-main-1-37
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-extended-shard-2-main-1-37
+        description: "Run kueue extended end to end tests shard 2 for Kubernetes 1.37"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: E2E_K8S_VERSION
+                value: "1.37"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -742,7 +941,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -752,10 +951,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -783,7 +980,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -793,10 +990,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -811,11 +1006,11 @@ presubmits:
               privileged: true
             resources:
               requests:
-                cpu: "6600m"
-                memory: "10Gi"
+                cpu: "7"
+                memory: "16Gi"
               limits:
-                cpu: "6600m"
-                memory: "10Gi"
+                cpu: "7"
+                memory: "16Gi"
     - name: pull-kueue-test-e2e-multikueue-extended-shard-1-main
       cluster: eks-prow-build-cluster
       branches:
@@ -824,7 +1019,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -834,10 +1029,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -852,11 +1045,51 @@ presubmits:
               privileged: true
             resources:
               requests:
-                cpu: "6700m"
-                memory: "10Gi"
+                cpu: "7"
+                memory: "16Gi"
               limits:
-                cpu: "6700m"
-                memory: "10Gi"
+                cpu: "7"
+                memory: "16Gi"
+    - name: pull-kueue-test-e2e-multikueue-extended-ray-autoscaling-main
+      cluster: eks-prow-build-cluster
+      always_run: false
+      run_if_changed: "^test/e2e/(config/multikueue/ray-autoscaling/.*|multikueue/extended/ray_autoscaling_test\\.go)$"
+      branches:
+        - ^main
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-ray-autoscaling-main
+        description: "Run extended multikueue Ray autoscaling end to end tests"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-multikueue-e2e-extended-ray-autoscaling
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "7"
+                memory: "16Gi"
+              limits:
+                cpu: "7"
+                memory: "16Gi"
     - name: pull-kueue-test-e2e-multikueue-sequential-shard-0-main
       cluster: eks-prow-build-cluster
       branches:
@@ -865,7 +1098,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -875,10 +1108,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -906,7 +1137,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -916,10 +1147,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -947,7 +1176,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -957,10 +1186,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -988,7 +1215,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -998,10 +1225,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1029,7 +1254,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1039,10 +1264,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1062,6 +1285,283 @@ presubmits:
               limits:
                 cpu: "6500m"
                 memory: "10Gi"
+    - name: pull-kueue-test-e2e-tas-was-baseline-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-tas-was-baseline-main
+        description: "Run tas was baseline end to end tests"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-tas-was-e2e-baseline
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6000m"
+                memory: "10Gi"
+              limits:
+                cpu: "6000m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-tas-was-extended-shard-0-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-tas-was-extended-shard-0-main
+        description: "Run tas was extended end to end tests shard 0"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-tas-was-e2e-extended-shard-0
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "4100m"
+                memory: "10Gi"
+              limits:
+                cpu: "4100m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-tas-was-extended-shard-1-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-tas-was-extended-shard-1-main
+        description: "Run tas was extended end to end tests shard 1"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-tas-was-e2e-extended-shard-1
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6500m"
+                memory: "10Gi"
+              limits:
+                cpu: "6500m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-was-deep-tas-baseline-main
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^main
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-was-deep-tas-baseline-main
+        description: "Run was deep tas baseline end to end tests"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-was-deep-tas-baseline
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6000m"
+                memory: "10Gi"
+              limits:
+                cpu: "6000m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-was-deep-tas-extended-shard-0-main
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^main
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-was-deep-tas-extended-shard-0-main
+        description: "Run was deep tas extended end to end tests shard 0"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-was-deep-tas-extended-shard-0
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "4100m"
+                memory: "10Gi"
+              limits:
+                cpu: "4100m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-was-deep-tas-extended-shard-1-main
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^main
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-was-deep-tas-extended-shard-1-main
+        description: "Run was deep tas extended end to end tests shard 1"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-was-deep-tas-extended-shard-1
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6500m"
+                memory: "10Gi"
+              limits:
+                cpu: "6500m"
+                memory: "10Gi"
+    - name: pull-kueue-test-e2e-was-deep-tas-baseline-basic-fit-main
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^main
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-was-deep-tas-baseline-basic-fit-main
+        description: "Run was deep tas baseline basic fit end to end tests"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-was-deep-tas-baseline-basic-fit
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "6000m"
+                memory: "10Gi"
+              limits:
+                cpu: "6000m"
+                memory: "10Gi"
     - name: pull-kueue-test-e2e-sequential-baseline-shard-0-main
       cluster: eks-prow-build-cluster
       branches:
@@ -1070,7 +1570,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1080,10 +1580,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1111,7 +1609,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1121,10 +1619,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1153,7 +1649,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1163,10 +1659,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1194,7 +1688,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1204,10 +1698,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1235,7 +1727,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1245,10 +1737,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1268,7 +1758,7 @@ presubmits:
               limits:
                 cpu: "3500m"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-dra-main
+    - name: pull-kueue-test-e2e-dra-baseline-main
       cluster: eks-prow-build-cluster
       branches:
         - ^main
@@ -1276,20 +1766,18 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-dra-main
-        description: "Run DRA end to end tests"
+        testgrid-tab-name: pull-kueue-test-e2e-dra-baseline-main
+        description: "Run DRA baseline end to end tests"
       labels:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1298,7 +1786,7 @@ presubmits:
             args:
               - make
               - kind-image-build
-              - test-e2e-dra
+              - test-e2e-dra-baseline
             # docker-in-docker needs privileged mode
             securityContext:
               privileged: true
@@ -1317,7 +1805,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1327,10 +1815,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1358,7 +1844,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1368,10 +1854,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1391,6 +1875,45 @@ presubmits:
               limits:
                 cpu: "3300m"
                 memory: "10Gi"
+    - name: pull-kueue-test-e2e-dra-capacity-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-dra-capacity-main
+        description: "Run DRA consumable capacity end to end tests"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              # generic runner script, handles DIND, bazelrc for caching, etc.
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-dra-capacity
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "3300m"
+                memory: "10Gi"
+              limits:
+                cpu: "3300m"
+                memory: "10Gi"
     - name: pull-kueue-test-e2e-kueueviz-main
       cluster: eks-prow-build-cluster
       branches:
@@ -1399,7 +1922,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1409,10 +1932,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1432,88 +1953,6 @@ presubmits:
               limits:
                 cpu: "3700m"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-upgrade-main
-      cluster: eks-prow-build-cluster
-      branches:
-        - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
-      decorate: true
-      decoration_config:
-        timeout: 1h
-        pod_unscheduled_timeout: 10m
-      path_alias: sigs.k8s.io/kueue
-      annotations:
-        testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-upgrade-main
-        description: "Run kueue upgrade end to end tests"
-      labels:
-        preset-dind-enabled: "true"
-      spec:
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
-            env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
-              - name: BASE_BUILDER_IMAGE
-                value: public.ecr.aws/docker/library/golang
-            command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
-              - runner.sh
-            args:
-              - make
-              - kind-image-build
-              - test-e2e-upgrade
-            # docker-in-docker needs privileged mode
-            securityContext:
-              privileged: true
-            resources:
-              requests:
-                cpu: "2400m"
-                memory: "10Gi"
-              limits:
-                cpu: "2400m"
-                memory: "10Gi"
-    - name: pull-kueue-test-e2e-certmanager-upgrade-main
-      cluster: eks-prow-build-cluster
-      branches:
-        - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
-      decorate: true
-      decoration_config:
-        timeout: 1h
-        pod_unscheduled_timeout: 10m
-      path_alias: sigs.k8s.io/kueue
-      annotations:
-        testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-certmanager-upgrade-main
-        description: "Run kueue upgrade with cert-manager end to end tests"
-      labels:
-        preset-dind-enabled: "true"
-      spec:
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
-            env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
-              - name: BASE_BUILDER_IMAGE
-                value: public.ecr.aws/docker/library/golang
-            command:
-              # generic runner script, handles DIND, bazelrc for caching, etc.
-              - runner.sh
-            args:
-              - make
-              - kind-image-build
-              - test-e2e-certmanager-upgrade
-            # docker-in-docker needs privileged mode
-            securityContext:
-              privileged: true
-            resources:
-              requests:
-                cpu: "2500m"
-                memory: "10Gi"
-              limits:
-                cpu: "2500m"
-                memory: "10Gi"
     - name: pull-kueue-verify-main
       cluster: eks-prow-build-cluster
       branches:
@@ -1522,7 +1961,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1532,7 +1971,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             securityContext:
               privileged: true
             command:
@@ -1545,11 +1984,11 @@ presubmits:
                 value: "7"
             resources:
               requests:
-                cpu: "6300m"
-                memory: "8Gi"
+                cpu: "7"
+                memory: "10Gi"
               limits:
-                cpu: "6300m"
-                memory: "8Gi"
+                cpu: "7"
+                memory: "10Gi"
     - name: pull-kueue-build-image-main
       cluster: eks-prow-build-cluster
       branches:
@@ -1558,7 +1997,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1568,7 +2007,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             securityContext:
               privileged: true
             command:
@@ -1600,7 +2039,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1615,13 +2054,13 @@ presubmits:
               - test-performance-scheduler
             env:
               - name: GOMAXPROCS
-                value: "5"
+                value: "7"
             resources:
               requests:
-                cpu: "4500m"
+                cpu: "7"
                 memory: "10Gi"
               limits:
-                cpu: "4500m"
+                cpu: "7"
                 memory: "10Gi"
     - name: pull-kueue-test-tas-scheduling-perf-main
       cluster: eks-prow-build-cluster
@@ -1631,7 +2070,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1646,13 +2085,13 @@ presubmits:
               - test-tas-performance-scheduler
             env:
               - name: GOMAXPROCS
-                value: "6"
+                value: "7"
             resources:
               requests:
-                cpu: "5100m"
+                cpu: "7"
                 memory: "10Gi"
               limits:
-                cpu: "5100m"
+                cpu: "7"
                 memory: "10Gi"
     - name: pull-kueue-populator-verify-main
       cluster: eks-prow-build-cluster
@@ -1662,7 +2101,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1672,7 +2111,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             securityContext:
               privileged: true
             command:
@@ -1698,7 +2137,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1731,7 +2170,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1762,7 +2201,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1772,10 +2211,8 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
-              - name: E2E_K8S_VERSION
-                value: "1.35"
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
             command:
@@ -1802,7 +2239,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1835,7 +2272,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1867,7 +2304,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1877,7 +2314,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             env:
               - name: BASE_BUILDER_IMAGE
                 value: public.ecr.aws/docker/library/golang
@@ -1896,7 +2333,7 @@ presubmits:
               limits:
                 cpu: "7"
                 memory: "10Gi"
-    - name: pull-kueue-test-large-scale-scheduling-perf-main
+    - name: pull-kueue-test-e2e-was-main-1-37
       cluster: eks-prow-build-cluster
       optional: true
       always_run: false
@@ -1906,6 +2343,46 @@ presubmits:
       decoration_config:
         timeout: 1h
         pod_unscheduled_timeout: 10m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: pull-kueue-test-e2e-was-main-1-37
+        description: "Run kueue WAS end to end tests for Kubernetes 1.37"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            env:
+              - name: E2E_K8S_VERSION
+                value: "1.37"
+              - name: BASE_BUILDER_IMAGE
+                value: public.ecr.aws/docker/library/golang
+            command:
+              - runner.sh
+            args:
+              - make
+              - kind-image-build
+              - test-e2e-was
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "7"
+                memory: "10Gi"
+              limits:
+                cpu: "7"
+                memory: "10Gi"
+    - name: pull-kueue-test-large-scale-scheduling-perf-main
+      cluster: eks-prow-build-cluster
+      optional: true
+      always_run: false
+      branches:
+        - ^main
+      decorate: true
+      decoration_config:
+        timeout: 1h
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1940,7 +2417,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1951,7 +2428,7 @@ presubmits:
         preset-kind-volume-mounts: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             command:
               - runner.sh
             args:
@@ -1968,7 +2445,6 @@ presubmits:
                 memory: "6Gi"
     - name: pull-kueue-verify-website-links-preview-main
       cluster: eks-prow-build-cluster
-      optional: true
       always_run: false
       run_if_changed: "^(site/|netlify\\.toml)"
       branches:
@@ -1976,18 +2452,18 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 14m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
         testgrid-tab-name: pull-kueue-verify-website-links-preview-main
-        description: "Check links on a PR's Netlify deploy preview, on demand (non-blocking)"
+        description: "Check links on a PR's Netlify deploy preview"
       labels:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
             command:
               - runner.sh
             args:

@@ -12,7 +12,6 @@
     labels:
       {%- if cloud == "aws" %}
       preset-service-account: "true"
-      preset-aws-ssh: "true"
       {%- if not boskos_resource_type %}
       preset-k8s-kops-aws-credential: "true"
       {%- endif %}
@@ -23,10 +22,12 @@
       preset-service-account: "true"
       preset-do-credential: "true"
       preset-do-spaces-credential: "true"
-      preset-do-ssh: "true"
-      {%- else %}
+      {%- elif not derive_ssh_user %}
       preset-k8s-ssh: "true"
       {%- endif %}
+      {%- for preset in presets or [] %}
+      {{ preset }}: "true"
+      {%- endfor %}
     decorate: true
     decoration_config:
       timeout: {{job_timeout}}
@@ -44,7 +45,7 @@
     {%- endif %}
     spec:
       {%- if cloud == "gce" %}
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
       {%- elif cloud == "azure" %}
       serviceAccountName: azure
       {%- endif %}
@@ -122,9 +123,13 @@
         securityContext:
           privileged: true
         env:
-        {%- if cloud != "azure" and cloud != "do" %}
+        {#- Jobs without a configured key get an ephemeral one per cluster from
+            kubetest2-kops, re-exported as KUBE_SSH_KEY_PATH for the e2e framework. -#}
+        {%- if cloud != "azure" and cloud != "do" and cloud != "aws" and not derive_ssh_user %}
         - name: KUBE_SSH_KEY_PATH
           value: {{kops_ssh_key_path}}
+        {%- endif %}
+        {%- if cloud != "azure" and cloud != "do" and not derive_ssh_user %}
         - name: KUBE_SSH_USER
           value: {{kops_ssh_user}}
         {%- endif %}

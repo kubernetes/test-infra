@@ -29,5 +29,5 @@ dashboards:
     test_group_name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.15-lp-rosa-classic-devspaces-rosa-aws
   name: redhat-openshift-lp-rosa-classic-release-4.15-informing
 test_groups:
-- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.15-lp-rosa-classic-devspaces-rosa-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.15-lp-rosa-classic-devspaces-rosa-aws
   name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.15-lp-rosa-classic-devspaces-rosa-aws

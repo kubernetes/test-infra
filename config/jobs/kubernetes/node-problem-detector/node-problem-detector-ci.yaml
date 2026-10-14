@@ -13,7 +13,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       args:
@@ -48,7 +48,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       args:
@@ -92,7 +92,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       args:
@@ -108,7 +108,7 @@ periodics:
         --gcp-zone=us-central1-b
         --node-tests=true
         "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml --extra-envs=${EXTRA_ENVS}"
-        '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+        '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         '--test_args=--nodes=8 --focus=NodeProblemDetector'
         --timeout=60m
       resources:
@@ -138,7 +138,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       args:
@@ -184,7 +184,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       args:
@@ -230,7 +230,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
@@ -279,7 +279,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2

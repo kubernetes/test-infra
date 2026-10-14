@@ -23,7 +23,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
+	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -57,9 +60,17 @@ func RotateFiles(branchDir string, version release.Version) error {
 
 	for index := range len(suffixes) - 1 {
 		target := release.Version{Major: version.Major, Minor: version.Minor - index}
+		configFile := filepath.Join(branchDir, target.Filename())
+
+		// Configs for releases that are out of support get deleted.
+		if _, err := os.Stat(configFile); errors.Is(err, fs.ErrNotExist) {
+			log.Printf("Skipping %s, no config file", target.Filename())
+
+			continue
+		}
 
 		if err := rotator.Run(rotator.Options{
-			ConfigFile: filepath.Join(branchDir, target.Filename()),
+			ConfigFile: configFile,
 			OldVersion: suffixes[index],
 			NewVersion: suffixes[index+1],
 		}); err != nil {

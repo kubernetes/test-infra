@@ -646,6 +646,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to WG Node Identity.
+      name: wg/node-identity
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Node Lifecycle.
       name: wg/node-lifecycle
       target: both
@@ -805,6 +811,12 @@ repos:
         name: dependencies
         target: prs
         addedBy: github
+      - color: c7def8
+        description: Categorizes issue or PR as related to a dependency update.
+        name: kind/dependency
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes/community:
     labels:
       - color: 0052cc
@@ -2474,6 +2486,42 @@ repos:
   kubernetes-sigs/gateway-api:
     labels:
       - color: c7def8
+        description: Categorizes a PR as having AI Influence Level 0 (human created, no AI)
+        name: ail/0
+        prowPlugin: label
+        target: prs
+        addedBy: anyone
+      - color: c7def8
+        description: Categorizes a PR as having AI Influence Level 1 (minor AI assistance)
+        name: ail/1
+        prowPlugin: label
+        target: prs
+        addedBy: anyone
+      - color: c7def8
+        description: Categorizes a PR as having AI Influence Level 2 (major AI augmentation)
+        name: ail/2
+        prowPlugin: label
+        target: prs
+        addedBy: anyone
+      - color: c7def8
+        description: Categorizes a PR as having AI Influence Level 3 (AI created, human structure)
+        name: ail/3
+        prowPlugin: label
+        target: prs
+        addedBy: anyone
+      - color: c7def8
+        description: Categorizes a PR as having AI Influence Level 4 (AI created, human basic idea)
+        name: ail/4
+        prowPlugin: label
+        target: prs
+        addedBy: anyone
+      - color: c7def8
+        description: Categorizes a PR as having AI Influence Level 5 (minimal human involvement)
+        name: ail/5
+        prowPlugin: label
+        target: prs
+        addedBy: anyone
+      - color: c7def8
         description: Categorizes an issue as capturing a user story
         name: kind/user-story
         target: issues
@@ -2484,6 +2532,12 @@ repos:
         prowPlugin: label
         target: prs
         addedBy: anyone
+      - color: ededed
+        description: Indicates a PR lacks an `ail/0-5` label and requires one.
+        name: needs-ail
+        target: prs
+        prowPlugin: require-matching-label
+        addedBy: prow
   kubernetes-sigs/kind:
     labels:
       - color: 19abff

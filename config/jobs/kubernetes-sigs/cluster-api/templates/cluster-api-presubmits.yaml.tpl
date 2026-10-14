@@ -40,7 +40,8 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^{{ $.branch }}$
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - command:
@@ -104,7 +105,8 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^{{ $.branch }}$
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - image: {{ $.config.TestImage }}
@@ -221,10 +223,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
@@ -245,7 +247,8 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^{{ $.branch }}$
     path_alias: sigs.k8s.io/cluster-api
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - image: {{ $.config.TestImage }}
@@ -333,10 +336,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix .branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll .branch "." "-" }}{{ $jobSuffix }}
@@ -450,10 +453,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
@@ -502,10 +505,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
@@ -570,10 +573,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}

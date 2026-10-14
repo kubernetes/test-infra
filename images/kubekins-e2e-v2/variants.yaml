@@ -4,6 +4,12 @@ variants:
     K8S_RELEASE: stable
     K8S_BRANCH: master
     BAZEL_VERSION: 3.4.1
+    DOCKER_VERSION: 5:29.*
+  '1.37':
+    CONFIG: '1.37'
+    K8S_RELEASE: latest-1.37
+    K8S_BRANCH: release-1.37
+    BAZEL_VERSION: 3.4.1
     DOCKER_VERSION: 5:28.*
   '1.36':
     CONFIG: '1.36'
@@ -21,11 +27,5 @@ variants:
     CONFIG: '1.34'
     K8S_RELEASE: latest-1.34
     K8S_BRANCH: release-1.34
-    BAZEL_VERSION: 3.4.1
-    DOCKER_VERSION: 5:28.*
-  '1.33':
-    CONFIG: '1.33'
-    K8S_RELEASE: latest-1.33
-    K8S_BRANCH: release-1.33
     BAZEL_VERSION: 3.4.1
     DOCKER_VERSION: 5:28.*

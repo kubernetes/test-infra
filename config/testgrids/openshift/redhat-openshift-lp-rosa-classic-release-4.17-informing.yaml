@@ -245,21 +245,21 @@ dashboards:
     test_group_name: periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.17-lp-rosa-classic-rhsi-interop-rosa-aws
   name: redhat-openshift-lp-rosa-classic-release-4.17-informing
 test_groups:
-- gcs_prefix: test-platform-results/logs/periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.17-lp-rosa-classic-3scale-amp-interop-rosa-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.17-lp-rosa-classic-3scale-amp-interop-rosa-aws
   name: periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.17-lp-rosa-classic-3scale-amp-interop-rosa-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.17-lp-rosa-classic-mtc-interop-aws-rosa
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.17-lp-rosa-classic-mtc-interop-aws-rosa
   name: periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.17-lp-rosa-classic-mtc-interop-aws-rosa
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.16-openshift-pipelines-ocp4.17-lp-rosa-classic-openshift-pipelines-interop-rosa-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.16-openshift-pipelines-ocp4.17-lp-rosa-classic-openshift-pipelines-interop-rosa-aws
   name: periodic-ci-openshift-pipelines-release-tests-release-v1.16-openshift-pipelines-ocp4.17-lp-rosa-classic-openshift-pipelines-interop-rosa-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.17-openshift-pipelines-ocp4.17-lp-rosa-classic-openshift-pipelines-interop-rosa-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.17-openshift-pipelines-ocp4.17-lp-rosa-classic-openshift-pipelines-interop-rosa-aws
   name: periodic-ci-openshift-pipelines-release-tests-release-v1.17-openshift-pipelines-ocp4.17-lp-rosa-classic-openshift-pipelines-interop-rosa-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.17-lp-rosa-classic-devspaces-rosa-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.17-lp-rosa-classic-devspaces-rosa-aws
   name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.17-lp-rosa-classic-devspaces-rosa-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-web-terminal-operator-main-web-terminal-ocp4.17-lp-rosa-classic-web-terminal-rosa-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-redhat-developer-web-terminal-operator-main-web-terminal-ocp4.17-lp-rosa-classic-web-terminal-rosa-aws
   name: periodic-ci-redhat-developer-web-terminal-operator-main-web-terminal-ocp4.17-lp-rosa-classic-web-terminal-rosa-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-rh-messaging-qe-claire-amq-broker-lpt-amq-broker-ocp4.17-lp-rosa-classic-amq-broker-rosa-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-rh-messaging-qe-claire-amq-broker-lpt-amq-broker-ocp4.17-lp-rosa-classic-amq-broker-rosa-aws
   name: periodic-ci-rh-messaging-qe-claire-amq-broker-lpt-amq-broker-ocp4.17-lp-rosa-classic-amq-broker-rosa-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.17-lp-rosa-classic-rhsso-interop-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.17-lp-rosa-classic-rhsso-interop-aws
   name: periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.17-lp-rosa-classic-rhsso-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.17-lp-rosa-classic-rhsi-interop-rosa-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.17-lp-rosa-classic-rhsi-interop-rosa-aws
   name: periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.17-lp-rosa-classic-rhsi-interop-rosa-aws

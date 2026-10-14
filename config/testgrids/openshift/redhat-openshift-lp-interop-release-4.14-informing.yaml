@@ -191,17 +191,17 @@ dashboards:
     test_group_name: periodic-ci-stolostron-acmqe-autotest-main-acm-ocp4.14-lp-interop-acm-interop-aws
   name: redhat-openshift-lp-interop-release-4.14-informing
 test_groups:
-- gcs_prefix: test-platform-results/logs/periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.14-lp-interop-3scale-amp-interop-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.14-lp-interop-3scale-amp-interop-aws
   name: periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.14-lp-interop-3scale-amp-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-jboss-fuse-fuse-xpaas-qe-container-main-jboss-fuse-ocp4.14-lp-interop-jboss-fuse-interop-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-jboss-fuse-fuse-xpaas-qe-container-main-jboss-fuse-ocp4.14-lp-interop-jboss-fuse-interop-aws
   name: periodic-ci-jboss-fuse-fuse-xpaas-qe-container-main-jboss-fuse-ocp4.14-lp-interop-jboss-fuse-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-kiegroup-kie-cloud-tests-container-main-rhba-ocp4.14-lp-interop-rhba-interop-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-kiegroup-kie-cloud-tests-container-main-rhba-ocp4.14-lp-interop-rhba-interop-aws
   name: periodic-ci-kiegroup-kie-cloud-tests-container-main-rhba-ocp4.14-lp-interop-rhba-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.14-lp-interop-mtc-interop-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.14-lp-interop-mtc-interop-aws
   name: periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.14-lp-interop-mtc-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.11-openshift-pipelines-ocp4.14-lp-interop-openshift-pipelines-interop-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.11-openshift-pipelines-ocp4.14-lp-interop-openshift-pipelines-interop-aws
   name: periodic-ci-openshift-pipelines-release-tests-release-v1.11-openshift-pipelines-ocp4.14-lp-interop-openshift-pipelines-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.14-lp-interop-rhscl-interop-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.14-lp-interop-rhscl-interop-aws
   name: periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.14-lp-interop-rhscl-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-stolostron-acmqe-autotest-main-acm-ocp4.14-lp-interop-acm-interop-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-stolostron-acmqe-autotest-main-acm-ocp4.14-lp-interop-acm-interop-aws
   name: periodic-ci-stolostron-acmqe-autotest-main-acm-ocp4.14-lp-interop-acm-interop-aws

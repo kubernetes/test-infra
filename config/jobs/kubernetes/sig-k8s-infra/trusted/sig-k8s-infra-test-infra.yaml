@@ -40,7 +40,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-staging-test-infra/configurator:v20260721-91123b8ffb
+      - image: gcr.io/k8s-staging-test-infra/configurator:v20260729-f66136c16c
         command:
         - configurator
         args:
@@ -204,7 +204,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20260728-850dcba9b
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20261013-985126490
       command:
       - generic-autobumper
       args:

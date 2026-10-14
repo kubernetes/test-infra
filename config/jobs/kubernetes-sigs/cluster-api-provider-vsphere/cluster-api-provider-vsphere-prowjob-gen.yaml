@@ -9,12 +9,10 @@ prow_ignored:
   # prowjob configuration files (presubmits, periodics)
   branches:
     main:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.36"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.37"
       # interval for coverage job
       interval: "24h"
       upgrades:
-      - from: "1.31"
-        to: "1.32"
       - from: "1.32"
         to: "1.33"
       - from: "1.33"
@@ -25,6 +23,8 @@ prow_ignored:
         to: "1.36"
       - from: "1.36"
         to: "1.37"
+      - from: "1.37"
+        to: "1.38"
       other:
         vmOperator:
         - version: "8.0"
@@ -40,7 +40,7 @@ prow_ignored:
         - version: "9.2"
           apiVersion: "v1alpha6"
     release-1.17:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.36"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.36"
       # interval for coverage job
       interval: "24h"
       upgrades:
@@ -56,6 +56,8 @@ prow_ignored:
           to: "1.36"
         - from: "1.36"
           to: "1.37"
+        - from: "1.37"
+          to: "1.38"
       other:
         vmOperator:
           - version: "8.0"
@@ -71,7 +73,7 @@ prow_ignored:
           - version: "9.2"
             apiVersion: "v1alpha6"
     release-1.16:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.35"
       # interval for coverage job
       interval: "24h"
       upgrades:
@@ -95,7 +97,7 @@ prow_ignored:
         # - version: "9.1"
         #   apiVersion: "v1alpha5"
     release-1.15:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.34"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.34"
       # interval for coverage job
       interval: "24h"
       upgrades:
@@ -109,17 +111,6 @@ prow_ignored:
         to: "1.35"
       - from: "1.35"
         to: "1.36"
-    release-1.14:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.33"
-      upgrades:
-      - from: "1.30"
-        to: "1.31"
-      - from: "1.31"
-        to: "1.32"
-      - from: "1.32"
-        to: "1.33"
-      - from: "1.33"
-        to: "1.34"
 
   # The generator will run each template per branch and use a the name template
   # to generate the target filename.
@@ -133,8 +124,6 @@ prow_ignored:
 
   # Versions provides kubernetes minor version to key-value pairs mapping.
   versions:
-    "1.30":
-      k8sRelease: "stable-1.30"
     "1.31":
       k8sRelease: "stable-1.31"
     "1.32":
@@ -148,4 +137,6 @@ prow_ignored:
     "1.36":
       k8sRelease: "stable-1.36"
     "1.37":
-      k8sRelease: "ci/latest-1.37"
+      k8sRelease: "stable-1.37"
+    "1.38":
+      k8sRelease: "ci/latest-1.38"

@@ -21,7 +21,7 @@ periodics:
       timeout: 2h
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-1.36
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.36
           env:
             - name: E2E_KIND_VERSION
               value: v1.36
@@ -61,7 +61,7 @@ periodics:
       timeout: 2h
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-1.35
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
           env:
             - name: E2E_KIND_VERSION
               value: v1.35
@@ -101,7 +101,7 @@ periodics:
       timeout: 2h
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-1.34
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.34
           env:
             - name: E2E_KIND_VERSION
               value: v1.34
@@ -141,7 +141,7 @@ periodics:
       timeout: 2h
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-1.33
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260807-e16bbc2ef7-1.33
           env:
             - name: E2E_KIND_VERSION
               value: v1.33
@@ -159,3 +159,38 @@ periodics:
             requests:
               cpu: 3
               memory: 10Gi
+  - interval: 24h
+    name: periodic-node-readiness-controller-govulncheck
+    cluster: eks-prow-build-cluster
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: node-readiness-controller
+        base_ref: main
+        path_alias: sigs.k8s.io/node-readiness-controller
+    annotations:
+      testgrid-dashboards: sig-node-node-readiness-controller
+      testgrid-num-failures-to-alert: '1'
+      testgrid-alert-email: ajaysundar.k@gmail.com
+      description: "Run periodic vulnerability check using govulncheck against the main branch"
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.36
+          command:
+            - runner.sh
+          args:
+            - make
+            - verify-govulncheck
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi

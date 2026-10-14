@@ -100,20 +100,32 @@ func updateString(s, old, replacement string) string {
 	return strings.ReplaceAll(s, old, replacement)
 }
 
-func updateJobBase(job *config.JobBase, old, replacement string) {
-	job.Name = updateString(job.Name, old, replacement)
+// rotateSuffix replaces a trailing "-<old>" tier marker with "-<replacement>".
+// The tier is only ever a suffix. The "beta" in
+// pull-kubernetes-e2e-kind-alpha-beta-features means beta feature gates.
+func rotateSuffix(s, old, replacement string) string {
+	suffix := "-" + old
+	if !strings.HasSuffix(s, suffix) {
+		return s
+	}
 
+	return strings.TrimSuffix(s, suffix) + "-" + replacement
+}
+
+func updateJobBase(job *config.JobBase, old, replacement string) {
+	job.Name = rotateSuffix(job.Name, old, replacement)
+
+	// Args carry the tier only as a "k8s-" marker. A plain replace also hits
+	// unrelated values such as --runtime-config=api/beta=true.
 	for idx := range job.Spec.Containers {
 		container := &job.Spec.Containers[idx]
 
 		for argIdx := range container.Args {
 			container.Args[argIdx] = updateGenericVersionMarker(container.Args[argIdx])
-			container.Args[argIdx] = updateString(container.Args[argIdx], old, replacement)
 		}
 
 		for cmdIdx := range container.Command {
 			container.Command[cmdIdx] = updateGenericVersionMarker(container.Command[cmdIdx])
-			container.Command[cmdIdx] = updateString(container.Command[cmdIdx], old, replacement)
 		}
 	}
 }
@@ -141,7 +153,7 @@ func updatePeriodicAnnotations(periodic *config.Periodic, old, replacement strin
 
 	for key, val := range periodic.Annotations {
 		if key == "testgrid-tab-name" || key == "testgrid-dashboards" {
-			periodic.Annotations[key] = updateString(val, old, replacement)
+			periodic.Annotations[key] = rotateSuffix(val, old, replacement)
 		}
 	}
 }
@@ -151,7 +163,7 @@ func updatePeriodic(periodic *config.Periodic, old, replacement string) {
 	updatePeriodicAnnotations(periodic, old, replacement)
 
 	for tagIdx := range periodic.Tags {
-		periodic.Tags[tagIdx] = updateString(periodic.Tags[tagIdx], old, replacement)
+		periodic.Tags[tagIdx] = rotateSuffix(periodic.Tags[tagIdx], old, replacement)
 	}
 }
 
@@ -159,6 +171,10 @@ func updateEverything(jobConfig *config.JobConfig, old, replacement string) {
 	for _, presubmits := range jobConfig.PresubmitsStatic {
 		for idx := range presubmits {
 			updateJobBase(&presubmits[idx].JobBase, old, replacement)
+			// The context must keep matching the name.
+			presubmits[idx].Context = rotateSuffix(
+				presubmits[idx].Context, old, replacement,
+			)
 		}
 	}
 

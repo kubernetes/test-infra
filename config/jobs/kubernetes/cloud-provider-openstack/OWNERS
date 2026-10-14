@@ -2,21 +2,22 @@
 
 # From
 # https://github.com/kubernetes/cloud-provider-openstack/blob/master/OWNERS
-# Correct as of 2025-06-20
+# Correct as of 2026-09-04
 emeritus_approvers:
 - chrigl
 - lingxiankong
 - ramineni
 - jichenjc
-approvers:
 - dulek
+approvers:
 - kayrus
+- mandre
 - stephenfin
 - zetaab
 reviewers:
-- dulek
+- gouthampacha
 - kayrus
-- mdbooth
+- mandre
 - stephenfin
 - zetaab
 

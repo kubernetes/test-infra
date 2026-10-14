@@ -20,7 +20,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -53,7 +53,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         env:
@@ -92,7 +92,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         env:
@@ -100,18 +100,21 @@ presubmits:
           value: "-timeout=40m"
         - name: KUBE_RACE
           value: "-race"
+        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
+          value: "4" # Update together resources below. We need some spare CPUs to avoid starvation when each test binary itself needs more than one CPU.
         args:
         - ./hack/jenkins/test-integration-dockerized.sh
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
+          # Update cpu together with KUBE_INTEGRATION_TEST_MAX_CONCURRENCY above.
           limits:
             cpu: 7
-            memory: 20Gi
+            memory: 25Gi
           requests:
             cpu: 7
-            memory: 20Gi
+            memory: 25Gi
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
     always_run: true
@@ -129,7 +132,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         env:
@@ -171,7 +174,7 @@ periodics:
     description: "Ends up running: make test-integration"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       args:
@@ -211,7 +214,7 @@ periodics:
     description: "Ends up running: make test-integration on arm node"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       args:
@@ -254,7 +257,7 @@ periodics:
     description: "Ends up running: make test-integration with race detection"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       args:
@@ -266,13 +269,16 @@ periodics:
         value: "-timeout=40m"
       - name: KUBE_RACE
         value: "-race"
+      - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
+        value: "4" # Update together with resources below. We need some spare CPUs to avoid starvation when each test binary itself needs more than one CPU.
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       resources:
+        # Update cpu together with KUBE_INTEGRATION_TEST_MAX_CONCURRENCY above.
         limits:
-          cpu: 6
-          memory: 20Gi
+          cpu: 7
+          memory: 25Gi
         requests:
-          cpu: 6
-          memory: 20Gi
+          cpu: 7
+          memory: 25Gi

@@ -13,7 +13,7 @@ presubmits:
     - ^release-1.13$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -37,13 +37,14 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.13$
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
         resources:
           requests:
             cpu: 6000m
@@ -68,7 +69,7 @@ presubmits:
     - ^release-1.13$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -93,10 +94,11 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.13$
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -122,7 +124,7 @@ presubmits:
     - ^release-1.13$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -166,7 +168,7 @@ presubmits:
     - ^release-1.13$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
         args:
         - runner.sh
         - ./scripts/ci-e2e.sh
@@ -193,10 +195,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-1.13
       testgrid-tab-name: capi-pr-e2e-mink8s-release-1-13
@@ -217,10 +219,11 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^release-1.13$
     path_alias: sigs.k8s.io/cluster-api
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    # Note: run_if_changed has to cover the superset of all relevant folders across all branches that we test.
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|core|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -263,7 +266,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -282,10 +285,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-1.13
       testgrid-tab-name: capi-pr-e2e-release-1-13
@@ -309,7 +312,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -319,11 +322,11 @@ presubmits:
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.36"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "ci/latest-1.37"
+            value: "stable-1.37"
           - name: ETCD_VERSION_UPGRADE_TO
-            value: "3.6.8-0"
+            value: "3.7.0-0"
           - name: COREDNS_VERSION_UPGRADE_TO
-            value: "v1.14.2"
+            value: "v1.14.6"
           - name: GINKGO_LABEL_FILTER
             value: "(Conformance && K8s-Upgrade)"
         # we need privileged mode in order to do docker in docker
@@ -359,7 +362,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -375,10 +378,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-1.13
       testgrid-tab-name: capi-pr-e2e-conformance-release-1-13
@@ -402,7 +405,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-1.35
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.35
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -418,10 +421,10 @@ presubmits:
         resources:
           requests:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
           limits:
             cpu: 4000m
-            memory: 12Gi
+            memory: 16Gi
     annotations:
       testgrid-dashboards: cluster-api-core-1.13
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-release-1-13

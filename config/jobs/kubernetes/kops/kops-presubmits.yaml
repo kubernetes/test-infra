@@ -12,7 +12,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -40,7 +40,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -64,7 +64,6 @@ presubmits:
       preset-service-account: "true"
       preset-do-credential: "true"
       preset-do-spaces-credential: "true"
-      preset-do-ssh: "true"
     cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
@@ -72,7 +71,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -116,7 +115,6 @@ presubmits:
       preset-service-account: "true"
       preset-do-credential: "true"
       preset-do-spaces-credential: "true"
-      preset-do-ssh: "true"
     cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
@@ -124,7 +122,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -171,7 +169,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -200,7 +198,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -227,7 +225,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -256,7 +254,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -283,7 +281,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -312,7 +310,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -328,34 +326,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-golangci-lint
-  - name: pull-kops-verify-hashes
-    cluster: eks-prow-build-cluster
-    skip_report: false
-    run_if_changed: '^upup\/pkg\/fi\/cloudup\/runc'
-    labels:
-      preset-service-account: "true"
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
-        command:
-        - runner.sh
-        args:
-        - "make"
-        - "verify-hashes"
-        resources:
-          requests:
-            memory: 12Gi
-            cpu: 7
-          limits:
-            memory: 12Gi
-            cpu: 7
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: verify-hashes
   - name: pull-kops-verify-terraform
     cluster: eks-prow-build-cluster
     skip_report: false
@@ -369,7 +339,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         args:
@@ -395,7 +365,6 @@ presubmits:
     run_if_changed: 'tests/e2e'
     optional: true
     labels:
-      preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     decorate: true
     extra_refs:
@@ -409,7 +378,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-kops-test
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -418,10 +387,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/ssh-key-secret/ssh-private
-        - name: KUBE_SSH_USER
-          value: prow
         resources:
           limits:
             cpu: "4"
@@ -453,7 +418,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -504,7 +469,7 @@ presubmits:
       nodeSelector:
         cloud.google.com/machine-family: c4 # this node type supports nested virtualization
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -537,7 +502,7 @@ presubmits:
       nodeSelector:
         cloud.google.com/machine-family: c4 # this node type supports nested virtualization
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         imagePullPolicy: Always
         command:
         - runner.sh

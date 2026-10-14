@@ -28,7 +28,7 @@ periodics:
               cpu: 100m
               memory: 512Mi
   - name: ci-kubernetes-cross-canary
-    cluster: k8s-infra-aks-prow-build
+    cluster: eks-prow-build-cluster
     interval: 2h
     decorate: true
     max_concurrency: 1
@@ -44,7 +44,7 @@ periodics:
         base_ref: master
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -78,7 +78,7 @@ periodics:
         path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -121,7 +121,7 @@ periodics:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - runner.sh
         - bash

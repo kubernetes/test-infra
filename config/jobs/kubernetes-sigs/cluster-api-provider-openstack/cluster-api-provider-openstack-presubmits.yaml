@@ -10,7 +10,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - "runner.sh"
         - "./scripts/ci-build.sh"
@@ -35,7 +35,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -54,11 +54,12 @@ presubmits:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
+    always_run: false
     skip_if_only_changed: '^(docs/|LICENSE|netlify.toml|OWNERS|OWNERS_ALIASES|SECURITY_CONTACTS|tilt-provider.json|.github/|.gitignore|.golangci.yml)|\\.md$'
     optional: false
     decorate: true
     decoration_config:
-      timeout: 5h
+      timeout: 3h
     extra_refs:
     - org: kubernetes-sigs
       repo: image-builder
@@ -66,7 +67,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         env:
         - name: "BOSKOS_HOST"
           value: "boskos.test-pods.svc.cluster.local"
@@ -100,7 +101,7 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      timeout: 5h
+      timeout: 3h
     extra_refs:
     - org: kubernetes-sigs
       repo: image-builder
@@ -112,7 +113,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         env:
         - name: "BOSKOS_HOST"
           value: "boskos.test-pods.svc.cluster.local"
@@ -145,7 +146,7 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      timeout: 5h
+      timeout: 3h
     extra_refs:
     - org: kubernetes-sigs
       repo: image-builder
@@ -153,7 +154,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
         env:
         - name: "BOSKOS_HOST"
           value: "boskos.test-pods.svc.cluster.local"

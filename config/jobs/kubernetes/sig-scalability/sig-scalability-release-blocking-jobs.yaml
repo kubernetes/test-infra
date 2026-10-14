@@ -9,7 +9,6 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
     prow.k8s.io/refs.org: kubernetes
     prow.k8s.io/refs.repo: kubernetes
   decorate: true
@@ -30,7 +29,7 @@ periodics:
       secret:
         secretName: scale-pull-cache-token
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260720-39d457d26c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
       volumeMounts:
       - name: cache-secret
         readOnly: true
@@ -57,7 +56,7 @@ periodics:
       - --gcp-nodes=2000
       - --gcp-project-type=scalability-scale-project
       - --gcp-ssh-proxy-instance-name=gce-scale-cluster-master
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-east1-b
       - --ginkgo-parallel=40
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8 --node-schedulable-timeout=90m
@@ -118,7 +117,7 @@ periodics:
       - key: highmem
         operator: Exists
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       args:
@@ -165,7 +164,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24 * * *
-    fork-per-release-replacements: "KUBERNETES_VERSION=master -> KUBERNETES_VERSION={{.Version}}, gce-100Nodes-master -> gce-100Nodes-{{.Version}}"
+    fork-per-release-replacements: "K8S_VERSION=https://dl.k8s.io/ci/latest.txt -> K8S_VERSION=https://dl.k8s.io/ci/latest-{{.Version}}.txt, gce-100Nodes-master -> gce-100Nodes-{{.Version}}"
     testgrid-dashboards: sig-release-master-blocking, sig-scalability-gce, kops-misc
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     description: "Uses kubetest2 to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with kops"
@@ -174,7 +173,7 @@ periodics:
   spec:
     serviceAccountName: prow-build
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260720-39d457d26c-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
       - runner.sh
       args:
@@ -182,8 +181,8 @@ periodics:
       securityContext:
         privileged: true
       env:
-      - name: KUBERNETES_VERSION
-        value: master
+      - name: K8S_VERSION
+        value: https://dl.k8s.io/ci/latest.txt
       resources:
         requests:
           cpu: 2

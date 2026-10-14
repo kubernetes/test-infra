@@ -56,7 +56,7 @@ dashboards:
     test_group_name: periodic-ci-openshift-cluster-nfd-operator-release-4.14-ocp4.14-lp-rosa-hypershift-nfd-e2e-master-aws-rosa-hypershift
   name: redhat-openshift-lp-rosa-hypershift-release-4.14-informing
 test_groups:
-- gcs_prefix: test-platform-results/logs/periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.14-lp-rosa-hypershift-mtc-interop-aws-rosa
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.14-lp-rosa-hypershift-mtc-interop-aws-rosa
   name: periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.14-lp-rosa-hypershift-mtc-interop-aws-rosa
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-cluster-nfd-operator-release-4.14-ocp4.14-lp-rosa-hypershift-nfd-e2e-master-aws-rosa-hypershift
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-cluster-nfd-operator-release-4.14-ocp4.14-lp-rosa-hypershift-nfd-e2e-master-aws-rosa-hypershift
   name: periodic-ci-openshift-cluster-nfd-operator-release-4.14-ocp4.14-lp-rosa-hypershift-nfd-e2e-master-aws-rosa-hypershift
