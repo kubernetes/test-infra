@@ -212,11 +212,6 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: image-builder
-      base_ref: main
-      path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.34
@@ -225,12 +220,9 @@ presubmits:
               value: "boskos.test-pods.svc.cluster.local"
             - name: E2E_ARGS
               value: "-kubetest.use-ci-artifacts"
-            - name: USE_CI_ARTIFACTS
-              value: "true"
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
-            - "--init-image"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
