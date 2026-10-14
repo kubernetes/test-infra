@@ -64,9 +64,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/krte:v20261012-c0cc6281b1-master
         env:
-        # enable IPV6 in bootstrap image
-        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-          value: "true"
         # tell kind CI script to use ipv6
         - name: "IP_FAMILY"
           value: "ipv6"
