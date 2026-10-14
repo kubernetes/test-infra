@@ -30,7 +30,7 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --build=quick
+        - --extract=ci/latest
         - --cluster=benchmark-list-informer
         - --gcp-master-size=n2-standard-32
         - --gcp-node-size=e2-standard-32
