@@ -1099,10 +1099,10 @@ def generate_misc():
                    ],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
-                   test_timeout_minutes=200,
+                   test_timeout_minutes=400,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
-                   runs_per_day=6),
+                   runs_per_day=3),
 
         build_test(name_override="ci-kubernetes-kops-al2023-aws-conformance-canary",
                    cloud="aws",
@@ -1207,7 +1207,7 @@ def generate_misc():
                        "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Disruptive\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]|\[sig-cloud-provider-gcp\]',
+                   skip_regex=r'\[Flaky\]|\[Feature:.+\]|\[KubeUp\]',
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],

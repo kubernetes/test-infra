@@ -779,11 +779,6 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 1h50m0s
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      path_alias: k8s.io/kops
-      repo: kops
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
@@ -799,8 +794,7 @@ presubmits:
         - bash
         - -c
         - |
-          ARGS="--set=spec.containerd.runc.version=1.1.12 --set=spec.packages=nfs-common --set=spec.containerd.version=1.7.13"
-          make -C $GOPATH/src/k8s.io/kops test-e2e-install
+          ARGS="--set=spec.containerd.runc.version=1.4.3 --set=spec.packages=nfs-common --set=spec.containerd.version=2.3.7"
           kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
             --build-kubernetes=true --target-build-arch=linux/amd64 \
             --admin-access=0.0.0.0/0 \
@@ -809,13 +803,13 @@ presubmits:
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
-            --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
             --timeout=80m \
             --use-built-binaries=true \
             --parallel=30
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
         name: ""
         resources:
           limits:
@@ -826,7 +820,7 @@ presubmits:
             memory: 14Gi
         securityContext:
           privileged: true
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
   - always_run: false
     annotations:
       testgrid-alert-stale-results-hours: "24"
@@ -1068,11 +1062,6 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 8h50m0s
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      path_alias: k8s.io/kops
-      repo: kops
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
@@ -1088,8 +1077,7 @@ presubmits:
         - bash
         - -c
         - |
-          ARGS="--set=spec.containerd.runc.version=1.1.12  --set=spec.packages=nfs-common --set=spec.containerd.version=1.7.13"
-          make -C $GOPATH/src/k8s.io/kops test-e2e-install
+          ARGS="--set=spec.containerd.runc.version=1.4.3  --set=spec.packages=nfs-common --set=spec.containerd.version=2.3.7"
           kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
             --build-kubernetes=true --target-build-arch=linux/amd64 \
             --admin-access=0.0.0.0/0 \
@@ -1099,13 +1087,13 @@ presubmits:
             -- \
             --test-args="-test.timeout=800m --num-nodes=3 --master-os-distro=ubuntu --node-os-distro=ubuntu" \
             --focus-regex="\[Serial\]" \
-            --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
+            --skip-regex="\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
             --timeout=500m \
             --use-built-binaries=true \
             --parallel=1
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
         name: ""
         resources:
           limits:
@@ -1116,7 +1104,7 @@ presubmits:
             memory: 14Gi
         securityContext:
           privileged: true
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
   - always_run: false
     annotations:
       fork-per-release: "true"
@@ -1128,11 +1116,6 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 10h30m0s
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      path_alias: k8s.io/kops
-      repo: kops
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
@@ -1148,8 +1131,7 @@ presubmits:
         - bash
         - -c
         - |
-          ARGS="--set=spec.containerd.runc.version=1.1.12  --set=spec.packages=nfs-common --set=spec.containerd.version=1.7.13"
-          make -C $GOPATH/src/k8s.io/kops test-e2e-install
+          ARGS="--set=spec.containerd.runc.version=1.4.3  --set=spec.packages=nfs-common --set=spec.containerd.version=2.3.7"
           kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
             --build-kubernetes=true --target-build-arch=linux/amd64 \
             --admin-access=0.0.0.0/0 \
@@ -1159,13 +1141,13 @@ presubmits:
             -- \
             --test-args="-test.timeout=600m --num-nodes=3 --master-os-distro=ubuntu --node-os-distro=ubuntu" \
             --focus-regex="\[Disruptive\]" \
-            --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
+            --skip-regex="\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
             --timeout=500m \
             --use-built-binaries=true \
             --parallel=1
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261009-d7b232c8fe-master
         name: ""
         resources:
           limits:
@@ -1176,7 +1158,7 @@ presubmits:
             memory: 14Gi
         securityContext:
           privileged: true
-      serviceAccountName: k8s-kops-test
+      serviceAccountName: prow-build
   - always_run: false
     annotations:
       fork-per-release: "true"
