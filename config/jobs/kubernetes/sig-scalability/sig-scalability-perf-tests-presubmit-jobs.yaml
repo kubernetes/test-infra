@@ -1,6 +1,6 @@
 presubmits:
-  kubernetes/kubernetes:
-  - name: pull-kubernetes-benchmark-watchlist-proto-informer
+  kubernetes/perf-tests:
+  - name: pull-perf-tests-benchmark-watchlist-proto-informer
     cluster: k8s-infra-prow-build
     always_run: false
     optional: true
@@ -14,15 +14,15 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 120m
-    path_alias: k8s.io/kubernetes
+    path_alias: k8s.io/perf-tests
     extra_refs:
     - org: kubernetes
-      repo: perf-tests
+      repo: kubernetes
       base_ref: master
-      path_alias: k8s.io/perf-tests
+      path_alias: k8s.io/kubernetes
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
-      testgrid-tab-name: pull-kubernetes-benchmark-watchlist-proto-informer
+      testgrid-tab-name: pull-perf-tests-benchmark-watchlist-proto-informer
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
