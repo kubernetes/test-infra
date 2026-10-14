@@ -159,6 +159,8 @@ presubmits:
             - --scratch-bucket=gs://k8s-staging-releng-test
             - --build-dir=.
             - --env-passthrough=REGISTRY
+            - --worker-pool=projects/k8s-staging-releng-test/locations/us-central1/workerPools/c3-highcpu-44
+            - --region=us-central1
             - images/build/go-runner
           env:
             - name: LOG_TO_STDOUT
@@ -194,6 +196,8 @@ presubmits:
             - --scratch-bucket=gs://k8s-staging-releng-test
             - --build-dir=.
             - --env-passthrough=REGISTRY
+            - --worker-pool=projects/k8s-staging-releng-test/locations/us-central1/workerPools/c3-highcpu-44
+            - --region=us-central1
             - images/build/debian-base
           env:
             - name: LOG_TO_STDOUT
@@ -231,6 +235,8 @@ presubmits:
             - --scratch-bucket=gs://k8s-staging-releng-test
             - --build-dir=.
             - --env-passthrough=REGISTRY
+            - --worker-pool=projects/k8s-staging-releng-test/locations/us-central1/workerPools/c3-highcpu-44
+            - --region=us-central1
             - images/build/distroless-iptables
           env:
             - name: LOG_TO_STDOUT
@@ -266,6 +272,8 @@ presubmits:
             - --scratch-bucket=gs://k8s-staging-releng-test
             - --build-dir=.
             - --env-passthrough=REGISTRY
+            - --worker-pool=projects/k8s-staging-releng-test/locations/us-central1/workerPools/c3-highcpu-44
+            - --region=us-central1
             - images/build/setcap
           env:
             - name: LOG_TO_STDOUT
