@@ -387,6 +387,87 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-kine-postgres-main
       description: Manually validates Kubernetes conformance using an experimental Kine/PostgreSQL datastore on Azure instead of etcd.
+  # CL2 smoke test using the same high-I/O fixture as conformance.
+  - name: pull-cluster-api-provider-azure-performance-kine-postgres
+    cluster: eks-prow-build-cluster
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 6h
+      grace_period: 30m
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: azure
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260608-c0707d679d-1.32
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set +x
+          set -euo pipefail
+          if [[ ! -f ./scripts/ci-kine-performance.sh ]]; then
+            echo "This checkout requires the Kine performance fixture from kubernetes-sigs/cluster-api-provider-azure#6709." >&2
+            exit 1
+          fi
+          : "${AZURE_FEDERATED_TOKEN_FILE:?Azure workload-identity token is required}"
+          bash ./hack/ensure-azcli.sh
+          # ensure-azcli only logs in when installing the CLI; also authenticate preinstalled CLIs.
+          az login --service-principal \
+            --username "${AZURE_CLIENT_ID}" \
+            --tenant "${AZURE_TENANT_ID}" \
+            --federated-token "$(cat "${AZURE_FEDERATED_TOKEN_FILE}")" \
+            --output none
+          exec bash ./scripts/ci-kine-performance.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: v1.35.4
+        - name: CONFORMANCE_FLAVOR
+          value: kine-postgres-performance
+        - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
+          value: "1"
+        - name: CONFORMANCE_WORKER_MACHINE_COUNT
+          value: "2"
+        - name: IP_FAMILY
+          value: ipv4
+        - name: SKIP_CLEANUP
+          value: "false"
+        - name: CL2_PODS_BENCHMARK_POD_COUNT
+          value: "1000"
+        - name: CL2_PODS_WRITE_REPLICAS
+          value: "2"
+        - name: CL2_PODS_PATCH_QPS
+          value: "25"
+        - name: CL2_PODS_WATCH_REPLICAS
+          value: "2"
+        - name: CL2_PODS_WATCHES_PER_REPLICA
+          value: "1"
+        - name: CL2_PODS_BENCHMARK_DURATION
+          value: "10m"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-performance-kine-postgres-main
+      description: Manually smoke-tests ClusterLoader2 against Kine/PostgreSQL on Azure with 1000 Pods, 50 offered PATCH requests/sec, and two watches for 10 minutes; not a saturation benchmark.
   - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
