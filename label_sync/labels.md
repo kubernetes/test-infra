@@ -164,6 +164,7 @@ larger set of contributors to apply/remove them.
 | <a id="wg/serving" href="#wg/serving">`wg/serving`</a> | Categorizes an issue or PR as relevant to WG Serving.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="wg/structured-logging" href="#wg/structured-logging">`wg/structured-logging`</a> | Categorizes an issue or PR as relevant to WG Structured Logging.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="wg/workload-aware-scheduling" href="#wg/workload-aware-scheduling">`wg/workload-aware-scheduling`</a> | Categorizes issue or PR as relevant to workload-aware scheduling WG. <br><br> This was previously `area/workload-aware`, | anyone | |
+| <a id="wg/workload-conformance" href="#wg/workload-conformance">`wg/workload-conformance`</a> | Categorizes issue or PR as relevant to workload conformance WG.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="¯\_(ツ)_/¯" href="#¯\_(ツ)_/¯">`¯\_(ツ)_/¯`</a> | ¯\\\_(ツ)_/¯| humans |  [shrug](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/shrug) |
 
 ## Labels that apply to all repos, only for issues
