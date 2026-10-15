@@ -491,6 +491,8 @@ presets:
     value: "16Gi"
   - name: CL2_REALISTIC_POD
     value: "true"
+  - name: CL2_RESTART_APISERVER
+    value: "true"
 
 - labels:
     preset-kops-scalability-ec2-5000-node: "true"
@@ -518,10 +520,4 @@ presets:
 
 - labels:
     preset-kops-scalability-gce-experimental: "true"
-  env:
-  - name: EXPERIMENT_VARIANT
-    value: "restart"
-  - name: CL2_RESTART_APISERVER
-    value: "true"
-  - name: CL2_HEAP_PROFILE_INTERVAL
-    value: "5m"
+  env: []
