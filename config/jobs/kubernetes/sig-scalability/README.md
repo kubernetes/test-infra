@@ -79,6 +79,7 @@ track. Add new entries at the top.
 
 | Variant | Date | What it does | Owner | Status |
 | --- | --- | --- | --- | --- |
+| `restart` | 2026-10-15 | Restart a kube-apiserver instance during the 5k test (`CL2_RESTART_APISERVER=true`) to track watch cache initialization. | @Jefftree | In Progress |
 | `c4d` | 2026-09-30 | Single-replica `c4d-standard-96` control plane (`CONTROL_PLANE_SIZE=c4d-standard-96`) on the 5k job to avoid variance across Intel CPU generations. | @Jefftree | Graduated |
 | `HA` | 2026-08-03 | 3-replica control plane (`CONTROL_PLANE_COUNT=3`) on the 5k job, which previously ran a single control plane. | @Jefftree | Graduated |
 | `node-exporter` | 2026-07-24 | Scraping node exporter (`PROMETHEUS_SCRAPE_NODE_EXPORTER=true`) for per-node resource metrics. | @serathius | Graduated |

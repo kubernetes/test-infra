@@ -518,4 +518,10 @@ presets:
 
 - labels:
     preset-kops-scalability-gce-experimental: "true"
-  env: []
+  env:
+  - name: EXPERIMENT_VARIANT
+    value: "restart"
+  - name: CL2_RESTART_APISERVER
+    value: "true"
+  - name: CL2_HEAP_PROFILE_INTERVAL
+    value: "5m"
