@@ -479,8 +479,6 @@ presets:
     value: "c3-standard-44"
   - name: BOSKOS_RESOURCE_TYPE
     value: "scalability-scale-project"
-  - name: CL2_ENABLE_INFORMER_LATENCY_TEST
-    value: "false"
   - name: ETCD_QUOTA_BACKEND_BYTES
     value: "21474836480"
   - name: ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL
@@ -520,4 +518,10 @@ presets:
 
 - labels:
     preset-kops-scalability-gce-experimental: "true"
-  env: []
+  env:
+  - name: EXPERIMENT_VARIANT
+    value: "informer"
+  - name: CL2_ENABLE_INFORMER_LATENCY_TEST
+    value: "true"
+  - name: CL2_INFORMER_RUN_ON_CONTROL_PLANE
+    value: "true"
