@@ -1,0 +1,43 @@
+---
+# Runs a production Hugo build on PRs to verify the site compiles before merge,
+# independently of Netlify's deploy preview. We don't publish the output — this
+# is purely a correctness gate for broken shortcodes, Hugo errors, and missing deps.
+presubmits:
+  kubernetes/website:
+  - name: pull-website-build
+    cluster: eks-prow-build-cluster
+    always_run: false
+    optional: true
+    skip_if_only_changed: '^(OWNERS|OWNERS_ALIASES|LICENSE|\.github/|\.gitignore|README\.md|archetypes/)'
+    branches:
+    - main
+    decorate: true
+    decoration_config:
+      timeout: 30m
+    annotations:
+      testgrid-dashboards: sig-docs-website
+      testgrid-tab-name: pull-website-build
+      description: "Runs a production website build for normal content and rendering changes"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/debian:13-slim
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          set -euo pipefail
+
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends make
+
+          cd /home/prow/go/src/github.com/kubernetes/website
+          make prepare-ci-test
+          make run-ci-test-production
+        resources:
+          requests:
+            cpu: "8"
+            memory: "8Gi"
+          limits:
+            cpu: "8"
+            memory: "8Gi"
