@@ -387,7 +387,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-kine-postgres-main
       description: Manually validates Kubernetes conformance using an experimental Kine/PostgreSQL datastore on Azure instead of etcd.
-  # CL2 smoke test using the same high-I/O fixture as conformance.
+  # CL2 write-throughput test using the same high-I/O fixture as conformance.
   - name: pull-cluster-api-provider-azure-performance-kine-postgres
     cluster: eks-prow-build-cluster
     path_alias: sigs.k8s.io/cluster-api-provider-azure
@@ -445,9 +445,9 @@ presubmits:
         - name: CL2_PODS_BENCHMARK_POD_COUNT
           value: "1000"
         - name: CL2_PODS_WRITE_REPLICAS
-          value: "2"
+          value: "5"
         - name: CL2_PODS_PATCH_QPS
-          value: "25"
+          value: "100"
         - name: CL2_PODS_WATCH_REPLICAS
           value: "2"
         - name: CL2_PODS_WATCHES_PER_REPLICA
@@ -467,7 +467,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-performance-kine-postgres-main
-      description: Manually smoke-tests ClusterLoader2 against Kine/PostgreSQL on Azure with 1000 Pods, 50 offered PATCH requests/sec, and two watches for 10 minutes; not a saturation benchmark.
+      description: Manually measures ClusterLoader2 write throughput against Kine/PostgreSQL on Azure with 1000 Pods, 500 offered PATCH requests/sec, and two watches for 10 minutes; not a saturation benchmark.
   - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
