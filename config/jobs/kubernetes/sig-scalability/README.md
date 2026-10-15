@@ -19,7 +19,6 @@ The Kubernetes Project runs 5000 node clusters to test scalability. These jobs r
 | gce-master-scale-performance-100 | GCP | Every 30 minutes | No | #sig-scalability | 100 |
 | azure-master-scalability-100 | Azure | Twice a day | No | #sig-cluster-lifecycle (capz) | 100 |
 | golang-tip-k8s-master | GCP | Once a day | No | #sig-scalability | 200* | This job uses the legacy kubemark harness and needs to be rebuilt |
-| gce-agentic-sandbox-continuous-burst-100 | GCP | Every other day | No | #sig-apps | 100 |
 
 In addition to these jobs, we have presubmit equivalents in kubernetes/kubernetes, kubernetes/perf-tests and kubernetes/kops to debug as needed.
 
