@@ -75,10 +75,10 @@ presubmits:
           # (= 3 * 5 + 1 for kubelet).
           limits:
             cpu: 5
-            memory: 12Gi
+            memory: 16Gi
           requests:
             cpu: 5
-            memory: 12Gi
+            memory: 16Gi
 periodics:
 - interval: 1h
   cluster: k8s-infra-prow-build
