@@ -78,10 +78,10 @@ track. Add new entries at the top.
 
 | Variant | Date | What it does | Owner | Status |
 | --- | --- | --- | --- | --- |
-| `restart` | 2026-10-15 | Restart a kube-apiserver instance during the 5k test (`CL2_RESTART_APISERVER=true`) to track watch cache initialization. | @Jefftree | In Progress |
+| `restart` | 2026-10-15 | Restart a kube-apiserver instance during the 5k test (`CL2_RESTART_APISERVER=true`) to track watch cache initialization. | @Jefftree | Graduated |
 | `c4d` | 2026-09-30 | Single-replica `c4d-standard-96` control plane (`CONTROL_PLANE_SIZE=c4d-standard-96`) on the 5k job to avoid variance across Intel CPU generations. | @Jefftree | Graduated |
 | `HA` | 2026-08-03 | 3-replica control plane (`CONTROL_PLANE_COUNT=3`) on the 5k job, which previously ran a single control plane. | @Jefftree | Graduated |
 | `node-exporter` | 2026-07-24 | Scraping node exporter (`PROMETHEUS_SCRAPE_NODE_EXPORTER=true`) for per-node resource metrics. | @serathius | Graduated |
 | `restart-etcd36` | 2026-07-10 | RangeStream (`+EtcdRangeStream`) with HA control plane restart, on etcd 3.6.12, to gather data on RangeStream against etcd 3.6. Presubmit only. | @Jefftree | Completed |
-| `restart` | 2026-06-29 | HA control plane with restart, for tracking improvements with watch cache initialization. |  @Jefftree | In Progress |
+| `restart` | 2026-06-29 | HA control plane with restart, for tracking improvements with watch cache initialization. |  @Jefftree | Graduated |
 | `etcd36` | 2026-06-26 | Testing the 5k job on etcd 3.6.12. | @Jefftree | Completed |
