@@ -29,7 +29,7 @@ periodics:
       secret:
         secretName: scale-pull-cache-token
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261016-1350a9fa4c-master
       volumeMounts:
       - name: cache-secret
         readOnly: true
