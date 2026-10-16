@@ -12,7 +12,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20260729-f66136c16c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
       command:
       - commenter
       args:
