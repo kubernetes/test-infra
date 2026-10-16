@@ -213,6 +213,12 @@ periodics:
         value: --timeout=45m
       - name: SHORT
         value: --short=false
+      - name: FULL_LOG
+        value: "true"
+      # gotestsum marks benchmarks as failed in JUnit XML because Go's test2json
+      # does not emit per-benchmark pass events (golang/go#66825, gotestsum#413).
+      - name: KUBE_JUNIT_REPORT_DIR
+        value: /tmp/junit
       - name: KUBE_TEST_ARGS
         value: "-run=^$ -bench=^BenchmarkRequestCost$ -benchtime=1x"
       resources:
