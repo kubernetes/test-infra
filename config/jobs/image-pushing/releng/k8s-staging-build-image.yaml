@@ -111,7 +111,7 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-images-gcb
               - --build-dir=.
               - --env-passthrough=REGISTRY
-              - --worker-pool=projects/k8s-staging-images/locations/us-central1/workerPools/n2d-highcpu-8
+              - --worker-pool=projects/k8s-staging-images/locations/us-central1/workerPools/c3-highcpu-44
               - --service-account=projects/k8s-staging-images/serviceAccounts/build-image-sa@k8s-staging-images.iam.gserviceaccount.com
               - --region=us-central1
               - images/build/go-runner
