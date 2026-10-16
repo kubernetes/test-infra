@@ -511,6 +511,10 @@ presets:
     value: "true"
   - name: CL2_RESTART_APISERVER
     value: "true"
+  - name: CL2_ENABLE_INFORMER_LATENCY_TEST
+    value: "true"
+  - name: CL2_INFORMER_RUN_ON_CONTROL_PLANE
+    value: "true"
 
 - labels:
     preset-kops-scalability-ec2-5000-node: "true"
@@ -538,10 +542,4 @@ presets:
 
 - labels:
     preset-kops-scalability-gce-experimental: "true"
-  env:
-  - name: EXPERIMENT_VARIANT
-    value: "informer"
-  - name: CL2_ENABLE_INFORMER_LATENCY_TEST
-    value: "true"
-  - name: CL2_INFORMER_RUN_ON_CONTROL_PLANE
-    value: "true"
+  env: []
