@@ -42,6 +42,7 @@ periodics:
 
         Status of requested reviews is tracked in the [API Review project](https://github.com/orgs/kubernetes/projects/169).
       - --ceiling=10
+      - --dedupe=latest
       - --confirm
       volumeMounts:
       - name: token
