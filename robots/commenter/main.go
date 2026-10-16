@@ -21,10 +21,12 @@ limitations under the License.
 // The --updated, --include-closed, --ceiling options provide minor safeguards
 // around leaving excessive comments.
 //
-// Commenter also skips any matched issue that already has an identical comment,
-// so it is idempotent and will not repeat a comment even if the --query text
-// filter fails to exclude the issue (GitHub search does not reliably match
-// free-text phrases, especially inside existing comments).
+// By default commenter does not check for duplicate comments (--dedupe=none).
+// With --dedupe=latest it skips issues whose most recent comment is identical,
+// even if the --query text filter fails to exclude them (GitHub search does not
+// reliably match free-text phrases inside existing comments). An issue that
+// was reopened and went through a lifecycle again can be commented on a second
+// time. Skipped issues do not count towards --ceiling.
 package main
 
 import (
@@ -62,6 +64,11 @@ const (
 `
 )
 
+const (
+	dedupeNone   = "none"
+	dedupeLatest = "latest"
+)
+
 func flagOptions() options {
 	o := options{
 		endpoint: flagutil.NewStrings(github.DefaultAPIEndpoint),
@@ -78,6 +85,7 @@ func flagOptions() options {
 	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
 	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API Endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")
+	flag.StringVar(&o.dedupe, "dedupe", dedupeNone, "Skip an issue if an identical comment exists: 'none' disables deduplication, 'latest' checks only the most recent comment")
 	flag.BoolVar(&o.random, "random", false, "Choose random issues to comment on from the query")
 	flag.Parse()
 	return o
@@ -104,6 +112,7 @@ type options struct {
 	updated         time.Duration
 	confirm         bool
 	random          bool
+	dedupe          string
 }
 
 func parseHTMLURL(url string) (string, string, int, error) {
@@ -180,6 +189,9 @@ func main() {
 	if o.comment == "" {
 		log.Fatal("empty --comment")
 	}
+	if o.dedupe != dedupeNone && o.dedupe != dedupeLatest {
+		log.Fatalf("invalid --dedupe %q, must be %q or %q", o.dedupe, dedupeNone, dedupeLatest)
+	}
 
 	if err := secret.Add(o.token); err != nil {
 		log.Fatalf("Error starting secrets agent: %v", err)
@@ -214,7 +226,7 @@ func main() {
 		asc = true
 	}
 	commenter := makeCommenter(o.comment, o.useTemplate)
-	if err := run(c, query, sort, asc, o.random, commenter, o.ceiling); err != nil {
+	if err := run(c, query, sort, asc, o.random, commenter, o.ceiling, o.dedupe); err != nil {
 		log.Fatalf("Failed run: %v", err)
 	}
 }
@@ -233,7 +245,7 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 	}
 }
 
-func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
+func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int, dedupe string) error {
 	log.Printf("Searching: %s", query)
 	issues, err := c.FindIssues(query, sort, asc)
 	if err != nil {
@@ -247,9 +259,10 @@ func run(c client, query, sort string, asc, random bool, commenter func(meta) (s
 		})
 
 	}
-	for n, i := range issues {
-		if ceiling > 0 && n == ceiling {
-			log.Printf("Stopping at --ceiling=%d of %d results", n, len(issues))
+	acted := 0
+	for _, i := range issues {
+		if ceiling > 0 && acted == ceiling {
+			log.Printf("Stopping at --ceiling=%d of %d results", acted, len(issues))
 			break
 		}
 		log.Printf("Matched %s (%s)", i.HTMLURL, i.Title)
@@ -266,25 +279,21 @@ func run(c client, query, sort string, asc, random bool, commenter func(meta) (s
 			problems = append(problems, msg)
 			continue
 		}
-		existing, err := c.ListIssueComments(org, repo, number)
-		if err != nil {
-			msg := fmt.Sprintf("Failed to list comments for %s/%s#%d: %v", org, repo, number, err)
-			log.Print(msg)
-			problems = append(problems, msg)
-			continue
-		}
-		want := normalizeComment(comment)
-		commented := false
-		for _, ec := range existing {
-			if normalizeComment(ec.Body) == want {
-				commented = true
-				break
+		if dedupe == dedupeLatest {
+			existing, err := c.ListIssueComments(org, repo, number)
+			if err != nil {
+				msg := fmt.Sprintf("Failed to list comments for %s/%s#%d: %v", org, repo, number, err)
+				log.Print(msg)
+				problems = append(problems, msg)
+				continue
+			}
+			want := normalizeComment(comment)
+			if len(existing) > 0 && normalizeComment(existing[len(existing)-1].Body) == want {
+				log.Printf("Skipping %s: an identical comment already exists (--dedupe=%s)", i.HTMLURL, dedupe)
+				continue
 			}
 		}
-		if commented {
-			log.Printf("Skipping %s: an identical comment already exists", i.HTMLURL)
-			continue
-		}
+		acted++
 		if err := c.CreateComment(org, repo, number, comment); err != nil {
 			msg := fmt.Sprintf("Failed to apply comment to %s/%s#%d: %v", org, repo, number, err)
 			log.Print(msg)

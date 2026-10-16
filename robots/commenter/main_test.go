@@ -18,7 +18,10 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
+	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -26,6 +29,28 @@ import (
 
 	"sigs.k8s.io/prow/pkg/github"
 )
+
+func TestFlagOptions(t *testing.T) {
+	for _, mode := range []string{"", dedupeNone, dedupeLatest} {
+		t.Run("dedupe="+mode, func(t *testing.T) {
+			oldFlags, oldArgs := flag.CommandLine, os.Args
+			t.Cleanup(func() {
+				flag.CommandLine, os.Args = oldFlags, oldArgs
+			})
+			flag.CommandLine = flag.NewFlagSet("commenter", flag.ContinueOnError)
+			os.Args = []string{"commenter"}
+			want := mode
+			if mode == "" {
+				want = dedupeNone
+			} else {
+				os.Args = append(os.Args, "--dedupe="+mode)
+			}
+			if got := flagOptions().dedupe; got != want {
+				t.Errorf("dedupe = %q, want %q", got, want)
+			}
+		})
+	}
+}
 
 func TestParseHTMLURL(t *testing.T) {
 	cases := []struct {
@@ -259,6 +284,7 @@ func TestRun(t *testing.T) {
 		comment  string
 		template bool
 		ceiling  int
+		dedupe   string
 		client   fakeClient
 		expected []int
 		err      bool
@@ -304,28 +330,60 @@ func TestRun(t *testing.T) {
 			expected: []int{1, 3},
 		},
 		{
-			name:    "skip issues that already have an identical comment",
+			name:    "dedupe=latest only considers the most recent comment",
 			query:   "dup",
 			comment: "found you",
+			dedupe:  dedupeLatest,
 			client: fakeClient{
 				issues: []github.Issue{
 					makeIssue("o", "r", 1, "dup one"),
 					makeIssue("o", "r", 2, "dup two"),
 					makeIssue("o", "r", 3, "dup three"),
+					makeIssue("o", "r", 4, "dup four"),
 				},
 				existingComments: map[int][]github.IssueComment{
-					// Different line endings/whitespace must still count as a match.
-					2: {{Body: "found you\r\n"}},
-					// A non-matching comment should not prevent commenting.
+					// Latest comment is identical: skip.
+					2: {{Body: "reopened"}, {Body: "found you\r\n"}},
 					3: {{Body: "something else"}},
+					// Old identical comment followed by newer ones (e.g. the
+					// issue was reopened): comment again.
+					4: {{Body: "found you"}, {Body: "reopened"}},
 				},
 			},
-			expected: []int{1, 3},
+			expected: []int{1, 3, 4},
+		},
+		{
+			name:    "skipped issues do not count towards the ceiling",
+			query:   "dup",
+			comment: "found you",
+			ceiling: 1,
+			dedupe:  dedupeLatest,
+			client: fakeClient{
+				issues: []github.Issue{
+					makeIssue("o", "r", 1, "dup one"),
+					makeIssue("o", "r", 2, "dup two"),
+				},
+				existingComments: map[int][]github.IssueComment{
+					1: {{Body: "found you"}},
+				},
+			},
+			expected: []int{2},
+		},
+		{
+			name:    "dedupe=none comments even when listing comments would fail",
+			query:   "dup",
+			comment: "found you",
+			dedupe:  dedupeNone,
+			client: fakeClient{
+				issues: []github.Issue{makeIssue("o", "list-error", 1, "dup one")},
+			},
+			expected: []int{1},
 		},
 		{
 			name:    "list comments error",
 			query:   "problematic",
 			comment: "hey",
+			dedupe:  dedupeLatest,
 			client: fakeClient{issues: []github.Issue{
 				makeIssue("o", "r", 1, "problematic this should work"),
 				makeIssue("o", "list-error", 2, "problematic expect a list error"),
@@ -353,9 +411,12 @@ func TestRun(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		if tc.dedupe == "" {
+			tc.dedupe = dedupeNone
+		}
 		ignoreSorting := ""
 		ignoreOrder := false
-		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling)
+		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling, tc.dedupe)
 		if tc.err && err == nil {
 			t.Errorf("%s: failed to received an error", tc.name)
 			continue
@@ -383,6 +444,50 @@ func TestRun(t *testing.T) {
 		}
 		if len(missing) > 0 {
 			t.Errorf("%s: missing %v from actual comments %v", tc.name, missing, tc.client.comments)
+		}
+	}
+}
+
+func TestRunCeiling(t *testing.T) {
+	cases := []struct {
+		dedupe   string
+		expected []int
+	}{
+		{dedupe: dedupeNone, expected: []int{1, 2, 3, 4, 5, 6}},
+		{dedupe: dedupeLatest, expected: []int{2, 4, 5, 6}},
+	}
+	for _, tc := range cases {
+		for _, ceiling := range []int{0, 1, 2, 3, 4, 6} {
+			t.Run(fmt.Sprintf("dedupe=%s/ceiling=%d", tc.dedupe, ceiling), func(t *testing.T) {
+				c := fakeClient{
+					issues: []github.Issue{
+						makeIssue("o", "r", 1, "dup one"),
+						makeIssue("o", "r", 2, "dup two"),
+						makeIssue("o", "r", 3, "dup three"),
+						makeIssue("o", "r", 4, "dup four"),
+						makeIssue("o", "r", 5, "dup five"),
+						makeIssue("o", "r", 6, "dup six"),
+					},
+					existingComments: map[int][]github.IssueComment{
+						1: {{Body: "found you\r\n"}},
+						// An older identical comment must not prevent commenting.
+						2: {{Body: "found you"}, {Body: "reopened"}},
+						// A skip between eligible issues must not consume the ceiling.
+						3: {{Body: "something else"}, {Body: "found you"}},
+						4: {{Body: "something else"}},
+					},
+				}
+				want := tc.expected
+				if ceiling > 0 && ceiling < len(want) {
+					want = want[:ceiling]
+				}
+				if err := run(&c, "dup", "", false, false, makeCommenter("found you", false), ceiling, tc.dedupe); err != nil {
+					t.Fatalf("run: %v", err)
+				}
+				if !reflect.DeepEqual(c.comments, want) {
+					t.Errorf("commented on %v, want %v", c.comments, want)
+				}
+			})
 		}
 	}
 }
