@@ -8,7 +8,7 @@ postsubmits:
       branches:
         - ^main$
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: model-serving-signals
         containers:
           - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
@@ -18,3 +18,10 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
+            resources:
+              requests:
+                cpu: 1
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 1Gi
