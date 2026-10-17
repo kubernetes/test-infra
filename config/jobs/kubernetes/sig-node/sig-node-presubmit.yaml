@@ -951,7 +951,7 @@ presubmits:
               - /workspace/scenarios/kubernetes_e2e.py
             args:
               - --deployment=node
-              - --gcp-zone=us-central1-b
+              - --gcp-zone=us-east1-b
               - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
               - --node-test-args=--service-feature-gates="NodeDeclaredFeatures=true,InPlacePodLevelResourcesVerticalScaling=true" --feature-gates="NodeDeclaredFeatures=true,InPlacePodLevelResourcesVerticalScaling=true" --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
               - --node-tests=true
@@ -1003,7 +1003,7 @@ presubmits:
               - /workspace/scenarios/kubernetes_e2e.py
             args:
               - --deployment=node
-              - --gcp-zone=us-central1-b
+              - --gcp-zone=us-east1-b
               - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
               - --node-test-args=--service-feature-gates="PodLevelResources=true" --feature-gates="PodLevelResources=true" --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
               - --node-tests=true
@@ -1055,7 +1055,7 @@ presubmits:
               - /workspace/scenarios/kubernetes_e2e.py
             args:
               - --deployment=node
-              - --gcp-zone=us-central1-b
+              - --gcp-zone=us-east1-b
               - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
               - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
               - --node-tests=true
@@ -1167,7 +1167,7 @@ presubmits:
               - /workspace/scenarios/kubernetes_e2e.py
             args:
               - --deployment=node
-              - --gcp-zone=us-central1-b
+              - --gcp-zone=us-east1-b
               - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
               - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --service-feature-gates="PodLevelResources=true" --feature-gates="PodLevelResources=true"
               - --node-tests=true
@@ -1227,7 +1227,7 @@ presubmits:
               - --test=node
               - --
               - --repo-root=.
-              - --gcp-zone=us-central1-b
+              - --gcp-zone=us-east1-b
               - --parallelism=1
               - "--label-filter=Feature: containsAny CPUManager && !Flaky"
               - --skip-regex=""
@@ -1274,7 +1274,7 @@ presubmits:
               - /workspace/scenarios/kubernetes_e2e.py
             args:
               - --deployment=node
-              - --gcp-zone=us-central1-b
+              - --gcp-zone=us-east1-b
               - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
               - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}" --service-feature-gates="PodLevelResources=true" --feature-gates="PodLevelResources=true"'
               - --node-tests=true
@@ -1386,7 +1386,7 @@ presubmits:
               - --test=node
               - --
               - --repo-root=.
-              - --gcp-zone=us-central1-b
+              - --gcp-zone=us-east1-b
               - --parallelism=1
               - --skip-regex=""
               - "--label-filter=Feature: containsAny TopologyManager && !Flaky"
@@ -2098,7 +2098,7 @@ presubmits:
               - /workspace/scenarios/kubernetes_e2e.py
             args:
               - --deployment=node
-              - --gcp-zone=us-central1-b
+              - --gcp-zone=us-east1-b
               - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
               - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}" --service-feature-gates="PodLevelResources=true" --feature-gates="PodLevelResources=true"'
               - --node-tests=true
@@ -2153,7 +2153,7 @@ presubmits:
               - /workspace/scenarios/kubernetes_e2e.py
             args:
               - --deployment=node
-              - --gcp-zone=us-central1-b
+              - --gcp-zone=us-east1-b
               - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
               - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
               - --node-tests=true
