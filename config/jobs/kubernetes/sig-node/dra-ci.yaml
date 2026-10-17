@@ -316,6 +316,9 @@ periodics:
               docker exec $n systemctl restart kubelet
           done
 
+          # Record the kubelet build after replacing it on all workers.
+          echo "{\"revision\":\"$revision\",\"kubeletRevision\":\"$previous\"}" >"${ARTIFACTS}/metadata.json"
+
           # Running tests which only cover control plane behavior are not useful
           # in a kubelet version skew job. We can filter them out by including
           # only tests which have the DynamicResourceAllocation feature because
@@ -446,6 +449,9 @@ periodics:
               docker exec $n systemctl restart kubelet
           done
 
+          # Record the kubelet build after replacing it on all workers.
+          echo "{\"revision\":\"$revision\",\"kubeletRevision\":\"$previous\"}" >"${ARTIFACTS}/metadata.json"
+
           # Running tests which only cover control plane behavior are not useful
           # in a kubelet version skew job. We can filter them out by including
           # only tests which have the DynamicResourceAllocation feature because
@@ -575,6 +581,9 @@ periodics:
               fi
               docker exec $n systemctl restart kubelet
           done
+
+          # Record the kubelet build after replacing it on all workers.
+          echo "{\"revision\":\"$revision\",\"kubeletRevision\":\"$previous\"}" >"${ARTIFACTS}/metadata.json"
 
           # Running tests which only cover control plane behavior are not useful
           # in a kubelet version skew job. We can filter them out by including
