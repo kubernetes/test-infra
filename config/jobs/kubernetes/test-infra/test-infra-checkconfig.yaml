@@ -19,6 +19,7 @@ periodics:
       - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
       - --plugin-config=config/prow/plugins.yaml
+      - --supplemental-plugin-config-dir=config/prow/plugins
       - --strict
       - --warnings=mismatched-tide-lenient
       - --warnings=tide-strict-branch
@@ -31,6 +32,7 @@ periodics:
       - --warnings=unknown-fields-all
       - --warnings=non-decorated-jobs
       - --warnings=valid-decoration-config
+      - --warnings=validate-supplemental-prow-config-hierarchy
       resources:
         requests:
           cpu: "1"
