@@ -1663,6 +1663,10 @@ plugins:
     - release-note
     - stage
 
+  kubernetes-sigs/lws:
+    plugins:
+    - release-note
+
   kubernetes-sigs/kustomize:
     plugins:
     - require-matching-label
