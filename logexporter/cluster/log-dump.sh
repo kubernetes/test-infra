@@ -881,12 +881,12 @@ function detect_node_failures() {
                          --format='value(creationTimestamp)')
     echo "Failures for ${group} (if any):"
     gcloud logging read --order=asc \
-          --format='table(timestamp,jsonPayload.resource.name,jsonPayload.event_subtype)' \
+          --format='table(timestamp,protoPayload.resourceName,protoPayload.methodName)' \
           --project "${PROJECT}" \
           "resource.type=\"gce_instance\"
-           logName=\"projects/${PROJECT}/logs/compute.googleapis.com%2Factivity_log\"
-           (jsonPayload.event_subtype=\"compute.instances.hostError\" OR jsonPayload.event_subtype=\"compute.instances.automaticRestart\")
-           jsonPayload.resource.name:\"${group}\"
+           logName=\"projects/${PROJECT}/logs/cloudaudit.googleapis.com%2Fsystem_event\"
+           (protoPayload.methodName=\"compute.instances.hostError\" OR protoPayload.methodName=\"compute.instances.automaticRestart\")
+           protoPayload.resourceName:\"${group}\"
            timestamp >= \"${creation_timestamp}\""
   done
 }
