@@ -448,7 +448,7 @@ presets:
   - name: CONTROL_PLANE_SIZE
     value: "n2-standard-32"
   - name: ETCD_QUOTA_BACKEND_BYTES
-    value: "17179869184"
+    value: "34359738368"
   - name: KUBE_FEATURE_GATES
     value: "DetectCacheInconsistency=false"
   - name: KOPS_CL2_TEST_CONFIG
