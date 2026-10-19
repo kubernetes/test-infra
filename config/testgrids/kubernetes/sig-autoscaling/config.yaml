@@ -9,6 +9,7 @@ dashboard_groups:
       - sig-autoscaling-addon-resizer
       - sig-autoscaling-vpa-images
       - sig-autoscaling-cluster-autoscaler-images
+      - sig-autoscaling-model-serving-signals-images
 
 dashboards:
   - name: sig-autoscaling-cluster-autoscaler
@@ -19,3 +20,4 @@ dashboards:
   - name: sig-autoscaling-addon-resizer
   - name: sig-autoscaling-vpa-images
   - name: sig-autoscaling-cluster-autoscaler-images
+  - name: sig-autoscaling-model-serving-signals-images
