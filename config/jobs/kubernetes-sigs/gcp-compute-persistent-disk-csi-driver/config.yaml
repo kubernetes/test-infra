@@ -54,8 +54,8 @@ presubmits:
         - >-
           test/run-e2e.sh \
             --machine-type=t2a-standard-2 \
-            --hyperdisk-machine-type=none \
-            --skip-local-ssd-tests \
+            --mw-machine-type=none \
+            --local-ssd-count=0 \
             --vm-name-prefix=gce-pd-csi-e2e-arm64 \
             --zones=us-central1-a,us-central1-f \
             --arch=arm64 \
