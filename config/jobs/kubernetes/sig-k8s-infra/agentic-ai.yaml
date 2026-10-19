@@ -4,14 +4,17 @@ periodics:
     cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
-      timeout: 10m
+      timeout: 30m
     annotations:
       testgrid-dashboards: sig-k8s-infra-canaries
       testgrid-tab-name: agentic-ai
       description: Verifies that Prow can run Antigravity using k8s-infra-agentic-ai.
-    labels:
-      prow.k8s.io/refs.org: kubernetes
-      prow.k8s.io/refs.repo: test-infra
+    extra_refs:
+      - org: kubernetes
+        repo: kops
+        base_ref: master
+        workdir: true
+        path_alias: k8s.io/kops
     spec:
       serviceAccountName: agy-agent
       containers:
@@ -20,11 +23,21 @@ periodics:
             - agy
           args:
             - --model
-            - gemini-3.7-flash-medium
+            - gemini-4-argon-high
             - --project
             - k8s-infra-agentic-ai
+            - --dangerously-skip-permissions
             - --print
-            - Respond with exactly "k8s-infra-agentic-ai is ready".
+            - |
+              Analyze the project's dependencies in this repository and produce a comprehensive report covering:
+              1. A deep, prioritized security analysis of dependency version gaps:
+                 - Compare pinned versions against latest upstream releases and identify major/minor version lag.
+                 - Highlight known or likely CVE/security exposure, deprecated/archived/unmaintained modules, and risky replace directives.
+                 - Prioritize findings by severity, exploitability, and blast radius across the codebase.
+              2. An investigation into how to reduce the dependency tree:
+                 - Identify unused, redundant, or duplicate dependencies serving overlapping purposes.
+                 - Pinpoint heavy transitive dependency chains (via go.mod / go mod graph / go mod why) and what pulls them in.
+                 - Recommend concrete, actionable steps to prune dependencies, replace heavy packages with standard library or lighter alternatives, or split module boundaries.
           env:
             - name: AGY_ADC_AUTH
               value: "true"
@@ -38,8 +51,8 @@ periodics:
               value: "global"
           resources:
             limits:
-              cpu: "1"
-              memory: 2Gi
+              cpu: "2"
+              memory: 4Gi
             requests:
-              cpu: "1"
-              memory: 2Gi
+              cpu: "2"
+              memory: 4Gi
