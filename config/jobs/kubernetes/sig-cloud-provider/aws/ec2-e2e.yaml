@@ -625,6 +625,11 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 4h
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
     spec:
       serviceAccountName: node-e2e-tests
       containers:
