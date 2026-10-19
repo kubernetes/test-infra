@@ -637,6 +637,19 @@ branch-protection:
           required_status_checks:
             contexts:
             - required
+        kubernetes-mixin:
+          required_status_checks:
+            contexts:
+            - Build Go Tools
+            - Format JSONNET
+            - Format MD
+            - Generate YAML
+            - Lint Alerts
+            - Lint Grafana Dashboards
+            - Lint JSONNET
+            - Lint MD
+            - Lint YAML
+            - Run unit tests
         kubernetes-scheduler-simulator:
           branches:
             gh-pages:
@@ -948,6 +961,8 @@ tide:
           cluster-api-provider-kubevirt:
             from-branch-protection: true
           cluster-api-provider-vsphere:
+            from-branch-protection: true
+          kubernetes-mixin:
             from-branch-protection: true
           kueue:
             optional-contexts:
