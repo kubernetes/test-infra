@@ -83,6 +83,8 @@ gce_distro_options = {
     "ubuntu2404arm64": kops_versions,
     "ubuntu2604": kops_versions,
     "ubuntu2604arm64": kops_versions,
+    "ubuntu2610": drop_unsupported_versions(kops_versions, ['1.35', '1.36', '1.37']),
+    "ubuntu2610arm64": drop_unsupported_versions(kops_versions, ['1.35', '1.36', '1.37']),
     "ubuntuminimal2404": kops_versions,
     "ubuntuminimal2404arm64": kops_versions,
     "rhel10": kops_versions,

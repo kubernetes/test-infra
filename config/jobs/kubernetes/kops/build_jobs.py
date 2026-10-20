@@ -615,6 +615,9 @@ def generate_grid():
 
     for networking in network_plugins_periodics['supports_gce']:
         for distro, kops_versions in gce_distro_options.items():
+            # Ubuntu 26.10 is only tested by the distro jobs for now
+            if distro.startswith('ubuntu2610'):
+                continue
             for k8s_version in [v for v in k8s_versions if v != 'master']:
                 for kops_version in kops_versions:
                     # cilium-etcd + gce support was added in kops 1.36+

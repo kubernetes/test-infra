@@ -312,6 +312,8 @@ gce_distro_images = {
     "u2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2404-lts-arm64", "ARM64"),
     "u2604": latest_gce_image("ubuntu-os-cloud", "ubuntu-2604-lts-amd64"),
     "u2604arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2604-lts-arm64", "ARM64"),
+    "u2610": latest_gce_image("ubuntu-os-cloud", "ubuntu-2610-amd64"),
+    "u2610arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2610-arm64", "ARM64"),
     "umini2404": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-amd64"),
     "umini2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-arm64", "ARM64"),
     "cos121": latest_gce_image("cos-cloud", "cos-121-lts"),
@@ -351,8 +353,8 @@ aws_distro_images = {
     'u2510arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
     'u2604': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2604arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
-    'u2610': latest_aws_image('099720109477', 'ubuntu/images-testing/hvm-ssd-gp3/ubuntu-stonking-daily-amd64-server-*'), # pylint: disable=line-too-long
-    'u2610arm64': latest_aws_image('099720109477', 'ubuntu/images-testing/hvm-ssd-gp3/ubuntu-stonking-daily-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
+    'u2610': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-stonking-26.10-amd64-server-*'), # pylint: disable=line-too-long
+    'u2610arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-stonking-26.10-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
 }
 
 aws_distros_ssh_user = {
