@@ -2077,7 +2077,7 @@ presubmits:
         - bash
         - -c
         - |
-          ARGS="--set=spec.containerd.runc.version=1.1.12 --set=spec.packages=nfs-common --set=spec.containerd.version=1.7.13"
+          ARGS="--set=spec.containerd.runc.version=1.4.3 --set=spec.packages=nfs-common --set=spec.containerd.version=2.3.7"
           make -C $GOPATH/src/k8s.io/kops test-e2e-install
           kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
             --build-kubernetes=true --target-build-arch=linux/amd64 \
@@ -2186,7 +2186,7 @@ presubmits:
         - bash
         - -c
         - |
-          ARGS="--set=spec.containerd.runc.version=1.1.12  --set=spec.packages=nfs-common --set=spec.containerd.version=1.7.13"
+          ARGS="--set=spec.containerd.runc.version=1.4.3  --set=spec.packages=nfs-common --set=spec.containerd.version=2.3.7"
           make -C $GOPATH/src/k8s.io/kops test-e2e-install
           kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
             --build-kubernetes=true --target-build-arch=linux/amd64 \
@@ -2241,7 +2241,7 @@ presubmits:
         - bash
         - -c
         - |
-          ARGS="--set=spec.containerd.runc.version=1.1.12  --set=spec.packages=nfs-common --set=spec.containerd.version=1.7.13"
+          ARGS="--set=spec.containerd.runc.version=1.4.3  --set=spec.packages=nfs-common --set=spec.containerd.version=2.3.7"
           make -C $GOPATH/src/k8s.io/kops test-e2e-install
           kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
             --build-kubernetes=true --target-build-arch=linux/amd64 \
