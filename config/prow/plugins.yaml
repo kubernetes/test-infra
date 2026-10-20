@@ -278,6 +278,7 @@ lgtm:
   - kubernetes-sigs/release-notes
   - kubernetes-sigs/release-sdk
   - kubernetes-sigs/release-utils
+  - kubernetes-sigs/security-profiles-merger
   - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/tejolote
   - kubernetes-sigs/zeitgeist
