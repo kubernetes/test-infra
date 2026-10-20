@@ -312,6 +312,8 @@ gce_distro_images = {
     "u2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2404-lts-arm64", "ARM64"),
     "u2604": latest_gce_image("ubuntu-os-cloud", "ubuntu-2604-lts-amd64"),
     "u2604arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2604-lts-arm64", "ARM64"),
+    "u2610": latest_gce_image("ubuntu-os-cloud", "ubuntu-2610-amd64"),
+    "u2610arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2610-arm64", "ARM64"),
     "umini2404": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-amd64"),
     "umini2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-arm64", "ARM64"),
     "cos121": latest_gce_image("cos-cloud", "cos-121-lts"),
