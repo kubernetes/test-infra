@@ -765,7 +765,7 @@ config_updater:
       clusters:
         test-infra-trusted:
           - default
-    config/prow/plugins/**/*_pluginconfig.yaml:
+    config/prow/plugins/kubernetes-sigs/*/*_pluginconfig.yaml:
       name: plugins
       clusters:
         test-infra-trusted:
