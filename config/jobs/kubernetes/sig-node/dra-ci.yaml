@@ -238,7 +238,6 @@ periodics:
           # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
           revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/fast/latest-fast.txt)
           # Report what was tested.
-          echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
           # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
           hash=${revision/*+/}
           kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
@@ -300,6 +299,8 @@ periodics:
           curl --fail --silent --show-error -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
           chmod a+rx /tmp/kubelet
           /tmp/kubelet --version
+          # Include the exact worker build in the structured test metadata.
+          echo "{\"revision\":\"$revision\",\"kubelet\":\"$previous\"}" >"${ARTIFACTS}/metadata.json"
           worker_nodes=$(kind get nodes | grep worker)
           for n in $worker_nodes; do
               docker cp /tmp/kubelet $n:/usr/bin/kubelet
@@ -368,7 +369,6 @@ periodics:
           # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
           revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/fast/latest-fast.txt)
           # Report what was tested.
-          echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
           # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
           hash=${revision/*+/}
           kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
@@ -430,6 +430,8 @@ periodics:
           curl --fail --silent --show-error -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
           chmod a+rx /tmp/kubelet
           /tmp/kubelet --version
+          # Include the exact worker build in the structured test metadata.
+          echo "{\"revision\":\"$revision\",\"kubelet\":\"$previous\"}" >"${ARTIFACTS}/metadata.json"
           worker_nodes=$(kind get nodes | grep worker)
           for n in $worker_nodes; do
               docker cp /tmp/kubelet $n:/usr/bin/kubelet
@@ -498,7 +500,6 @@ periodics:
           # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
           revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/fast/latest-fast.txt)
           # Report what was tested.
-          echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
           # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
           hash=${revision/*+/}
           kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
@@ -560,6 +561,8 @@ periodics:
           curl --fail --silent --show-error -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
           chmod a+rx /tmp/kubelet
           /tmp/kubelet --version
+          # Include the exact worker build in the structured test metadata.
+          echo "{\"revision\":\"$revision\",\"kubelet\":\"$previous\"}" >"${ARTIFACTS}/metadata.json"
           worker_nodes=$(kind get nodes | grep worker)
           for n in $worker_nodes; do
               docker cp /tmp/kubelet $n:/usr/bin/kubelet
