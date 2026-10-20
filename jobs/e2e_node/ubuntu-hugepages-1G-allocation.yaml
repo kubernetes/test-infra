@@ -1,4 +1,0 @@
-#cloud-config
-
-runcmd:
-  - echo 1 > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages
