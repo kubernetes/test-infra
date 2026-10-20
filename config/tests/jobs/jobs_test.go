@@ -72,13 +72,10 @@ var buildClusters = []string{
 var jobsExemptFromResourceLimits = []*regexp.Regexp{
 	// Also matches the release forks, such as ci-kubernetes-build-1-37.
 	regexp.MustCompile(`^ci-kubernetes-build(-1-\d+)?$`),
-	regexp.MustCompile(`^ci-kubernetes-e2e-(gce|ec2)-scale-performance-5000$`),
-	regexp.MustCompile(`^ci-kubernetes-e2e-(gce|ec2)-scale-correctness-2000$`),
-	regexp.MustCompile(`^ci-kubernetes-e2e-(gce|ec2)-scale-performance-5000-experimental$`),
-	regexp.MustCompile(`^pull-kops-(gce|ec2)-master-scale-performance-5000$`),
-	regexp.MustCompile(`^pull-kubernetes-(gce|ec2)-master-scale-performance-5000$`),
-	regexp.MustCompile(`^pull-kubernetes-(gce|ec2)-master-scale-performance-5000-experimental$`),
-	regexp.MustCompile(`^pull-perf-tests-(gce|ec2)-master-scale-performance-5000$`),
+	regexp.MustCompile(`^ci-kubernetes-e2e-(gce|ec2)-scale-(performance|correctness)-[1-9]000(-experimental)?$`),
+	regexp.MustCompile(`^pull-kops-(gce|ec2)-master-scale-(performance|correctness)-[1-9]000$`),
+	regexp.MustCompile(`^pull-kubernetes-(gce|ec2)-master-scale-(performance|correctness)-[1-9]000(-experimental)?$`),
+	regexp.MustCompile(`^pull-perf-tests-(gce|ec2)-master-scale-(performance|correctness)-[1-9]000(-experimental)?$`),
 }
 
 func isExemptFromResourceLimits(jobName string) bool {

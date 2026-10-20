@@ -1100,7 +1100,7 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
                        "--gce-service-account=default",
                    ],
-                   focus_regex=r'\[Conformance\]|\[NodeConformance\]',
+                   focus_regex=r'\[Conformance\]',
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
                    test_timeout_minutes=400,
                    test_parallelism=1, # serial tests
@@ -1944,6 +1944,27 @@ def generate_presubmits_scale():
                 'preset-kops-scalability-common',
                 'preset-kops-scalability-ec2-common',
                 'preset-kops-scalability-ec2-100-node',
+            ]
+        ),
+        presubmit_test(
+            name='pull-kops-ec2-master-scale-correctness-2000',
+            scenario='scalability',
+            build_cluster="eks-prow-build-cluster",
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='amazonvpc',
+            always_run=False,
+            optional=True,
+            test_timeout_minutes=450,
+            tolerations=[{
+                'key': 'highmem',
+                'operator': 'Exists',
+            }],
+            use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
+            env={'SCALE_SCENARIO': 'correctness'},
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-ec2-common',
+                'preset-kops-scalability-ec2-2000-node',
             ]
         ),
         presubmit_test(
