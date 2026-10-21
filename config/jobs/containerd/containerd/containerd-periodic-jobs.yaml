@@ -281,6 +281,74 @@ periodics:
     testgrid-tab-name: ci-containerd-arm64-build-2.1
     description: "builds release/2.1 branch of upstream containerd (arm64)"
 
+- name: ci-containerd-build-2-3
+  cron: "0 8,22 * * *" # Run twice a day
+  labels:
+    preset-service-account: "true"
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+    - org: containerd
+      repo: containerd
+      base_ref: release/2.3
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+          - runner.sh
+        args:
+          - test/build.sh
+        env:
+          - name: DEPLOY_DIR
+            value: release-2.3
+          - name: DEPLOY_BUCKET
+            value: k8s-staging-cri-tools
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd,containerd-periodic
+    testgrid-tab-name: ci-containerd-build-2.3
+    description: "builds release/2.3 branch of upstream containerd"
+
+- name: ci-containerd-build-2-4
+  cron: "0 8,23 * * *" # Run twice a day
+  labels:
+    preset-service-account: "true"
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+    - org: containerd
+      repo: containerd
+      base_ref: release/2.4
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+          - runner.sh
+        args:
+          - test/build.sh
+        env:
+          - name: DEPLOY_DIR
+            value: release-2.4
+          - name: DEPLOY_BUCKET
+            value: k8s-staging-cri-tools
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd,containerd-periodic
+    testgrid-tab-name: ci-containerd-build-2.4
+    description: "builds release/2.4 branch of upstream containerd"
+
 - name: ci-containerd-build-test-images
   interval: 24h
   labels:
