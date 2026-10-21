@@ -315,6 +315,7 @@ lgtm:
 blockades:
 - repos:
   - kubernetes/api
+  - kubernetes/apiextensions-api
   - kubernetes/apiextensions-apiserver
   - kubernetes/apimachinery
   - kubernetes/apiserver
@@ -451,6 +452,7 @@ slack:
     - k8s-publishing-bot
   - repos:
     - kubernetes/api
+    - kubernetes/apiextensions-api
     - kubernetes/apiextensions-apiserver
     - kubernetes/apimachinery
     - kubernetes/apiserver

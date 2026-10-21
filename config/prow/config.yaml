@@ -224,6 +224,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        apiextensions-api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         apiextensions-apiserver:
           restrictions:
             users: []
@@ -724,6 +729,7 @@ tide:
     # The following are staging repos which do not normally support merging PRs.
     # https://github.com/kubernetes/kubernetes/blob/master/staging/README.md
     - kubernetes/api
+    - kubernetes/apiextensions-api
     - kubernetes/apiextensions-apiserver
     - kubernetes/apimachinery
     - kubernetes/apiserver
