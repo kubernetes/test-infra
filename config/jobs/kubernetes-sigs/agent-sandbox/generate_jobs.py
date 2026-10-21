@@ -232,6 +232,7 @@ PRESUBMIT_ORDER = [
 ]
 PERIODIC_ORDER = [
     "test-load-test",
+    "test-e2e-gvisor",
     "benchmarks-kops-gcp-cilium",
     "benchmarks-kops-gcp-claims",
     "benchmarks-kops-gcp-kindnet",
