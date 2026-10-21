@@ -16,7 +16,7 @@
 
 import argparse
 import configparser
-import filecmp
+import difflib
 import os
 import pathlib
 import shutil
@@ -107,21 +107,23 @@ def generate_one(path: pathlib.Path, verify: bool) -> typing.List[str]:
                     errors.append(f"Can't verify content: {out} doesn't exist")
                     continue
             else:
-                equal = filecmp.cmp(out, tmp.name, shallow=False)
+                with open(tmp.name) as expected, open(out) as actual:
+                    diff = difflib.context_diff(actual.readlines(), expected.readlines(),
+                                                fromfile="actual", tofile="expected")
+                diff = ''.join(diff)
                 if verify:
                     os.unlink(tmp.name)
-                    if not equal:
+                    if diff != "":
                         errors.append(
-                            f"Generated content for {out} differs from existing"
+                            f"Generated content for {out} differs from existing:\n{diff}"
                         )
                     continue
-                if equal:
+                if diff == "":
                     os.unlink(tmp.name)
                     continue
             shutil.move(tmp.name, out)
 
     return errors
-
 
 def main(argv):
     """Entry point."""
