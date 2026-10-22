@@ -28,3 +28,34 @@ presubmits:
               limits:
                 cpu: 2
                 memory: 4Gi
+    - name: pull-model-serving-signals-test-e2e
+      cluster: eks-prow-build-cluster
+      optional: true
+      skip_if_only_changed: '^site/|^site-src/|\.md$|^(mkdocs\.yml|netlify\.toml|LICENSE|OWNERS|SECURITY_CONTACTS)$'
+      decorate: true
+      branches:
+        - ^main$
+      path_alias: sigs.k8s.io/model-serving-signals
+      annotations:
+        testgrid-dashboards: sig-autoscaling-model-serving-signals
+        testgrid-tab-name: pull-model-serving-signals-test-e2e
+        description: "Run model-serving-signals e2e tests"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - test-e2e
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: 4Gi
+              limits:
+                cpu: 2
+                memory: 4Gi
