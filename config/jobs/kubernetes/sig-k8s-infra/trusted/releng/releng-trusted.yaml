@@ -47,6 +47,7 @@ postsubmits:
     decorate: true
     decoration_config:
       timeout: 4h
+      pod_unscheduled_timeout: 10m
     run_if_changed: 'registry.k8s.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
     # Never run more than 1 job at a time. This is because we don't want to run
     # into a case where an older manifest PR merge gets run last (after a newer
