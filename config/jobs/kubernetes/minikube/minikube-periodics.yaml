@@ -29,11 +29,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: 20Gi
-          cpu: 7
+          memory: 4Gi
+          cpu: 2
         limits:
-          memory: 20Gi
-          cpu: 7
+          memory: 4Gi
+          cpu: 2
 - name: ci-minikube-docker-docker-linux-arm
   cluster: k8s-infra-prow-build
   interval: 24h
@@ -64,11 +64,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: 20Gi
-          cpu: 7
+          memory: 16Gi
+          cpu: 4
         limits:
-          memory: 20Gi
-          cpu: 7
+          memory: 16Gi
+          cpu: 4
 - name: ci-minikube-kvm-containerd-linux-x86
   cluster: k8s-infra-prow-build
   interval: 24h
@@ -98,11 +98,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: 20Gi
-          cpu: 7
+          memory: 4Gi
+          cpu: 2
         limits:
-          memory: 20Gi
-          cpu: 7
+          memory: 4Gi
+          cpu: 2
 - name: ci-minikube-docker-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 24h
@@ -132,11 +132,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: 20Gi
-          cpu: 7
+          memory: 16Gi
+          cpu: 4
         limits:
-          memory: 20Gi
-          cpu: 7
+          memory: 16Gi
+          cpu: 4
 - name: ci-minikube-docker-containerd-linux-x86
   cluster: k8s-infra-prow-build
   interval: 24h
@@ -166,11 +166,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: 20Gi
-          cpu: 7
+          memory: 16Gi
+          cpu: 4
         limits:
-          memory: 20Gi
-          cpu: 7
+          memory: 16Gi
+          cpu: 4
 - name: ci-minikube-none-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 24h
@@ -200,8 +200,8 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: 20Gi
-          cpu: 7
+          memory: 4Gi
+          cpu: 2
         limits:
-          memory: 20Gi
-          cpu: 7
+          memory: 4Gi
+          cpu: 2
