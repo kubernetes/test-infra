@@ -236,6 +236,7 @@ PERIODIC_ORDER = [
     "benchmarks-kops-gcp-cilium",
     "benchmarks-kops-gcp-claims",
     "benchmarks-kops-gcp-kindnet",
+    "test-e2e-kata-gcp",
 ]
 
 # Scripts in dev/ci/periodics that are not yet enabled as Prow periodics.
