@@ -492,10 +492,6 @@ presubmits:
           value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "systemd"
-        - name: STRESS_NODE_COUNT
-          value: "3"
-        - name: STRESS_PHASES
-          value: "fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80"
         - name: CLOUD_PROVIDER
           value: "aws"
         resources:
@@ -550,10 +546,6 @@ presubmits:
           value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "cgroupfs"
-        - name: STRESS_NODE_COUNT
-          value: "3"
-        - name: STRESS_PHASES
-          value: "fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80"
         - name: CLOUD_PROVIDER
           value: "aws"
         resources:
@@ -609,10 +601,6 @@ presubmits:
           value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "systemd"
-        - name: STRESS_NODE_COUNT
-          value: "3"
-        - name: STRESS_PHASES
-          value: "fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80"
         - name: CLOUD_PROVIDER
           value: "azure"
         resources:
@@ -669,10 +657,6 @@ presubmits:
           value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "cgroupfs"
-        - name: STRESS_NODE_COUNT
-          value: "3"
-        - name: STRESS_PHASES
-          value: "fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80"
         - name: CLOUD_PROVIDER
           value: "azure"
         resources:
@@ -725,10 +709,6 @@ presubmits:
           value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "systemd"
-        - name: STRESS_NODE_COUNT
-          value: "3"
-        - name: STRESS_PHASES
-          value: "fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80"
         - name: CLOUD_PROVIDER
           value: "gce"
         resources:
@@ -780,10 +760,6 @@ presubmits:
           value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "cgroupfs"
-        - name: STRESS_NODE_COUNT
-          value: "3"
-        - name: STRESS_PHASES
-          value: "fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80"
         - name: CLOUD_PROVIDER
           value: "gce"
         resources:
