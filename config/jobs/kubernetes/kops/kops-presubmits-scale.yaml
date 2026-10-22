@@ -215,11 +215,11 @@ presubmits:
           value: "correctness"
         resources:
           requests:
-            cpu: "6"
-            memory: "16Gi"
+            cpu: 7
+            memory: "40Gi"
           limits:
-            cpu: "6"
-            memory: "16Gi"
+            cpu: 7
+            memory: "40Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2404
