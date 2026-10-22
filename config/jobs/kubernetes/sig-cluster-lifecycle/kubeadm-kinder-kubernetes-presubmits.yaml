@@ -1,0 +1,84 @@
+presubmits:
+  kubernetes/kubernetes:
+
+  - name: pull-kubernetes-e2e-kubeadm-kinder-dryrun-latest
+    cluster: eks-prow-build-cluster
+    decorate: true
+    optional: true
+    always_run: false
+    run_if_changed: '^(cmd\/kubeadm|test\/e2e_kubeadm)\/'
+    skip_branches:
+    - release-\d+\.\d+
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kubeadm
+      testgrid-tab-name: pull-kubeadm-kinder-dryrun-latest
+      description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to test the kubeadm binary built from a kubernetes/kubernetes PR in dryrun mode"
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+    - org: kubernetes
+      repo: kubeadm
+      base_ref: main
+      path_alias: k8s.io/kubeadm
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - runner.sh
+        - "../kubeadm/kinder/ci/kinder-run-kubernetes-ci.sh"
+        args:
+        - "dryrun-latest"
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: "9000Mi"
+            cpu: 2000m
+          requests:
+            memory: "9000Mi"
+            cpu: 2000m
+
+  - name: pull-kubernetes-e2e-kubeadm-kinder-upgrade-latest
+    cluster: eks-prow-build-cluster
+    decorate: true
+    optional: true
+    always_run: false
+    run_if_changed: '^(cmd\/kubeadm|test\/e2e_kubeadm)\/'
+    skip_branches:
+    - release-\d+\.\d+
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kubeadm
+      testgrid-tab-name: pull-kubeadm-kinder-upgrade-latest
+      description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to test the kubeadm binary built from a kubernetes/kubernetes PR for init and upgrade"
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+    - org: kubernetes
+      repo: kubeadm
+      base_ref: main
+      path_alias: k8s.io/kubeadm
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - runner.sh
+        - "../kubeadm/kinder/ci/kinder-run-kubernetes-ci.sh"
+        args:
+        - "presubmit-upgrade-latest"
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: "9000Mi"
+            cpu: 2000m
+          requests:
+            memory: "9000Mi"
+            cpu: 2000m
