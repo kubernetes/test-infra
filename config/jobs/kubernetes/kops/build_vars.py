@@ -64,14 +64,12 @@ aws_distro_options = {
 
 # GCE distributions
 gce_distro_options = {
-    # COS 121 was pinned down to containerd 2.0.7 and cannot reach the 2.1.0 floor
-    # kops 1.37 requires.
-    "cos121": ['1.35'],
-    "cos121arm64": ['1.35'],
     "cos125": kops_versions,
     "cos125arm64": kops_versions,
     "cos129": drop_unsupported_versions(kops_versions, ['1.35']),
     "cos129arm64": drop_unsupported_versions(kops_versions, ['1.35']),
+    "cos133": kops_versions,
+    "cos133arm64": kops_versions,
     "cosdev": kops_versions,
     "cosdevarm64": kops_versions,
     "debian12": kops_versions,

@@ -101,12 +101,8 @@ def k8s_version_info(k8s_version):
         raise Exception('missing required k8s_version')
     return marker, k8s_deploy_url, test_package_url, test_package_dir
 
-def create_args(kops_channel, networking, extra_flags, kops_image, distro):
+def create_args(kops_channel, networking, extra_flags, kops_image):
     args = f"--channel={kops_channel} --networking=" + networking
-
-    if distro in ('cos121', 'cos121arm64'):
-        args += " --set=cluster.spec.containerd.version=2.0.7"
-        args += " --set=cluster.spec.containerd.runc.version=1.3.4"
 
     image_overridden = False
     if extra_flags:
@@ -316,12 +312,12 @@ gce_distro_images = {
     "u2610arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2610-arm64", "ARM64"),
     "umini2404": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-amd64"),
     "umini2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-arm64", "ARM64"),
-    "cos121": latest_gce_image("cos-cloud", "cos-121-lts"),
-    "cos121arm64": latest_gce_image("cos-cloud", "cos-arm64-121-lts", "ARM64"),
     "cos125": latest_gce_image("cos-cloud", "cos-125-lts"),
     "cos125arm64": latest_gce_image("cos-cloud", "cos-arm64-125-lts", "ARM64"),
     "cos129": latest_gce_image("cos-cloud", "cos-129-lts"),
     "cos129arm64": latest_gce_image("cos-cloud", "cos-arm64-129-lts", "ARM64"),
+    "cos133": latest_gce_image("cos-cloud", "cos-133-lts"),
+    "cos133arm64": latest_gce_image("cos-cloud", "cos-arm64-133-lts", "ARM64"),
     "cosdev": latest_gce_image("cos-cloud", "cos-dev"),
     "cosdevarm64": latest_gce_image("cos-cloud", "cos-arm64-dev", "ARM64"),
     "rocky10": latest_gce_image("rocky-linux-cloud", "rocky-linux-10-optimized-gcp"),

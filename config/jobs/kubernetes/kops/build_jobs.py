@@ -189,7 +189,7 @@ def build_test(cloud='aws',
     job_name = f"e2e-{tab}"
 
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
-    args = create_args(kops_channel, networking, extra_flags, kops_image, distro)
+    args = create_args(kops_channel, networking, extra_flags, kops_image)
 
     node_ig_overrides = ""
     cp_ig_overrides = ""
@@ -420,7 +420,7 @@ def presubmit_test(branch='master',
         instance_groups_overrides = []
 
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
-    args = create_args(kops_channel, networking, extra_flags, kops_image, distro)
+    args = create_args(kops_channel, networking, extra_flags, kops_image)
 
     # Scenario-specific parameters
     if env is None:
@@ -1005,7 +1005,7 @@ def generate_misc():
         # test kube-up to kops jobs migration
         build_test(name_override="ci-kubernetes-kops-cos-gce-canary",
                    cloud="gce",
-                   distro="cos125",
+                   distro="cos129",
                    networking="kindnet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1054,7 +1054,7 @@ def generate_misc():
 
         build_test(name_override="ci-kubernetes-kops-cos-gce-slow-canary",
                    cloud="gce",
-                   distro="cos125",
+                   distro="cos129",
                    networking="kindnet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1064,7 +1064,7 @@ def generate_misc():
                        "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Slow\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]',
+                   skip_regex=r'\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]',
                    test_timeout_minutes=150,
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
@@ -1081,14 +1081,14 @@ def generate_misc():
                        "--set=spec.packages=nfs-utils",
                    ],
                    focus_regex=r'\[Slow\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]',
+                   skip_regex=r'\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=150,
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
         build_test(name_override="ci-kubernetes-kops-cos-gce-conformance-canary",
                    cloud="gce",
-                   distro="cos125",
+                   distro="cos129",
                    networking="kindnet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1200,7 +1200,7 @@ def generate_misc():
 
         build_test(name_override="ci-kubernetes-kops-cos-gce-disruptive-canary",
                    cloud="gce",
-                   distro="cos125",
+                   distro="cos129",
                    networking="kindnet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1235,7 +1235,7 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
                    ],
                    focus_regex=r'\[Disruptive\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]',
+                   skip_regex=r'\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=500,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
@@ -1243,7 +1243,7 @@ def generate_misc():
 
         build_test(name_override="ci-kubernetes-kops-cos-gce-serial-canary",
                    cloud="gce",
-                   distro="cos125",
+                   distro="cos129",
                    networking="kindnet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1255,7 +1255,7 @@ def generate_misc():
                    ],
                    storage_e2e_cred=True,
                    focus_regex=r'\[Serial\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]',
+                   skip_regex=r'\[Flaky\]|\[Feature:.+\]|\[KubeUp\]',
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
@@ -1275,7 +1275,7 @@ def generate_misc():
                        "--set=spec.packages=git",
                    ],
                    focus_regex=r'\[Serial\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]',
+                   skip_regex=r'\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
@@ -1306,7 +1306,7 @@ def generate_misc():
 
         build_test(name_override="ci-kubernetes-kops-cos-gce-alpha-features",
                    cloud="gce",
-                   distro="cos125",
+                   distro="cos129",
                    networking="kindnet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1959,6 +1959,10 @@ def generate_presubmits_scale():
                 'key': 'highmem',
                 'operator': 'Exists',
             }],
+            resources={
+                'requests': {'cpu': 7, 'memory': '40Gi'},
+                'limits': {'cpu': 7, 'memory': '40Gi'},
+            },
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={'SCALE_SCENARIO': 'correctness'},
             presets=[
@@ -2753,7 +2757,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-kubernetes-e2e-cos-gce-serial",
             cloud="gce",
-            distro="cos125",
+            distro="cos129",
             networking="kindnet",
             k8s_version="ci",
             kops_channel="alpha",
@@ -2762,7 +2766,7 @@ def generate_presubmits_e2e():
                 "--gce-service-account=default",
             ],
             focus_regex=r'\[Serial\]',
-            skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]',
+            skip_regex=r'\[Flaky\]|\[Feature:.+\]',
             test_timeout_minutes=500,
             optional=True,
             test_parallelism=1, # serial tests
@@ -2771,7 +2775,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-kubernetes-e2e-cos-gce",
             cloud="gce",
-            distro="cos125",
+            distro="cos129",
             networking="kubenet",
             k8s_version="ci",
             kops_channel="alpha",
@@ -2787,7 +2791,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-kubernetes-e2e-cos-gce-slow",
             cloud="gce",
-            distro="cos125",
+            distro="cos129",
             networking="kubenet",
             k8s_version="ci",
             kops_channel="alpha",
@@ -2796,7 +2800,7 @@ def generate_presubmits_e2e():
                 "--gce-service-account=default",
             ],
             focus_regex=r'\[Slow\]',
-            skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]',
+            skip_regex=r'\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]',
             test_timeout_minutes=70,
             optional=True,
         ),
