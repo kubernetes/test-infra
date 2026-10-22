@@ -1342,8 +1342,6 @@ def generate_misc():
                            extra_dashboards=['kops-misc'],
                            env={
                                'CGROUP_DRIVER': cgroup_driver,
-                               'STRESS_NODE_COUNT': '3',
-                               'STRESS_PHASES': 'fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80',
                            },
                            resources={
                                'requests': {'cpu': 7, 'memory': '14Gi'},
@@ -2057,8 +2055,6 @@ def generate_presubmits_scale():
                     test_timeout_minutes=120,
                     env={
                         'CGROUP_DRIVER': cgroup_driver,
-                        'STRESS_NODE_COUNT': '3',
-                        'STRESS_PHASES': 'fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80',
                     },
                     resources={
                         'requests': {'cpu': 7, 'memory': '14Gi'},
