@@ -42,7 +42,7 @@ import sys
 
 import yaml
 
-IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260831-6ed6668adc-master"  # pylint: disable=line-too-long
+IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master"  # pylint: disable=line-too-long
 DASHBOARD = "sig-apps-agent-sandbox"
 REPO_ORG = "kubernetes-sigs"
 REPO_NAME = "agent-sandbox"
@@ -230,6 +230,7 @@ PERIODIC_ORDER = [
     "benchmarks-kops-gcp-cilium",
     "benchmarks-kops-gcp-claims",
     "benchmarks-kops-gcp-kindnet",
+    "test-e2e-kata-gcp",
 ]
 
 # Scripts in dev/ci/presubmits that are not yet enabled as Prow presubmits.
