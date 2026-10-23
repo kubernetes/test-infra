@@ -27,7 +27,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -87,7 +87,7 @@ periodics:
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -256,7 +256,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -310,7 +310,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -364,7 +364,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-requests-1
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -437,7 +437,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-list-json
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -507,7 +507,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-list-json-informer
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -579,7 +579,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-list-proto-informer
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -651,7 +651,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-watchlist-proto-informer
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -724,7 +724,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-list-cbor
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -796,7 +796,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-write-throughput-saturation
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -873,7 +873,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-write-throughput-max-scale
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -955,7 +955,7 @@ periodics:
   spec:
     serviceAccountName: prow-build
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       args:
@@ -1002,7 +1002,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-write-throughput-low-qps
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -1079,7 +1079,7 @@ periodics:
     testgrid-tab-name: gce-benchmark-etcd-write-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261023-9ddb299e5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
