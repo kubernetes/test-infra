@@ -184,6 +184,7 @@ periodics:
       - generic-autobumper
       args:
       - --config=hack/autobump.yaml
+      - --labels-override=skip-review
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
