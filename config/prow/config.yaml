@@ -831,6 +831,7 @@ tide:
     repos:
     - kubernetes/k8s.io
     - kubernetes/test-infra
+    - kubernetes-sigs/prow
   - repos:
     - kubernetes-sigs/provider-aws-test-infra
     labels: # provider-aws-test-infra-admins team gates the skip-review label via plugins.yaml restricted_labels

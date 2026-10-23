@@ -46,7 +46,7 @@ RUN if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ] && [ "
 # alpine edge base image, which has a faster release cadence than alpine:latest
 # (which tracks alpine stable), to pick up security patches more quickly.
 # TODO: switch to Distroless https://github.com/GoogleContainerTools/distroless (help-wanted)
-FROM alpine:3.23.4
+FROM alpine:3.24.3
 
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
