@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package tests
+package plugins
 
 import (
 	"fmt"
@@ -33,6 +33,8 @@ const (
 	// supplemental plugin configs in config/prow/plugins.yaml.
 	supplementalPluginConfigOrg = "kubernetes-sigs"
 )
+
+var configPath = "../../../config/"
 
 // Test_SupplementalPluginConfigs ensures that supplemental plugin config files
 // only let subproject maintainers own their branch-to-milestone mappings.
