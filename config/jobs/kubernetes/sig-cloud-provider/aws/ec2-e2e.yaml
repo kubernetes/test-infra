@@ -27,7 +27,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -46,7 +46,7 @@ presubmits:
                -- \
                --use-built-binaries true \
                --parallel=30 \
-               --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+               --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
           env:
             - name: USE_DOCKERIZED_BUILD
               value: "true"
@@ -87,7 +87,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -107,7 +107,7 @@ presubmits:
                --use-built-binaries true \
                --parallel=30 \
                --test-args='--node-os-arch=arm64' \
-               --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+               --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
           env:
             - name: USE_DOCKERIZED_BUILD
               value: "true"
@@ -148,7 +148,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -208,7 +208,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -268,7 +268,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -336,7 +336,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -399,7 +399,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -454,7 +454,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -510,7 +510,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -572,7 +572,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -591,7 +591,7 @@ presubmits:
                -- \
                --use-built-binaries true \
                --parallel=30 \
-               --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+               --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
           env:
             - name: USE_DOCKERIZED_BUILD
               value: "true"
@@ -633,7 +633,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -698,7 +698,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -718,7 +718,7 @@ presubmits:
                -- \
                --use-built-binaries true \
                --parallel=30 \
-               --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+               --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
           env:
             - name: USE_DOCKERIZED_BUILD
               value: "true"
@@ -758,7 +758,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -817,7 +817,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
           command:
             - runner.sh
           args:
@@ -883,7 +883,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
           - runner.sh
         args:
@@ -941,7 +941,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
           - runner.sh
         args:
@@ -998,7 +998,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
           - runner.sh
         args:
@@ -1016,7 +1016,7 @@ periodics:
              -- \
              --use-built-binaries true \
              --parallel=30 \
-             --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+             --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
         env:
           - name: USE_DOCKERIZED_BUILD
             value: "true"
@@ -1056,7 +1056,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
         command:
           - runner.sh
         args:
@@ -1075,7 +1075,7 @@ periodics:
              --use-built-binaries true \
              --parallel=30 \
              --test-args='--node-os-arch=arm64' \
-             --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+             --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
         env:
           - name: USE_DOCKERIZED_BUILD
             value: "true"

@@ -3703,7 +3703,7 @@ presubmits:
           value: config
         - name: IMAGE_CONFIG_FILE
           value: aws-instance.yaml
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.37
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.37
         name: ""
         resources:
           limits:
@@ -3751,7 +3751,7 @@ presubmits:
           value: config
         - name: IMAGE_CONFIG_FILE
           value: aws-instance-arm64.yaml
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.37
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.37
         name: ""
         resources:
           limits:
@@ -3803,7 +3803,7 @@ presubmits:
           value: config
         - name: IMAGE_CONFIG_FILE
           value: aws-instance-arm64-serial.yaml
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.37
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.37
         name: ""
         resources:
           limits:
@@ -3948,7 +3948,7 @@ presubmits:
           value: aws-instance-serial.yaml
         - name: SKIP
           value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:PodLevelResources\]
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-1.37
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-1.37
         name: ""
         resources:
           limits:
