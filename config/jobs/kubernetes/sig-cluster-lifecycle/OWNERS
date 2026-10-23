@@ -1,14 +1,16 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 approvers:
 - fabriziopandini
+- hakman
 - justinsb
 - neolit123
 - pacoxu # kubeadm approver
 - SataQiu # kubeadm approver
-- vincepri
+- sbueringer
 emeritus_approvers:
 - luxas
 - timothysc
 - CecileRobertMichon
+- vincepri
 labels:
 - sig/cluster-lifecycle
