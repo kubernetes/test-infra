@@ -209,7 +209,6 @@ periodics:
       - generic-autobumper
       args:
       - --config=config/prow/autobump-config/prow-job-autobump-config.yaml
-      - --labels-override=skip-review
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
