@@ -15,7 +15,7 @@
 # Update the date below (check https://hub.docker.com/_/alpine/tags) to get the
 # alpine edge base image, which has a faster release cadence than alpine:latest
 # (which tracks alpine stable), to pick up security patches more quickly.
-FROM alpine:3.23.4
+FROM alpine:3.24.3
 
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
