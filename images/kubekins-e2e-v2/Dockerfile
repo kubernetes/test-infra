@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:trixie-20260918
+FROM debian:trixie-20261020
 ARG TARGETARCH
 
 WORKDIR /workspace
