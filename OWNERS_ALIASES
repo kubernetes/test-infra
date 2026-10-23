@@ -35,9 +35,10 @@ aliases:
     - elmiko
   sig-cluster-lifecycle-leads:
     - fabriziopandini
+    - hakman
     - justinsb
     - neolit123
-    - vincepri
+    - sbueringer
   sig-contributor-experience-leads:
     - MadhavJivrajani
     - Priyankasaggu11929

@@ -1,17 +1,20 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 approvers:
 - fabriziopandini
+- hakman
 - justinsb
 - neolit123
-- vincepri
+- sbueringer
 reviewers:
 - fabriziopandini
+- hakman
 - justinsb
 - neolit123
-- vincepri
+- sbueringer
 emeritus_approvers:
 - luxas
 - timothysc
 - CecileRobertMichon
+- vincepri
 labels:
 - sig/cluster-lifecycle
