@@ -4,7 +4,7 @@ presubmits:
   - name: pull-kube-scheduler-simulator-backend-unit-test
     cluster: eks-prow-build-cluster
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-scheduling-simulator
       testgrid-tab-name: pull-kube-scheduler-simulator-backend-unit-test
     decorate: true
     path_alias: sigs.k8s.io/kube-scheduler-simulator
