@@ -11,7 +11,7 @@ postsubmits:
       spec:
         serviceAccountName: resource-state-metrics
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260419-39c657fdbf
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
               - /run.sh
             args:

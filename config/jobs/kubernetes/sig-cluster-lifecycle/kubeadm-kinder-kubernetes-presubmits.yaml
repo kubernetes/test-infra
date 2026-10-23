@@ -26,7 +26,7 @@ presubmits:
       path_alias: k8s.io/kubeadm
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
         command:
         - runner.sh
         - "../kubeadm/kinder/ci/kinder-run-kubernetes-ci.sh"
@@ -67,7 +67,7 @@ presubmits:
       path_alias: k8s.io/kubeadm
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261012-c0cc6281b1-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
         command:
         - runner.sh
         - "../kubeadm/kinder/ci/kinder-run-kubernetes-ci.sh"
