@@ -101,6 +101,101 @@ presubmits:
             cpu: 5
             memory: 16Gi
 
+  - name: pull-kubernetes-gce-master-scale-correctness-2000
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    labels:
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-kops-scalability-common: "true"
+      preset-kops-scalability-gce-common: "true"
+      preset-kops-scalability-gce-2000-node: "true"
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
+    decoration_config:
+      timeout: 180m
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+    spec:
+      serviceAccountName: prow-build
+      tolerations:
+        - key: highmem
+          operator: Exists
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        env:
+        - name: SCALE_SCENARIO
+          value: correctness
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7
+            memory: 40Gi
+          limits:
+            cpu: 7
+            memory: 40Gi
+
+  - name: pull-kubernetes-ec2-master-scale-correctness-2000
+    cluster: eks-prow-build-cluster
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    labels:
+      preset-aws-ssh: "true"
+      preset-aws-credential-boskos-scale-001-kops: "true"
+      preset-dind-enabled: "true"
+      preset-kops-scalability-common: "true"
+      preset-kops-scalability-ec2-common: "true"
+      preset-kops-scalability-ec2-2000-node: "true"
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 180m
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+    spec:
+      tolerations:
+        - key: highmem
+          operator: Exists
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        env:
+        - name: SCALE_SCENARIO
+          value: correctness
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7
+            memory: 40Gi
+          limits:
+            cpu: 7
+            memory: 40Gi
+
   # This is an equivalent of the ci-kubernetes-e2e-gce-scale-correctness test
   # at 100 node scale. It's an optional presubmit to simplify testing changes
   # that affect the releasing blocking ci correctness tests.

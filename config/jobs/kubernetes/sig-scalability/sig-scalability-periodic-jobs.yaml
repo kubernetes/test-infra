@@ -1245,26 +1245,22 @@ periodics:
           cpu: 2
           memory: 6Gi
 
-- interval: 4h
-  name: ci-kubernetes-e2e-cos-gce-scale-correctness-100
+- cron: '0 5 * * *'
+  name: ci-kubernetes-e2e-gce-scale-correctness-2000
   cluster: k8s-infra-prow-build
   labels:
     preset-k8s-ssh: "true"
     preset-kops-scalability-common: "true"
     preset-kops-scalability-gce-common: "true"
-    preset-kops-scalability-gce-100-node: "true"
+    preset-kops-scalability-gce-2000-node: "true"
   decorate: true
   decoration_config:
-    timeout: 1h
+    timeout: 3h
   extra_refs:
   - org: kubernetes
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: perf-tests
-    base_ref: master
-    path_alias: k8s.io/perf-tests
   - org: kubernetes
     repo: kops
     base_ref: master
@@ -1272,10 +1268,13 @@ periodics:
     workdir: true
   annotations:
     testgrid-dashboards: sig-scalability-gce
-    testgrid-tab-name: gce-cos-scale-correctness-100
-    description: "Uses kubetest2 to run a correctness test against a 100-node cluster created with kops"
+    testgrid-tab-name: gce-scale-correctness-2000
+    description: "Uses kubetest2 to run a correctness test against a 2000-node cluster created with kops"
   spec:
     serviceAccountName: prow-build
+    tolerations:
+      - key: highmem
+        operator: Exists
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
       command:
@@ -1287,12 +1286,10 @@ periodics:
       env:
         - name: SCALE_SCENARIO
           value: correctness
-        - name: INSTANCE_IMAGE
-          value: cos-cloud/cos-129-19506-505-8
       resources:
         requests:
-          cpu: 2
-          memory: 6Gi
+          cpu: 7
+          memory: 40Gi
         limits:
-          cpu: 2
-          memory: 6Gi
+          cpu: 7
+          memory: 40Gi
