@@ -336,14 +336,11 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-multiarch-main-nightly-4.20-ocp-e2e-aws-ovn-multi-x-x
   name: periodic-ci-openshift-multiarch-main-nightly-4.20-ocp-e2e-aws-ovn-multi-x-x
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-driver-toolkit
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-driver-toolkit
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-driver-toolkit
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-serial-1of2
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-serial-1of2
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-serial-1of2
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-serial-2of2
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-serial-2of2
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-serial-2of2
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-metal-ipi-ovn-ipv4

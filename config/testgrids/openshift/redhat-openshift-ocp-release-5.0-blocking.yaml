@@ -602,8 +602,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/aggregated-aws-ovn-upgrade-5.0-major-release-openshift-release-analysis-aggregator
   name: aggregated-aws-ovn-upgrade-5.0-major-release-openshift-release-analysis-aggregator
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/aggregated-aws-ovn-upgrade-5.0-micro-fips-release-openshift-release-analysis-aggregator
+- gcs_prefix: test-platform-results-public/logs/aggregated-aws-ovn-upgrade-5.0-micro-fips-release-openshift-release-analysis-aggregator
   name: aggregated-aws-ovn-upgrade-5.0-micro-fips-release-openshift-release-analysis-aggregator
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/aggregated-azure-ovn-upgrade-5.0-major-release-openshift-release-analysis-aggregator
@@ -641,11 +640,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-ci-5.0-e2e-aws-ovn-techpreview-serial-3of3
   name: periodic-ci-openshift-release-main-ci-5.0-e2e-aws-ovn-techpreview-serial-3of3
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-serial-1of2
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-serial-1of2
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-serial-1of2
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-serial-2of2
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-serial-2of2
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-serial-2of2
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-metal-ipi-ovn-ipv4

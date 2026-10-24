@@ -1953,8 +1953,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-ci-4.19-upgrade-from-stable-4.18-e2e-gcp-ovn-rt-upgrade
   name: periodic-ci-openshift-release-main-ci-4.19-upgrade-from-stable-4.18-e2e-gcp-ovn-rt-upgrade
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.19-e2e-aws-ovn-upgrade-fips
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.19-e2e-aws-ovn-upgrade-fips
   name: periodic-ci-openshift-release-main-nightly-4.19-e2e-aws-ovn-upgrade-fips
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.19-e2e-rosa-sts-ovn
   name: periodic-ci-openshift-release-main-nightly-4.19-e2e-rosa-sts-ovn
