@@ -32,6 +32,34 @@ periodics:
         limits:
           cpu: 7
           memory: 14Gi
+- name: periodic-test-e2e-gvisor
+  cluster: eks-prow-build-cluster
+  interval: 24h
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-apps-agent-sandbox
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: agent-sandbox
+    base_ref: main
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
+      command:
+      - runner.sh
+      - dev/ci/periodics/test-e2e-gvisor
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7
+          memory: 14Gi
+        limits:
+          cpu: 7
+          memory: 14Gi
 - name: periodic-benchmarks-kops-gcp-cilium
   cluster: k8s-infra-prow-build
   interval: 24h
@@ -116,6 +144,38 @@ periodics:
       command:
       - runner.sh
       - dev/ci/periodics/benchmarks-kops-gcp-kindnet
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7
+          memory: 14Gi
+        limits:
+          cpu: 7
+          memory: 14Gi
+      env:
+      - name: BOSKOS_HOST
+        value: boskos.test-pods.svc.cluster.local
+- name: periodic-test-e2e-kata-gcp
+  cluster: k8s-infra-prow-build
+  interval: 24h
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-apps-agent-sandbox
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: agent-sandbox
+    base_ref: main
+  labels:
+    preset-dind-enabled: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    serviceAccountName: prow-build
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261012-c0cc6281b1-master
+      command:
+      - runner.sh
+      - dev/ci/periodics/test-e2e-kata-gcp
       securityContext:
         privileged: true
       resources:
