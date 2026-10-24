@@ -127,6 +127,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-eng-ocp-perfscale-main-aws-4.23-nightly-x86-payload-control-plane-6nodes
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-eng-ocp-perfscale-main-aws-4.23-nightly-x86-payload-control-plane-6nodes
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-multiarch-main-nightly-4.23-install-analysis-all-ppc64le
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -2521,6 +2548,8 @@ test_groups:
   name: periodic-ci-RedHatQE-interop-testing-master-ibm-fusion-access-operator-ocp-4.23-lp-interop-cr-fusion-access-ibm
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-RedHatQE-interop-testing-master-ibm-fusion-access-operator-ocp-4.23-lp-interop-ibm-fips
   name: periodic-ci-RedHatQE-interop-testing-master-ibm-fusion-access-operator-ocp-4.23-lp-interop-ibm-fips
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-eng-ocp-perfscale-main-aws-4.23-nightly-x86-payload-control-plane-6nodes
+  name: periodic-ci-openshift-eng-ocp-perfscale-main-aws-4.23-nightly-x86-payload-control-plane-6nodes
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-multiarch-main-nightly-4.23-install-analysis-all-ppc64le
   name: periodic-ci-openshift-multiarch-main-nightly-4.23-install-analysis-all-ppc64le
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-multiarch-main-nightly-4.23-install-analysis-all-s390x
@@ -2728,17 +2757,13 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-ci-4.23-upgrade-from-stable-4.22-e2e-gcp-ovn-rt-upgrade
   name: periodic-ci-openshift-release-main-ci-4.23-upgrade-from-stable-4.22-e2e-gcp-ovn-rt-upgrade
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-driver-toolkit
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-driver-toolkit
   name: periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-driver-toolkit
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-ovn-serial-1of2
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-ovn-serial-1of2
   name: periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-ovn-serial-1of2
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-ovn-serial-2of2
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-ovn-serial-2of2
   name: periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-ovn-serial-2of2
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-ovn-upgrade-fips
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-ovn-upgrade-fips
   name: periodic-ci-openshift-release-main-nightly-4.23-e2e-aws-ovn-upgrade-fips
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.23-e2e-metal-ipi-ovn-ipv4

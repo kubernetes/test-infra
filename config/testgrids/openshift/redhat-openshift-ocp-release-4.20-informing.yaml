@@ -3435,31 +3435,23 @@ test_groups:
   name: periodic-ci-openshift-release-main-ci-4.20-upgrade-from-stable-4.19-e2e-vsphere-ovn-upgrade
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-console-aws
   name: periodic-ci-openshift-release-main-nightly-4.20-console-aws
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-csi
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-csi
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-csi
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-cgroupsv2
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-cgroupsv2
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-cgroupsv2
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-fips
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-fips
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-fips
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-proxy
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-proxy
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-single-node
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-single-node
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-single-node
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-single-node-csi
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-single-node-csi
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-single-node-csi
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-single-node-serial
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-single-node-serial
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-single-node-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-upgrade-fips
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-upgrade-fips
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-upgrade-fips
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-upi
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-upi
   name: periodic-ci-openshift-release-main-nightly-4.20-e2e-aws-ovn-upi
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.20-e2e-azure-csi

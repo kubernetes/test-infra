@@ -154,33 +154,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-RedHatQE-interop-testing-master-ocp-4.22-lpMainline-lp-interop--opp-cr--full-stack--vsphere
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-RedHatQE-interop-testing-master-ocp-4.22-lpMainline-lp-interop--opp-cr--full-stack--vsphere
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-4.22-nightly-control-plane-baremetal-multi-3nodes
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -4035,8 +4008,6 @@ test_groups:
   name: periodic-ci-RedHatQE-interop-testing-master-ocp-4.22-lpMainline-lp-interop--acm-virt--p2p-cr--n1-upgrade--aws
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-RedHatQE-interop-testing-master-ocp-4.22-lpMainline-lp-interop--opp-cr--full-stack--aws
   name: periodic-ci-RedHatQE-interop-testing-master-ocp-4.22-lpMainline-lp-interop--opp-cr--full-stack--aws
-- gcs_prefix: test-platform-results-public/logs/periodic-ci-RedHatQE-interop-testing-master-ocp-4.22-lpMainline-lp-interop--opp-cr--full-stack--vsphere
-  name: periodic-ci-RedHatQE-interop-testing-master-ocp-4.22-lpMainline-lp-interop--opp-cr--full-stack--vsphere
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-4.22-nightly-control-plane-baremetal-multi-3nodes
   name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-4.22-nightly-control-plane-baremetal-multi-3nodes
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-4.22-nightly-control-plane-gcp-etcd-fips-120nodes
@@ -4296,40 +4267,29 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-console-aws
   name: periodic-ci-openshift-release-main-nightly-4.22-console-aws
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-csi
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-csi
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-csi
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-cgroupsv2
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-cgroupsv2
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-cgroupsv2
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-fips
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-fips
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-fips
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-proxy
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-proxy
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-csi
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-csi
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-csi
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-serial
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-serial
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-techpreview
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-techpreview
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-techpreview
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-techpreview-serial
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-techpreview-serial
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-single-node-techpreview-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-upgrade-fips
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-upgrade-fips
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-upgrade-fips
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-upgrade-fips-no-nat-instance
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-upgrade-fips-no-nat-instance
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-upgrade-fips-no-nat-instance
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-upi
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-upi
   name: periodic-ci-openshift-release-main-nightly-4.22-e2e-aws-ovn-upi
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.22-e2e-azure-csi
