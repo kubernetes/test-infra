@@ -55,11 +55,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 4Gi
+            cpu: 2
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 4Gi
+            cpu: 2
   - name: pull-minikube-docker-docker-linux-arm
     cluster: k8s-infra-prow-build
     decorate: true
@@ -86,11 +86,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
   - name: pull-minikube-docker-containerd-linux-arm
     cluster: k8s-infra-prow-build
     decorate: true
@@ -118,11 +118,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
   - name: pull-minikube-kvm-containerd-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
@@ -148,11 +148,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 4Gi
+            cpu: 2
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 4Gi
+            cpu: 2
   - name: pull-minikube-kvm-crio-linux-x86
     cluster: k8s-infra-prow-build
     optional: true
@@ -179,11 +179,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 4Gi
+            cpu: 2
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 4Gi
+            cpu: 2
   - name: pull-minikube-docker-docker-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
@@ -209,11 +209,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
   - name: pull-minikube-docker-containerd-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
@@ -239,11 +239,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
   - name: pull-minikube-none-containerd-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
@@ -270,11 +270,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 4Gi
+            cpu: 2
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 4Gi
+            cpu: 2
   - name: pull-minikube-none-docker-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
@@ -300,11 +300,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 4Gi
+            cpu: 2
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 4Gi
+            cpu: 2
   - name: pull-minikube-vfkit-docker-macos-arm
     cluster: k8s-infra-prow-build
     optional: true # macos machine is precious, so only run when matainers explicitly trigger with /test <job_name>
@@ -330,10 +330,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
       nodeSelector:
         kubernetes.io/arch: arm64
