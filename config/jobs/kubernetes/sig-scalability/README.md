@@ -78,6 +78,7 @@ track. Add new entries at the top.
 
 | Variant | Date | What it does | Owner | Status |
 | --- | --- | --- | --- | --- |
+| `pod-size` | 2026-10-22 | Stage realistic pod size experiment (`CL2_REALISTIC_POD_SIZE_KB=20`) on the 5k job. | @Jefftree | In Progress |
 | `informer` | 2026-10-16 | Re-enable the informer latency test (`CL2_ENABLE_INFORMER_LATENCY_TEST=true`, `CL2_INFORMER_RUN_ON_CONTROL_PLANE=true`) on the 5k job. | @Jefftree | Graduated |
 | `restart` | 2026-10-15 | Restart a kube-apiserver instance during the 5k test (`CL2_RESTART_APISERVER=true`) to track watch cache initialization. | @Jefftree | Graduated |
 | `c4d` | 2026-09-30 | Single-replica `c4d-standard-96` control plane (`CONTROL_PLANE_SIZE=c4d-standard-96`) on the 5k job to avoid variance across Intel CPU generations. | @Jefftree | Graduated |
