@@ -1,0 +1,16 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+# Keep in sync with kueue-approvers and release-team in
+# https://github.com/kubernetes-sigs/kueue/blob/main/OWNERS_ALIASES
+
+approvers:
+- mimowo
+- tenzen-y
+- sohankunkerkar
+- mbobrovskyi
+- Singularity23x0
+reviewers:
+- mimowo
+- tenzen-y
+- sohankunkerkar
+- mbobrovskyi
+- Singularity23x0
