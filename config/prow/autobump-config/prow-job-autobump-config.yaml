@@ -15,6 +15,8 @@ upstreamURLBase: "https://raw.githubusercontent.com/kubernetes/test-infra/master
 includedConfigPaths:
   - "config/jobs"
   - "images"
+excludedConfigPaths:
+  - "config/jobs/containerd/containerd"
 extraFiles:
   - "images/kubekins-e2e/Dockerfile"
   - "config/jobs/image-pushing/k8s-staging-e2e-test-images.sh"
