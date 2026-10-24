@@ -48,10 +48,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -112,10 +108,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -179,10 +171,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -248,10 +236,6 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -315,10 +299,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -384,10 +364,6 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -451,10 +427,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -520,10 +492,6 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -587,10 +555,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -656,10 +620,6 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"

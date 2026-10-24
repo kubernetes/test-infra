@@ -32,10 +32,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         - name: KOPS_VERSION_A
           value: "1.35"
         - name: K8S_VERSION_A
@@ -100,10 +96,6 @@ presubmits:
         env:
         - name: KOPS_FEATURE_FLAGS
           value: "Azure"
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         - name: KOPS_VERSION_A
           value: "1.35"
         - name: K8S_VERSION_A
@@ -170,10 +162,6 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
           value: prow
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         - name: KOPS_VERSION_A
           value: "1.35"
         - name: K8S_VERSION_A

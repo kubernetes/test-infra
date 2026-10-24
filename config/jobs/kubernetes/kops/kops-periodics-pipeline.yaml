@@ -46,8 +46,6 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:
@@ -112,8 +110,6 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:
@@ -178,8 +174,6 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:
@@ -244,8 +238,6 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:
@@ -310,8 +302,6 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:

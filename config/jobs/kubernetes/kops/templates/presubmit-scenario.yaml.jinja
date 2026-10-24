@@ -89,12 +89,6 @@
         - name: KUBE_SSH_USER
           value: {{kops_ssh_user}}
         {%- endif %}
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        {%- if scenario != 'scalability' %}
-        - name: GOPATH
-          value: /home/prow/go
-        {%- endif %}
         {%- if artifacts %}
         - name: ARTIFACTS
           value: {{artifacts}}
