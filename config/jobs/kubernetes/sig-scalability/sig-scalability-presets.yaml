@@ -485,6 +485,8 @@ presets:
     value: "2000"
   - name: CONTROL_PLANE_SIZE
     value: "c8a.16xlarge,c8i.16xlarge,c8id.16xlarge,c7a.16xlarge"
+  - name: ENABLE_AWS_LOAD_BALANCER_CONTROLLER
+    value: "true"
 
 - labels:
     preset-kops-scalability-gce-5000-node: "true"
