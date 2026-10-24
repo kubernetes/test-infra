@@ -73,6 +73,9 @@ presubmits:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
+        # override default and include FutureConformance
+        - name: "LABEL_FILTER"
+          value: "Conformance || FutureConformance"
         command:
           - wrapper.sh
           - bash
@@ -91,7 +94,7 @@ presubmits:
     annotations:
       fork-per-release: "true"
       testgrid-dashboards: sig-testing-kind
-      description: Use kind to run e2e tests (+Conformance, -Serial) against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
+      description: Use kind to run e2e tests (+Conformance/FutureConformance, -Serial) against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
       testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
       testgrid-num-failures-to-alert: "15"
 
@@ -187,3 +190,50 @@ periodics:
     testgrid-tab-name: conformance-ga-only
     testgrid-alert-email: "release-team@kubernetes.io, sig-architecture@kubernetes.io"
     description: "OWNER: sig-architecture (conformance); conformance tests run against a master kind cluster with only GA APIs and features enabled"
+
+- name: ci-kubernetes-future-conformance-kind-ga-only
+  cluster: k8s-infra-prow-build
+  interval: 24h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  decoration_config:
+    timeout: 2h30m
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20261012-c0cc6281b1-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      # disable non-GA APIs and features
+      - name: FEATURE_GATES
+        value: '{"AllAlpha":false,"AllBeta":false}'
+      - name: RUNTIME_CONFIG
+        value: '{"api/alpha":"false", "api/beta":"false"}'
+      - name: LABEL_FILTER
+        value: "FutureConformance"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
+        requests:
+          cpu: "4"
+          memory: 9000Mi
+  annotations:
+    testgrid-num-failures-to-alert: '2'
+    testgrid-alert-stale-results-hours: '48'
+    testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-kind, sig-testing-kind
+    testgrid-tab-name: future-conformance-ga-only
+    testgrid-alert-email: "release-team@kubernetes.io, sig-architecture@kubernetes.io"
+    description: "OWNER: sig-architecture (conformance); FutureConformance tests run against a master kind cluster with only GA APIs and features enabled"
