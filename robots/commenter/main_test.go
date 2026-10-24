@@ -27,6 +27,7 @@ import (
 	"testing"
 	"time"
 
+	"sigs.k8s.io/prow/pkg/flagutil"
 	"sigs.k8s.io/prow/pkg/github"
 )
 
@@ -237,6 +238,8 @@ type fakeClient struct {
 	issues   []github.Issue
 	// existingComments maps an issue number to the comments already on it.
 	existingComments map[int][]github.IssueComment
+	// orgSeen captures the org argument passed to FindIssuesWithOrg.
+	orgSeen string
 }
 
 // Fakes Creating a client, using the same signature as github.Client
@@ -257,7 +260,8 @@ func (c *fakeClient) ListIssueComments(owner, repo string, number int) ([]github
 }
 
 // Fakes searching for issues, using the same signature as github.Client
-func (c *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+func (c *fakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error) {
+	c.orgSeen = org
 	if strings.Contains(query, "error") {
 		return nil, errors.New(query)
 	}
@@ -416,7 +420,7 @@ func TestRun(t *testing.T) {
 		}
 		ignoreSorting := ""
 		ignoreOrder := false
-		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling, tc.dedupe)
+		err := run(&tc.client, "", tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling, tc.dedupe)
 		if tc.err && err == nil {
 			t.Errorf("%s: failed to received an error", tc.name)
 			continue
@@ -481,7 +485,7 @@ func TestRunCeiling(t *testing.T) {
 				if ceiling > 0 && ceiling < len(want) {
 					want = want[:ceiling]
 				}
-				if err := run(&c, "dup", "", false, false, makeCommenter("found you", false), ceiling, tc.dedupe); err != nil {
+				if err := run(&c, "", "dup", "", false, false, makeCommenter("found you", false), ceiling, tc.dedupe); err != nil {
 					t.Fatalf("run: %v", err)
 				}
 				if !reflect.DeepEqual(c.comments, want) {
@@ -542,5 +546,130 @@ func TestMakeCommenter(t *testing.T) {
 		if err == nil && tc.err {
 			t.Errorf("%s: failed to raise an exception", tc.name)
 		}
+	}
+}
+
+func TestValidateOptions(t *testing.T) {
+	cases := []struct {
+		name string
+		opts options
+		err  bool
+	}{
+		{
+			name: "token-path credentials",
+			opts: options{gitHubOptions: flagutil.GitHubOptions{TokenPath: "/etc/gh-token"}},
+		},
+		{
+			name: "app credentials with --github-org",
+			opts: options{
+				githubOrg:     "kubernetes",
+				gitHubOptions: flagutil.GitHubOptions{AppID: "42", AppPrivateKeyPath: "/etc/key"},
+			},
+		},
+		{
+			name: "no credentials errors",
+			opts: options{},
+			err:  true,
+		},
+		{
+			name: "app auth without --github-org errors",
+			opts: options{gitHubOptions: flagutil.GitHubOptions{AppID: "42", AppPrivateKeyPath: "/etc/key"}},
+			err:  true,
+		},
+		{
+			name: "app private-key-path without --github-org errors",
+			opts: options{gitHubOptions: flagutil.GitHubOptions{AppPrivateKeyPath: "/etc/key"}},
+			err:  true,
+		},
+	}
+	for _, tc := range cases {
+		err := validateOptions(tc.opts)
+		if err != nil && !tc.err {
+			t.Errorf("%s: unexpected err: %v", tc.name, err)
+		}
+		if err == nil && tc.err {
+			t.Errorf("%s: failed to raise an exception", tc.name)
+		}
+	}
+}
+
+func TestHandleDeprecatedFlags(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+		err  bool
+		// checkTokenPath, when set, asserts the deprecated flag was linked to its
+		// --github-* replacement.
+		checkTokenPath string
+	}{
+		{
+			name:           "deprecated --token links to --github-token-path",
+			args:           []string{"--token", "/etc/token"},
+			checkTokenPath: "/etc/token",
+		},
+		{
+			name: "--token with --github-token-path is rejected",
+			args: []string{"--token", "/etc/token", "--github-token-path", "/etc/gh-token"},
+			err:  true,
+		},
+		{
+			name: "--endpoint with --github-endpoint is rejected",
+			args: []string{"--endpoint", "https://example.com", "--github-endpoint", "https://example.org"},
+			err:  true,
+		},
+		{
+			name: "--graphql-endpoint with --github-graphql-endpoint is rejected",
+			args: []string{"--graphql-endpoint", "https://example.com", "--github-graphql-endpoint", "https://example.org"},
+			err:  true,
+		},
+		{
+			name: "mixing a deprecated flag with an unrelated --github-* flag is rejected",
+			args: []string{"--token", "/etc/token", "--github-app-id", "42"},
+			err:  true,
+		},
+		{
+			name:           "deprecated flag with --github-org is accepted",
+			args:           []string{"--token", "/etc/token", "--github-org", "kubernetes"},
+			checkTokenPath: "/etc/token",
+		},
+		{
+			name: "new flags alone are accepted",
+			args: []string{"--github-token-path", "/etc/gh-token", "--github-endpoint", "https://example.org"},
+		},
+	}
+	for _, tc := range cases {
+		fs := flag.NewFlagSet("test", flag.ContinueOnError)
+		o := options{endpoint: flagutil.NewStrings(github.DefaultAPIEndpoint)}
+		o.gitHubOptions.AddFlags(fs)
+		fs.Var(&o.endpoint, "endpoint", "")
+		fs.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "")
+		fs.StringVar(&o.token, "token", "", "")
+		fs.StringVar(&o.githubOrg, "github-org", "", "")
+		if err := fs.Parse(tc.args); err != nil {
+			t.Errorf("%s: unexpected parse error: %v", tc.name, err)
+			continue
+		}
+		err := handleDeprecatedFlags(fs, &o)
+		if err != nil && !tc.err {
+			t.Errorf("%s: unexpected err: %v", tc.name, err)
+			continue
+		}
+		if err == nil && tc.err {
+			t.Errorf("%s: failed to raise an exception", tc.name)
+			continue
+		}
+		if err == nil && tc.checkTokenPath != "" && o.gitHubOptions.TokenPath != tc.checkTokenPath {
+			t.Errorf("%s: TokenPath = %q, want %q", tc.name, o.gitHubOptions.TokenPath, tc.checkTokenPath)
+		}
+	}
+}
+
+func TestRunPassesOrg(t *testing.T) {
+	fc := &fakeClient{}
+	if err := run(fc, "kubernetes", "hello", "", false, false, makeCommenter("x", false), 0, "none"); err != nil {
+		t.Fatalf("run: %v", err)
+	}
+	if fc.orgSeen != "kubernetes" {
+		t.Errorf("FindIssuesWithOrg received org=%q, want %q", fc.orgSeen, "kubernetes")
 	}
 }
