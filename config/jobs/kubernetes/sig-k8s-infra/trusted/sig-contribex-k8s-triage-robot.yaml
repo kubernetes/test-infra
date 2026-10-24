@@ -92,6 +92,7 @@ periodics:
 
         Stable metrics are guaranteed to **not change**. Please review the documentation for the requirements and lifecycle of stable metrics and ensure that your metrics meet these guidelines.
       - --ceiling=10
+      - --dedupe=latest
       - --confirm
       volumeMounts:
       - name: token
