@@ -10,7 +10,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-staging-test-infra/label_sync:v20261016-5ec6cc834c
+      image: gcr.io/k8s-staging-test-infra/label_sync:v20261023-9ddb299e5f
       command:
       - label_sync
       args:

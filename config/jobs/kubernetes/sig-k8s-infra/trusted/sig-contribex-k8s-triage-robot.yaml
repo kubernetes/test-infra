@@ -13,7 +13,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -72,7 +72,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -122,7 +122,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -175,7 +175,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -246,7 +246,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -315,7 +315,7 @@ periodics:
     testgrid-tab-name: stale-prs-agent-sandbox
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -378,7 +378,7 @@ periodics:
     testgrid-tab-name: close-prs-agent-sandbox
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -438,7 +438,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -500,7 +500,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -562,7 +562,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -623,7 +623,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -693,7 +693,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -762,7 +762,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -832,7 +832,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -901,7 +901,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -959,7 +959,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -1020,7 +1020,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -1082,7 +1082,7 @@ periodics:
     prow.k8s.io/refs.repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20261023-9ddb299e5f
       command:
       - commenter
       args:
@@ -1144,7 +1144,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/issue-creator:v20261016-5ec6cc834c
+    - image: gcr.io/k8s-staging-test-infra/issue-creator:v20261023-9ddb299e5f
       command:
       - issue-creator
       args:
