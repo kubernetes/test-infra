@@ -31,7 +31,7 @@ import (
 )
 
 func TestFlagOptions(t *testing.T) {
-	for _, mode := range []string{"", dedupeNone, dedupeLatest} {
+	for _, mode := range []string{"", dedupeNone, dedupeLatest, dedupeAny} {
 		t.Run("dedupe="+mode, func(t *testing.T) {
 			oldFlags, oldArgs := flag.CommandLine, os.Args
 			t.Cleanup(func() {
@@ -353,6 +353,26 @@ func TestRun(t *testing.T) {
 			expected: []int{1, 3, 4},
 		},
 		{
+			name:    "dedupe=any considers all comments",
+			query:   "dup",
+			comment: "found you",
+			dedupe:  dedupeAny,
+			client: fakeClient{
+				issues: []github.Issue{
+					makeIssue("o", "r", 1, "dup one"),
+					makeIssue("o", "r", 2, "dup two"),
+					makeIssue("o", "r", 3, "dup three"),
+					makeIssue("o", "r", 4, "dup four"),
+				},
+				existingComments: map[int][]github.IssueComment{
+					2: {{Body: "reopened"}, {Body: "found you\r\n"}},
+					3: {{Body: "something else"}},
+					4: {{Body: "found you"}, {Body: "reopened"}},
+				},
+			},
+			expected: []int{1, 3},
+		},
+		{
 			name:    "skipped issues do not count towards the ceiling",
 			query:   "dup",
 			comment: "found you",
@@ -455,6 +475,7 @@ func TestRunCeiling(t *testing.T) {
 	}{
 		{dedupe: dedupeNone, expected: []int{1, 2, 3, 4, 5, 6}},
 		{dedupe: dedupeLatest, expected: []int{2, 4, 5, 6}},
+		{dedupe: dedupeAny, expected: []int{4, 5, 6}},
 	}
 	for _, tc := range cases {
 		for _, ceiling := range []int{0, 1, 2, 3, 4, 6} {

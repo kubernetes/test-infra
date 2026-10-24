@@ -22,11 +22,12 @@ limitations under the License.
 // around leaving excessive comments.
 //
 // By default commenter does not check for duplicate comments (--dedupe=none).
-// With --dedupe=latest it skips issues whose most recent comment is identical,
+// With --dedupe=any it skips issues that already have an identical comment,
 // even if the --query text filter fails to exclude them (GitHub search does not
-// reliably match free-text phrases inside existing comments). An issue that
-// was reopened and went through a lifecycle again can be commented on a second
-// time. Skipped issues do not count towards --ceiling.
+// reliably match free-text phrases inside existing comments).
+// With --dedupe=latest it only skips issues whose most recent comment is
+// identical, so an issue that was reopened and went through a lifecycle again
+// can be commented on a second time. Skipped issues do not count towards --ceiling.
 package main
 
 import (
@@ -67,6 +68,7 @@ const (
 const (
 	dedupeNone   = "none"
 	dedupeLatest = "latest"
+	dedupeAny    = "any"
 )
 
 func flagOptions() options {
@@ -85,7 +87,7 @@ func flagOptions() options {
 	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
 	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API Endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")
-	flag.StringVar(&o.dedupe, "dedupe", dedupeNone, "Skip an issue if an identical comment exists: 'none' disables deduplication, 'latest' checks only the most recent comment")
+	flag.StringVar(&o.dedupe, "dedupe", dedupeNone, "Skip an issue if an identical comment exists: 'none' disables deduplication, 'latest' checks only the most recent comment, 'any' checks all comments")
 	flag.BoolVar(&o.random, "random", false, "Choose random issues to comment on from the query")
 	flag.Parse()
 	return o
@@ -176,6 +178,21 @@ func normalizeComment(s string) string {
 	return strings.TrimSpace(strings.ReplaceAll(s, "\r\n", "\n"))
 }
 
+// hasComment returns true if existing contains comment, only checking the most
+// recent comment for --dedupe=latest
+func hasComment(existing []github.IssueComment, comment, dedupe string) bool {
+	if dedupe == dedupeLatest && len(existing) > 0 {
+		existing = existing[len(existing)-1:]
+	}
+	want := normalizeComment(comment)
+	for _, ec := range existing {
+		if normalizeComment(ec.Body) == want {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	o := flagOptions()
@@ -189,8 +206,8 @@ func main() {
 	if o.comment == "" {
 		log.Fatal("empty --comment")
 	}
-	if o.dedupe != dedupeNone && o.dedupe != dedupeLatest {
-		log.Fatalf("invalid --dedupe %q, must be %q or %q", o.dedupe, dedupeNone, dedupeLatest)
+	if o.dedupe != dedupeNone && o.dedupe != dedupeLatest && o.dedupe != dedupeAny {
+		log.Fatalf("invalid --dedupe %q, must be %q, %q or %q", o.dedupe, dedupeNone, dedupeLatest, dedupeAny)
 	}
 
 	if err := secret.Add(o.token); err != nil {
@@ -279,7 +296,7 @@ func run(c client, query, sort string, asc, random bool, commenter func(meta) (s
 			problems = append(problems, msg)
 			continue
 		}
-		if dedupe == dedupeLatest {
+		if dedupe != dedupeNone {
 			existing, err := c.ListIssueComments(org, repo, number)
 			if err != nil {
 				msg := fmt.Sprintf("Failed to list comments for %s/%s#%d: %v", org, repo, number, err)
@@ -287,8 +304,7 @@ func run(c client, query, sort string, asc, random bool, commenter func(meta) (s
 				problems = append(problems, msg)
 				continue
 			}
-			want := normalizeComment(comment)
-			if len(existing) > 0 && normalizeComment(existing[len(existing)-1].Body) == want {
+			if hasComment(existing, comment, dedupe) {
 				log.Printf("Skipping %s: an identical comment already exists (--dedupe=%s)", i.HTMLURL, dedupe)
 				continue
 			}
