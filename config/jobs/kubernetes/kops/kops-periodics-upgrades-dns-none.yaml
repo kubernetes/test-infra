@@ -27,8 +27,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "1.35"
       - name: K8S_VERSION_A
@@ -103,8 +101,6 @@ periodics:
       env:
       - name: KOPS_FEATURE_FLAGS
         value: "Azure"
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "1.35"
       - name: K8S_VERSION_A
@@ -173,8 +169,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "1.35"
       - name: K8S_VERSION_A

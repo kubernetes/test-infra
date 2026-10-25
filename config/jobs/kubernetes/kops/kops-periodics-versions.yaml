@@ -43,8 +43,6 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:
@@ -104,8 +102,6 @@ periodics:
           --test-package-marker=latest.txt \
           --parallel=25
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:
@@ -168,8 +164,6 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:
@@ -229,8 +223,6 @@ periodics:
           --test-package-marker=latest-1.35.txt \
           --parallel=25
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:
@@ -293,8 +285,6 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:
@@ -354,8 +344,6 @@ periodics:
           --test-package-marker=latest-1.36.txt \
           --parallel=25
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:
@@ -418,8 +406,6 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:
@@ -479,8 +465,6 @@ periodics:
           --test-package-marker=latest-1.37.txt \
           --parallel=25
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
       imagePullPolicy: Always
       resources:

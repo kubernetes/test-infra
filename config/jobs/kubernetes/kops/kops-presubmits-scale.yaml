@@ -42,8 +42,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
         resources:
           requests:
             cpu: 7
@@ -96,8 +94,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
         resources:
           requests:
             cpu: "6"
@@ -150,8 +146,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
         - name: SCALE_SCENARIO
           value: "correctness"
         resources:
@@ -209,8 +203,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
         - name: SCALE_SCENARIO
           value: "correctness"
         resources:
@@ -265,8 +257,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
         - name: SCALE_SCENARIO
           value: "correctness"
         resources:
@@ -321,8 +311,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
         - name: SCALE_SCENARIO
           value: "correctness"
         - name: INSTANCE_IMAGE
@@ -383,8 +371,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
         resources:
           requests:
             cpu: 7
@@ -438,8 +424,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
         resources:
           requests:
             cpu: "6"
@@ -486,10 +470,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "systemd"
         - name: CLOUD_PROVIDER
@@ -540,10 +520,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "cgroupfs"
         - name: CLOUD_PROVIDER
@@ -595,10 +571,6 @@ presubmits:
         env:
         - name: KOPS_FEATURE_FLAGS
           value: "Azure"
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "systemd"
         - name: CLOUD_PROVIDER
@@ -651,10 +623,6 @@ presubmits:
         env:
         - name: KOPS_FEATURE_FLAGS
           value: "Azure"
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "cgroupfs"
         - name: CLOUD_PROVIDER
@@ -703,10 +671,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "systemd"
         - name: CLOUD_PROVIDER
@@ -754,10 +718,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         - name: CGROUP_DRIVER
           value: "cgroupfs"
         - name: CLOUD_PROVIDER

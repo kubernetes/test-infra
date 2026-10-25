@@ -2691,6 +2691,41 @@ def generate_presubmits_e2e():
             extra_flags=["--ipv6", "--topology=private", "--bastion"],
         ),
         presubmit_test(
+            name="pull-kops-kubernetes-e2e-ubuntu-gce-build",
+            run_if_changed=r'^tests/e2e',
+            cloud="gce",
+            scenario="build",
+            extra_refs=[
+                {
+                    'org': 'kubernetes',
+                    'repo': 'kubernetes',
+                    'base_ref': 'master',
+                    'path_alias': 'k8s.io/kubernetes',
+                }
+            ],
+            presets=[
+                'preset-dind-enabled',
+            ]
+        ),
+        presubmit_test(
+            name="pull-kops-kubernetes-e2e-ubuntu-ec2-build",
+            run_if_changed=r'^tests/e2e',
+            cloud="aws",
+            kops_channel="alpha",
+            scenario="build",
+            extra_refs=[
+                {
+                    'org': 'kubernetes',
+                    'repo': 'kubernetes',
+                    'base_ref': 'master',
+                    'path_alias': 'k8s.io/kubernetes',
+                }
+            ],
+            presets=[
+                'preset-dind-enabled',
+            ]
+        ),
+        presubmit_test(
             name="pull-kops-aws-upgrade-k135-ko135-to-k137-kolatest-many-addons",
             optional=True,
             distro='u2404',

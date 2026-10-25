@@ -46,10 +46,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: admin
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -110,10 +106,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: admin
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -174,10 +166,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: admin
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -238,10 +226,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: admin
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -302,10 +286,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -366,10 +346,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -430,10 +406,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -495,10 +467,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -560,10 +528,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -624,10 +588,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -688,10 +648,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -753,10 +709,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -818,10 +770,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -882,10 +830,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -946,10 +890,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1011,10 +951,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1076,10 +1012,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1140,10 +1072,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1204,10 +1132,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1269,10 +1193,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1334,10 +1254,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1398,10 +1314,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1462,10 +1374,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1527,10 +1435,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ubuntu
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1592,10 +1496,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1656,10 +1556,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1720,10 +1616,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1785,10 +1677,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1850,10 +1738,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1914,10 +1798,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -1978,10 +1858,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2043,10 +1919,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2108,10 +1980,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2172,10 +2040,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2236,10 +2100,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2301,10 +2161,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: ec2-user
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2366,10 +2222,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: rocky
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2430,10 +2282,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: rocky
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2494,10 +2342,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: rocky
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2559,10 +2403,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: rocky
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2624,10 +2464,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: core
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2688,10 +2524,6 @@ presubmits:
         env:
         - name: KUBE_SSH_USER
           value: core
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2750,10 +2582,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2813,10 +2641,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2876,10 +2700,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -2939,10 +2759,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3002,10 +2818,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3065,10 +2877,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3128,10 +2936,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3191,10 +2995,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3254,10 +3054,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3317,10 +3113,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3380,10 +3172,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3443,10 +3231,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3506,10 +3290,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3569,10 +3349,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3632,10 +3408,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3695,10 +3467,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3758,10 +3526,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3821,10 +3585,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3884,10 +3644,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -3947,10 +3703,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4010,10 +3762,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4073,10 +3821,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4136,10 +3880,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4199,10 +3939,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4262,10 +3998,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4325,10 +4057,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4388,10 +4116,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4451,10 +4175,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4514,10 +4234,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4577,10 +4293,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4640,10 +4352,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4703,10 +4411,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4766,10 +4470,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4829,10 +4529,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4892,10 +4588,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -4955,10 +4647,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5018,10 +4706,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5081,10 +4765,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5144,10 +4824,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5207,10 +4883,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5270,10 +4942,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5333,10 +5001,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5396,10 +5060,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5459,10 +5119,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5522,10 +5178,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5585,10 +5237,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5648,10 +5296,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"
@@ -5711,10 +5355,6 @@ presubmits:
         securityContext:
           privileged: true
         env:
-        - name: GINKGO_NO_COLOR
-          value: "TRUE"
-        - name: GOPATH
-          value: /home/prow/go
         resources:
           limits:
             cpu: "4"

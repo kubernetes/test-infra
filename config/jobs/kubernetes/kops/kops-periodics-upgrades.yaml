@@ -27,8 +27,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -94,8 +92,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -167,8 +163,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -234,8 +228,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -307,8 +299,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -374,8 +364,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -447,8 +435,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -514,8 +500,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -587,8 +571,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -654,8 +636,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -727,8 +707,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -794,8 +772,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -867,8 +843,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -934,8 +908,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -1007,8 +979,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -1074,8 +1044,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.35.2"
       - name: K8S_VERSION_A
@@ -1147,8 +1115,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -1214,8 +1180,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -1287,8 +1251,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -1354,8 +1316,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -1427,8 +1387,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -1494,8 +1452,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -1567,8 +1523,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -1634,8 +1588,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "v1.36.2"
       - name: K8S_VERSION_A
@@ -1707,8 +1659,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -1774,8 +1724,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -1847,8 +1795,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -1914,8 +1860,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -1987,8 +1931,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -2054,8 +1996,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -2127,8 +2067,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -2194,8 +2132,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -2267,8 +2203,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -2334,8 +2268,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -2407,8 +2339,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -2474,8 +2404,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -2547,8 +2475,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
@@ -2614,8 +2540,6 @@ periodics:
       args:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A

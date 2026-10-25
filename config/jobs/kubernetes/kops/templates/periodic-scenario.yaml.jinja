@@ -55,8 +55,6 @@
       - name: KOPS_FEATURE_FLAGS
         value: "{{kops_feature_flags}}"
       {%- endif %}
-      - name: GINKGO_NO_COLOR
-        value: "TRUE"
       {%- for key, val in env.items() %}
       - name: {{ key }}
         value: "{{ val }}"
