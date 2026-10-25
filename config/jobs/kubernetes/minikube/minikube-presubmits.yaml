@@ -1,6 +1,6 @@
 presubmits:
   kubernetes/minikube:
-  # name convention: integration-<driver>-<container-runtime>-<OS>-<arch>
+  # name convention: pull-minikube-<driver>-<container-runtime>-<OS>-<arch>
   - name: pull-minikube-kvm-docker-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true

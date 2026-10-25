@@ -1,5 +1,5 @@
 periodics:
-# name convention: integration-<driver>-<container-runtime>-<OS>-<arch>
+# name convention: ci-minikube-<driver>-<container-runtime>-<OS>-<arch>
 - name: ci-minikube-kvm-docker-linux-x86
   cluster: k8s-infra-prow-build
   interval: 24h
