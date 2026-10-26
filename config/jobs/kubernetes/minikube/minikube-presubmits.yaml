@@ -1,35 +1,6 @@
 presubmits:
   kubernetes/minikube:
-  - name: pull-minikube-build
-    cluster: k8s-infra-prow-build
-    decorate: true
-    path_alias: "k8s.io/minikube"
-    always_run: false
-    skip_if_only_changed: '^site/|^netlify\.toml$'
-    labels:
-      preset-dind-enabled: "true"
-    annotations:
-      testgrid-dashboards: minikube-presubmits
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - make && ./out/minikube start --force-systemd --force && kubectl get pods -A
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2000Mi"
-            cpu: 2
-          limits:
-            memory: "2000Mi"
-            cpu: 2
-  # name convention: integration-<driver>-<container-runtime>-<OS>-<arch>
+  # name convention: pull-minikube-<driver>-<container-runtime>-<OS>-<arch>
   - name: pull-minikube-kvm-docker-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
@@ -55,11 +26,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
   - name: pull-minikube-docker-docker-linux-arm
     cluster: k8s-infra-prow-build
     decorate: true
@@ -86,11 +57,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
   - name: pull-minikube-docker-containerd-linux-arm
     cluster: k8s-infra-prow-build
     decorate: true
@@ -118,11 +89,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
   - name: pull-minikube-kvm-containerd-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
@@ -148,11 +119,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
   - name: pull-minikube-kvm-crio-linux-x86
     cluster: k8s-infra-prow-build
     optional: true
@@ -179,11 +150,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
   - name: pull-minikube-docker-docker-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
@@ -209,11 +180,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
   - name: pull-minikube-docker-containerd-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
@@ -239,11 +210,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 16Gi
+            cpu: 4
   - name: pull-minikube-none-containerd-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
@@ -270,11 +241,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
   - name: pull-minikube-none-docker-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
@@ -300,11 +271,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
   - name: pull-minikube-vfkit-docker-macos-arm
     cluster: k8s-infra-prow-build
     optional: true # macos machine is precious, so only run when matainers explicitly trigger with /test <job_name>
@@ -330,10 +301,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
           limits:
-            memory: 20Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 2
       nodeSelector:
-        kubernetes.io/arch: arm64
+        kubernetes.io/arch: amd64
