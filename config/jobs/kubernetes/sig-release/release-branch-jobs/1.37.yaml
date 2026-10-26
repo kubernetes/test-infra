@@ -3291,6 +3291,11 @@ presubmits:
             cpu: "2"
             memory: 6Gi
   - always_run: false
+    # Keep TestGrid metadata here so it is removed with the 1.37 jobs.
+    annotations:
+      description: Provides TestGrid configuration for Kubernetes 1.37 DRA node tests with containerd 2.1 on Ubuntu
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
     branches:
     - release-1.37
     cluster: k8s-infra-prow-build
@@ -3342,6 +3347,10 @@ presubmits:
             cpu: "2"
             memory: 6Gi
   - always_run: false
+    annotations:
+      description: Provides TestGrid configuration for Kubernetes 1.37 DRA node tests with containerd 2.1 on COS
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
     branches:
     - release-1.37
     cluster: k8s-infra-prow-build
@@ -3392,6 +3401,10 @@ presubmits:
             cpu: "2"
             memory: 6Gi
   - always_run: false
+    annotations:
+      description: Provides TestGrid configuration for Kubernetes 1.37 DRA feature tests with containerd 2.1 on Ubuntu
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
     branches:
     - release-1.37
     cluster: k8s-infra-prow-build
@@ -3443,6 +3456,10 @@ presubmits:
             cpu: "2"
             memory: 6Gi
   - always_run: false
+    annotations:
+      description: Provides TestGrid configuration for Kubernetes 1.37 DRA feature tests with containerd 2.1 on COS
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
     branches:
     - release-1.37
     cluster: k8s-infra-prow-build
@@ -5250,6 +5267,10 @@ presubmits:
             cpu: 500m
             memory: 2Gi
   - always_run: false
+    annotations:
+      description: Provides TestGrid configuration for Kubernetes 1.37 DRA node tests with containerd 2.1 on Ubuntu
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
     branches:
     - release-1.37
     cluster: k8s-infra-prow-build
@@ -5298,6 +5319,10 @@ presubmits:
             cpu: 500m
             memory: 2Gi
   - always_run: false
+    annotations:
+      description: Provides TestGrid configuration for Kubernetes 1.37 DRA node tests with containerd 2.1 on COS
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
     branches:
     - release-1.37
     cluster: k8s-infra-prow-build
