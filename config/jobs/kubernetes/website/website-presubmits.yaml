@@ -36,8 +36,8 @@ presubmits:
           make run-ci-test-production
         resources:
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
