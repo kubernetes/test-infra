@@ -182,13 +182,13 @@ optional_and_run_if_changed:
     - name: pull-kubernetes-local-e2e
       run_if_changed: local-up-cluster
     - name: pull-kubernetes-node-e2e-containerd-2-0-dra
-      run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
+      run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|pkg/apis/resource/|/api/resource/|test/e2e_node/dra_).*\.(go|yaml)
     - name: pull-kubernetes-node-e2e-containerd-2-0-dra-alpha-beta-features
-      run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
+      run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|pkg/apis/resource/|/api/resource/|test/e2e_node/dra_).*\.(go|yaml)
     - name: pull-kubernetes-node-e2e-containerd-2-1-ubuntu-dra
-      run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
+      run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|pkg/apis/resource/|/api/resource/|test/e2e_node/dra_).*\.(go|yaml)
     - name: pull-kubernetes-node-e2e-containerd-2-1-ubuntu-dra-alpha-beta-features
-      run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
+      run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|pkg/apis/resource/|/api/resource/|test/e2e_node/dra_).*\.(go|yaml)
     - name: pull-kubernetes-node-e2e-containerd-2-4-ubuntu-dra
       run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     - name: pull-kubernetes-node-e2e-containerd-2-4-ubuntu-dra-alpha-beta-features

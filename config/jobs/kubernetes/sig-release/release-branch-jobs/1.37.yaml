@@ -3318,7 +3318,7 @@ presubmits:
     name: pull-kubernetes-node-e2e-containerd-2-1-ubuntu-dra
     optional: true
     path_alias: k8s.io/kubernetes
-    run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
+    run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|pkg/apis/resource/|/api/resource/|test/e2e_node/dra_).*\.(go|yaml)
     spec:
       containers:
       - args:
@@ -3427,7 +3427,7 @@ presubmits:
     name: pull-kubernetes-node-e2e-containerd-2-1-ubuntu-dra-alpha-beta-features
     optional: true
     path_alias: k8s.io/kubernetes
-    run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
+    run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|pkg/apis/resource/|/api/resource/|test/e2e_node/dra_).*\.(go|yaml)
     spec:
       containers:
       - args:
