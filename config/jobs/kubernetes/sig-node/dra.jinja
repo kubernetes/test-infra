@@ -70,7 +70,7 @@ presubmits:
       {%- if not canary and ( not all_features or presubmit ) %}
       {%- if legacy_release_testgrid_source %}
       # Existing release jobs use this TestGrid configuration, but do not fork
-      # this containerd 1.7 job into Kubernetes 1.38 or later releases.
+      # this legacy job into Kubernetes 1.38 or later releases.
       fork-per-release: "false"
       {%- else %}
       fork-per-release: "true"
@@ -110,7 +110,7 @@ presubmits:
     {%- if need_containerd_repo %}
     - org: containerd
       repo: containerd
-      base_ref: release/2.1
+      base_ref: {{containerd_branch}}
     {%- endif %}
     spec:
       containers:
