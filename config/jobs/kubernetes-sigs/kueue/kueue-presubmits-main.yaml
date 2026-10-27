@@ -2252,17 +2252,17 @@ presubmits:
               - name: GO_TEST_FLAGS
                 value: "-race -count 3"
               - name: GOMAXPROCS
-                value: "1"
+                value: "2"
             command:
               - make
             args:
               - kueue-priority-booster-test
             resources:
               requests:
-                cpu: "400m"
+                cpu: "1100m"
                 memory: "6Gi"
               limits:
-                cpu: "400m"
+                cpu: "1100m"
                 memory: "6Gi"
     - name: pull-kueue-priority-booster-test-integration-main
       cluster: eks-prow-build-cluster
