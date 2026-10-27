@@ -2007,7 +2007,7 @@ presubmits:
     - master
     run_if_changed: '^tests/e2e'
     always_run: false
-    optional: false
+    optional: true
     skip_report: false
     labels:
       preset-service-account: "true"

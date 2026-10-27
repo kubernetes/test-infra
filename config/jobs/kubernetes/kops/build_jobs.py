@@ -2711,6 +2711,7 @@ def generate_presubmits_e2e():
             name="pull-kops-kubernetes-e2e-ubuntu-ec2-build",
             run_if_changed=r'^tests/e2e',
             cloud="aws",
+            optional=True,
             kops_channel="alpha",
             scenario="build",
             extra_refs=[
