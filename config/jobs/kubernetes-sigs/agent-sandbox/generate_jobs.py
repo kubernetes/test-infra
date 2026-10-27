@@ -42,7 +42,7 @@ import sys
 
 import yaml
 
-IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260831-6ed6668adc-master"  # pylint: disable=line-too-long
+IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master"  # pylint: disable=line-too-long
 DASHBOARD = "sig-apps-agent-sandbox"
 REPO_ORG = "kubernetes-sigs"
 REPO_NAME = "agent-sandbox"
@@ -109,6 +109,10 @@ def presubmit_lint_api(job):
     set_run_if_changed(job, r"^(extensions/)?api/|^dev/(ci/presubmits|tools)/lint-api|^dev/tools/(build-kal|\.golangci-kal\.yml|\.custom-gcl\.yaml)$")  # pylint: disable=line-too-long
 
 
+def presubmit_lint_helm(job):
+    set_run_if_changed(job, r"^helm/|^dev/(ci/presubmits|tools)/lint-helm$|^dev/tools/ct/|^dev/tools/go\.(mod|sum)$")  # pylint: disable=line-too-long
+
+
 def presubmit_test_e2e(_job):
     pass
 
@@ -156,6 +160,7 @@ PRESUBMIT_OVERRIDES = {
     "test-unit": presubmit_test_unit,
     "lint-go": presubmit_lint_go,
     "lint-api": presubmit_lint_api,
+    "lint-helm": presubmit_lint_helm,
     "test-e2e": presubmit_test_e2e,
     # Expensive full-cluster benchmarks.
     "benchmarks-kops-gcp-cilium": optional_presubmit,
@@ -214,6 +219,7 @@ PRESUBMIT_ORDER = [
     "test-unit",
     "lint-go",
     "lint-api",
+    "lint-helm",
     "test-e2e",
     "benchmarks-kops-gcp-cilium",
     "benchmarks-kops-gcp-claims",
@@ -231,6 +237,12 @@ PERIODIC_ORDER = [
     "benchmarks-kops-gcp-kindnet",
 ]
 
+# Scripts in dev/ci/periodics that are not yet enabled as Prow periodics.
+# Excluded to avoid generating unconfigured or experimental jobs until ready.
+EXCLUDED_PERIODICS = {
+    "test-e2e-gvisor",
+}
+
 # Scripts in dev/ci/presubmits that are not yet enabled as Prow presubmits.
 # Excluded to avoid generating unconfigured or experimental jobs until ready.
 EXCLUDED_PRESUBMITS = {
@@ -240,6 +252,7 @@ EXCLUDED_PRESUBMITS = {
     "test-langchain",
     "test-mcp-server-sandbox",
     "test-policy-vap",
+    "test-webmcp-bridge-sandbox",
 }
 
 
@@ -438,7 +451,7 @@ def main():
     presubmit_scripts = discover(presubmits_dir, PRESUBMIT_ORDER, EXCLUDED_PRESUBMITS)
 
     periodics_dir = args.agent_sandbox_dir / "dev" / "ci" / "periodics"
-    periodic_scripts = discover(periodics_dir, PERIODIC_ORDER)
+    periodic_scripts = discover(periodics_dir, PERIODIC_ORDER, EXCLUDED_PERIODICS)
     if not presubmit_scripts and not periodic_scripts:
         print(f"error: no dev/ci scripts found under {args.agent_sandbox_dir}", file=sys.stderr)
         return 1
