@@ -487,6 +487,16 @@ presets:
     value: "true"
 
 - labels:
+    preset-kops-scalability-gce-2000-node: "true"
+  env:
+  - name: KUBE_NODE_COUNT
+    value: "2000"
+  - name: CONTROL_PLANE_SIZE
+    value: "c4d-standard-64"
+  - name: BOSKOS_RESOURCE_TYPE
+    value: "scalability-scale-project"
+
+- labels:
     preset-kops-scalability-gce-5000-node: "true"
   env:
   - name: KUBE_NODE_COUNT
