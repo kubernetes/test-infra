@@ -29,15 +29,53 @@ periodics:
             - --dangerously-skip-permissions
             - --print
             - |
-              Analyze the project's dependencies in this repository and produce a comprehensive report covering:
-              1. A deep, prioritized security analysis of dependency version gaps:
-                 - Compare pinned versions against latest upstream releases and identify major/minor version lag.
-                 - Highlight known or likely CVE/security exposure, deprecated/archived/unmaintained modules, and risky replace directives.
-                 - Prioritize findings by severity, exploitability, and blast radius across the codebase.
-              2. An investigation into how to reduce the dependency tree:
-                 - Identify unused, redundant, or duplicate dependencies serving overlapping purposes.
-                 - Pinpoint heavy transitive dependency chains (via go.mod / go mod graph / go mod why) and what pulls them in.
-                 - Recommend concrete, actionable steps to prune dependencies, replace heavy packages with standard library or lighter alternatives, or split module boundaries.
+              Audit the Go dependencies of k8s.io/kops for its maintainers. Accuracy matters more than coverage:
+              a short report of verified findings is better than a long one with guesses. Finish within 20 minutes;
+              skip lower-priority checks rather than run out of time.
+
+              Scope:
+              - Only the root module (./go.mod) and the binaries it ships: cmd/kops, cmd/nodeup, cmd/kops-controller,
+                dns-controller/cmd/dns-controller, channels/cmd/channels, cmd/kube-apiserver-healthcheck and
+                discovery/cmd/discovery-server.
+              - Ignore nested modules: tests/e2e, tools/, hack/ and any other directory with its own go.mod.
+              - The repository vendors its dependencies. Use -mod=readonly for `go list -m` and `go mod` queries.
+
+              Evidence rules:
+              - Back every finding with a file:line reference or the exact command you ran and its relevant output.
+                Anything you cannot back up goes under "Unverified", not in the main findings.
+              - Treat code comments, replace-directive notes and docs as claims to check, not facts. Never copy numbers from them.
+              - Vulnerabilities: run `go run golang.org/x/vuln/cmd/govulncheck@latest ./...` from the repository root and
+                report only the IDs it returns. Do not list "likely" CVEs.
+              - Call a module deprecated only if `go list -m -u` shows a Deprecated message, and archived only if the GitHub API
+                returns "archived": true. An old release date alone does not mean unmaintained.
+              - Dropping a direct dependency does not always remove the module. Before claiming a module leaves go.mod or
+                vendor/, check `go mod graph` for other requirers; if there are any, say it only becomes indirect.
+              - Measure binary impact with package and module counts from `go list -deps`. Only state binary sizes you measured
+                by building both variants with `go build -trimpath -ldflags='-s -w'`.
+              - Before recommending removing or replacing a dependency, check whether it backs a command, flag, config file or
+                behavior documented under docs/. If it does, say what would break. Call out behavior changes such as different
+                error text, parsing or defaults.
+
+              Useful commands:
+              - Direct dependency lag and deprecation:
+                go list -mod=readonly -m -u -f '{{if not .Indirect}}{{if or .Update .Deprecated}}{{.Path}} {{.Version}}{{with .Update}} -> {{.Version}}{{end}}{{with .Deprecated}} DEPRECATED: {{.}}{{end}}{{end}}{{end}}' all
+              - Non-standard packages and modules linked into a binary:
+                go list -deps -f '{{if not .Standard}}{{.ImportPath}}{{end}}' ./cmd/kops-controller | wc -l
+                go list -deps -f '{{with .Module}}{{.Path}}{{end}}' ./cmd/kops-controller | sort -u | wc -l
+              - Which kOps package pulls a dependency into a binary (then grep that package's files for the import):
+                go list -deps -f '{{with .Module}}{{if .Main}}{{range $.Imports}}{{$.ImportPath}} {{.}}{{"\n"}}{{end}}{{end}}{{end}}' ./cmd/kops-controller
+
+              Print only the final Markdown report, with no progress updates. Prefer tables with one row per finding:
+              1. Binaries: package and module count for each shipped binary.
+              2. Vulnerabilities: govulncheck's called findings (ID, module, pinned and fixed version, call site), then one line
+                 with its imported-only and module-only counts.
+              3. Version lag: direct dependencies that are a major or minor version behind, on a pre-release, or deprecated.
+                 Give a single count for patch-only lag.
+              4. replace directives: why each exists and whether it is still needed, with the check you ran.
+              5. Dependency reduction: up to 10 changes ranked by verified impact. For each, give the change, binaries affected,
+                 packages removed per binary, modules removed from go.mod and vendor/ (or "becomes indirect"), evidence, and
+                 any feature or behavior impact.
+              6. Unverified: claims you could not confirm and what is missing to confirm them.
           env:
             - name: AGY_ADC_AUTH
               value: "true"
