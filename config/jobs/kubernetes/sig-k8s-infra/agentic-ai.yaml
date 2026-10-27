@@ -65,6 +65,11 @@ periodics:
               - Which kOps package pulls a dependency into a binary (then grep that package's files for the import):
                 go list -deps -f '{{with .Module}}{{if .Main}}{{range $.Imports}}{{$.ImportPath}} {{.}}{{"\n"}}{{end}}{{end}}{{end}}' ./cmd/kops-controller
 
+              Before printing the report, save it as one self-contained HTML page at "${ARTIFACTS}/dependency-audit-report.html"
+              (inline CSS only, no JavaScript or external resources, HTML-escape all command output), then link it from the
+              Prow job page:
+                echo "gs://kubernetes-ci-logs/logs/${JOB_NAME}/${BUILD_ID}/artifacts/dependency-audit-report.html" > "${ARTIFACTS}/dependency-audit-report.link.txt"
+
               Print only the final Markdown report, with no progress updates. Prefer tables with one row per finding:
               1. Binaries: package and module count for each shipped binary.
               2. Vulnerabilities: govulncheck's called findings (ID, module, pinned and fixed version, call site), then one line
