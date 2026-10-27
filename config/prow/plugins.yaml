@@ -44,6 +44,7 @@ triggers:
   - kubernetes-sigs/gateway-api
   - kubernetes-sigs/gateway-api-conformance-images
   - kubernetes-sigs/gateway-api-inference-extension
+  - kubernetes-sigs/gwctl
   - kubernetes-sigs/kube-agentic-networking
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   only_org_members: true
@@ -144,6 +145,7 @@ approve:
 - repos:
   - kubernetes-sigs/gateway-api
   - kubernetes-sigs/gateway-api-conformance-images
+  - kubernetes-sigs/gwctl
   lgtm_acts_as_approve: false
 - repos:
   - kubernetes-sigs/aws-ebs-csi-driver
@@ -1198,6 +1200,26 @@ require_matching_label:
 - missing_label: needs-ail
   org: kubernetes-sigs
   repo: gateway-api
+  prs: true
+  regexp: ^ail/[0-5]$
+  missing_comment: |
+    Gateway API requires that contributors are explicit about AI usage
+
+    Please define your AI usage level for this Pull Request, following the guidelines on AI-POLICY.md
+    and setting the proper AI level usage with the command `/label ail/<level>` (from 0 to 5)
+- missing_label: needs-ail
+  org: kubernetes-sigs
+  repo: gateway-api-conformance-images
+  prs: true
+  regexp: ^ail/[0-5]$
+  missing_comment: |
+    Gateway API requires that contributors are explicit about AI usage
+
+    Please define your AI usage level for this Pull Request, following the guidelines on AI-POLICY.md
+    and setting the proper AI level usage with the command `/label ail/<level>` (from 0 to 5)
+- missing_label: needs-ail
+  org: kubernetes-sigs
+  repo: gwctl
   prs: true
   regexp: ^ail/[0-5]$
   missing_comment: |

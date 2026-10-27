@@ -768,6 +768,7 @@ tide:
     - kubernetes-sigs/cluster-api
     - kubernetes-sigs/gateway-api
     - kubernetes-sigs/gateway-api-conformance-images
+    - kubernetes-sigs/gwctl
     - kubernetes/autoscaler
     labels:
     - lgtm
@@ -900,6 +901,7 @@ tide:
   - repos:
     - kubernetes-sigs/gateway-api
     - kubernetes-sigs/gateway-api-conformance-images
+    - kubernetes-sigs/gwctl
     labels:
     - lgtm
     - approved
