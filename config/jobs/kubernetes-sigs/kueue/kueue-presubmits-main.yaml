@@ -4,11 +4,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -41,11 +41,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -78,12 +78,12 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       optional: true
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -110,11 +110,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -145,11 +145,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -180,11 +180,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -215,11 +215,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -250,11 +250,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -281,11 +281,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -322,11 +322,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -363,11 +363,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -404,11 +404,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -445,11 +445,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -486,11 +486,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -527,11 +527,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -568,11 +568,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -609,11 +609,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -650,11 +650,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -691,11 +691,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -732,11 +732,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -773,11 +773,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -812,11 +812,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -851,11 +851,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -895,7 +895,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -930,11 +930,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -969,11 +969,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1008,11 +1008,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1047,11 +1047,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1086,11 +1086,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1125,11 +1125,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1164,11 +1164,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1203,11 +1203,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1247,7 +1247,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1287,7 +1287,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1327,7 +1327,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1367,7 +1367,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1402,11 +1402,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1441,11 +1441,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1481,11 +1481,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1520,11 +1520,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1559,11 +1559,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1598,11 +1598,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1637,11 +1637,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1676,11 +1676,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1715,11 +1715,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1758,7 +1758,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1797,7 +1797,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1833,7 +1833,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1871,11 +1871,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1902,11 +1902,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1933,11 +1933,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -1969,11 +1969,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -2002,11 +2002,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -2033,11 +2033,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -2071,11 +2071,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -2104,11 +2104,11 @@ presubmits:
       cluster: eks-prow-build-cluster
       branches:
         - ^main
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/|^cmd/kueueviz/|^test/e2e/kueueviz/|^hack/(debugpod|releasing)/|^hack/testing/(cypress|depcheck|linkchecker|shellcheck|skillsaw)/"
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -2140,7 +2140,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -2178,7 +2178,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 10m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -2218,7 +2218,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -2253,7 +2253,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
@@ -2288,7 +2288,7 @@ presubmits:
       decorate: true
       decoration_config:
         timeout: 1h
-        pod_unscheduled_timeout: 14m
+        pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
