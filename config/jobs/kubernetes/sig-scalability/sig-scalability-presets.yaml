@@ -552,4 +552,8 @@ presets:
 
 - labels:
     preset-kops-scalability-gce-experimental: "true"
-  env: []
+  env:
+  - name: EXPERIMENT_VARIANT
+    value: "pod-size-20kb"
+  - name: CL2_REALISTIC_POD_SIZE_KB
+    value: "20"
