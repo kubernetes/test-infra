@@ -241,6 +241,7 @@ PERIODIC_ORDER = [
 # Excluded to avoid generating unconfigured or experimental jobs until ready.
 EXCLUDED_PERIODICS = {
     "test-e2e-gvisor",
+    "test-e2e-kata-gcp",
 }
 
 # Scripts in dev/ci/presubmits that are not yet enabled as Prow presubmits.
