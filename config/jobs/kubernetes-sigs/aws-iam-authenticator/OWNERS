@@ -1,12 +1,20 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- wongma7
-- nckturner
+- micahhausler
+- mengqiy
 - justinsb
-- jaypipes
+- hakuna-matatah
+- kmala
+- yue9944882
 approvers:
-- wongma7
-- nckturner
+- micahhausler
+- mengqiy
 - justinsb
+- hakuna-matatah
+- kmala
+- yue9944882
+emeritus_approvers:
 - jaypipes
+- nckturner
+- wongma7

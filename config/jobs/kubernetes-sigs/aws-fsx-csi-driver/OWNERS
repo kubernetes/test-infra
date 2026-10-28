@@ -1,12 +1,20 @@
 # See the OWNERS docs at https://go.k8s.io/owners
+# Synced to the root OWNERS file in sigs.k8s.io/aws-fsx-csi-driver as of 10/28/26
 
 reviewers:
-- leakingtapan
-- gyuho
 - bertinatto
-- wongma7
+- khoang98
+- MichaelKwok1998
+- olemarkus
+- torredil
 approvers:
-- leakingtapan
-- gyuho
 - bertinatto
+- khoang98
+- MichaelKwok1998
+- olemarkus
+- torredil
+emeritus_approvers:
+- gyuho
+- leakingtapan
+- nckturner
 - wongma7

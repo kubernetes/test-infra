@@ -1,7 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
+# Synced to the root OWNERS file in sigs.k8s.io/aws-fsx-openzfs-csi-driver as of 10/28/26
 
 reviewers:
-- dims
-
+- dankova22
+- gomesjason
+- hughdanliu
+- MichaelKwok1998
 approvers:
+- dankova22
+- gomesjason
+- hughdanliu
+- MichaelKwok1998
+emeritus_approvers:
 - dims

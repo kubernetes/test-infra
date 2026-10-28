@@ -1,20 +1,24 @@
 # See the OWNERS docs at https://go.k8s.io/owners
+# Synced to the root OWNERS file in sigs.k8s.io/aws-ebs-csi-driver as of 10/28/26
 
 reviewers:
 - AndrewSirenko
 - bertinatto
 - ConnorJC3
 - ElijahQuinones
-- gyuho
-- leakingtapan
+- mdzraf
 - torredil
-- wongma7
 approvers:
 - AndrewSirenko
 - bertinatto
 - ConnorJC3
 - ElijahQuinones
+- gnufied
+- jsafrane
+- mdzraf
+- rdpsin
+- torredil
+emeritus_approvers:
 - gyuho
 - leakingtapan
-- torredil
 - wongma7

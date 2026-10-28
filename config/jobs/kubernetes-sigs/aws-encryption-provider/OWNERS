@@ -1,10 +1,15 @@
 reviewers:
 - justinsb
 - micahhausler
-- nckturner
-- wongma7
+- hakuna-matatah
+- kmala
+- yue9944882
 approvers:
 - justinsb
 - micahhausler
+- hakuna-matatah
+- kmala
+- yue9944882
+emeritus_approvers:
 - nckturner
 - wongma7
