@@ -47,6 +47,7 @@ steps:
         --build-arg=DOCKER_VERSION=$_DOCKER_VERSION \
         --build-arg=HELM_VERSION=$_HELM_VERSION \
         --build-arg=GH_VERSION=$_GH_VERSION \
+        --build-arg=TENV_VERSION=$_TENV_VERSION \
         --output=$$OUTPUT \
         .
     dir: .
@@ -64,7 +65,8 @@ substitutions:
   _YQ_VERSION: v4.54.1
   _DOCKER_VERSION: 5:29.*
   _HELM_VERSION: v4.2.4
-  _GH_VERSION: 2.102.0
+  _GH_VERSION: 2.103.3
+  _TENV_VERSION: v4.15.1
   _REGISTRY: us-central1-docker.pkg.dev/k8s-staging-test-infra/images
 timeout: 3600s
 options:

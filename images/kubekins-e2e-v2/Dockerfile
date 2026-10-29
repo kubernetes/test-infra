@@ -173,14 +173,19 @@ RUN wget -q "https://get.helm.sh/helm-${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
     mv "/tmp/linux-${TARGETARCH}/helm" /usr/local/bin/helm && \
     rm -rf helm.tar.gz "/tmp/linux-${TARGETARCH}"
 
-# install gh cli
+# install gh,tenv cli
 ARG GH_VERSION
+ARG TENV_VERSION
+ENV TENV_AUTO_INSTALL=true
 RUN if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ]; then \
     wget -q "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${TARGETARCH}.tar.gz" -O gh.tar.gz && \
     tar -xzf gh.tar.gz -C /tmp && \
     mv "/tmp/gh_${GH_VERSION}_linux_${TARGETARCH}/bin/gh" /usr/local/bin/gh && \
     chmod +x /usr/local/bin/gh && \
-    rm -rf gh.tar.gz "/tmp/gh_${GH_VERSION}_linux_${TARGETARCH}"; \
+    rm -rf gh.tar.gz "/tmp/gh_${GH_VERSION}_linux_${TARGETARCH}" && \
+    wget -q "https://github.com/tofuutils/tenv/releases/download/${TENV_VERSION}/tenv_${TENV_VERSION}_${TARGETARCH}.deb" -O tenv.deb && \
+    dpkg -i tenv.deb && \
+    rm tenv.deb; \
     fi
 
 # install kind if a version is provided
