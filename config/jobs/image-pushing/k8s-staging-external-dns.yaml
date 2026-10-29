@@ -11,18 +11,25 @@ postsubmits:
         - ^master$
         - ^v[0-9].*
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: external-dns
         containers:
           - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
               - /run.sh
             args:
               # this is the project GCB will run in, which is the same as the GCR images are pushed to.
-              - --project=k8s-staging-external-dns
-              - --scratch-bucket=gs://k8s-staging-external-dns-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - --version-tag-filter=v*
               - .
+            resources:
+              requests:
+                cpu: 1
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 1Gi
     - name: post-external-dns-push-chart
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -32,15 +39,22 @@ postsubmits:
         - ^master$
       run_if_changed: ^charts/external-dns/Chart\.yaml$
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: external-dns
         containers:
           - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-external-dns
-              - --scratch-bucket=gs://k8s-staging-external-dns-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - --build-dir=.
               - --with-git-dir
               - charts
+            resources:
+              requests:
+                cpu: 1
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 1Gi
