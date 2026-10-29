@@ -309,8 +309,7 @@ test_groups:
   name: periodic-ci-openshift-multiarch-main-nightly-4.19-ocp-e2e-aws-ovn-multi-x-x
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.19-e2e-aws-driver-toolkit
   name: periodic-ci-openshift-release-main-nightly-4.19-e2e-aws-driver-toolkit
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.19-e2e-aws-ovn-serial
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.19-e2e-aws-ovn-serial
   name: periodic-ci-openshift-release-main-nightly-4.19-e2e-aws-ovn-serial
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-4.19-e2e-metal-ipi-ovn-ipv4

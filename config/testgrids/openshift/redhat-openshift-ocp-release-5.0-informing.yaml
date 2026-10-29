@@ -19,14 +19,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-cr--full-stack--aws
+    name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--acm-virt--p2p-cr--n1-upgrade--aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-cr--full-stack--aws
+    test_group_name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--acm-virt--p2p-cr--n1-upgrade--aws
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -46,14 +46,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-cr--full-stack--vsphere
+    name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-cr--full-stack--aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-cr--full-stack--vsphere
+    test_group_name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-cr--full-stack--aws
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -883,14 +883,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-xz
+    name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-z
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-xz
+    test_group_name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-z
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -910,14 +910,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-z
+    name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-zx
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-z
+    test_group_name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-zx
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -3701,10 +3701,10 @@ dashboards:
     test_group_name: periodic-ci-openshift-release-main-nightly-5.0-upgrade-from-stable-4.22-e2e-metal-ipi-upgrade-ovn-ipv6
   name: redhat-openshift-ocp-release-5.0-informing
 test_groups:
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--acm-virt--p2p-cr--n1-upgrade--aws
+  name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--acm-virt--p2p-cr--n1-upgrade--aws
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-cr--full-stack--aws
   name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-cr--full-stack--aws
-- gcs_prefix: test-platform-results-public/logs/periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-cr--full-stack--vsphere
-  name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-cr--full-stack--vsphere
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-full-stack--fips--aws
   name: periodic-ci-RedHatQE-interop-testing-master-ocp-5.0-lpMainline-lp-interop--opp-full-stack--fips--aws
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-eng-ocp-perfscale-main-aws-5.0-nightly-x86-payload-control-plane-6nodes
@@ -3782,10 +3782,10 @@ test_groups:
   name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-powervc-multi-p-p
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-powervs-capi-multi-p-p
   name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-powervs-capi-multi-p-p
-- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-xz
-  name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-xz
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-z
   name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-z
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-zx
+  name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-multi-z-zx
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-libvirt-s390x
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-multiarch-main-nightly-5.0-ocp-e2e-ovn-remote-s2s-libvirt-multi-p-p
@@ -3950,46 +3950,33 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-console-aws
   name: periodic-ci-openshift-release-main-nightly-5.0-console-aws
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-csi
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-csi
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-csi
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-driver-toolkit
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-driver-toolkit
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-driver-toolkit
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-driver-toolkit-10
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-driver-toolkit-10
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-driver-toolkit-10
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-cgroupsv2
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-cgroupsv2
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-cgroupsv2
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-fips
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-fips
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-fips
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-proxy
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-proxy
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-csi
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-csi
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-csi
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-serial
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-serial
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-techpreview
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-techpreview
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-techpreview
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-techpreview-serial
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-techpreview-serial
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-single-node-techpreview-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-upgrade-fips
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-upgrade-fips
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-upgrade-fips
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-upgrade-fips-no-nat-instance
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-upgrade-fips-no-nat-instance
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-upgrade-fips-no-nat-instance
-- days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-upi
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-upi
   name: periodic-ci-openshift-release-main-nightly-5.0-e2e-aws-ovn-upi
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.0-e2e-azure-csi
