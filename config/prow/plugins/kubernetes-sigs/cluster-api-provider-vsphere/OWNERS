@@ -1,0 +1,14 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+# Keep in sync with cluster-api-vsphere-maintainers and
+# cluster-api-vsphere-reviewers in
+# https://github.com/kubernetes-sigs/cluster-api-provider-vsphere/blob/main/OWNERS_ALIASES
+
+reviewers:
+  - zhanggbj
+approvers:
+  - sig-cluster-lifecycle-leads
+  - chrischdi
+  - fabriziopandini
+  - randomvariable
+  - sbueringer
+  - srm09
