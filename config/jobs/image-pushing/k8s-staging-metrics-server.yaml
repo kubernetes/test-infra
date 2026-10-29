@@ -23,6 +23,13 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - .
+            resources:
+              requests:
+                cpu: 1
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 1Gi
     - name: post-metrics-server-push-chart
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -45,3 +52,10 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - charts
+            resources:
+              requests:
+                cpu: 1
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 1Gi
