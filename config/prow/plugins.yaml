@@ -2283,6 +2283,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes-sigs/dra-driver-cpu:
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
+    endpoint: http://cherrypicker
   kubernetes-sigs/dra-driver-nvidia-gpu:
   - name: cherrypicker
     events:
