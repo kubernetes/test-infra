@@ -274,8 +274,13 @@ def find_new_references(before_graph, after_graph, unwanted_modules):
     for src, dst in sorted(after_edges - before_edges):
         if dst not in unwanted_modules:
             continue
-        findings.append((src, newest(before_versions, src), newest(after_versions, src),
-                         dst, newest(after_versions, dst)))
+        now = newest(after_versions, src)
+        # The main module has no version and local replacements are v0.0.0. Neither is
+        # an upstream release to attribute, and the banned module also arrives through
+        # the third-party dependant that actually requires it.
+        if not now or now == "v0.0.0":
+            continue
+        findings.append((src, newest(before_versions, src), now, dst, newest(after_versions, dst)))
     return findings
 
 
