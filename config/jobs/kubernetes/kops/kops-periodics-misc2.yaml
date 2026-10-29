@@ -47,7 +47,7 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-3322ce81e1-eafeb.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -110,7 +110,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -170,7 +170,7 @@ periodics:
           --test-package-marker=latest.txt \
           --parallel=25
       env:
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -230,7 +230,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -290,7 +290,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -350,7 +350,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -408,7 +408,7 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -469,7 +469,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: core
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -530,7 +530,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: core
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -590,7 +590,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -650,7 +650,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -712,7 +712,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -773,7 +773,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -834,7 +834,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -894,7 +894,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -950,7 +950,7 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-4342699135-9b4dd.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1009,7 +1009,7 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-349a115d39-16181.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1070,7 +1070,7 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-127cbce38e-b114d.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1127,7 +1127,7 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-49d63c55eb-ac683.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1184,7 +1184,7 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-c0d41e2af2-13250.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1245,7 +1245,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1305,7 +1305,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1367,7 +1367,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1423,7 +1423,7 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-8b031a24de-4b12b.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1482,7 +1482,7 @@ periodics:
         value: "e2e-6e00e57ddb-8c03f.tests-kops-aws.k8s.io"
       - name: KOPS_EXTRA_FLAGS
         value: "--ipv6 --topology=private --bastion"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1549,7 +1549,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1613,7 +1613,7 @@ periodics:
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
           --parallel=25
       env:
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1676,7 +1676,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1739,7 +1739,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1801,7 +1801,7 @@ periodics:
           --skip-regex="\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
           --parallel=25
       env:
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1865,7 +1865,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1927,7 +1927,7 @@ periodics:
           --skip-regex="\[FOOBAR\]" \
           --parallel=1
       env:
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1991,7 +1991,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2053,7 +2053,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2117,7 +2117,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2181,7 +2181,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2243,7 +2243,7 @@ periodics:
           --skip-regex="\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
           --parallel=1
       env:
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2307,7 +2307,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2370,7 +2370,7 @@ periodics:
           --skip-regex="\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
           --parallel=1
       env:
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2434,7 +2434,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2499,7 +2499,7 @@ periodics:
       env:
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2562,7 +2562,7 @@ periodics:
           --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0" \
           --parallel=4
       env:
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2620,7 +2620,7 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-d67ccd9633-3243a.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2679,7 +2679,7 @@ periodics:
         value: "ubuntu"
       - name: CLUSTER_NAME
         value: "e2e-34e402c61c-63ba0.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2736,7 +2736,7 @@ periodics:
         value: "kops"
       - name: CLUSTER_NAME
         value: "e2e-8f9e6b7661-01bd8.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2794,7 +2794,7 @@ periodics:
         value: "kops"
       - name: CLUSTER_NAME
         value: "e2e-6fe08e86d5-853c0.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2846,7 +2846,7 @@ periodics:
         value: "gce"
       - name: CLUSTER_NAME
         value: "e2e-e89bcf436c-9f20e.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2897,7 +2897,7 @@ periodics:
         value: "gce"
       - name: CLUSTER_NAME
         value: "e2e-2980d2e9f1-0a041.tests-kops-aws.k8s.io"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
       imagePullPolicy: Always
       resources:
         limits:
