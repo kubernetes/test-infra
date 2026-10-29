@@ -8,7 +8,7 @@ postsubmits:
       branches:
         - ^addon-resizer-release-1.8$
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: autoscaling
         containers:
           - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
@@ -16,11 +16,18 @@ postsubmits:
             args:
               # this is the project GCB will run in, which is the same as the GCR
               # images are pushed to.
-              - --project=k8s-staging-autoscaling
+              - --project=k8s-staging-images
               # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-autoscaling-gcb
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - addon-resizer
+            resources:
+              requests:
+                cpu: 1
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 1Gi
     - name: post-autoscaler-push-vpa-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -31,7 +38,7 @@ postsubmits:
         - ^vpa-release-
       run_if_changed: "^vertical-pod-autoscaler/"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: autoscaling
         containers:
           - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
@@ -39,11 +46,18 @@ postsubmits:
             args:
               # this is the project GCB will run in, which is the same as the GCR
               # images are pushed to.
-              - --project=k8s-staging-autoscaling
+              - --project=k8s-staging-images
               # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-autoscaling-gcb
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - vertical-pod-autoscaler
+            resources:
+              requests:
+                cpu: 1
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 1Gi
     - name: post-autoscaler-push-cluster-autoscaler-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -53,7 +67,7 @@ postsubmits:
         - ^master$
       run_if_changed: "^cluster-autoscaler/"
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: autoscaling
         containers:
           - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
@@ -61,8 +75,44 @@ postsubmits:
             args:
               # this is the project GCB will run in, which is the same as the GCR
               # images are pushed to.
-              - --project=k8s-staging-autoscaling
+              - --project=k8s-staging-images
               # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-autoscaling-gcb
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - cluster-autoscaler
+            resources:
+              requests:
+                cpu: 1
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 1Gi
+    - name: post-autoscaler-push-cluster-autoscaler-chart
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-autoscaling-cluster-autoscaler-images, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+      run_if_changed: "^cluster-autoscaler/charts/cluster-autoscaler/Chart\\.yaml$"
+      spec:
+        serviceAccountName: autoscaling
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - cluster-autoscaler/charts
+            resources:
+              requests:
+                cpu: 1
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 1Gi
