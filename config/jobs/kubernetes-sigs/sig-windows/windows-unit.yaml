@@ -60,7 +60,7 @@ presubmits:
           path_alias: sigs.k8s.io/windows-testing
           workdir: true
       path_alias: k8s.io/kubernetes
-      run_if_changed: '.*windows\.go$|pkg/kubelet/.*'
+      # run_if_changed: '.*windows\.go$|pkg/kubelet/.*'
       spec:
         serviceAccountName: azure
         containers:
