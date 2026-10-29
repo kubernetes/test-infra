@@ -1916,7 +1916,7 @@ presubmits:
     name: pull-kubernetes-kind-dra
     optional: true
     path_alias: k8s.io/kubernetes
-    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
     spec:
       containers:
       - args:
@@ -1998,7 +1998,7 @@ presubmits:
     name: pull-kubernetes-kind-dra-all
     optional: true
     path_alias: k8s.io/kubernetes
-    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
     spec:
       containers:
       - args:
@@ -2165,7 +2165,7 @@ presubmits:
     name: pull-kubernetes-kind-dra-n-1
     optional: true
     path_alias: k8s.io/kubernetes
-    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
     spec:
       containers:
       - args:
@@ -2292,7 +2292,7 @@ presubmits:
     name: pull-kubernetes-dra-integration
     optional: true
     path_alias: k8s.io/kubernetes
-    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
+    run_if_changed: /(dra|e2e_dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|apis/resource|api/resource)/.*\.(go|yaml)
     spec:
       containers:
       - command:
