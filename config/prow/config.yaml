@@ -975,6 +975,11 @@ tide:
             from-branch-protection: true
           cluster-api-provider-vsphere:
             from-branch-protection: true
+          inference-perf:
+            optional-contexts:
+            # The mutation ratchet runs up to 90 minutes and fails on most PRs until
+            # kubernetes-sigs/inference-perf#1002 is fixed. It stays visible; tide does not wait for it.
+            - mutation (3.13)
           kubernetes-mixin:
             from-branch-protection: true
           kueue:
