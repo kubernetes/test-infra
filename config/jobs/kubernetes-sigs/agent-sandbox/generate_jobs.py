@@ -135,10 +135,9 @@ def presubmit_benchmarks_kops_gcp_claims(job):
 
 
 def presubmit_verify_olm_bundle(job):
-    """Optional, and auto-runs only on PRs that can affect OLM bundle
+    """Blocking, and auto-runs only on PRs that can affect OLM bundle
     generation -- olm/, k8s/, APIs, sandbox-router deploy manifests, or the
-    verify script itself; anything else can still trigger it with /test."""
-    optional_presubmit(job)
+    verify script itself."""
     set_run_if_changed(job, r"^(olm/|k8s/|(extensions/)?api/|sandbox-router/deploy/|dev/(ci/presubmits|tools)/verify-olm-bundle)")  # pylint: disable=line-too-long
 
 
@@ -165,7 +164,6 @@ PRESUBMIT_OVERRIDES = {
     # its credential requirements are sorted out.
     "test-skill-eval": manual_presubmit,
     "test-e2e-scalability-kwok": presubmit_test_e2e_scalability_kwok,
-    # OLM bundle verification is new; keep optional until it is stable.
     "verify-olm-bundle": presubmit_verify_olm_bundle,
 }
 

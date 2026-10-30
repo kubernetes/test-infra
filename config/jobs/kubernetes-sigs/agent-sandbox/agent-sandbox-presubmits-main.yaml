@@ -289,7 +289,6 @@ presubmits:
     cluster: eks-prow-build-cluster
     run_if_changed: ^(olm/|k8s/|(extensions/)?api/|sandbox-router/deploy/|dev/(ci/presubmits|tools)/verify-olm-bundle)
     decorate: true
-    optional: true
     spec:
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
