@@ -91,7 +91,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202610210' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -151,7 +151,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261021' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261024' --channel=alpha --networking=cilium --control-plane-count=1 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -330,7 +330,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202606060' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202610210' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -390,7 +390,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261021' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261024' --channel=alpha --networking=cilium --control-plane-count=3 --node-count=4 --dns=none --api-loadbalancer-type=public --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \

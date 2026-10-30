@@ -30,7 +30,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20261021-2638' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-12-amd64-20261026-2643' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -89,7 +89,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-13-amd64-20261021-2638' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-13-amd64-20261026-2643' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -505,7 +505,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20261022' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20261028' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -564,7 +564,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-arm64-server-20261022' --channel=alpha --networking=cilium --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-arm64-server-20261028' --channel=alpha --networking=cilium --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -743,7 +743,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.12.20261021.0-kernel-6.12-x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.12.20261029.0-kernel-6.12-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -802,7 +802,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.12.20261021.0-kernel-6.12-arm64' --channel=alpha --networking=cilium --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
+          --create-args="--image='137112412989/al2023-ami-2023.12.20261029.0-kernel-6.12-arm64' --channel=alpha --networking=cilium --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -862,7 +862,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2027-preview-ami-2027.0.20260914.0-kernel-7.1-x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2027-preview-ami-2027.0.20261027.0-kernel-7.2-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -921,7 +921,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2027-preview-ami-2027.0.20260914.0-kernel-7.1-arm64' --channel=alpha --networking=cilium --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
+          --create-args="--image='137112412989/al2027-preview-ami-2027.0.20261027.0-kernel-7.2-arm64' --channel=alpha --networking=cilium --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1219,7 +1219,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-alpha-4820.0.1-hvm' --channel=alpha --networking=cilium" \
+          --create-args="--image='075585003325/Flatcar-alpha-4865.0.0-hvm' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
