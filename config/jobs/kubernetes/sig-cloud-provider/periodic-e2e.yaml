@@ -1,5 +1,8 @@
 periodics:
-- interval: 6h
+# Spread over 01:00-10:00 UTC on purpose: the deployer launches g4dn.12xlarge in
+# one us-east-1 AZ with no fallback, and every capacity failure since 2026-10-11
+# (7 of 8 failures) hit the 13:00 or 19:00 UTC run. Still 4 runs per day.
+- cron: '0 1,4,7,10 * * *'
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-e2e-ec2-device-plugin-gpu
   annotations:
