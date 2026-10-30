@@ -475,6 +475,11 @@ presets:
     value: "500"
   - name: CONTROL_PLANE_SIZE
     value: "c8a.12xlarge,c8i.12xlarge,c8id.12xlarge,c7a.12xlarge,c7i.12xlarge"
+  # Below 1000 nodes Prometheus asks for 2Gi, which fits on the t3a.medium
+  # workers (3.8Gi allocatable) and gets OOM-killed there 5-7 times per run.
+  # 6Gi only fits on the control plane.
+  - name: CL2_PROMETHEUS_MEMORY_SCALE_FACTOR
+    value: "6"
 
 - labels:
     preset-kops-scalability-ec2-2000-node: "true"
