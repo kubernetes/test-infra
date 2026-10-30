@@ -277,16 +277,16 @@ def latest_azure_image(publisher, offer, sku, arch="X86_64"):
     # az vm image show --urn Canonical:ubuntu-24_04-lts:server:latest | jq .name
     if publisher == 'Canonical' and offer == 'ubuntu-24_04-lts':
         if arch == 'arm64':
-            image_name = "Canonical:ubuntu-24_04-lts:server-arm64:24.04.202606060"
+            image_name = "Canonical:ubuntu-24_04-lts:server-arm64:24.04.202610210"
         else:
-            image_name = "Canonical:ubuntu-24_04-lts:server:24.04.202606060"
+            image_name = "Canonical:ubuntu-24_04-lts:server:24.04.202610210"
 
     # az vm image show --urn Debian:debian-13:13-gen2:latest | jq .name
     elif publisher == 'Debian' and offer == 'debian-13':
         if arch == 'arm64':
-            image_name = "Debian:debian-13:13-arm64:0.20260615.2510"
+            image_name = "Debian:debian-13:13-arm64:0.20261026.2643"
         else:
-            image_name = "Debian:debian-13:13-gen2:0.20260615.2510"
+            image_name = "Debian:debian-13:13-gen2:0.20261026.2643"
     set_pinned(pin, image_name)
     return image_name
 
@@ -330,8 +330,8 @@ gce_distro_images = {
 aws_distro_images = {
     'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-x86_64'),
     'al2023arm64': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-arm64', 'arm64'),
-    'al2027': latest_aws_image('137112412989', 'al2027-preview-ami-2*-kernel-7.1-x86_64'),
-    'al2027arm64': latest_aws_image('137112412989', 'al2027-preview-ami-2*-kernel-7.1-arm64', 'arm64'), # pylint: disable=line-too-long
+    'al2027': latest_aws_image('137112412989', 'al2027-preview-ami-2*-kernel-7.2-x86_64'),
+    'al2027arm64': latest_aws_image('137112412989', 'al2027-preview-ami-2*-kernel-7.2-arm64', 'arm64'), # pylint: disable=line-too-long
     'deb12': latest_aws_image('136693071363', 'debian-12-amd64-*'),
     'deb13': latest_aws_image('136693071363', 'debian-13-amd64-*'),
     'deb13arm64': latest_aws_image('136693071363', 'debian-13-arm64-*', 'arm64'),
