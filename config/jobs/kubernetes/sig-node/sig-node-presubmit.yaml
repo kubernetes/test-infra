@@ -329,7 +329,7 @@ presubmits:
               - name: FOCUS
                 value: \[Serial\]
               - name: SKIP
-                value: \[Flaky\]|\[Slow\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
+                value: \[Flaky\]|\[Slow\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
               - name: USE_DOCKERIZED_BUILD
                 value: "true"
               - name: TARGET_BUILD_ARCH
@@ -3272,7 +3272,7 @@ presubmits:
               - name: IMAGE_CONFIG_FILE
                 value: aws-instance-serial.yaml
               - name: SKIP
-                value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:PodLevelResources\]
+                value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:PodLevelResources\]
             resources:
               limits:
                 cpu: 7
