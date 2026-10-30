@@ -37,8 +37,13 @@ presubmits:
           - bash
           - -c
           - |
-            cd ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test
-            make test-e2e-autoscaling TAG=$(git rev-parse --short HEAD)
+            set -euo pipefail
+            # CAPZ exports checkout-relative tool paths; resolve them before cd.
+            KUBECTL="$(readlink -f "${KUBECTL:?}")"
+            HELM="$(readlink -f "${HELM:?}")"
+            export KUBECTL HELM
+            cd "${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test"
+            make test-e2e-autoscaling TAG="$(git rev-parse --short HEAD)"
         env:
           - name: ADDITIONAL_ASO_CRDS
             value: authorization.azure.com/*;managedidentity.azure.com/*
