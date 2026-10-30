@@ -68,6 +68,7 @@ substitutions:
   # _PULL_BASE_REF will contain the ref that was pushed to to trigger this build -
   # a branch like 'master' or 'release-0.2', or a tag like 'v0.2'.
   _PULL_BASE_REF: 'main'
+serviceAccount: projects/k8s-staging-images/serviceAccounts/<project-name>-sa@k8s-staging-images.iam.gserviceaccount.com
 ```
 
 Don't override the entrypoint as it does some important bootstrapping such as docker buildx multiarch support.
@@ -81,7 +82,7 @@ this template. One day, we may automate this away.
 If you aren't sure, feel free to ask a [reviewer](./OWNERS) to do this part
 for you. 
 
-Prow config should be in a file named after your staging GCR project, and should
+Prow config should be in a file named `k8s-staging-<project-name>.yaml`, and should
 be based on this template:
 
 ```yaml
@@ -95,7 +96,7 @@ postsubmits:
       annotations:
         # This is the name of some testgrid dashboard to report to.
         # If this is the first one for your sig, you may need to create one
-        testgrid-dashboards: sig-something-image-pushes
+        testgrid-dashboards: sig-something-image-pushes, sig-k8s-infra-gcb
       decorate: true
       # this causes the job to only run on the main branch. Remove it if your
       # job makes sense on every branch (unless it's setting a `latest` tag it
@@ -112,9 +113,9 @@ postsubmits:
         # Build semver tags, too
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
-        serviceAccountName: gcb-builder
+        serviceAccountName: <project-name>
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20261013-5cade36dc1
             command:
               - /run.sh
             args:
@@ -122,6 +123,13 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
+            resources:
+              requests:
+                cpu: 1
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 1Gi
 ```
 
 If you need the `.git` directory to be uploaded to your build environment:
@@ -129,8 +137,17 @@ If you need the `.git` directory to be uploaded to your build environment:
 - add an empty `.gcloudignore` file to your repository. This will override the
   [default values][gcloudignore].
 
+## Migrating from legacy `gcr.io/k8s-staging-*` projects
+
+When migrating an existing project from a dedicated `k8s-staging-<project-name>` GCP project (`gcr.io/k8s-staging-<project-name>`) and `serviceAccountName: gcb-builder` to the shared `k8s-staging-images` Artifact Registry ([kubernetes/k8s.io#9486]):
+
+1. **Provision the registry and dedicated ServiceAccount in `kubernetes/k8s.io`:** Add `<project-name>` to `locals.registries` and `locals.skip_gcb_builder_shim` in `infra/gcp/terraform/k8s-staging-images/registries.tf`, run `hack/verify-staging-builds-sa.sh`, and update `registry.k8s.io/manifests/k8s-staging-<project-name>/promoter-manifest.yaml` once applied.
+2. **Prepare the repository-side PR(s) first:** Update `cloudbuild.yaml` to set `serviceAccount: projects/k8s-staging-images/serviceAccounts/<project-name>-sa@k8s-staging-images.iam.gserviceaccount.com` and update the target registry in your build scripts/`Makefile` to `us-central1-docker.pkg.dev/k8s-staging-images/<project-name>`. If the Prow job also builds release branches (`^release-`), prepare the corresponding cherry-picks for active release branches.
+3. **Coordinate the `test-infra` cutover with project maintainers:** Because the Prow job (`--project=k8s-staging-images`) and `cloudbuild.yaml` (`serviceAccount: ...`) live in separate repositories, merging one without the other will cause postsubmit builds to fail until both land. Always `/cc` the subproject `OWNERS` / tech leads on the `test-infra` PR and place a `/hold` on it until the repository-side PR is reviewed and ready to merge alongside it.
+
 [registry instructions]: https://github.com/kubernetes/k8s.io/blob/main/registry.k8s.io/README.md
 [gcb documentation]: https://cloud.google.com/cloud-build/docs/configuring-builds/create-basic-configuration
 [gcb-docker-gcloud]: https://github.com/kubernetes/test-infra/blob/master/images/gcb-docker-gcloud/Dockerfile
 [gcloudignore]: https://cloud.google.com/sdk/gcloud/reference/topic/gcloudignore
 [substitution docs]: https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values#using_user-defined_substitutions
+[kubernetes/k8s.io#9486]: https://github.com/kubernetes/k8s.io/issues/9486
