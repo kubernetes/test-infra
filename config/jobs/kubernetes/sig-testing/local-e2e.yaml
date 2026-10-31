@@ -23,8 +23,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261026-fb5e2ff7f3-master
         env:
-        - name: DOCKER_IN_DOCKER_IPV6_ENABLED
-          value: "true"
         - name: CONTAINER_RUNTIME_ENDPOINT
           value: "/var/run/docker/containerd/containerd.sock"
         command:
@@ -72,8 +70,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261026-fb5e2ff7f3-master
       env:
-      - name: DOCKER_IN_DOCKER_IPV6_ENABLED
-        value: "true"
       - name: CONTAINER_RUNTIME_ENDPOINT
         value: "/var/run/docker/containerd/containerd.sock"
       command:
