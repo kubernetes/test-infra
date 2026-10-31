@@ -65,3 +65,98 @@ presubmits:
           requests:
             cpu: 1
             memory: 4Gi
+  - name: pull-kubespray-pre-commit
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kubespray
+      testgrid-tab-name: pre-commit
+    always_run: true
+    optional: true
+    skip_report: false
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -ceux
+        - |
+          # markdownlint hook needs ruby
+          apt-get update
+          apt-get install -y --no-install-recommends ruby
+          python3 -m pip install --no-cache-dir --break-system-packages pre-commit
+          pre-commit run --hook-stage manual --all-files --show-diff-on-failure
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-kubespray-terraform-validate
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kubespray
+      testgrid-tab-name: terraform-validate
+    always_run: true
+    optional: true
+    skip_report: false
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - -k
+        - -C
+        - contrib/terraform
+        - validate
+        env:
+        - name: TOFUENV_INSTALL_MODE
+          value: mirror
+        - name: TOFUENV_LIST_MODE
+          value: mirror
+        resources:
+          limits:
+            cpu: 1
+            memory: 2Gi
+          requests:
+            cpu: 1
+            memory: 2Gi
+  - name: pull-kubespray-vagrant-validate
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kubespray
+      testgrid-tab-name: vagrant-validate
+    always_run: true
+    optional: true
+    skip_report: false
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -ceux
+        - |
+          VAGRANT_VERSION=2.4.1
+          cd /tmp
+          curl -fsSLO "https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}-1_amd64.deb"
+          curl -fsSLO "https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_SHA256SUMS"
+          sha256sum --ignore-missing -c "vagrant_${VAGRANT_VERSION}_SHA256SUMS"
+          dpkg -i "vagrant_${VAGRANT_VERSION}-1_amd64.deb"
+          cd -
+          ./tests/scripts/vagrant-validate.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 2Gi
+          requests:
+            cpu: 1
+            memory: 2Gi
