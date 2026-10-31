@@ -1,12 +1,22 @@
 # See the OWNERS docs at https://go.k8s.io/owners
+# Synced to the root OWNERS file in sigs.k8s.io/aws-efs-csi-driver as of 10/28/26
 
 reviewers:
-- leakingtapan
-- gyuho
 - bertinatto
-- wongma7
+- DavidXU12345
+- samuhale
+- vmishra22
+- wangnyue
+- YangjinanHu
 approvers:
-- leakingtapan
-- gyuho
 - bertinatto
+- DavidXU12345
+- samuhale
+- vmishra22
+- wangnyue
+- YangjinanHu
+emeritus_approvers:
+- dankova22
+- gyuho
+- leakingtapan
 - wongma7
