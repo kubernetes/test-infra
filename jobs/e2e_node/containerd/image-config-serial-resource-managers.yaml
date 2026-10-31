@@ -8,12 +8,12 @@ images:
     # the image regex is added so that only cgroupv2 images are selected.
     # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
     image_regex: ".*[^-cgroupsv1]$"
-    # Using `n2d-standard-32` that has 2 numa nodes to enable resource managers node e2e tests.
-    machine: n2d-standard-32
+    # N2 VMs with 64 vCPUs expose two vNUMA nodes on both supported CPU platforms.
+    machine: n2-standard-64
     metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
   cos:
     image_family: cos-129-lts # keep in sync with jobs/e2e_node/containerd/image-config.yaml
     project: cos-cloud
+    # N2 VMs with 64 vCPUs expose two vNUMA nodes on both supported CPU platforms.
+    machine: n2-standard-64
     metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
-    # Using `n2d-standard-32` that has 2 numa nodes to enable resource managers node e2e tests.
-    machine: n2d-standard-32
