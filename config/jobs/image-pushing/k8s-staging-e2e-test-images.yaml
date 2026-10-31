@@ -132,6 +132,49 @@ postsubmits:
               # We override that with the busybox image.
               - name: WHAT
                 value: "busybox"
+    - name: post-kubernetes-push-e2e-gmsa-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
+          - mkumatag
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/gmsa\/'
+      branches:
+        # TODO(releng): Remove once repo default branch has been renamed
+        - ^master$
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20260704-7722336b68
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --machine-type=E2_HIGHCPU_8
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
+              - --build-dir=.
+              - test/images
+            env:
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the gmsa image.
+              - name: WHAT
+                value: "gmsa"
     - name: post-kubernetes-push-e2e-glibc-dns-testing-test-images
       rerun_auth_config:
         github_team_slugs:
