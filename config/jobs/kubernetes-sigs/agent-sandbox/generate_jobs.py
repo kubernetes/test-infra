@@ -185,9 +185,34 @@ def periodic_24h(job):
     job["interval"] = "24h"
 
 
+def periodic_gemini_cu_sandbox(job):
+    """Hits the live Gemini API and needs its own cluster; moved off
+    presubmits so it doesn't block every PR and flake on the third-party
+    dependency."""
+    rename_job(job, "periodic-agent-sandbox-gemini-cu-sandbox-test",
+               tab="periodic-gemini-cu-sandbox-test")
+    job["annotations"]["description"] = (
+        "End-to-end test for the gemini-cu-sandbox example using kind")
+    job["spec"]["containers"][0]["env"] = [{
+        "name": "GEMINI_API_KEY",
+        "valueFrom": {"secretKeyRef": {"name": "gemini-api-key", "key": "key"}},
+    }]
+
+
+def periodic_python_runtime_sandbox(job):
+    """Spins up its own kind cluster alongside test-e2e; moved off
+    presubmits to avoid doubling cluster bring-up on every PR."""
+    rename_job(job, "periodic-agent-sandbox-python-runtime-sandbox-test",
+               tab="periodic-python-runtime-sandbox-test")
+    job["annotations"]["description"] = (
+        "End-to-end test for the python-runtime-sandbox example using kind")
+
+
 PERIODIC_OVERRIDES = {
     "test-load-test": periodic_test_load_test,
     "test-migration": periodic_test_migration,
+    "test-e2e-gemini-cu-sandbox": periodic_gemini_cu_sandbox,
+    "test-e2e-python-runtime-sandbox": periodic_python_runtime_sandbox,
     "benchmarks-kops-gcp-cilium": periodic_24h,
     "benchmarks-kops-gcp-claims": periodic_24h,
     "benchmarks-kops-gcp-kindnet": periodic_24h,
