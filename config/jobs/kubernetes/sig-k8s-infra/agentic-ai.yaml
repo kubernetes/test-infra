@@ -4,7 +4,7 @@ periodics:
     cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
-      timeout: 30m
+      timeout: 45m
     annotations:
       testgrid-dashboards: sig-k8s-infra-canaries
       testgrid-tab-name: agentic-ai
@@ -38,7 +38,8 @@ periodics:
                 dns-controller/cmd/dns-controller, channels/cmd/channels, cmd/kube-apiserver-healthcheck and
                 discovery/cmd/discovery-server.
               - Ignore nested modules: tests/e2e, tools/, hack/ and any other directory with its own go.mod.
-              - The repository vendors its dependencies. Use -mod=readonly for `go list -m` and `go mod` queries.
+              - The repository vendors its dependencies. Use -mod=readonly for `go list -m` queries. `go mod` subcommands
+                ignore vendor/ and don't accept -mod.
 
               Evidence rules:
               - Back every finding with a file:line reference or the exact command you ran and its relevant output.
@@ -57,17 +58,24 @@ periodics:
                 error text, parsing or defaults.
 
               Useful commands:
-              - Direct dependency lag and deprecation:
+              - Direct dependency minor and patch lag, and deprecation:
                 go list -mod=readonly -m -u -f '{{if not .Indirect}}{{if or .Update .Deprecated}}{{.Path}} {{.Version}}{{with .Update}} -> {{.Version}}{{end}}{{with .Deprecated}} DEPRECATED: {{.}}{{end}}{{end}}{{end}}' all
+              - Direct dependencies on a pre-release or pseudo-version:
+                go list -mod=readonly -m -f '{{if and (not .Indirect) (not .Main)}}{{.Path}} {{.Version}}{{end}}' all | grep -E ' v[0-9]+\.[0-9]+\.[0-9]+-'
+              - Newer major versions. `go list -m -u` doesn't report them, since each major version has its own module path.
+                For a direct dependency at <module>/vN, check the next one (uppercase letters in <module> are escaped as !lowercase):
+                curl -s https://proxy.golang.org/<module>/v<N+1>/@latest
               - Non-standard packages and modules linked into a binary:
                 go list -deps -f '{{if not .Standard}}{{.ImportPath}}{{end}}' ./cmd/kops-controller | wc -l
                 go list -deps -f '{{with .Module}}{{.Path}}{{end}}' ./cmd/kops-controller | sort -u | wc -l
               - Which kOps package pulls a dependency into a binary (then grep that package's files for the import):
                 go list -deps -f '{{with .Module}}{{if .Main}}{{range $.Imports}}{{$.ImportPath}} {{.}}{{"\n"}}{{end}}{{end}}{{end}}' ./cmd/kops-controller
 
-              Before printing the report, save it as one self-contained HTML page at "${ARTIFACTS}/dependency-audit-report.html"
-              (inline CSS only, no JavaScript or external resources, HTML-escape all command output), then link it from the
-              Prow job page:
+              Save the report as one self-contained HTML page at "${ARTIFACTS}/dependency-audit-report.html" (inline CSS
+              only, no JavaScript or external resources, HTML-escape all command output). ARTIFACTS is an environment
+              variable; resolve it with `echo "$ARTIFACTS"` first. Update the page after each section so a timeout still
+              leaves a partial report, and finish it before printing the report. At the start, create the page and link it
+              from the Prow job page:
                 echo "gs://kubernetes-ci-logs/logs/${JOB_NAME}/${BUILD_ID}/artifacts/dependency-audit-report.html" > "${ARTIFACTS}/dependency-audit-report.link.txt"
 
               Print only the final Markdown report, with no progress updates. Prefer tables with one row per finding:
@@ -95,7 +103,7 @@ periodics:
           resources:
             limits:
               cpu: "2"
-              memory: 4Gi
+              memory: 8Gi
             requests:
               cpu: "2"
-              memory: 4Gi
+              memory: 8Gi
