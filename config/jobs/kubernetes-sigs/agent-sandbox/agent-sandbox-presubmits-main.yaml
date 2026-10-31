@@ -85,6 +85,25 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
       testgrid-tab-name: presubmit-lint-api
+  - name: presubmit-agent-sandbox-lint-helm
+    cluster: eks-prow-build-cluster
+    run_if_changed: "^helm/|^dev/(ci/presubmits|tools)/lint-helm$|^dev/tools/ct/|^dev/tools/go\\.(mod|sum)$"
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+        command:
+        - dev/ci/presubmits/lint-helm
+        resources:
+          requests:
+            cpu: 4
+            memory: 8Gi
+          limits:
+            cpu: 4
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-lint-helm
   - name: presubmit-agent-sandbox-test-e2e
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
