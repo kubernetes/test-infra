@@ -1,0 +1,41 @@
+postsubmits:
+  kubernetes-sigs/kueue:
+    # Merges the unit-shard coverage of each main commit for the Spyglass
+    # coverage lens, TestGrid and the Codecov workflow (which runs on this
+    # job's status). Tide merges a squash commit only after the shards passed,
+    # so the artifacts exist when this starts: it picks the PR presubmits (or
+    # the Tide batch) that tested the commit's exact tree and merges them.
+    # Batch members before the last, and commits that no shard build tested,
+    # get no profile (the job succeeds and says why in coverage-sources.json).
+    # No skip_if_only_changed on purpose: a batch whose last PR only touches
+    # docs still tested that commit's tree, and the job takes about a minute.
+    - name: post-kueue-test-unit-coverage-main
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^main$
+      decorate: true
+      decoration_config:
+        timeout: 20m
+      path_alias: sigs.k8s.io/kueue
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: post-kueue-test-unit-coverage-main
+        testgrid-in-cell-metric: coverage
+        description: "Merge the unit-shard coverage that tested each main commit"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.27
+            env:
+              - name: UNIT_TOTAL_SHARDS
+                value: "2"
+            command:
+              - make
+            args:
+              - test-unit-coverage-merge
+            resources:
+              requests:
+                cpu: "500m"
+                memory: "1Gi"
+              limits:
+                cpu: "500m"
+                memory: "1Gi"
