@@ -23,7 +23,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           env:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
@@ -68,7 +68,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           env:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
@@ -110,7 +110,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           env:
             - name: GOMAXPROCS
               value: "1"
@@ -189,7 +189,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           command:
             - make
           args:
@@ -232,7 +232,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           command:
             - make
           args:
@@ -275,7 +275,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           command:
             - make
           args:
@@ -318,7 +318,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           command:
             - make
           args:
@@ -361,7 +361,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           command:
             - make
           args:
@@ -400,7 +400,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           command:
             - make
           args:
@@ -438,7 +438,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           command:
             - make
           args:
@@ -477,7 +477,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           command:
             - make
           args:
@@ -516,7 +516,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           command:
             - make
           args:
@@ -555,7 +555,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.26
+        - image: public.ecr.aws/docker/library/golang:1.27
           command:
             - make
           args:
