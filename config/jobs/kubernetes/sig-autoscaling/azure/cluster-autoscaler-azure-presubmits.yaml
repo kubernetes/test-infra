@@ -29,7 +29,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261102-7f9e993948-master
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -99,7 +99,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261026-fb5e2ff7f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261102-7f9e993948-master
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -158,7 +158,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261026-fb5e2ff7f3-1.37
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261102-7f9e993948-1.37
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -217,7 +217,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261026-fb5e2ff7f3-1.36
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261102-7f9e993948-1.36
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -276,7 +276,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261026-fb5e2ff7f3-1.35
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261102-7f9e993948-1.35
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -335,7 +335,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261026-fb5e2ff7f3-1.34
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261102-7f9e993948-1.34
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
