@@ -92,3 +92,38 @@ presubmits:
           limits:
             cpu: 6
             memory: "24Gi"
+
+  # Same jobs as above, without parallel testing.
+  - name: pull-kubernetes-scheduler-perf-canary
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: scheduler-perf-canary
+      testgrid-alert-email: sig-scheduling-alerts@kubernetes.io
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 3h55m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261026-fb5e2ff7f3-master
+        command:
+        - runner.sh
+        args:
+        - /bin/sh
+        - -c
+        # Parallel testing of different sub-directories gets disabled to make the results more deterministic.
+        - ./hack/install-etcd.sh && PATH=${PWD}/third_party/etcd:${PATH} make test-integration WHAT=./test/integration/scheduler_perf/... KUBE_CACHE_MUTATION_DETECTOR=false KUBE_TIMEOUT=--timeout=3h55m ETCD_LOGLEVEL=warn KUBE_TEST_ARGS="-run=nothing-because-no-test-has-this-name -benchtime=1ns -bench=BenchmarkPerfScheduling -data-items-dir=${ARTIFACTS}" SHORT='--short=false' KUBE_PRUNE_JUNIT_TESTS=false PARALLEL=1
+        # We need to constraint compute resources so all the tests
+        # finish approximately at the same time. More compute power
+        # can increase scheduling throughput and make consequent results
+        # incomparable.
+        resources:
+          requests:
+            cpu: 6
+            memory: "24Gi"
+          limits:
+            cpu: 6
+            memory: "24Gi"
