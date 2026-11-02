@@ -76,9 +76,6 @@ periodics:
       - -c
       - curl -sfSLO https://raw.githubusercontent.com/kubernetes/test-infra/refs/heads/master/hack/ci/test-infra-e2e-k8s.sh && chmod u+x test-infra-e2e-k8s.sh && curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./test-infra-e2e-k8s.sh
       env:
-      # enable IPV6 in bootstrap image
-      - name: DOCKER_IN_DOCKER_IPV6_ENABLED
-        value: "true"
       # tell kind CI script to use ipv6
       - name: IP_FAMILY
         value: "ipv6"

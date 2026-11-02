@@ -119,9 +119,6 @@ presubmits:
           value: "Feature: isEmpty && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
-        # enable IPV6 in bootstrap image
-        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-          value: "true"
         # tell kind CI script to use ipv6
         - name: "IP_FAMILY"
           value: "ipv6"
@@ -168,9 +165,6 @@ presubmits:
         - name: LABEL_FILTER
           value: "Feature: isEmpty && !Slow && !Serial && !Disruptive && !Flaky"
         - name: PARALLEL
-          value: "true"
-        # enable IPV6 in bootstrap image
-        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
           value: "true"
         # tell kind CI script to use ipv6
         - name: "IP_FAMILY"
