@@ -45,7 +45,7 @@ periodics:
       - org: kubernetes-sigs
         repo: kueue
         base_ref: main
-        path_alias: sig.k8s.io/kueue
+        path_alias: sigs.k8s.io/kueue
     spec:
       serviceAccountName: gcb-builder
       containers:
