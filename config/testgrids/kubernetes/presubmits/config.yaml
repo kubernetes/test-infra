@@ -121,6 +121,9 @@ dashboards:
   - name: pull-kubernetes-e2e-kind-alpha-beta-features
     test_group_name: pull-kubernetes-e2e-kind-alpha-beta-features
     base_options: width=10
+  - name: pull-kubernetes-e2e-kind-alpha-beta-features-others
+    test_group_name: pull-kubernetes-e2e-kind-alpha-beta-features-others
+    base_options: width=10
   - name: pull-kubernetes-e2e-kind-alpha-beta-enabled
     test_group_name: pull-kubernetes-e2e-kind-alpha-beta-enabled
     base_options: width=10
