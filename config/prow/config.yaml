@@ -46,7 +46,7 @@ plank:
         sidecar:
           requests:
             cpu: 100m
-      blobless_fetch: true
+      blobless_fetch: false # A hotfix for failing to merge PRs in batch jobs, need proper fix and then revert to true.
   # This is temporary while we transition to Workload Identity Federation.
   - cluster: k8s-infra-aks-prow-build
     config:
