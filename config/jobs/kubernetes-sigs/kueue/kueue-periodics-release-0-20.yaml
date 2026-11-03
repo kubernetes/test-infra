@@ -204,10 +204,10 @@ periodics:
           resources:
             requests:
               cpu: "7000m"
-              memory: "14Gi"
+              memory: "16Gi"
             limits:
               cpu: "7000m"
-              memory: "14Gi"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-integration-shard-1-release-0-20
     cluster: eks-prow-build-cluster
@@ -247,10 +247,10 @@ periodics:
           resources:
             requests:
               cpu: "7000m"
-              memory: "14Gi"
+              memory: "16Gi"
             limits:
               cpu: "7000m"
-              memory: "14Gi"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-integration-shard-2-release-0-20
     cluster: eks-prow-build-cluster
@@ -290,10 +290,10 @@ periodics:
           resources:
             requests:
               cpu: "3500m"
-              memory: "14Gi"
+              memory: "16Gi"
             limits:
               cpu: "3500m"
-              memory: "14Gi"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-integration-shard-3-release-0-20
     cluster: eks-prow-build-cluster
@@ -333,10 +333,10 @@ periodics:
           resources:
             requests:
               cpu: "3500m"
-              memory: "14Gi"
+              memory: "16Gi"
             limits:
               cpu: "3500m"
-              memory: "14Gi"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-integration-multikueue-release-0-20
     cluster: eks-prow-build-cluster
