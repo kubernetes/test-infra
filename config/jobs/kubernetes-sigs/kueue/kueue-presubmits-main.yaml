@@ -1372,7 +1372,7 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-scheduling
         testgrid-tab-name: pull-kueue-test-tas-e2e-deepintegration-main
-        description: "Run tas deep integration end to end tests"
+        description: "Run tas was deep integration end to end tests"
       labels:
         preset-dind-enabled: "true"
       spec:
