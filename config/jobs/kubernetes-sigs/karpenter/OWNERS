@@ -1,13 +1,18 @@
 # See the OWNERS docs at https://go.k8s.io/owners
+# Keep in sync with https://github.com/kubernetes-sigs/karpenter/blob/main/OWNERS_ALIASES
 
 approvers:
+- sig-autoscaling-leads
 - ellistarn
 - jonathan-innis
 - tzneal
-- bwagner5
 - njtran
-- jackfrancis
-reviewers:
-- engedaam
-- tallaxes
 - jmdeal
+- DerekFrank
+- engedaam
+reviewers:
+- tallaxes
+- ryan-mist
+- jigisha620
+emeritus_approvers:
+- bwagner5
