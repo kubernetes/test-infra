@@ -42,7 +42,7 @@ import sys
 
 import yaml
 
-IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master"  # pylint: disable=line-too-long
+IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261102-7f9e993948-master"  # pylint: disable=line-too-long
 DASHBOARD = "sig-apps-agent-sandbox"
 REPO_ORG = "kubernetes-sigs"
 REPO_NAME = "agent-sandbox"
@@ -241,10 +241,7 @@ PERIODIC_ORDER = [
 
 # Scripts in dev/ci/periodics that are not yet enabled as Prow periodics.
 # Excluded to avoid generating unconfigured or experimental jobs until ready.
-EXCLUDED_PERIODICS = {
-    "test-e2e-gvisor",
-    "test-e2e-kata-gcp",
-}
+EXCLUDED_PERIODICS = set()
 
 # Scripts in dev/ci/presubmits that are not yet enabled as Prow presubmits.
 # Excluded to avoid generating unconfigured or experimental jobs until ready.
