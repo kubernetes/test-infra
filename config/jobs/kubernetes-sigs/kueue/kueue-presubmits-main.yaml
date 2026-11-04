@@ -1371,7 +1371,7 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-tas-e2e-deepintegration-main
+        testgrid-tab-name: pull-kueue-test-tas-was-e2e-deepintegration-main
         description: "Run tas was deep integration end to end tests"
       labels:
         preset-dind-enabled: "true"
