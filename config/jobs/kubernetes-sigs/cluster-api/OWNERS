@@ -1,27 +1,25 @@
 # See the OWNERS docs at https://go.k8s.io/owners
+# Keep in sync with cluster-api-maintainers and
+# cluster-api-reviewers in
+# https://github.com/kubernetes-sigs/cluster-api/blob/main/OWNERS_ALIASES
 
 reviewers:
-- chrischdi
-- fabriziopandini
-- JoelSpeed
-- justinsb
-- neolit123
-- sbueringer
-- sivchari
-- vincepri
+  - karthik-k-n
+  - richardcase
+  - sivchari
 approvers:
-- chrischdi
-- fabriziopandini
-- justinsb
-- neolit123
-- sbueringer
-- vincepri
+  - sig-cluster-lifecycle-leads
+  - chrischdi
+  - fabriziopandini
+  - JoelSpeed
+  - sbueringer
 emeritus_approvers:
-- CecileRobertMichon
-- davidewatson
-- detiber
-- luxas
-- ncdc
-- timothysc
+  - CecileRobertMichon
+  - davidewatson
+  - detiber
+  - luxas
+  - ncdc
+  - timothysc
+  - vincepri
 labels:
-- sig/cluster-lifecycle
+  - sig/cluster-lifecycle
