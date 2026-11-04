@@ -142,7 +142,7 @@ periodics:
       - generic-autobumper
       args:
       - --config=config/prow/autobump-config/prow-component-autobump-config.yaml
-      # - --labels-override=skip-review # Temporarily disabled because the git 2.26.0 in the latest cloneref image is broken (https://lore.kernel.org/git/yrjh1p92qc7w.fsf@pohly-mobl1.fritz.box/T/#u, https://kubernetes.slack.com/archives/C09QZ4DQB/p1793695779735049).
+      - --labels-override=skip-review
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
