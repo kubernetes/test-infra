@@ -84,6 +84,19 @@ def get_pull_prefix(config, org):
     return config['default_external_services']['gcs_pull_prefix']
 
 
+def trim_batch_builds(builds, cutoff):
+    """Return only batch builds newer than the cutoff timestamp."""
+    filtered = {}
+    for job, job_builds in builds.iteritems():
+        keep = [
+            (build, started, finished) for build, started, finished in job_builds
+            if not started or started.get('timestamp') > cutoff
+        ]
+        if keep:
+            filtered[job] = keep
+    return filtered
+
+
 class PRHandler(view_base.BaseHandler):
     """Show a list of test runs for a PR."""
     def get(self, path, pr):
@@ -104,12 +117,7 @@ class PRHandler(view_base.BaseHandler):
                 bs.sort(key=lambda (b, s, f): -(s or {}).get('timestamp', 0))
         if pr == 'batch':  # truncate batch results to last day
             cutoff = time.time() - 60 * 60 * 24
-            builds = {}
-            for job, job_builds in builds.iteritems():
-                builds[job] = [
-                    (b, s, f) for b, s, f in job_builds
-                    if not s or s.get('timestamp') > cutoff
-                ]
+            builds = trim_batch_builds(builds, cutoff)
 
         max_builds, headings, rows = pull_request.builds_to_table(builds)
         digest = ghm.GHIssueDigest.get('%s/%s' % (org, repo), pr)

@@ -56,6 +56,27 @@ class PathTest(unittest.TestCase):
         check('google', 'cadvisor', '555', 'google_cadvisor/555')
         check('google', 'cadvisor', 'batch', 'google_cadvisor/batch')
 
+    def test_trim_batch_builds(self):
+        builds = {
+            'recent-job': [
+                ('11', {'timestamp': 200}, {'result': 'PASSED'}),
+                ('10', {'timestamp': 50}, {'result': 'FAILED'}),
+            ],
+            'stale-job': [
+                ('9', {'timestamp': 25}, {'result': 'FAILED'}),
+            ],
+            'unfinished-job': [
+                ('8', None, None),
+            ],
+        }
+
+        actual = view_pr.trim_batch_builds(builds, 100)
+
+        self.assertEqual(actual, {
+            'recent-job': [('11', {'timestamp': 200}, {'result': 'PASSED'})],
+            'unfinished-job': [('8', None, None)],
+        })
+
 
 class PRTest(main_test.TestBase):
     BUILDS = {
