@@ -107,6 +107,15 @@ presubmits:
     decoration_config:
       timeout: 3h55m
     spec:
+      # Exclusive node: required anti-affinity is symmetric, so neither
+      # other Prow pods nor this one can share the node.
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                created-by-prow: "true"
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261102-7f9e993948-master
         command:
