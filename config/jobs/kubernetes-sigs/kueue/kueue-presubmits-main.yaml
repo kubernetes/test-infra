@@ -99,9 +99,6 @@ presubmits:
       spec:
         containers:
           - image: public.ecr.aws/docker/library/golang:1.27
-            env:
-              - name: UNIT_TOTAL_SHARDS
-                value: "2"
             command:
               - make
             args:
