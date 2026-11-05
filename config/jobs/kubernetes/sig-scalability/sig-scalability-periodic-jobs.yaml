@@ -220,7 +220,7 @@ periodics:
       - name: KUBE_JUNIT_REPORT_DIR
         value: /tmp/junit
       - name: KUBE_TEST_ARGS
-        value: "-run=^$ -bench=^BenchmarkRequestCost$ -benchtime=1x"
+        value: "-run=^$ -bench=^BenchmarkRequestCost$"
       resources:
         requests:
           cpu: 4
