@@ -562,3 +562,9 @@ presets:
     value: "pod-size-20kb"
   - name: CL2_REALISTIC_POD_SIZE_KB
     value: "20"
+
+- labels:
+    preset-kops-scalability-gce-informer-watchlist: "true"
+  env:
+  - name: CL2_INFORMER_ENABLE_WATCHLIST
+    value: "true"

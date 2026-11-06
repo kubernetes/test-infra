@@ -242,3 +242,58 @@ presubmits:
           limits:
             cpu: 7
             memory: "40Gi"
+
+  - name: pull-kubernetes-gce-master-scale-performance-5000-experimental-watchlist
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    max_concurrency: 1
+    branches:
+    - master
+    - main
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-kops-scalability-common: "true"
+      preset-kops-scalability-gce-common: "true"
+      preset-kops-scalability-gce-5000-node: "true"
+      preset-kops-scalability-gce-experimental: "true"
+      preset-kops-scalability-gce-informer-watchlist: "true"
+    job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
+    decoration_config:
+      timeout: 450m
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability, sig-scalability-gce
+      testgrid-tab-name: pull-kubernetes-gce-master-scale-performance-5000-experimental-watchlist
+    spec:
+      serviceAccountName: prow-build
+      tolerations:
+        - key: highmem
+          operator: Exists
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261102-7f9e993948-master
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/scalability/run-test.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7
+            memory: "40Gi"
+          limits:
+            cpu: 7
+            memory: "40Gi"
