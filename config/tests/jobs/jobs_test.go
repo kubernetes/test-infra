@@ -74,7 +74,7 @@ var jobsExemptFromResourceLimits = []*regexp.Regexp{
 	regexp.MustCompile(`^ci-kubernetes-build(-1-\d+)?$`),
 	regexp.MustCompile(`^ci-kubernetes-e2e-(gce|ec2)-scale-(performance|correctness)-[1-9]000(-experimental)?$`),
 	regexp.MustCompile(`^pull-kops-(gce|ec2)-master-scale-(performance|correctness)-[1-9]000$`),
-	regexp.MustCompile(`^pull-kubernetes-(gce|ec2)-master-scale-(performance|correctness)-[1-9]000(-experimental)?$`),
+	regexp.MustCompile(`^pull-kubernetes-(gce|ec2)-master-scale-(performance|correctness)-[1-9]000(-experimental(-watchlist)?)?$`),
 	regexp.MustCompile(`^pull-perf-tests-(gce|ec2)-master-scale-(performance|correctness)-[1-9]000(-experimental)?$`),
 }
 
