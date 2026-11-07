@@ -353,7 +353,8 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --metadata-sources=cl2-metadata.json
-        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=MASTER_ROOT_DISK_SIZE=500GB
+        - --env=MASTER_DISK_SIZE=500GB
         - --env=ETCD_QUOTA_BACKEND_BYTES=34359738368
         - --env=ETCD_COMPACTION_INTERVAL_SEC=150
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
@@ -432,7 +433,8 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --metadata-sources=cl2-metadata.json
-        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=MASTER_ROOT_DISK_SIZE=500GB
+        - --env=MASTER_DISK_SIZE=500GB
         - --env=ETCD_QUOTA_BACKEND_BYTES=34359738368
         - --env=ETCD_COMPACTION_INTERVAL_SEC=150
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
@@ -562,7 +564,8 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --metadata-sources=cl2-metadata.json
-        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=MASTER_ROOT_DISK_SIZE=500GB
+        - --env=MASTER_DISK_SIZE=500GB
         - --env=ETCD_QUOTA_BACKEND_BYTES=34359738368
         - --env=ETCD_COMPACTION_INTERVAL_SEC=150
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
@@ -1422,7 +1425,8 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --metadata-sources=cl2-metadata.json
-        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=MASTER_ROOT_DISK_SIZE=500GB
+        - --env=MASTER_DISK_SIZE=500GB
         - --env=ETCD_QUOTA_BACKEND_BYTES=34359738368
         - --env=ETCD_COMPACTION_INTERVAL_SEC=150
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
