@@ -86,8 +86,7 @@ presubmits:
           # markdownlint hook needs ruby
           apt-get update
           apt-get install -y --no-install-recommends ruby
-          python3 -m pip install --no-cache-dir --break-system-packages pre-commit
-          pre-commit run --hook-stage manual --all-files --show-diff-on-failure
+          uvx pre-commit run --hook-stage manual --all-files --show-diff-on-failure
         resources:
           limits:
             cpu: 2
