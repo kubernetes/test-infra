@@ -1358,7 +1358,7 @@ presubmits:
               limits:
                 cpu: "6500m"
                 memory: "10Gi"
-    - name: pull-kueue-test-e2e-was-deep-tas-baseline-basic-fit-main
+    - name: pull-kueue-test-tas-was-e2e-deepintegration-main
       cluster: eks-prow-build-cluster
       optional: true
       always_run: false
@@ -1371,8 +1371,8 @@ presubmits:
       path_alias: sigs.k8s.io/kueue
       annotations:
         testgrid-dashboards: sig-scheduling
-        testgrid-tab-name: pull-kueue-test-e2e-was-deep-tas-baseline-basic-fit-main
-        description: "Run was deep tas baseline basic fit end to end tests"
+        testgrid-tab-name: pull-kueue-test-tas-was-e2e-deepintegration-main
+        description: "Run tas was deep integration end to end tests"
       labels:
         preset-dind-enabled: "true"
       spec:
@@ -1387,7 +1387,7 @@ presubmits:
             args:
               - make
               - kind-image-build
-              - test-e2e-was-deep-tas-baseline-basic-fit
+              - test-tas-e2e-deepintegration
             # docker-in-docker needs privileged mode
             securityContext:
               privileged: true
