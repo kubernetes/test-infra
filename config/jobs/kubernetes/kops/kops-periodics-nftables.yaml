@@ -90,7 +90,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-13-amd64-20261026-2643' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='136693071363/debian-13-amd64-20261103-2651' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -510,7 +510,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20261028' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20261104.1' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -570,7 +570,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-arm64-server-20261028' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-arm64-server-20261104.1' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -630,7 +630,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-stonking-26.10-amd64-server-20261022' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-stonking-26.10-amd64-server-20261104.1' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -690,7 +690,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-stonking-26.10-arm64-server-20261022' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-stonking-26.10-arm64-server-20261104.1' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -750,7 +750,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.12.20261029.0-kernel-6.12-x86_64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='137112412989/al2023-ami-2023.12.20261102.0-kernel-6.12-x86_64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -810,7 +810,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.12.20261029.0-kernel-6.12-arm64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
+          --create-args="--image='137112412989/al2023-ami-2023.12.20261102.0-kernel-6.12-arm64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -870,7 +870,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2027-preview-ami-2027.0.20261027.0-kernel-7.2-x86_64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='137112412989/al2027-preview-ami-2027.0.20261102.0-kernel-7.2-x86_64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -930,7 +930,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2027-preview-ami-2027.0.20261027.0-kernel-7.2-arm64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
+          --create-args="--image='137112412989/al2027-preview-ami-2027.0.20261102.0-kernel-7.2-arm64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -990,7 +990,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-9.8.0_HVM-20260908-x86_64-0-Hourly2-GP3' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='309956199498/RHEL-9.8.0_HVM-20261021-x86_64-0-Hourly2-GP3' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1050,7 +1050,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20260908-arm64-0-Hourly2-GP3' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
+          --create-args="--image='309956199498/RHEL-10.2.0_HVM-20261020-arm64-0-Hourly2-GP3' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --node-size=m6g.large,m6g.xlarge --control-plane-size=m6g.large,m6g.xlarge" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1291,7 +1291,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-760-20' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-801-14' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1349,7 +1349,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-arm64-125-19216-760-20' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
+          --create-args="--image='cos-cloud/cos-arm64-125-19216-801-14' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1407,7 +1407,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-129-19506-578-21' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-129-19506-625-14' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1465,7 +1465,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-arm64-129-19506-578-21' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
+          --create-args="--image='cos-cloud/cos-arm64-129-19506-625-14' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1523,7 +1523,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-133-19999-44-170' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-133-19999-44-193' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1581,7 +1581,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-arm64-133-19999-44-170' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
+          --create-args="--image='cos-cloud/cos-arm64-133-19999-44-193' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1755,7 +1755,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='debian-cloud/debian-12-bookworm-v20261027' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+          --create-args="--image='debian-cloud/debian-12-bookworm-v20261102' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1813,7 +1813,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20261027' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+          --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20261102' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1871,7 +1871,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='debian-cloud/debian-13-trixie-v20261027' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+          --create-args="--image='debian-cloud/debian-13-trixie-v20261102' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1929,7 +1929,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='debian-cloud/debian-13-trixie-arm64-v20261027' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+          --create-args="--image='debian-cloud/debian-13-trixie-arm64-v20261102' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1987,7 +1987,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2204-jammy-v20261021' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2204-jammy-v20261105' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -2045,7 +2045,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261024' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261105' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -2103,7 +2103,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20261024' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20261105' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -2161,7 +2161,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20261021' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20261107' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -2219,7 +2219,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-arm64-v20261021' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-arm64-v20261107' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -2277,7 +2277,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2610-stonking-amd64-v20261021' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2610-stonking-amd64-v20261104' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -2335,7 +2335,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2610-stonking-arm64-v20261021' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2610-stonking-arm64-v20261104' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -2393,7 +2393,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-amd64-v20261028' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-amd64-v20261107' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -2451,7 +2451,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-arm64-v20261028' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-arm64-v20261107' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --control-plane-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -2509,7 +2509,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='rhel-cloud/rhel-10-v20261024' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+          --create-args="--image='rhel-cloud/rhel-10-v20261104' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
