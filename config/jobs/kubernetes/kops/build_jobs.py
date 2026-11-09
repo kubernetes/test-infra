@@ -2857,6 +2857,29 @@ def generate_presubmits_e2e():
 
     return jobs
 
+def generate_presubmits_upgrades_distros():
+    jobs = []
+    for distro in ('deb13', 'al2023'):
+        jobs.append(presubmit_test(
+            name=f"pull-kops-aws-upgrade-k136-ko136-to-k137-kolatest-{distro}",
+            distro=distro,
+            networking='calico',
+            optional=True,
+            test_timeout_minutes=150,
+            extra_dashboards=['kops-upgrades'],
+            scenario='upgrade-ab',
+            # Scenario jobs consume KOPS_EXTRA_FLAGS rather than create_args.
+            extra_flags=[f"--image={aws_distro_images[distro]}"],
+            env={
+                'KOPS_VERSION_A': '1.36',
+                'K8S_VERSION_A': 'v1.36.4',
+                'KOPS_VERSION_B': 'latest',
+                'K8S_VERSION_B': 'v1.37.0',
+            },
+        ))
+    return jobs
+
+
 ########################
 # YAML File Generation #
 ########################
@@ -2883,6 +2906,7 @@ presubmits_files = {
     'kops-presubmits-branch.yaml': generate_presubmits_branch,
     'kops-presubmits-dns-none.yaml': generate_presubmits_dns_none,
     'kops-presubmits-upgrades-dns-none.yaml': generate_presubmits_upgrades_dns_none,
+    'kops-presubmits-upgrades-distros.yaml': generate_presubmits_upgrades_distros,
 }
 
 def output_file(filename: pathlib.Path, contents: str, verify: bool) -> str:
