@@ -91,7 +91,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20261021' --channel=alpha --networking=gce --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20261107' --channel=alpha --networking=gce --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
@@ -212,7 +212,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20261021' --channel=alpha --networking=gce --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20261107' --channel=alpha --networking=gce --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
           --test=kops \
@@ -333,7 +333,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20261021' --channel=alpha --networking=gce --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20261107' --channel=alpha --networking=gce --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.36.txt \
           --test=kops \
@@ -454,7 +454,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20261021' --channel=alpha --networking=gce --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20261107' --channel=alpha --networking=gce --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.37.txt \
           --test=kops \

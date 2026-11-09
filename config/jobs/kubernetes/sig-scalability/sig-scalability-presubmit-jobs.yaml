@@ -353,14 +353,15 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --metadata-sources=cl2-metadata.json
-        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=MASTER_ROOT_DISK_SIZE=500GB
+        - --env=MASTER_DISK_SIZE=500GB
         - --env=ETCD_QUOTA_BACKEND_BYTES=34359738368
         - --env=ETCD_COMPACTION_INTERVAL_SEC=150
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
         - --env=CL2_PODS_BENCHMARK_POD_COUNT=10000
         - --env=CL2_PODS_WATCH_REPLICAS=0
-        - --env=CL2_PODS_WRITE_REPLICAS=25
+        - --env=CL2_PODS_WRITE_REPLICAS=30
         - --env=CL2_PODS_PATCH_QPS=100
         - --env=CL2_PODS_BENCHMARK_DURATION=15m
         - --test=false
@@ -432,14 +433,15 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --metadata-sources=cl2-metadata.json
-        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=MASTER_ROOT_DISK_SIZE=500GB
+        - --env=MASTER_DISK_SIZE=500GB
         - --env=ETCD_QUOTA_BACKEND_BYTES=34359738368
         - --env=ETCD_COMPACTION_INTERVAL_SEC=150
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
         - --env=KUBE_GCE_PRIVATE_CLUSTER=false
         - --env=CL2_PODS_BENCHMARK_POD_COUNT=10000
         - --env=CL2_PODS_WATCH_REPLICAS=0
-        - --env=CL2_PODS_WRITE_REPLICAS=50
+        - --env=CL2_PODS_WRITE_REPLICAS=60
         - --env=CL2_PODS_PATCH_QPS=100
         - --env=CL2_PODS_BENCHMARK_DURATION=15m
         - --test=false
@@ -562,7 +564,8 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --metadata-sources=cl2-metadata.json
-        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=MASTER_ROOT_DISK_SIZE=500GB
+        - --env=MASTER_DISK_SIZE=500GB
         - --env=ETCD_QUOTA_BACKEND_BYTES=34359738368
         - --env=ETCD_COMPACTION_INTERVAL_SEC=150
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
@@ -976,7 +979,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-lint
     spec:
       containers:
-      - image: golangci/golangci-lint:v2.12.1
+      - image: golangci/golangci-lint:v2.15.0
         command:
         - make
         args:
@@ -1422,7 +1425,8 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --metadata-sources=cl2-metadata.json
-        - --env=MASTER_ROOT_DISK_SIZE=100GB
+        - --env=MASTER_ROOT_DISK_SIZE=500GB
+        - --env=MASTER_DISK_SIZE=500GB
         - --env=ETCD_QUOTA_BACKEND_BYTES=34359738368
         - --env=ETCD_COMPACTION_INTERVAL_SEC=150
         - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false

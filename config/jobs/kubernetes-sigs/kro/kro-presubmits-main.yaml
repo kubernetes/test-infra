@@ -198,16 +198,16 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: node:20
+      - image: node:22
         command:
         - scripts/ci/presubmits/docs-tests
         resources:
           limits:
             cpu: 2
-            memory: 4Gi
+            memory: 6Gi
           requests:
             cpu: 2
-            memory: 4Gi
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-cloud-provider-kro-presubmits
       testgrid-tab-name: presubmits-docs-tests
