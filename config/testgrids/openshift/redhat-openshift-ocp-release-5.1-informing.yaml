@@ -2530,6 +2530,141 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-aws-ovn-upgrade
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-aws-ovn-upgrade
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-azure-ovn-upgrade
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-azure-ovn-upgrade
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-gcp-ovn-rt-upgrade
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-gcp-ovn-rt-upgrade
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-gcp-ovn-upgrade
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-gcp-ovn-upgrade
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-vsphere-ovn-upgrade
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-vsphere-ovn-upgrade
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-5.0-e2e-aws-ovn-upgrade
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -2673,6 +2808,60 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-main-nightly-5.1-console-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-nightly-5.1-e2e-agent-compact-fips-install
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-e2e-agent-compact-fips-install
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-nightly-5.1-e2e-agent-ha-dualstack-dhcp-install
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-e2e-agent-ha-dualstack-dhcp-install
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -3502,33 +3691,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-main-nightly-5.1-e2e-osd-ccs-gcp
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-e2e-osd-ccs-gcp
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-main-nightly-5.1-e2e-telco5g
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -3726,6 +3888,87 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-analysis-all
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-aws-upgrade-ovn-single-node
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-aws-upgrade-ovn-single-node
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-metal-ipi-ovn-upgrade
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-metal-ipi-ovn-upgrade
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-metal-ipi-upgrade-ovn-ipv6
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-metal-ipi-upgrade-ovn-ipv6
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -4077,6 +4320,20 @@ test_groups:
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-ci-5.1-e2e-vsphere-ovn-upgrade
   name: periodic-ci-openshift-release-main-ci-5.1-e2e-vsphere-ovn-upgrade
 - days_of_results: 60
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-aws-ovn-upgrade
+  name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-aws-ovn-upgrade
+- days_of_results: 60
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-azure-ovn-upgrade
+  name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-azure-ovn-upgrade
+- days_of_results: 60
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-gcp-ovn-rt-upgrade
+  name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-gcp-ovn-rt-upgrade
+- days_of_results: 60
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-gcp-ovn-upgrade
+  name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-gcp-ovn-upgrade
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-vsphere-ovn-upgrade
+  name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-4.23-e2e-vsphere-ovn-upgrade
+- days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-5.0-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-main-ci-5.1-upgrade-from-stable-5.0-e2e-aws-ovn-upgrade
 - days_of_results: 60
@@ -4093,6 +4350,10 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-console-aws
   name: periodic-ci-openshift-release-main-nightly-5.1-console-aws
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-agent-compact-fips-install
+  name: periodic-ci-openshift-release-main-nightly-5.1-e2e-agent-compact-fips-install
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-agent-ha-dualstack-dhcp-install
+  name: periodic-ci-openshift-release-main-nightly-5.1-e2e-agent-ha-dualstack-dhcp-install
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-aws-csi
   name: periodic-ci-openshift-release-main-nightly-5.1-e2e-aws-csi
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-aws-driver-toolkit
@@ -4166,8 +4427,6 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ovn-single-node-live-iso
   name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ovn-single-node-live-iso
-- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-osd-ccs-gcp
-  name: periodic-ci-openshift-release-main-nightly-5.1-e2e-osd-ccs-gcp
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-telco5g
   name: periodic-ci-openshift-release-main-nightly-5.1-e2e-telco5g
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-vsphere-ovn-csi
@@ -4184,6 +4443,13 @@ test_groups:
   name: periodic-ci-openshift-release-main-nightly-5.1-tls-scan
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-upgrade-analysis-all
   name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-analysis-all
+- days_of_results: 60
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-aws-upgrade-ovn-single-node
+  name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-aws-upgrade-ovn-single-node
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-metal-ipi-ovn-upgrade
+  name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-metal-ipi-ovn-upgrade
+- gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-metal-ipi-upgrade-ovn-ipv6
+  name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-4.23-e2e-metal-ipi-upgrade-ovn-ipv6
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-5.0-e2e-aws-upgrade-ovn-single-node
   name: periodic-ci-openshift-release-main-nightly-5.1-upgrade-from-stable-5.0-e2e-aws-upgrade-ovn-single-node
