@@ -186,6 +186,49 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       fork-per-release: "true"
 
+  - name: pull-kubernetes-test-modules-with-minimum-go
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    run_if_changed: '^(\.go-version|go\.(mod|work)|staging/src/k8s\.io/[^/]+/go\.mod|staging/test/|hack/update-vendor\.sh)'
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    path_alias: k8s.io/kubernetes
+    spec:
+      # these tests intentionally do not require root or privileged operations
+      securityContext:
+        runAsUser: 2001
+        runAsGroup: 2010
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261102-7f9e993948-master
+        securityContext:
+          allowPrivilegeEscalation: false
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          # go runs with default settings, so it needs a writable HOME / GOPATH
+          # for GOCACHE and on-demand toolchain downloads.
+          export HOME="$(mktemp -d)"
+          export GOPATH="${HOME}/go"
+          staging/test/test-modules-with-minimum-go.sh
+        resources:
+          limits:
+            cpu: 4
+            memory: "8Gi"
+          requests:
+            cpu: 4
+            memory: "8Gi"
+    annotations:
+      testgrid-dashboards: sig-arch-code-organization
+      testgrid-tab-name: pull-test-modules-with-minimum-go
+      fork-per-release: "true"
+
 periodics:
 - interval: 4h
   cluster: k8s-infra-prow-build
