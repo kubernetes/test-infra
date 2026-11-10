@@ -19,7 +19,8 @@ periodics:
       - --exclude-tags=Shared=Ignore
       - --enable-target-group-clean=true
       - --clean-ecr-repositories=aws-ebs-csi-driver
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20260819-fdaf2e0
+      - --enable-s3-files-clean=true
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20261106-67d2d22
       resources:
         requests:
           cpu: 1
