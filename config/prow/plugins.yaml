@@ -1304,6 +1304,11 @@ cherry_pick_approved:
   - Verolop
   - xmudrii
 
+override:
+  allowed_github_teams:
+    kubernetes-sigs/kueue:
+    - kueue-maintainers
+
 # Enabled plugins per repo.
 # Keys: Full repo name: "org/repo".
 # Values: List of plugins to run against the repo.
@@ -1644,6 +1649,7 @@ plugins:
     plugins:
     - milestone
     - milestonestatus
+    - override
     - release-note
     - stage
 
