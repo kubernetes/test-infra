@@ -34,7 +34,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=amazonvpc --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=amazonvpc --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -95,7 +95,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=amazonvpc --ipv6 --topology=private --bastion --dns=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=amazonvpc --ipv6 --topology=private --bastion --dns=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -157,7 +157,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=calico --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge --set=cluster.spec.networking.calico.wireguardEnabled=false" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=calico --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge --set=cluster.spec.networking.calico.wireguardEnabled=false" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -341,7 +341,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=calico --ipv6 --topology=private --bastion --dns=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=calico --ipv6 --topology=private --bastion --dns=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -403,7 +403,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=cilium --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=cilium --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -587,7 +587,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --dns=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --dns=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -649,7 +649,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=cilium-etcd --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=cilium-etcd --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -771,7 +771,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=cilium-eni --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=cilium-eni --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge --set=cluster.spec.networking.cilium.extraConfig=aws-enable-prefix-delegation=true --set=cluster.spec.networking.cilium.extraConfig=ipam-min-allocate=80 --set=cluster.spec.networking.cilium.extraConfig=ipam-pre-allocate=10" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -833,7 +833,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=flannel --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=flannel --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -895,7 +895,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=kube-router --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=kube-router --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -957,7 +957,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=kindnet --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=kindnet --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1141,7 +1141,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=kindnet --ipv6 --topology=private --bastion --dns=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=kindnet --ipv6 --topology=private --bastion --dns=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1203,7 +1203,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261023' --channel=alpha --networking=kubenet --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge --topology=public" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20261108' --channel=alpha --networking=kubenet --control-plane-size=c6g.large --node-size=t4g.large,t4g.xlarge --topology=public" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
