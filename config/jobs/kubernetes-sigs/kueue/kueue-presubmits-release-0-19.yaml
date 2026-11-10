@@ -1660,11 +1660,7 @@ presubmits:
               - runner.sh
             args:
               - make
-              - image-local-build
-              - importer-image
-              - kueueviz-image
-              - kueue-populator-image
-              - kueue-priority-booster-image
+              - image-presubmit
             env:
               - name: GOMAXPROCS
                 value: "5"
@@ -1673,10 +1669,10 @@ presubmits:
             resources:
               requests:
                 cpu: "4700m"
-                memory: "6Gi"
+                memory: "12Gi"
               limits:
                 cpu: "4700m"
-                memory: "6Gi"
+                memory: "12Gi"
     - name: pull-kueue-test-scheduling-perf-release-0-19
       cluster: eks-prow-build-cluster
       branches:
