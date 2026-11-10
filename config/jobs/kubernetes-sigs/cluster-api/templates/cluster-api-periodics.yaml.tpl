@@ -329,6 +329,46 @@ periodics:
     testgrid-tab-name: capi-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
+- name: periodic-cluster-api-verify-security-{{ ReplaceAll $.branch "." "-" }}
+  cluster: eks-prow-build-cluster
+  cron: "0 12 * * 1"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: {{ $.branch }}
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+    - image: {{ $.config.TestImage }}
+      command:
+      - runner.sh
+      - make
+      - verify-security
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4000m
+          memory: 8Gi
+        limits:
+          cpu: 4000m
+          memory: 8Gi
+  annotations:
+    testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
+    testgrid-tab-name: capi-verify-security-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
 {{ if eq $.branch "main" }}
 - name: periodic-cluster-api-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}
   cluster: eks-prow-build-cluster

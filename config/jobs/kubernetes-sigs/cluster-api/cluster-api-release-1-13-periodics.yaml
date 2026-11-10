@@ -286,3 +286,43 @@ periodics:
     testgrid-tab-name: capi-e2e-conformance-ci-latest-release-1-13
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
+- name: periodic-cluster-api-verify-security-release-1-13
+  cluster: eks-prow-build-cluster
+  cron: "0 12 * * 1"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: release-1.13
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261102-7f9e993948-1.35
+      command:
+      - runner.sh
+      - make
+      - verify-security
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4000m
+          memory: 8Gi
+        limits:
+          cpu: 4000m
+          memory: 8Gi
+  annotations:
+    testgrid-dashboards: cluster-api-core-1.13
+    testgrid-tab-name: capi-verify-security-release-1-13
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
