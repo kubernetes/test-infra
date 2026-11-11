@@ -229,9 +229,6 @@ presubmits:
           operator: Exists
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261102-7f9e993948-master
-        env:
-        - name: CL2_INFORMER_ENABLE_WATCHLIST
-          value: "true"
         command:
         - runner.sh
         args:
