@@ -1140,8 +1140,7 @@ periodics:
           cpu: 3
           memory: "8Gi"
 
-# Requires clusterloader2/testing/etcd/defrag.yaml in perf-tests master first.
-# Keep workload and storage aligned with the baseline job above for comparison.
+# Match the baseline workload and storage; enable the existing defrag loop.
 - interval: 24h # Start daily to limit additional compute cost.
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-benchmark-etcd-write-throughput-defrag
@@ -1181,29 +1180,32 @@ periodics:
       - --gcp-master-size=n2-standard-32
       - --gcp-node-size=e2-standard-32
       - --gcp-node-image=gci
-      # These are Kubernetes workers; the scenario creates one etcd member.
       - --gcp-nodes=3
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       - --env=KUBE_GCE_PRIVATE_CLUSTER=false
+      - --env=CL2_ETCD_REPLICAS=1
       - --env=CL2_ETCD_VERSION=3.7.2-0
       - --env=CL2_ETCD_QUOTA_BACKEND_BYTES=34359738368
       - --env=CL2_ETCD_STORAGE_SIZE=64Gi
       - --env=CL2_ETCD_STORAGE_CLASS=ssd
       - --env=CL2_ETCD_INIT=true
       - --env=CL2_ETCD_INIT_QPS=0
+      - --env=CL2_ETCD_INIT_CONCURRENCY=50
       - --env=CL2_ETCD_INIT_TIMEOUT=15m
       - --env=CL2_ETCD_WRITER_REPLICAS=10
       - --env=CL2_ETCD_WRITER_QPS=100
+      - --env=CL2_ETCD_WRITER_CONCURRENCY=10
       - --env=CL2_ETCD_KEY_COUNT=150000
       - --env=CL2_ETCD_PAYLOAD_TYPE=pod
       - --env=CL2_ETCD_COMPACT_INTERVAL=90s
       - --env=CL2_ETCD_COMPACT_PHYSICAL=true
+      # The existing benchmark runs defrag independently in each writer pod.
+      - --env=CL2_ETCD_DEFRAG_INTERVAL=5m
       - --env=CL2_ETCD_KEY_PREFIX=/registry/pods/default/pod-
-      - --env=CL2_ETCD_DEFRAG_ONCE=true
-      - --env=CL2_ETCD_DEFRAG_PHASE_DURATION=5m
+      - --env=CL2_ETCD_BENCHMARK_DURATION=15m
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -1214,7 +1216,7 @@ periodics:
       - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
       - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
-      - --test-cmd-args=--testconfig=testing/etcd/defrag.yaml
+      - --test-cmd-args=--testconfig=testing/etcd/config.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=60m
       - --use-logexporter
