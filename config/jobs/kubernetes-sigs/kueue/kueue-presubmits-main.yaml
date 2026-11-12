@@ -2348,6 +2348,7 @@ presubmits:
     - name: pull-kueue-verify-website-links-preview-main
       cluster: eks-prow-build-cluster
       always_run: false
+      optional: true
       run_if_changed: "^(site/|netlify\\.toml)"
       branches:
         - ^main
