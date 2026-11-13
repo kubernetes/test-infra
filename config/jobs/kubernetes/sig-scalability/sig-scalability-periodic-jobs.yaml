@@ -1175,7 +1175,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=benchmark-etcd-write-throughput-defrag
+      - --cluster=benchmark-etcd-defrag
       - --extract=ci/latest
       - --gcp-master-size=n2-standard-32
       - --gcp-node-size=e2-standard-32
