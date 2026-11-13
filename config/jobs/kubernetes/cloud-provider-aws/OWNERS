@@ -1,12 +1,19 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- nckturner
+- micahhausler
+- mengqiy
 - andrewsykim
-- wongma7
+- kmala
+- yue9944882
 approvers:
-- nckturner
+- micahhausler
+- mengqiy
 - andrewsykim
+- kmala
+- yue9944882
+emeritus_approvers:
+- nckturner
 - wongma7
 labels:
 - sig/cloud-provider
