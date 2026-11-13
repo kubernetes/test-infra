@@ -199,5 +199,7 @@ optional_and_run_if_changed:
       run_if_changed: ^test/e2e_node/
     - name: pull-kubernetes-node-kubelet-serial-containerd-slow
       run_if_changed: ^test/e2e_node/
+    - name: pull-kubernetes-test-modules-with-minimum-go
+      run_if_changed: ^(\.go-version|go\.(mod|work)|staging/src/k8s\.io/[^/]+/go\.mod|staging/test/|hack/update-vendor\.sh)
     - name: pull-publishing-bot-validate
       run_if_changed: ^staging/publishing.*$
