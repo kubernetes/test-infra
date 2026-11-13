@@ -19,7 +19,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -108,7 +108,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -199,7 +199,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -244,7 +244,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -301,7 +301,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -349,7 +349,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -400,7 +400,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -451,7 +451,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -499,7 +499,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -551,7 +551,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -601,7 +601,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -653,7 +653,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -709,7 +709,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
@@ -761,7 +761,7 @@ presubmits:
     path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261109-1a94437b08-master
         command:
         - wrapper.sh
         - bash
