@@ -4,9 +4,6 @@
 approvers:
 - sig-autoscaling-leads
 - ellistarn
-- jonathan-innis
-- tzneal
-- njtran
 - jmdeal
 - DerekFrank
 - engedaam
@@ -16,3 +13,6 @@ reviewers:
 - jigisha620
 emeritus_approvers:
 - bwagner5
+- jonathan-innis
+- tzneal
+- njtran
