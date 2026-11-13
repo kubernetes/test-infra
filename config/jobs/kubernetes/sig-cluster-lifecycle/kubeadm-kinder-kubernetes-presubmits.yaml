@@ -82,3 +82,53 @@ presubmits:
           requests:
             memory: "9000Mi"
             cpu: 2000m
+
+  # Manual companion to ci-kubernetes-e2e-kubeadm-kinder-extended-latest.
+  # Requires native workflow groups and KINDER_KUBEADM_BINARY support in kubeadm/main.
+  - name: pull-kubernetes-e2e-kubeadm-kinder-extended-latest
+    cluster: eks-prow-build-cluster
+    decorate: true
+    optional: true
+    always_run: false
+    branches:
+    - ^master$
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kubeadm
+      testgrid-tab-name: pull-kubeadm-kinder-extended-latest
+      description: "OWNER: sig-cluster-lifecycle (kinder); Runs the extended suite using kubeadm built from a kubernetes/kubernetes PR"
+    decoration_config:
+      timeout: 180m
+    extra_refs:
+    - org: kubernetes
+      repo: kubeadm
+      base_ref: main
+      path_alias: k8s.io/kubeadm
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261019-e80425793a-master
+        command:
+        - runner.sh
+        - bash
+        - -c
+        args:
+        - |
+          set -euo pipefail
+          # Prow checks out the PR in k8s.io/kubernetes; build that checkout.
+          make all WHAT=cmd/kubeadm KUBE_BUILD_PLATFORMS=linux/amd64
+          export KINDER_KUBEADM_BINARY="${PWD}/_output/local/bin/linux/amd64/kubeadm"
+          test -x "${KINDER_KUBEADM_BINARY}"
+          "${KINDER_KUBEADM_BINARY}" version -o short
+          exec ../kubeadm/kinder/ci/kinder-run.sh extended-latest
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: "9000Mi"
+            cpu: 2000m
+          requests:
+            memory: "9000Mi"
+            cpu: 2000m
