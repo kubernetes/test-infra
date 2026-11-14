@@ -3448,14 +3448,41 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4
+    name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4-1of2
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4
+    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4-1of2
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4-2of2
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4-2of2
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -3583,14 +3610,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack
+    name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack-1of2
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack
+    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack-1of2
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -3610,14 +3637,41 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-ipv6
+    name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack-2of2
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-ipv6
+    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack-2of2
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-ipv6-1of2
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-ipv6-1of2
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -4403,8 +4457,11 @@ test_groups:
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-ipv6-techpreview
   name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-ipv6-techpreview
 - days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4
-  name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4-1of2
+  name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4-1of2
+- days_of_results: 60
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4-2of2
+  name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-ipv4-2of2
 - days_of_results: 60
   gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-virtualmedia-1of2
   name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-serial-virtualmedia-1of2
@@ -4417,11 +4474,14 @@ test_groups:
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-upgrade
   name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-ovn-upgrade
 - days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack
-  name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack-1of2
+  name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack-1of2
 - days_of_results: 60
-  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-ipv6
-  name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-ipv6
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack-2of2
+  name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-dualstack-2of2
+- days_of_results: 60
+  gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-ipv6-1of2
+  name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-serial-ovn-ipv6-1of2
 - gcs_prefix: test-platform-results-public/logs/periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-upgrade-ovn-ipv6
   name: periodic-ci-openshift-release-main-nightly-5.1-e2e-metal-ipi-upgrade-ovn-ipv6
 - days_of_results: 60
