@@ -2349,7 +2349,8 @@ presubmits:
       cluster: eks-prow-build-cluster
       always_run: false
       optional: true
-      run_if_changed: "^(site/|netlify\\.toml)"
+      # TODO: re-enable once Netlify reliably creates deploy previews for site/ changes.
+      # run_if_changed: "^(site/|netlify\\.toml)"
       branches:
         - ^main
       decorate: true
@@ -2360,7 +2361,7 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-scheduling
         testgrid-tab-name: pull-kueue-verify-website-links-preview-main
-        description: "Check links on a PR's Netlify deploy preview"
+        description: "Check links on a PR's Netlify deploy preview, on demand (non-blocking)"
       labels:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"

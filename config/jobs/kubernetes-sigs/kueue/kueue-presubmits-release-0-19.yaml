@@ -2049,7 +2049,8 @@ presubmits:
       cluster: eks-prow-build-cluster
       optional: true
       always_run: false
-      run_if_changed: "^(site/|netlify\\.toml)"
+      # TODO: re-enable once Netlify reliably creates deploy previews for site/ changes.
+      # run_if_changed: "^(site/|netlify\\.toml)"
       branches:
         - ^release-0.19
       decorate: true
