@@ -6,7 +6,7 @@ presubmits:
     decorate: true
     path_alias: "k8s.io/minikube"
     always_run: false
-    skip_if_only_changed: '^site/|^netlify\.toml$'
+    skip_if_only_changed: '^site/|^\.github/|^enhancements/|^images/|^installers/|^\.devcontainer/|^\.openvex/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -36,7 +36,7 @@ presubmits:
     decorate: true
     path_alias: "k8s.io/minikube"
     always_run: false
-    skip_if_only_changed: '^site/|^netlify\.toml$'
+    skip_if_only_changed: '^site/|^\.github/|^enhancements/|^images/|^installers/|^\.devcontainer/|^\.openvex/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -67,7 +67,7 @@ presubmits:
     decorate: true
     path_alias: "k8s.io/minikube"
     always_run: false
-    skip_if_only_changed: '^site/|^netlify\.toml$'
+    skip_if_only_changed: '^site/|^\.github/|^enhancements/|^images/|^installers/|^\.devcontainer/|^\.openvex/|^netlify\.toml$'
     optional: true
     labels:
       preset-dind-enabled: "true"
@@ -99,7 +99,7 @@ presubmits:
     decorate: true
     path_alias: "k8s.io/minikube"
     always_run: false
-    skip_if_only_changed: '^site/|^netlify\.toml$'
+    skip_if_only_changed: '^site/|^\.github/|^enhancements/|^images/|^installers/|^\.devcontainer/|^\.openvex/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -130,7 +130,7 @@ presubmits:
     decorate: true
     path_alias: "k8s.io/minikube"
     always_run: false
-    skip_if_only_changed: '^site/|^netlify\.toml$'
+    skip_if_only_changed: '^site/|^\.github/|^enhancements/|^images/|^installers/|^\.devcontainer/|^\.openvex/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -160,7 +160,7 @@ presubmits:
     decorate: true
     path_alias: "k8s.io/minikube"
     always_run: false
-    skip_if_only_changed: '^site/|^netlify\.toml$'
+    skip_if_only_changed: '^site/|^\.github/|^enhancements/|^images/|^installers/|^\.devcontainer/|^\.openvex/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -190,7 +190,7 @@ presubmits:
     decorate: true
     path_alias: "k8s.io/minikube"
     always_run: false
-    skip_if_only_changed: '^site/|^netlify\.toml$'
+    skip_if_only_changed: '^site/|^\.github/|^enhancements/|^images/|^installers/|^\.devcontainer/|^\.openvex/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
@@ -220,7 +220,7 @@ presubmits:
     decorate: true
     path_alias: "k8s.io/minikube"
     always_run: false
-    skip_if_only_changed: '^site/|^netlify\.toml$'
+    skip_if_only_changed: '^site/|^\.github/|^enhancements/|^images/|^installers/|^\.devcontainer/|^\.openvex/|^netlify\.toml$'
     optional: true
     labels:
       preset-dind-enabled: "true"
@@ -251,7 +251,7 @@ presubmits:
     decorate: true
     path_alias: "k8s.io/minikube"
     always_run: false
-    skip_if_only_changed: '^site/|^netlify\.toml$'
+    skip_if_only_changed: '^site/|^\.github/|^enhancements/|^images/|^installers/|^\.devcontainer/|^\.openvex/|^netlify\.toml$'
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
