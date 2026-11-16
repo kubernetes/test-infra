@@ -6,7 +6,7 @@ presubmits:
     optional: false
     skip_branches:
     - gh-pages
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -39,7 +39,7 @@ presubmits:
     optional: false
     branches:
       - ^release-.*$
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -72,7 +72,7 @@ presubmits:
     optional: false
     skip_branches:
     - gh-pages
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -133,7 +133,7 @@ presubmits:
     optional: false
     skip_branches:
     - gh-pages
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
     spec:
@@ -162,7 +162,7 @@ presubmits:
     optional: false
     skip_branches:
     - gh-pages
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -195,7 +195,7 @@ presubmits:
     optional: false
     skip_branches:
     - gh-pages
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -228,7 +228,7 @@ presubmits:
     optional: false
     skip_branches:
       - gh-pages
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -261,7 +261,7 @@ presubmits:
     optional: false
     branches:
       - ^release-.*$
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -294,7 +294,7 @@ presubmits:
     optional: false
     branches:
       - ^release-.*$
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261102-7f9e993948-master
@@ -323,7 +323,7 @@ presubmits:
     optional: false
     branches:
       - ^release-.*$
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -356,7 +356,7 @@ presubmits:
     optional: false
     skip_branches:
       - gh-pages
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -389,7 +389,7 @@ presubmits:
     optional: false
     skip_branches:
       - gh-pages
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -422,7 +422,7 @@ presubmits:
     optional: false
     branches:
       - ^release-.*$
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -455,7 +455,7 @@ presubmits:
     decorate: true
     skip_branches:
       - gh-pages
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -488,7 +488,7 @@ presubmits:
     optional: false
     skip_branches:
     - gh-pages
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/|renovate.json"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
