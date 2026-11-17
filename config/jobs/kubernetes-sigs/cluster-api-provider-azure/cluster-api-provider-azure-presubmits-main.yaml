@@ -644,6 +644,10 @@ presubmits:
               value: latest
             - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
               value: Standard_D8s_v3
+            # Some DRA tests require nodes with more than the default 2 CPU.
+            # https://github.com/kubernetes/kubernetes/blob/c921933e39782a84840db3abd346154d9f0d7084/test/e2e/dra/dra_node_allocatable_resources.go#L888
+            - name: AZURE_NODE_MACHINE_TYPE
+              value: Standard_D8s_v3
           securityContext:
             privileged: true
           resources:
