@@ -73,6 +73,39 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    fork-per-release-cron: 0 2 * * *, 0 4 * * *, 0 6 * * *
+    testgrid-dashboards: ibm-s390x-k8s, ibm-s390x-periodics, sig-release-job-config-errors
+    testgrid-tab-name: ci-kubernetes-integration-s390x-1.36
+  cluster: k8s-infra-s390x-prow-build
+  cron: 0 1/6 * * *
+  decorate: true
+  extra_refs:
+  - base_ref: release-1.36
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  name: ci-kubernetes-integration-s390x-1-36
+  spec:
+    containers:
+    - args:
+      - ./hack/jenkins/test-integration-dockerized.sh
+      command:
+      - runner.sh
+      env:
+      - name: SHORT
+        value: --short=false
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261029-cd3d638333-1.36
+      name: ""
+      resources:
+        limits:
+          cpu: "6"
+          memory: 20Gi
+        requests:
+          cpu: "6"
+          memory: 20Gi
+      securityContext:
+        privileged: true
+- annotations:
     fork-per-release-cron: 0 9 * * *, 0 13 * * *, 0 17 * * *
     testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
     testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, conformance-ppc64le, ibm-k8s-e2e, sig-release-job-config-errors
