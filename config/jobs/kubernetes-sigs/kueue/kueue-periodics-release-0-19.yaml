@@ -293,10 +293,10 @@ periodics:
           resources:
             requests:
               cpu: "3800m"
-              memory: "14Gi"
+              memory: "16Gi"
             limits:
               cpu: "3800m"
-              memory: "14Gi"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-scheduling-perf-release-0-19
     cluster: eks-prow-build-cluster
