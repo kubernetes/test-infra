@@ -91,7 +91,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261102-7f9e993948-master
         command:
         - dev/ci/presubmits/lint-helm
         resources:
@@ -134,6 +134,7 @@ presubmits:
     skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     optional: true
+    max_concurrency: 2
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
@@ -164,6 +165,7 @@ presubmits:
     run_if_changed: ^extensions/|^cmd/|^controllers/|^internal/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp
     decorate: true
     optional: true
+    max_concurrency: 2
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
@@ -194,6 +196,7 @@ presubmits:
     skip_if_only_changed: "^(docs|site|\\.agents)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|(.*/)?OWNERS|\\.coderabbit\\.yaml|SECURITY_CONTACTS|cloudbuild\\.yaml)$|^\\.github/"
     decorate: true
     optional: true
+    max_concurrency: 2
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"

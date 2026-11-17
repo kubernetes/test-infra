@@ -42,7 +42,7 @@ import sys
 
 import yaml
 
-IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261023-e0cef2e94a-master"  # pylint: disable=line-too-long
+IMAGE = "us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261102-7f9e993948-master"  # pylint: disable=line-too-long
 DASHBOARD = "sig-apps-agent-sandbox"
 REPO_ORG = "kubernetes-sigs"
 REPO_NAME = "agent-sandbox"
@@ -128,13 +128,24 @@ def optional_presubmit(job):
     job["optional"] = True
 
 
-def presubmit_benchmarks_kops_gcp_claims(job):
-    """Optional, and auto-runs only on PRs that can affect warm-pool claim
-    adoption -- the extensions controllers/APIs plus the controller binary,
-    shared controllers, and internal packages the adoption path runs through
-    -- or the benchmark itself; anything else can still trigger it with
-    /test."""
+def presubmit_benchmarks_kops_gcp(job):
+    """Optional, and at most two runs at a time. Each run brings up its own
+    kops cluster in us-central1, and when a batch of /ok-to-test or approvals
+    starts 8-10 of them in the same minute nearly every run fails with
+    apiserver dial timeouts until kops validate gives up; runs started one or
+    two at a time pass. Extra runs queue instead of failing. See
+    https://github.com/kubernetes-sigs/agent-sandbox/issues/1921."""
     optional_presubmit(job)
+    job["max_concurrency"] = 2
+
+
+def presubmit_benchmarks_kops_gcp_claims(job):
+    """Like presubmit_benchmarks_kops_gcp, but auto-runs only on PRs that can
+    affect warm-pool claim adoption -- the extensions controllers/APIs plus
+    the controller binary, shared controllers, and internal packages the
+    adoption path runs through -- or the benchmark itself; anything else can
+    still trigger it with /test."""
+    presubmit_benchmarks_kops_gcp(job)
     set_run_if_changed(job, r"^extensions/|^cmd/|^controllers/|^internal/|^test/stress/|^test/benchmarks/|^dev/ci/(presubmits|periodics)/benchmarks-kops-gcp")  # pylint: disable=line-too-long
 
 
@@ -163,9 +174,9 @@ PRESUBMIT_OVERRIDES = {
     "lint-helm": presubmit_lint_helm,
     "test-e2e": presubmit_test_e2e,
     # Expensive full-cluster benchmarks.
-    "benchmarks-kops-gcp-cilium": optional_presubmit,
+    "benchmarks-kops-gcp-cilium": presubmit_benchmarks_kops_gcp,
     "benchmarks-kops-gcp-claims": presubmit_benchmarks_kops_gcp_claims,
-    "benchmarks-kops-gcp-kindnet": optional_presubmit,
+    "benchmarks-kops-gcp-kindnet": presubmit_benchmarks_kops_gcp,
     # Not wired up in prow before this generator existed; keep manual until
     # its credential requirements are sorted out.
     "test-skill-eval": manual_presubmit,
@@ -380,7 +391,7 @@ def build_periodic(script_name, override_func=None):
 PRESUBMIT_KEY_ORDER = [
     "name", "cluster", "skip_if_only_changed", "run_if_changed",
     "decorate", "decoration_config", "always_run", "optional",
-    "labels", "spec", "annotations",
+    "max_concurrency", "labels", "spec", "annotations",
 ]
 PERIODIC_KEY_ORDER = [
     "name", "cluster", "interval", "decorate", "decoration_config",
