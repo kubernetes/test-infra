@@ -1817,6 +1817,124 @@ presubmits:
               - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
               - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
               - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-canary.yaml
+
+    - name: pull-node-crio-alpha-features
+      cluster: k8s-infra-prow-build
+      # explicitly needs /test pull-node-crio-alpha-features to run
+      always_run: false
+      # if at all it is run and fails, don't block the PR
+      optional: true
+      skip_report: false
+      branches:
+        # TODO(releng): Remove once repo default branch has been renamed
+        - master
+        - main
+      decorate: true
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: kubernetes
+          repo: test-infra
+          base_ref: master
+          path_alias: k8s.io/test-infra
+      decoration_config:
+        timeout: 180m
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-pull-kubernetes-e2e: "true"
+        preset-pull-kubernetes-e2e-gce: "true"
+      annotations:
+        testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
+        testgrid-tab-name: pull-node-crio-alpha-features
+        description: Runs the node e2e feature tests with all alpha and beta feature gates enabled on CRI-O (canary build until the CRI-O pin is bumped)
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261102-7f9e993948-master
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            env:
+              - name: KUBE_SSH_USER
+                value: core
+              - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+                value: "1"
+            command:
+              - runner.sh
+            args:
+              - kubetest2
+              - noop
+              - --test=node
+              - --
+              - --repo-root=.
+              - --gcp-zone=us-central1-b
+              - --parallelism=8
+              - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
+              - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
+              - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/all=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+              - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-canary.yaml
+
+    - name: pull-node-crio-cri-proxy-all-alpha-serial
+      cluster: k8s-infra-prow-build
+      # explicitly needs /test pull-node-crio-cri-proxy-all-alpha-serial to run
+      always_run: false
+      # if at all it is run and fails, don't block the PR
+      optional: true
+      skip_report: false
+      branches:
+        # TODO(releng): Remove once repo default branch has been renamed
+        - master
+        - main
+      decorate: true
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: kubernetes
+          repo: test-infra
+          base_ref: master
+          path_alias: k8s.io/test-infra
+      decoration_config:
+        timeout: 180m
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-pull-kubernetes-e2e: "true"
+        preset-pull-kubernetes-e2e-gce: "true"
+      annotations:
+        testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
+        testgrid-tab-name: pull-node-crio-cri-proxy-all-alpha-serial
+        description: Runs the CRI proxy and the serial SecurityProfileOCI node e2e tests with all alpha and beta feature gates enabled on CRI-O (canary build until the CRI-O pin is bumped)
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261102-7f9e993948-master
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            env:
+              - name: KUBE_SSH_USER
+                value: core
+              - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+                value: "1"
+            command:
+              - runner.sh
+            args:
+              - kubetest2
+              - noop
+              - --test=node
+              - --
+              - --repo-root=.
+              - --gcp-zone=us-central1-b
+              - --parallelism=1
+              - --focus-regex=\[Feature:CriProxy\]|\[Feature:SecurityProfileOCI\].*\[Serial\]
+              - --skip-regex=\[Flaky\]
+              - '--test-args=--cri-proxy-enabled=true --feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/all=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+              - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-canary.yaml
     - name: pull-node-crio-kubelet-serial
       cluster: k8s-infra-prow-build
       # explicitly needs /test pull-node-crio-kubelet-serial to run
