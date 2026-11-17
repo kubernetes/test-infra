@@ -273,10 +273,10 @@ presubmits:
             resources:
               requests:
                 cpu: "3800m"
-                memory: "14Gi"
+                memory: "16Gi"
               limits:
                 cpu: "3800m"
-                memory: "14Gi"
+                memory: "16Gi"
     - name: pull-kueue-test-e2e-baseline-release-0-20-1-35
       cluster: eks-prow-build-cluster
       branches:
