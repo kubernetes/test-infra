@@ -90,6 +90,8 @@ approve:
   - kubernetes/kops
   - kubernetes/website
   - kubernetes-sigs/ai-conformance
+  - kubernetes-sigs/controller-runtime
+  - kubernetes-sigs/controller-tools
   - kubernetes-sigs/etcd-manager
   - kubernetes-sigs/external-dns
   - kubernetes-sigs/cluster-api-provider-openstack
