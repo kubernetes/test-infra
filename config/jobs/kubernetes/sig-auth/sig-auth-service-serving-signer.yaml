@@ -1,0 +1,109 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-kind-service-serving-signer
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    run_if_changed: '^(cmd/kube-controller-manager/app/(certificates\.go|options/serviceservingsigner\.go)|pkg/controller/certificates/podcertssigner/|test/e2e/auth/service_serving_signer\.go)'
+    decorate: true
+    # the signer is new in 1.38, older release branches don't have the feature gate
+    branches:
+    - ^master$
+    - ^release-1\.(3[8-9]|[4-9][0-9])$
+    labels:
+      preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: sig-auth-service-serving-signer
+      description: Runs the service-serving signer e2e tests with a kind cluster
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20261102-7f9e993948-master
+        command:
+        - wrapper.sh
+        - bash
+        - -xce
+        - |
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
+
+          # kube-controller-manager only runs the signer when it is given a CA.
+          tmp_dir=$(mktemp -d)
+          signer_node_dir=/etc/kubernetes/service-serving-signer
+          openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -days 1 \
+            -subj "/CN=service-serving-signer" \
+            -addext "basicConstraints=critical,CA:TRUE" \
+            -addext "keyUsage=critical,keyCertSign,digitalSignature" \
+            -keyout "${tmp_dir}/ca.key" -out "${tmp_dir}/ca.crt"
+
+          mkdir -p "${ARTIFACTS}"
+          cat <<EOF > "${ARTIFACTS}/kind-config.yaml"
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          featureGates:
+            KubeServingCertificatesSigner: true
+          nodes:
+          - role: control-plane
+            extraMounts:
+            - hostPath: ${tmp_dir}
+              containerPath: ${signer_node_dir}
+              readOnly: true
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            apiVersion: kubeadm.k8s.io/v1beta4
+            controllerManager:
+              extraArgs:
+                - name: "service-serving-signer-cert"
+                  value: "${signer_node_dir}/ca.crt"
+                - name: "service-serving-signer-key"
+                  value: "${signer_node_dir}/ca.key"
+                - name: "service-serving-trust-bundle"
+                  value: "${signer_node_dir}/ca.crt"
+              extraVolumes:
+                - name: service-serving-signer
+                  hostPath: ${signer_node_dir}
+                  mountPath: ${signer_node_dir}
+                  readOnly: true
+                  pathType: Directory
+          EOF
+
+          GINKGO_PID=
+          cleanup() {
+            rc=$?
+            if [ -n "${GINKGO_PID}" ]; then kill -TERM "${GINKGO_PID}" || true; fi
+            kind export logs "${ARTIFACTS}/kind" || true
+            kind delete cluster || true
+            rm -rf "${tmp_dir}" _output/bin/e2e.test
+            exit "${rc}"
+          }
+          trap cleanup EXIT INT TERM
+
+          kind build node-image -v 1
+          make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/v2/ginkgo"
+          export PATH="${PWD}/_output/bin:${PATH}"
+
+          kind create cluster --retain --wait=1m -v=3 --image=kindest/node:latest --config "${ARTIFACTS}/kind-config.yaml"
+          kubectl version
+
+          export KUBECONFIG="${HOME}/.kube/config"
+          # run in the background so the traps above can fire while ginkgo is running
+          ginkgo run --silence-skips --force-newlines --no-color \
+            --focus=KubeServingCertificatesSigner \
+            --label-filter="Feature: isSubsetOf { OffByDefault, ServiceServingSigner } && !Flaky" \
+            _output/bin/e2e.test -- \
+            -provider=skeleton -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          GINKGO_PID=$!
+          wait "${GINKGO_PID}"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7
+            memory: 9000Mi
+          requests:
+            cpu: 7
+            memory: 9000Mi
