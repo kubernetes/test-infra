@@ -23,10 +23,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20261117-54944683d"
-        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20261117-54944683d"
-        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20261117-54944683d"
-        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20261117-54944683d"
+        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20261118-9c8eff7c9"
+        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20261118-9c8eff7c9"
+        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20261118-9c8eff7c9"
+        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20261118-9c8eff7c9"
       gcs_configuration:
         bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
