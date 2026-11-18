@@ -19,6 +19,7 @@ dashboards:
 - name: sig-auth-secrets-store-csi-driver-presubmit
 - name: sig-auth-secrets-store-csi-driver-release-signal
 - name: sig-auth-encryption-at-rest
+- name: sig-auth-service-serving-signer
 - name: sig-auth-secrets-store-sync-controller
 - name: sig-auth-secrets-store-sync-controller-periodic
 - name: sig-auth-secrets-store-sync-controller-presubmit
@@ -33,6 +34,7 @@ dashboard_groups:
   - sig-auth-secrets-store-csi-driver-presubmit
   - sig-auth-secrets-store-csi-driver-release-signal
   - sig-auth-encryption-at-rest
+  - sig-auth-service-serving-signer
   - sig-auth-secrets-store-sync-controller
   - sig-auth-secrets-store-sync-controller-periodic
   - sig-auth-secrets-store-sync-controller-presubmit

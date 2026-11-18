@@ -105,6 +105,8 @@ optional_and_run_if_changed:
       run_if_changed: ^(test/e2e/network/|pkg/apis/networking|pkg/proxy/nftables/)
     - name: pull-kubernetes-e2e-kind-nftables-ipv6
       run_if_changed: ^(test/e2e/network/|pkg/apis/networking|pkg/proxy/nftables/)
+    - name: pull-kubernetes-e2e-kind-service-serving-signer
+      run_if_changed: ^(cmd/kube-controller-manager/app/(certificates\.go|options/serviceservingsigner\.go)|pkg/controller/certificates/podcertssigner/|test/e2e/auth/service_serving_signer\.go)
     - name: pull-kubernetes-e2e-kubeadm-kinder-dryrun-latest
       run_if_changed: ^(cmd\/kubeadm|test\/e2e_kubeadm)\/
     - name: pull-kubernetes-e2e-kubeadm-kinder-upgrade-latest
