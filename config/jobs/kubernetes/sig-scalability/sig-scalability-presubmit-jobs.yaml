@@ -747,6 +747,35 @@ presubmits:
             cpu: 6
             memory: "16Gi"
 
+  # This job is a presubmit version of 'ci-benchmark-apiserver-request-cost-master'.
+  - name: pull-kubernetes-benchmark-apiserver-request-cost
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    labels:
+      preset-benchmark-apiserver-request-cost: "true"
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    path_alias: k8s.io/kubernetes
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-benchmark-apiserver-request-cost
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261116-33c2327245-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/test-integration-dockerized.sh
+        resources:
+          requests:
+            cpu: 4
+            memory: "16Gi"
+          limits:
+            cpu: 4
+            memory: "16Gi"
+
   kubernetes/perf-tests:
   - name: pull-perf-tests-benchmark-kube-dns
     cluster: k8s-infra-prow-build
