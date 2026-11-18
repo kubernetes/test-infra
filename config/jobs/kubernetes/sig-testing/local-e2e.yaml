@@ -102,3 +102,4 @@ periodics:
     description: Runs single node conformance tests using kubetest with hack/local-up-cluster.sh
     testgrid-num-failures-to-alert: '1'
     testgrid-alert-stale-results-hours: '24'
+    testgrid-alert-email: davanum@gmail.com
