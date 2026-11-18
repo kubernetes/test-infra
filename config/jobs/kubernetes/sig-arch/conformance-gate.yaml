@@ -5,7 +5,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-arch-conformance
     testgrid-tab-name: apisnoop-conformance-gate
-    test-grid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
     testgrid-num-failures-to-alert: '1'
     description: 'Uses APISnoop to check that new GA endpoints are conformance tested in latest e2e test run'
   labels:
