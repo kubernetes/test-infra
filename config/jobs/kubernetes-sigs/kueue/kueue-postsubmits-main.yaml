@@ -19,7 +19,7 @@ postsubmits:
         timeout: 20m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue
         testgrid-tab-name: post-kueue-test-unit-coverage-main
         testgrid-in-cell-metric: coverage
         description: "Merge the unit-shard coverage that tested each main commit"

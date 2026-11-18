@@ -1,5 +1,24 @@
-dashboards:
+dashboard_groups:
 - name: sig-scheduling
+  dashboard_names:
+    - sig-scheduling-presubmits
+    - sig-scheduling-gce
+    - sig-scheduling-kind
+    - sig-scheduling-kueue
+    - sig-scheduling-kueue-periodics
+    - sig-scheduling-kueue-presubmits
+    - sig-scheduling-kwok
+    - sig-scheduling-kwok-presubmits
+    - sig-scheduling-descheduler
+    - sig-scheduling-descheduler-presubmits
+    - sig-scheduling-scheduler-plugins
+    - sig-scheduling-simulator
+    - sig-scheduling-wasm-extensions
+    - sig-scheduling-cluster-capacity
+    - sig-scheduling-scheduler-library
+
+dashboards:
+- name: sig-scheduling-gce
   dashboard_tab:
     - name: gce
       test_group_name: ci-kubernetes-e2e-gci-gce
@@ -13,3 +32,22 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gci-gce-serial
       base_options: include-filter-by-regex=sig-scheduling
       description: scheduling gce serial e2e tests for master branch
+-  name: sig-scheduling-kind
+   dashboard_tab:
+     - name: kind
+       test_group_name: ci-kubernetes-e2e-kind
+       base_options: include-filter-by-regex=sig-scheduling
+       description: scheduling kind e2e tests for master branch
+- name: sig-scheduling-presubmits
+- name: sig-scheduling-kueue
+- name: sig-scheduling-kueue-periodics
+- name: sig-scheduling-kueue-presubmits
+- name: sig-scheduling-kwok
+- name: sig-scheduling-kwok-presubmits
+- name: sig-scheduling-descheduler
+- name: sig-scheduling-descheduler-presubmits
+- name: sig-scheduling-scheduler-plugins
+- name: sig-scheduling-simulator
+- name: sig-scheduling-wasm-extensions
+- name: sig-scheduling-cluster-capacity
+- name: sig-scheduling-scheduler-library

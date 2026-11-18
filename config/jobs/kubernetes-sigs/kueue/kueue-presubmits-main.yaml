@@ -11,7 +11,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-unit-shard-0-main
         description: "Run kueue unit shard 0 tests"
       spec:
@@ -48,7 +48,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-unit-shard-1-main
         description: "Run kueue unit shard 1 tests"
       spec:
@@ -92,7 +92,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-unit-coverage-main
         testgrid-in-cell-metric: coverage
         description: "Merge the coverage of the kueue unit shards"
@@ -122,7 +122,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-fuzz-main
         description: "Run kueue fuzz tests with fuzzing enabled"
       spec:
@@ -153,7 +153,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-integration-shard-0-main
         description: "Run kueue test-integration shard 0"
       spec:
@@ -188,7 +188,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-integration-shard-1-main
         description: "Run kueue test-integration shard 1"
       spec:
@@ -223,7 +223,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-integration-shard-2-main
         description: "Run kueue test-integration shard 2"
       spec:
@@ -258,7 +258,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-integration-shard-3-main
         description: "Run kueue test-integration shard 3"
       spec:
@@ -293,7 +293,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-integration-multikueue-main
         description: "Run kueue test-multikueue-integration"
       spec:
@@ -324,7 +324,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-baseline-main-1-35
         description: "Run kueue baseline end to end tests for Kubernetes 1.35"
       labels:
@@ -365,7 +365,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-extended-shard-0-main-1-35
         description: "Run kueue extended end to end tests shard 0 for Kubernetes 1.35"
       labels:
@@ -406,7 +406,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-extended-shard-1-main-1-35
         description: "Run kueue extended end to end tests shard 1 for Kubernetes 1.35"
       labels:
@@ -447,7 +447,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-extended-shard-2-main-1-35
         description: "Run kueue extended end to end tests shard 2 for Kubernetes 1.35"
       labels:
@@ -488,7 +488,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-baseline-main-1-36
         description: "Run kueue baseline end to end tests for Kubernetes 1.36"
       labels:
@@ -529,7 +529,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-baseline-main-1-37
         description: "Run kueue baseline end to end tests for Kubernetes 1.37"
       labels:
@@ -570,7 +570,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-extended-shard-0-main-1-36
         description: "Run kueue extended end to end tests shard 0 for Kubernetes 1.36"
       labels:
@@ -611,7 +611,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-extended-shard-0-main-1-37
         description: "Run kueue extended end to end tests shard 0 for Kubernetes 1.37"
       labels:
@@ -652,7 +652,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-extended-shard-1-main-1-36
         description: "Run kueue extended end to end tests shard 1 for Kubernetes 1.36"
       labels:
@@ -693,7 +693,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-extended-shard-1-main-1-37
         description: "Run kueue extended end to end tests shard 1 for Kubernetes 1.37"
       labels:
@@ -734,7 +734,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-extended-shard-2-main-1-36
         description: "Run kueue extended end to end tests shard 2 for Kubernetes 1.36"
       labels:
@@ -775,7 +775,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-extended-shard-2-main-1-37
         description: "Run kueue extended end to end tests shard 2 for Kubernetes 1.37"
       labels:
@@ -816,7 +816,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-multikueue-baseline-main
         description: "Run baseline multikueue end to end tests"
       labels:
@@ -855,7 +855,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-shard-0-main
         description: "Run extended multikueue end to end tests shard 0"
       labels:
@@ -894,7 +894,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-shard-1-main
         description: "Run extended multikueue end to end tests shard 1"
       labels:
@@ -934,7 +934,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-multikueue-extended-ray-autoscaling-main
         description: "Run extended multikueue Ray autoscaling end to end tests"
       labels:
@@ -973,7 +973,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-multikueue-sequential-shard-0-main
         description: "Run multikueue sequential end to end tests shard 0"
       labels:
@@ -1012,7 +1012,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-multikueue-sequential-shard-1-main
         description: "Run multikueue sequential end to end tests shard 1"
       labels:
@@ -1051,7 +1051,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-tas-baseline-main
         description: "Run tas baseline end to end tests"
       labels:
@@ -1090,7 +1090,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-tas-extended-shard-0-main
         description: "Run tas extended end to end tests shard 0"
       labels:
@@ -1129,7 +1129,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-tas-extended-shard-1-main
         description: "Run tas extended end to end tests shard 1"
       labels:
@@ -1168,7 +1168,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-tas-was-baseline-main
         description: "Run tas was baseline end to end tests"
       labels:
@@ -1207,7 +1207,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-tas-was-extended-shard-0-main
         description: "Run tas was extended end to end tests shard 0"
       labels:
@@ -1246,7 +1246,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-tas-was-extended-shard-1-main
         description: "Run tas was extended end to end tests shard 1"
       labels:
@@ -1286,7 +1286,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-was-deep-tas-baseline-main
         description: "Run was deep tas baseline end to end tests"
       labels:
@@ -1326,7 +1326,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-was-deep-tas-extended-shard-0-main
         description: "Run was deep tas extended end to end tests shard 0"
       labels:
@@ -1366,7 +1366,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-was-deep-tas-extended-shard-1-main
         description: "Run was deep tas extended end to end tests shard 1"
       labels:
@@ -1406,7 +1406,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-tas-was-e2e-deepintegration-main
         description: "Run tas was deep integration end to end tests"
       labels:
@@ -1445,7 +1445,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-sequential-baseline-shard-0-main
         description: "Run sequential baseline end to end tests shard 0"
       labels:
@@ -1484,7 +1484,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-sequential-baseline-shard-1-main
         description: "Run sequential baseline end to end tests shard 1"
       labels:
@@ -1524,7 +1524,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-sequential-extended-shard-0-main
         description: "Run sequential extended end to end tests shard 0"
       labels:
@@ -1563,7 +1563,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-sequential-extended-shard-1-main
         description: "Run sequential extended end to end tests shard 1"
       labels:
@@ -1602,7 +1602,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-certmanager-main
         description: "Run cert-manager end to end tests"
       labels:
@@ -1641,7 +1641,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-dra-baseline-main
         description: "Run DRA baseline end to end tests"
       labels:
@@ -1680,7 +1680,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-multikueue-dra-main
         description: "Run MultiKueue DRA end to end tests"
       labels:
@@ -1719,7 +1719,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-dra-counter-main
         description: "Run DRA counter (partitionable devices) end to end tests"
       labels:
@@ -1758,7 +1758,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-dra-capacity-main
         description: "Run DRA consumable capacity end to end tests"
       labels:
@@ -1797,7 +1797,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-kueueviz-main
         description: "Run kueueviz end to end tests"
       labels:
@@ -1836,7 +1836,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-verify-main
         description: "Run kueue verify checks"
       labels:
@@ -1873,7 +1873,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-build-cli-main
         description: "Build and package Kueue CLI artifacts for Linux/macOS amd64/arm64"
       spec:
@@ -1906,7 +1906,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-build-image-main
         description: "Build container image of kueue"
       labels:
@@ -1944,7 +1944,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-scheduling-perf-main
         description: "Run kueue test-scheduling-perf"
       spec:
@@ -1975,7 +1975,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-tas-scheduling-perf-main
         description: "Run kueue test-tas-scheduling-perf"
       spec:
@@ -2006,7 +2006,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-populator-verify-main
         description: "Run kueue-populator verify checks"
       labels:
@@ -2042,7 +2042,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-populator-test-unit-main
         description: "Run kueue-populator unit tests"
       spec:
@@ -2075,7 +2075,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-populator-test-integration-main
         description: "Run kueue-populator integration tests"
       spec:
@@ -2106,7 +2106,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-populator-test-e2e-main
         description: "Run kueue-populator end to end tests"
       labels:
@@ -2144,7 +2144,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-priority-booster-test-unit-main
         description: "Run kueue-priority-booster unit tests"
       spec:
@@ -2177,7 +2177,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-priority-booster-test-integration-main
         description: "Run kueue-priority-booster integration tests"
       spec:
@@ -2209,7 +2209,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-k8s-main-was
         description: "Run e2e tests against k8s main with WAS enabled"
       labels:
@@ -2247,7 +2247,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-e2e-was-main-1-37
         description: "Run kueue WAS end to end tests for Kubernetes 1.37"
       labels:
@@ -2287,7 +2287,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-test-large-scale-scheduling-perf-main
         description: "Run kueue test-large-scale-scheduling-perf on demand"
       labels:
@@ -2322,7 +2322,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-verify-ci-build-times-main
         description: "Run kueue verify-ci-build-times on demand"
       labels:
@@ -2359,7 +2359,7 @@ presubmits:
         pod_unscheduled_timeout: 18m
       path_alias: sigs.k8s.io/kueue
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-presubmits
         testgrid-tab-name: pull-kueue-verify-website-links-preview-main
         description: "Check links on a PR's Netlify deploy preview, on demand (non-blocking)"
       labels:
