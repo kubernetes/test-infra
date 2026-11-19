@@ -191,6 +191,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: apiserver-request-cost
+    testgrid-alert-email: siarkowicz@google.com
   decorate: true
   extra_refs:
   - org: kubernetes
