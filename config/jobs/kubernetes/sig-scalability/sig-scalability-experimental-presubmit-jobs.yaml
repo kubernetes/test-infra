@@ -235,6 +235,9 @@ presubmits:
         - ./tests/e2e/scenarios/scalability/run-test.sh
         securityContext:
           privileged: true
+        env:
+        - name: GOMEMLIMIT
+          value: "32GiB"
         resources:
           requests:
             cpu: 7
