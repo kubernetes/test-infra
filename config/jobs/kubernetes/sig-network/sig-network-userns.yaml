@@ -1,0 +1,30 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-userns-tests
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    skip_report: false
+    decorate: true
+    decoration_config:
+      timeout: 10m
+      grace_period: 5m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260511-f09cee265c-master
+        command:
+        - make
+        - test-userns
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-network-userns
+      testgrid-tab-name: pr-sig-network-userns
+      description: Runs unprivileged user namespace tests for rootless nftables
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com
