@@ -1000,6 +1000,10 @@ tide:
             from-branch-protection: true
           cluster-api-provider-vsphere:
             from-branch-protection: true
+          karpenter:
+            # kind e2e presubmit checks are informational (kubernetes-sigs/karpenter#3632)
+            optional-regex-contexts:
+            - '^kind-e2e-presubmit'
           kubernetes-mixin:
             from-branch-protection: true
           kueue:
