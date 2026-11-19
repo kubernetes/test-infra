@@ -530,6 +530,8 @@ presets:
     value: "true"
   - name: CL2_INFORMER_RUN_ON_CONTROL_PLANE
     value: "true"
+  - name: CL2_INFORMER_ENABLE_WATCHLIST
+    value: "true"
 
 - labels:
     preset-kops-scalability-ec2-5000-node: "true"
