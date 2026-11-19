@@ -32,7 +32,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     job_queue_name: gce-gpu-test
     always_run: true
-    optional: true
+    optional: false
     skip_report: false
     max_concurrency: 1
     branches:
