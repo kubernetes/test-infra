@@ -11,10 +11,8 @@ presubmits:
     optional: true
     run_if_changed: 'local-up-cluster'
     labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
       timeout: 240m
@@ -22,9 +20,6 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
-        env:
-        - name: CONTAINER_RUNTIME_ENDPOINT
-          value: "/var/run/docker/containerd/containerd.sock"
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -57,21 +52,16 @@ periodics:
 - name: ci-kubernetes-local-e2e
   interval: 3h
   labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     prow.k8s.io/refs.org: kubernetes
     prow.k8s.io/refs.repo: kubernetes
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 240m
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
-      env:
-      - name: CONTAINER_RUNTIME_ENDPOINT
-        value: "/var/run/docker/containerd/containerd.sock"
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
