@@ -1251,6 +1251,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-scalability-gce, google-gce
     testgrid-tab-name: gce-master-scale-performance-5000-experimental
+    testgrid-alert-email: siarkowicz@google.com, jying@google.com
+    testgrid-num-failures-to-alert: '1'
     description: "Exploratory tests for resource size limit as proposed in https://github.com/kubernetes/kubernetes/issues/134375"
   spec:
     serviceAccountName: prow-build
