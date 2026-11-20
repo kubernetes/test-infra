@@ -1,0 +1,34 @@
+presubmits:
+  kubernetes-sigs/karpenter:
+  - name: pull-karpenter-presubmit
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    optional: false
+    branches:
+    - ^main$
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.26
+        command:
+        - bash
+        - -c
+        - |
+          set -euo pipefail
+          GOBIN=/usr/local/bin go install github.com/mikefarah/yq/v4@v4.54.1
+          mkdir -p /usr/local/kubebuilder
+          mv "$(go tool -modfile=go.tools.mod setup-envtest use -p path)" /usr/local/kubebuilder/bin
+          make presubmit
+        resources:
+          limits:
+            cpu: "4"
+            memory: 16Gi
+          requests:
+            cpu: "4"
+            memory: 16Gi
+    annotations:
+      testgrid-dashboards: sig-autoscaling-karpenter
+      testgrid-tab-name: pull-karpenter-presubmit
+      description: Runs make presubmit (codegen verification, lint, unit tests, licenses, vulncheck)

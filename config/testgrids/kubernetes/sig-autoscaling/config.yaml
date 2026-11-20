@@ -11,6 +11,7 @@ dashboard_groups:
       - sig-autoscaling-cluster-autoscaler-images
       - sig-autoscaling-model-serving-signals
       - sig-autoscaling-model-serving-signals-images
+      - sig-autoscaling-karpenter
 
 dashboards:
   - name: sig-autoscaling-cluster-autoscaler
@@ -23,3 +24,4 @@ dashboards:
   - name: sig-autoscaling-cluster-autoscaler-images
   - name: sig-autoscaling-model-serving-signals
   - name: sig-autoscaling-model-serving-signals-images
+  - name: sig-autoscaling-karpenter
