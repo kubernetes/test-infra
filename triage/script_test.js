@@ -2,6 +2,21 @@ const assert = require('assert');
 const model = require('./model');
 const render = require('./render');
 
+describe('issueRepositoryForFilter', () => {
+    function expect(name, input, expected) {
+        it(name, function() {
+            assert.equal(render.issueRepositoryForFilter(input), expected);
+        });
+    }
+    expect('uses a literal repository', 'kubernetes-sigs/cluster-api', 'kubernetes-sigs/cluster-api');
+    expect('defaults when the filter is empty', '', 'kubernetes/kubernetes');
+    expect('defaults for a broad regex', 'cluster-api.*', 'kubernetes/kubernetes');
+    expect('defaults for multiple repositories', 'kubernetes/foo|kubernetes/bar', 'kubernetes/kubernetes');
+    expect('defaults for a path with extra segments', 'kubernetes/foo/issues', 'kubernetes/kubernetes');
+    expect('defaults for a dot path', 'kubernetes/.', 'kubernetes/kubernetes');
+    expect('defaults for a parent path', 'kubernetes/..', 'kubernetes/kubernetes');
+});
+
 describe('makeBuckets', () => {
     function expect(name, expected, ...args) {
         it(name, function() {
