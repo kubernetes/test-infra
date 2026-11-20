@@ -175,6 +175,10 @@ deck:
         name: links
       required_files:
         - artifacts/.*\.link\.txt
+    - lens:
+        name: html
+      required_files:
+        - ^artifacts/benchmark-.*\.html$
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
