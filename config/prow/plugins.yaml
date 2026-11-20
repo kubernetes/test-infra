@@ -407,6 +407,12 @@ blockades:
   blockregexps:
   - ^k8s.gcr.io/
   explanation: "k8s.gcr.io Image registry is frozen from April 2023. Please update the manifests in registry.k8s.io folder instead"
+- repos:
+  - kubernetes/autoscaler
+  blockregexps:
+  - .*
+  branchregexp: ^addon-resizer-release-1\.8$
+  explanation: "`addon-resizer-release-1.8` is frozen and no longer accepts changes."
 
 blunderbuss:
   max_request_count: 2
@@ -1356,6 +1362,7 @@ plugins:
 
   kubernetes/autoscaler:
     plugins:
+    - blockade
     - milestone
     - release-note
     - require-matching-label
