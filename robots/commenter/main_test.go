@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -26,6 +27,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	githubql "github.com/shurcooL/githubv4"
 
 	"sigs.k8s.io/prow/pkg/github"
 )
@@ -122,6 +125,7 @@ func TestMakeQuery(t *testing.T) {
 		closed     bool
 		locked     bool
 		dur        time.Duration
+		byActivity bool
 		expected   []string
 		unexpected []string
 		err        bool
@@ -158,6 +162,14 @@ func TestMakeQuery(t *testing.T) {
 			query:    "hello",
 			dur:      1 * time.Hour,
 			expected: []string{"hello", "updated:<"},
+		},
+		{
+			name:       "duration by activity filters on creation",
+			query:      "hello",
+			dur:        1 * time.Hour,
+			byActivity: true,
+			expected:   []string{"hello", "created:<="},
+			unexpected: []string{"updated:"},
 		},
 		{
 			name:       "weird characters not escaped",
@@ -206,7 +218,7 @@ func TestMakeQuery(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		actual, err := makeQuery(tc.query, tc.archived, tc.closed, tc.locked, tc.dur)
+		actual, err := makeQuery(tc.query, tc.archived, tc.closed, tc.locked, tc.dur, tc.byActivity)
 		if err != nil && !tc.err {
 			t.Errorf("%s: unexpected error: %v", tc.name, err)
 		} else if err == nil && tc.err {
@@ -227,6 +239,7 @@ func TestMakeQuery(t *testing.T) {
 
 func makeIssue(owner, repo string, number int, title string) github.Issue {
 	return github.Issue{
+		NodeID:  fmt.Sprintf("%s/%s#%d", owner, repo, number),
 		HTMLURL: fmt.Sprintf("fake://localhost/%s/%s/pull/%d", owner, repo, number),
 		Title:   title,
 	}
@@ -237,6 +250,12 @@ type fakeClient struct {
 	issues   []github.Issue
 	// existingComments maps an issue number to the comments already on it.
 	existingComments map[int][]github.IssueComment
+	// nodes maps an issue node ID to the activity GraphQL returns for it.
+	nodes map[string]activityNode
+	// queries records the node IDs of each GraphQL query.
+	queries [][]string
+	// since records the $since of each GraphQL query.
+	since []time.Time
 }
 
 // Fakes Creating a client, using the same signature as github.Client
@@ -254,6 +273,29 @@ func (c *fakeClient) ListIssueComments(owner, repo string, number int) ([]github
 		return nil, errors.New("list error")
 	}
 	return c.existingComments[number], nil
+}
+
+// Fakes a GraphQL query, using the same signature as github.Client
+func (c *fakeClient) QueryWithGitHubAppsSupport(_ context.Context, q interface{}, vars map[string]interface{}, _ string) error {
+	aq, ok := q.(*activityQuery)
+	if !ok {
+		return fmt.Errorf("unexpected query %T", q)
+	}
+	ids := []string{}
+	for _, id := range vars["ids"].([]githubql.ID) {
+		ids = append(ids, id.(string))
+	}
+	c.queries = append(c.queries, ids)
+	c.since = append(c.since, vars["since"].(githubql.DateTime).Time)
+	for _, id := range ids {
+		if strings.Contains(id, "query-error") {
+			return errors.New("query error")
+		}
+		if n, ok := c.nodes[id]; ok {
+			aq.Nodes = append(aq.Nodes, n)
+		}
+	}
+	return nil
 }
 
 // Fakes searching for issues, using the same signature as github.Client
@@ -436,7 +478,7 @@ func TestRun(t *testing.T) {
 		}
 		ignoreSorting := ""
 		ignoreOrder := false
-		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling, tc.dedupe)
+		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling, tc.dedupe, activityFilter{})
 		if tc.err && err == nil {
 			t.Errorf("%s: failed to received an error", tc.name)
 			continue
@@ -502,7 +544,7 @@ func TestRunCeiling(t *testing.T) {
 				if ceiling > 0 && ceiling < len(want) {
 					want = want[:ceiling]
 				}
-				if err := run(&c, "dup", "", false, false, makeCommenter("found you", false), ceiling, tc.dedupe); err != nil {
+				if err := run(&c, "dup", "", false, false, makeCommenter("found you", false), ceiling, tc.dedupe, activityFilter{}); err != nil {
 					t.Fatalf("run: %v", err)
 				}
 				if !reflect.DeepEqual(c.comments, want) {
@@ -564,4 +606,313 @@ func TestMakeCommenter(t *testing.T) {
 			t.Errorf("%s: failed to raise an exception", tc.name)
 		}
 	}
+}
+
+var activityNow = time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC)
+
+func daysAgo(d int) time.Time {
+	return activityNow.Add(-time.Duration(d) * 24 * time.Hour)
+}
+
+func commentItem(login string, at time.Time) activityPullRequestItem {
+	return activityPullRequestItem{activityIssueItem: activityIssueItem{
+		Typename:     "IssueComment",
+		IssueComment: activityComment{Author: activityActor{Login: login}, CreatedAt: at},
+	}}
+}
+
+// prNode returns a pull request whose timeline within the --updated window is items.
+func prNode(id string, truncated bool, items ...activityPullRequestItem) activityNode {
+	n := activityNode{Typename: "PullRequest"}
+	n.PullRequest.ID = id
+	n.PullRequest.TimelineItems.PageInfo.HasNextPage = truncated
+	n.PullRequest.TimelineItems.Nodes = items
+	return n
+}
+
+func TestNewActivityFilter(t *testing.T) {
+	cases := []struct {
+		name    string
+		logins  string
+		enabled bool
+		ignored []string
+		counted []string
+	}{
+		{
+			name: "empty disables the filter",
+		},
+		{
+			name:   "only separators disables the filter",
+			logins: " , ,",
+		},
+		{
+			name:    "logins are case insensitive and trimmed",
+			logins:  " K8s-CI-Robot ,netlify",
+			enabled: true,
+			ignored: []string{"k8s-ci-robot", "NETLIFY"},
+			counted: []string{"k8s-triage-robot", "someone"},
+		},
+		{
+			name:    "GitHub Apps match with and without the [bot] suffix",
+			logins:  "kubernetes-prow[bot],netlify",
+			enabled: true,
+			ignored: []string{"kubernetes-prow", "kubernetes-prow[bot]", "netlify[bot]"},
+			counted: []string{"kubernetes"},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newActivityFilter(tc.logins, time.Hour, activityNow)
+			if got := f.enabled(); got != tc.enabled {
+				t.Errorf("enabled() = %t, want %t", got, tc.enabled)
+			}
+			for _, l := range tc.ignored {
+				if !f.ignored[normalizeLogin(l)] {
+					t.Errorf("%q is not ignored", l)
+				}
+			}
+			for _, l := range tc.counted {
+				if f.ignored[normalizeLogin(l)] {
+					t.Errorf("%q is ignored", l)
+				}
+			}
+		})
+	}
+}
+
+func TestActivityNodeTimeline(t *testing.T) {
+	pr := prNode("pr", true,
+		commentItem("commenter", daysAgo(9)),
+		activityPullRequestItem{
+			activityIssueItem: activityIssueItem{Typename: "PullRequestReview"},
+			PullRequestReview: activityComment{Author: activityActor{Login: "reviewer"}, CreatedAt: daysAgo(8)},
+		},
+	)
+	pr.PullRequest.TimelineItems.Nodes = append(pr.PullRequest.TimelineItems.Nodes, activityPullRequestItem{})
+	commit := &pr.PullRequest.TimelineItems.Nodes[len(pr.PullRequest.TimelineItems.Nodes)-1]
+	commit.Typename = "PullRequestCommit"
+	commit.PullRequestCommit.Commit.Author.User.Login = "author"
+	commit.PullRequestCommit.Commit.CommittedDate = daysAgo(5)
+
+	issue := activityNode{Typename: "Issue"}
+	issue.Issue.ID = "issue"
+	issue.Issue.TimelineItems.Nodes = []activityIssueItem{
+		{
+			Typename:     "IssueComment",
+			IssueComment: activityComment{Author: activityActor{Login: "commenter"}, CreatedAt: daysAgo(4)},
+		},
+		// Unexpected item types count as activity by an unknown login.
+		{Typename: "LabeledEvent"},
+	}
+
+	cases := []struct {
+		name string
+		node activityNode
+		want timeline
+	}{
+		{
+			name: "pull request",
+			node: pr,
+			want: timeline{
+				id: "pr",
+				items: []activity{
+					{"commenter", daysAgo(9)},
+					{"reviewer", daysAgo(8)},
+					{"author", daysAgo(5)},
+				},
+				truncated: true,
+			},
+		},
+		{
+			name: "issue",
+			node: issue,
+			want: timeline{
+				id:    "issue",
+				items: []activity{{"commenter", daysAgo(4)}, {}},
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := tc.node.timeline(); !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("timeline() = %+v, want %+v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestActive(t *testing.T) {
+	f := newActivityFilter("k8s-ci-robot,kubernetes-prow[bot]", 30*24*time.Hour, activityNow)
+	cases := []struct {
+		name string
+		t    timeline
+		want bool
+	}{
+		{
+			name: "no activity is inactive",
+		},
+		{
+			name: "counted activity is active",
+			t:    timeline{items: []activity{{"author", daysAgo(20)}}},
+			want: true,
+		},
+		{
+			name: "counted activity followed by ignored activity is active",
+			t: timeline{items: []activity{
+				{"author", daysAgo(20)},
+				{"k8s-ci-robot", daysAgo(10)},
+				{"kubernetes-prow", daysAgo(5)},
+			}},
+			want: true,
+		},
+		{
+			name: "only ignored activity is inactive",
+			t: timeline{items: []activity{
+				{"k8s-ci-robot", daysAgo(20)},
+				{"kubernetes-prow", daysAgo(1)},
+			}},
+		},
+		{
+			name: "the triage robot counts so lifecycle steps are spaced out",
+			t: timeline{items: []activity{
+				{"k8s-triage-robot", daysAgo(20)},
+				{"kubernetes-prow", daysAgo(20)},
+			}},
+			want: true,
+		},
+		{
+			name: "activity by an unknown login is active",
+			t:    timeline{items: []activity{{}}},
+			want: true,
+		},
+		{
+			name: "only ignored activity in a truncated timeline is active",
+			t: timeline{truncated: true, items: []activity{
+				{"k8s-ci-robot", daysAgo(20)},
+				{"k8s-ci-robot", daysAgo(1)},
+			}},
+			want: true,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := f.active(tc.t); got != tc.want {
+				t.Errorf("active() = %t, want %t", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestRunActivityFilter(t *testing.T) {
+	month := 30 * 24 * time.Hour
+	f := newActivityFilter("k8s-ci-robot", month, activityNow)
+	issues := []github.Issue{
+		makeIssue("o", "r", 1, "old one"),
+		makeIssue("o", "r", 2, "old two"),
+		makeIssue("o", "r", 3, "old three"),
+		makeIssue("o", "r", 4, "old four"),
+	}
+	nodes := map[string]activityNode{
+		// Inactive, only bot activity.
+		"o/r#1": prNode("o/r#1", false, commentItem("k8s-ci-robot", daysAgo(1))),
+		// Active.
+		"o/r#2": prNode("o/r#2", false, commentItem("author", daysAgo(10))),
+		// Inactive, no activity.
+		"o/r#3": prNode("o/r#3", false),
+		// Skipped, not returned by GitHub.
+	}
+
+	cases := []struct {
+		name     string
+		ceiling  int
+		expected []int
+	}{
+		{name: "active issues are skipped", expected: []int{1, 3}},
+		{name: "skipped issues do not count towards the ceiling", ceiling: 1, expected: []int{1}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := fakeClient{issues: issues, nodes: nodes}
+			if err := run(&c, "old", "", false, false, makeCommenter("stale", false), tc.ceiling, dedupeNone, f); err != nil {
+				t.Fatalf("run: %v", err)
+			}
+			if !reflect.DeepEqual(c.comments, tc.expected) {
+				t.Errorf("commented on %v, want %v", c.comments, tc.expected)
+			}
+			for _, since := range c.since {
+				if want := daysAgo(30); !since.Equal(want) {
+					t.Errorf("queried since %s, want %s", since, want)
+				}
+			}
+		})
+	}
+
+	t.Run("activity is looked up in batches until the ceiling is reached", func(t *testing.T) {
+		many := []github.Issue{}
+		manyNodes := map[string]activityNode{}
+		for i := 0; i < 5*activityBatchSize; i++ {
+			issue := makeIssue("o", "r", i, "many "+strconv.Itoa(i))
+			many = append(many, issue)
+			// Only the last issue of each batch is inactive.
+			if i%activityBatchSize == activityBatchSize-1 {
+				manyNodes[issue.NodeID] = prNode(issue.NodeID, false)
+			} else {
+				manyNodes[issue.NodeID] = prNode(issue.NodeID, false, commentItem("author", daysAgo(1)))
+			}
+		}
+		c := fakeClient{issues: many, nodes: manyNodes}
+		if err := run(&c, "many", "", false, false, makeCommenter("stale", false), 2, dedupeNone, f); err != nil {
+			t.Fatalf("run: %v", err)
+		}
+		if want := []int{activityBatchSize - 1, 2*activityBatchSize - 1}; !reflect.DeepEqual(c.comments, want) {
+			t.Errorf("commented on %v, want %v", c.comments, want)
+		}
+		if len(c.queries) != 2 || len(c.queries[0]) != activityBatchSize || len(c.queries[1]) != activityBatchSize {
+			t.Errorf("queried batches of %v, want 2 batches of %d", func() []int {
+				sizes := []int{}
+				for _, q := range c.queries {
+					sizes = append(sizes, len(q))
+				}
+				return sizes
+			}(), activityBatchSize)
+		}
+	})
+
+	t.Run("a failing batch is skipped and later batches are processed", func(t *testing.T) {
+		many := []github.Issue{}
+		manyNodes := map[string]activityNode{}
+		for i := 0; i < 2*activityBatchSize; i++ {
+			repo := "r"
+			if i == 0 {
+				repo = "query-error"
+			}
+			issue := makeIssue("o", repo, i, "many "+strconv.Itoa(i))
+			many = append(many, issue)
+			manyNodes[issue.NodeID] = prNode(issue.NodeID, false)
+		}
+		c := fakeClient{issues: many, nodes: manyNodes}
+		if err := run(&c, "many", "", false, false, makeCommenter("stale", false), 0, dedupeNone, f); err == nil {
+			t.Error("expected an error")
+		}
+		want := []int{}
+		for i := activityBatchSize; i < 2*activityBatchSize; i++ {
+			want = append(want, i)
+		}
+		if !reflect.DeepEqual(c.comments, want) {
+			t.Errorf("commented on %v, want %v", c.comments, want)
+		}
+	})
+
+	t.Run("disabled filter does not query", func(t *testing.T) {
+		c := fakeClient{issues: issues}
+		if err := run(&c, "old", "", false, false, makeCommenter("stale", false), 0, dedupeNone, activityFilter{}); err != nil {
+			t.Fatalf("run: %v", err)
+		}
+		if len(c.queries) != 0 {
+			t.Errorf("queried %v, want no queries", c.queries)
+		}
+		if want := []int{1, 2, 3, 4}; !reflect.DeepEqual(c.comments, want) {
+			t.Errorf("commented on %v, want %v", c.comments, want)
+		}
+	})
 }
