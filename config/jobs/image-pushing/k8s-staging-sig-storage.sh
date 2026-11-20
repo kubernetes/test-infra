@@ -22,6 +22,7 @@ readonly REPOS=(
     kubernetes-csi/csi-driver-host-path
     kubernetes-csi/csi-driver-smb
     kubernetes-csi/csi-test
+    kubernetes-csi/kubernetes-csi
     kubernetes-csi/external-attacher
     kubernetes-csi/external-health-monitor
     kubernetes-csi/external-provisioner
@@ -43,6 +44,7 @@ readonly REPOS=(
 
 # Repos using "main" branch instead of "master" as default
 readonly REPOS_MAIN_BRANCH=(
+    kubernetes-csi/kubernetes-csi
     kubernetes-csi/external-snapshot-metadata
     kubernetes-sigs/container-object-storage-interface
 )
