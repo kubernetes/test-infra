@@ -253,6 +253,11 @@ branch-protection:
             - Helm chart
             - Helm Docs
           branches:
+            addon-resizer-release-1.8:
+              enforce_admins: true
+              restrictions:
+                users: []
+                teams: []
             gh-pages:
               protect: false
         client-go:
@@ -913,6 +918,8 @@ tide:
       - do-not-merge/work-in-progress
   - repos:
     - kubernetes/autoscaler
+    excludedBranches:
+    - addon-resizer-release-1.8
     labels:
     - lgtm
     - approved
