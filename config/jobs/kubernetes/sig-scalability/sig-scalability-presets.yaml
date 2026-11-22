@@ -532,6 +532,8 @@ presets:
     value: "true"
   - name: CL2_INFORMER_ENABLE_WATCHLIST
     value: "true"
+  - name: CL2_REALISTIC_POD_SIZE_KB
+    value: "20"
 
 - labels:
     preset-kops-scalability-ec2-5000-node: "true"
@@ -561,9 +563,7 @@ presets:
     preset-kops-scalability-gce-experimental: "true"
   env:
   - name: EXPERIMENT_VARIANT
-    value: "pod-size-20kb"
-  - name: CL2_REALISTIC_POD_SIZE_KB
-    value: "20"
+    value: ""
 
 ### Env variables shared by the apiserver request cost benchmark jobs.
 - labels:
