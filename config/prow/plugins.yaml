@@ -1667,6 +1667,12 @@ plugins:
   kubernetes-sigs/controller-runtime:
     plugins:
     - milestone
+    - override
+
+  kubernetes-sigs/controller-tools:
+    plugins:
+    - milestone
+    - override
 
   kubernetes-sigs/multicluster-runtime:
     plugins:
