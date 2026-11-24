@@ -534,6 +534,8 @@ presets:
     value: "true"
   - name: CL2_REALISTIC_POD_SIZE_KB
     value: "20"
+  - name: GOMEMLIMIT
+    value: "32GiB"
 
 - labels:
     preset-kops-scalability-ec2-5000-node: "true"
