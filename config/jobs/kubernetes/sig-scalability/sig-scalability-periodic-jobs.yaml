@@ -1302,7 +1302,7 @@ periodics:
     workdir: true
   annotations:
     testgrid-dashboards: sig-scalability-gce
-    testgrid-tab-name: gce-scale-correctness-100
+    testgrid-tab-name: gce-master-scale-correctness-100
     description: "Uses kubetest2 to run a correctness test against a 100-node cluster created with kops"
   spec:
     serviceAccountName: prow-build
@@ -1348,7 +1348,7 @@ periodics:
     workdir: true
   annotations:
     testgrid-dashboards: sig-scalability-gce
-    testgrid-tab-name: gce-scale-correctness-2000
+    testgrid-tab-name: gce-master-scale-correctness-2000
     description: "Uses kubetest2 to run a correctness test against a 2000-node cluster created with kops"
   spec:
     serviceAccountName: prow-build

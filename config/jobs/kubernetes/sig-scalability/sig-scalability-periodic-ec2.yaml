@@ -35,7 +35,7 @@ periodics:
   - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: eks-prow-build-cluster
-  cron: '1 7 * * 0,1,3,5' # Sun/Mon/Wed/Fri 07:01 UTC; alternates with the 5k DRA job (Tue/Thu/Sat)
+  cron: '1 16 * * *' # Run every day at 16:01 UTC
   labels:
     preset-aws-ssh: "true"
     preset-aws-credential-boskos-scale-001-kops: "true"
@@ -259,6 +259,63 @@ periodics:
       env:
         - name: SCALE_SCENARIO
           value: correctness
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7
+          memory: 40Gi
+        limits:
+          cpu: 7
+          memory: 40Gi
+
+# Exploratory tests for resource size limit as proposed in https://github.com/kubernetes/kubernetes/issues/134375
+- cron: '1 19 * * *' # Run every day at 19:01 UTC
+  name: ci-kubernetes-e2e-ec2-scale-performance-5000-experimental
+  tags:
+  - "perfDashPrefix: ec2-5000Nodes-experimental"
+  - "perfDashBuildsCount: 270"
+  - "perfDashJobType: performance"
+  cluster: eks-prow-build-cluster
+  labels:
+    preset-aws-ssh: "true"
+    preset-aws-credential-boskos-scale-001-kops: "true"
+    preset-kops-scalability-common: "true"
+    preset-kops-scalability-ec2-common: "true"
+    preset-kops-scalability-ec2-5000-node: "true"
+    preset-kops-scalability-ec2-experimental: "true"
+  job_queue_name: "5k-aws-scale-test" # DON'T REMOVE THIS
+  decorate: true
+  decoration_config:
+    timeout: 480m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    testgrid-dashboards: sig-scalability-aws, amazon-ec2-release
+    testgrid-tab-name: ec2-master-scale-performance-5000-experimental
+    description: Experimental EC2 scale performance test for 5000 nodes
+  spec:
+    tolerations:
+      - key: highmem
+        operator: Exists
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261116-33c2327245-master
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
       securityContext:
         privileged: true
       resources:
