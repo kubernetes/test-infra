@@ -474,7 +474,7 @@ presets:
   - name: KUBE_NODE_COUNT
     value: "500"
   - name: CONTROL_PLANE_SIZE
-    value: "c8a.12xlarge,c8i.12xlarge,c8id.12xlarge,c7a.12xlarge,c7i.12xlarge"
+    value: "c8a.12xlarge,c7a.12xlarge"
   # Below 1000 nodes Prometheus asks for 2Gi, which fits on the t3a.medium
   # workers (3.8Gi allocatable) and gets OOM-killed there 5-7 times per run.
   # 6Gi only fits on the control plane.
@@ -487,7 +487,7 @@ presets:
   - name: KUBE_NODE_COUNT
     value: "2000"
   - name: CONTROL_PLANE_SIZE
-    value: "c8a.16xlarge,c8i.16xlarge,c8id.16xlarge,c7a.16xlarge"
+    value: "c8a.16xlarge,c7a.16xlarge"
   - name: ENABLE_AWS_LOAD_BALANCER_CONTROLLER
     value: "true"
 
@@ -543,11 +543,9 @@ presets:
   - name: KUBE_NODE_COUNT
     value: "5000"
   - name: CONTROL_PLANE_SIZE
-    value: "c8i.24xlarge,c8a.24xlarge,c8id.24xlarge,c7a.24xlarge"
-  # - name: ADDONS_NODE_SIZE
-  #   value: "c3-standard-44"
-  - name: CL2_ENABLE_INFORMER_LATENCY_TEST
-    value: "false"
+    value: "c8a.24xlarge,c7a.24xlarge"
+  - name: ADDONS_NODE_SIZE
+    value: "c8a.12xlarge"
   - name: ETCD_QUOTA_BACKEND_BYTES
     value: "21474836480"
   - name: ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL
@@ -559,13 +557,38 @@ presets:
   #   value: "16Gi"
   # - name: CL2_REALISTIC_POD
   #   value: "true"
-
+  - name: GOMEMLIMIT
+    value: "32GiB"
 
 - labels:
     preset-kops-scalability-gce-experimental: "true"
   env:
   - name: EXPERIMENT_VARIANT
     value: ""
+
+- labels:
+    preset-kops-scalability-ec2-experimental: "true"
+  env:
+  - name: EXPERIMENT_VARIANT
+    value: ""
+  - name: CONTROL_PLANE_COUNT
+    value: "3"
+  - name: CL2_EXECSERVICE_CPU_REQUESTS
+    value: "8"
+  - name: CL2_EXECSERVICE_MEMORY_REQUESTS
+    value: "16Gi"
+  - name: CL2_REALISTIC_POD
+    value: "true"
+  - name: CL2_RESTART_APISERVER
+    value: "true"
+  - name: CL2_ENABLE_INFORMER_LATENCY_TEST
+    value: "true"
+  - name: CL2_INFORMER_RUN_ON_CONTROL_PLANE
+    value: "true"
+  - name: CL2_INFORMER_ENABLE_WATCHLIST
+    value: "true"
+  - name: CL2_REALISTIC_POD_SIZE_KB
+    value: "20"
 
 ### Env variables shared by the apiserver request cost benchmark jobs.
 - labels:

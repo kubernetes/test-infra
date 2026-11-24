@@ -72,7 +72,7 @@ periodics:
   - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: eks-prow-build-cluster
-  cron: "1 7 * * 2,4,6" # Tue/Thu/Sat 07:01 UTC; alternates with the 5k load test (Sun/Mon/Wed/Fri)
+  cron: "1 7 * * 2,4,6" # Tue/Thu/Sat 07:01 UTC
   labels:
     preset-aws-ssh: "true"
     preset-aws-credential-boskos-scale-001-kops: "true"

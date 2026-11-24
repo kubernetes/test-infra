@@ -10,6 +10,7 @@ The Kubernetes Project runs 5000 node clusters to test scalability. These jobs r
 | ec2-master-scale-performance-5000 |  AWS  | Every other day  |  No |  #sig-scalability | 5000 |
 | ec2-dra-with-workload-master-scalability-5000 |  AWS  | Every other day |  No |  #sig-node | 5000 |
 | gce-master-scale-performance-5000-experimental | GCP | Twice a week | Yes | #sig-scalability | 5000 |
+| ec2-master-scale-performance-5000-experimental | AWS | Once a day | Yes | #sig-scalability | 5000 |
 | gce-master-scale-correctness |  GCP  | Every other day  |  No |  #sig-scalability | 2000 |
 | ec2-master-scale-correctness-2000 |  AWS  | Every other day  |  No |  #sig-scalability | 2000 |
 | ec2-dra-with-workload-master-scalability-500 |  AWS  | Once a day |  No |  #sig-node | 500 |
