@@ -978,7 +978,7 @@ presubmits:
         - |
           set -euo pipefail
           make install-benchmark
-          make bench-put ARGS="--conns=100 --clients=100 --total=100000 --key-size=8 --val-size=256 --key-space-size=100000 --sequential-keys"
+          make bench-put ARGS="--conns=100 --clients=100 --total=1000000 --key-size=8 --val-size=256 --key-space-size=1000000 --sequential-keys"
         resources:
           requests:
             cpu: "4"
