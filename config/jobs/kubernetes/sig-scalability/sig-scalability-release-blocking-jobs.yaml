@@ -49,7 +49,7 @@ periodics:
       - --extract=ci/fast/latest-fast
       - --env=KUBE_CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
-      - --env=CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --kube-api-qps=100 --kube-api-burst=100
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-node-size=e2-small

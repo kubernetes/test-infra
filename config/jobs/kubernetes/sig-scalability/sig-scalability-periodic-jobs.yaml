@@ -359,7 +359,7 @@ periodics:
       - --cluster=benchmark-small
       # Eliminate test flakiness
       - --env=ALLOWED_NOTREADY_NODES=1
-      - --env=APISERVER_TEST_ARGS=--max-requests-inflight=1000 --max-mutating-requests-inflight=0 --profiling --contention-profiling
+      - --env=APISERVER_TEST_ARGS=--max-requests-inflight=1000 --max-mutating-requests-inflight=0 --profiling
       - --env=CL2_BENCHMARK_INFLIGHT=1
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps/benchmark-config-map-0?resourceVersion=0
       - --extract=ci/latest
