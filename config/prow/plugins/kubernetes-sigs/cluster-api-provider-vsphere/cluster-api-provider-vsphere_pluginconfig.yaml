@@ -1,6 +1,7 @@
 milestone_applier:
   kubernetes-sigs/cluster-api-provider-vsphere:
-    main: v1.18
+    main: v1.19
+    release-1.18: v1.18
     release-1.17: v1.17
     release-1.16: v1.16
     release-1.15: v1.15
