@@ -1093,7 +1093,7 @@ periodics:
       - --env=CL2_ETCD_INIT_QPS=0
       - --env=CL2_ETCD_INIT_CONCURRENCY=50
       - --env=CL2_ETCD_INIT_TIMEOUT=15m
-      - --env=CL2_ETCD_WRITER_REPLICAS=20
+      - --env=CL2_ETCD_WRITER_REPLICAS=40
       - --env=CL2_ETCD_WRITER_QPS=100
       - --env=CL2_ETCD_WRITER_CONCURRENCY=10
       - --env=CL2_ETCD_KEY_COUNT=150000
