@@ -273,6 +273,18 @@ func TestHandleDirectory(t *testing.T) {
 			margin-left: 10px;
 		}
 
+		header h3 a,
+		header h3 a:visited,
+		header h3 a:hover,
+		header h3 a:active {
+			color: black;
+			text-decoration: none;
+		}
+
+		header h3 a:hover {
+			text-decoration: underline;
+		}
+
 		.next-button {
 			margin: 10px 0;
 		}
@@ -299,20 +311,62 @@ func TestHandleDirectory(t *testing.T) {
 			border-left: none;
 		}
 
+		.sort-toggle {
+			background: none;
+			border: none;
+			padding: 0;
+			font: inherit;
+			color: inherit;
+			cursor: pointer;
+		}
+
+		.sort-indicator {
+			font-size: 0.85em;
+			opacity: 0.6;
+		}
+
+		.sort-toggle:hover .sort-indicator,
+		.sort-toggle[data-sort="asc"] .sort-indicator,
+		.sort-toggle[data-sort="desc"] .sort-indicator {
+			opacity: 1;
+		}
+
+		.copy-btn {
+			background: none;
+			border: none;
+			padding: 0 2px;
+			margin-left: 4px;
+			cursor: pointer;
+			color: #555;
+			vertical-align: middle;
+			line-height: 1;
+			opacity: 0.7;
+		}
+
+		.copy-btn:hover {
+			color: #000;
+			opacity: 1;
+		}
+
+		.copy-btn.copied {
+			color: #1a7f37;
+			opacity: 1;
+		}
+
 		</style>
    	</head>
    	<body>
 
     <header>
         <h1>test-bucket</h1>
-        <h3>/test-bucket/pr-logs/12345/</h3>
+        <h3>/<a href="/gcs/test-bucket/">test-bucket</a>/<a href="/gcs/test-bucket/pr-logs/">pr-logs</a>/<a href="/gcs/test-bucket/pr-logs/12345/">12345</a>/</h3>
     </header>
     <ul class="resource-grid">
 
 	<li class="pure-g">
-		<div class="pure-u-2-5 grid-head">Name</div>
-		<div class="pure-u-1-5 grid-head">Size</div>
-		<div class="pure-u-2-5 grid-head">Modified</div>
+		<div class="pure-u-2-5 grid-head"><button type="button" class="sort-toggle" data-sort-col="name" title="Sort by Name">Name <span class="sort-indicator" aria-hidden="true">⇅</span></button></div>
+		<div class="pure-u-1-5 grid-head"><button type="button" class="sort-toggle" data-sort-col="size" title="Sort by Size">Size <span class="sort-indicator" aria-hidden="true">⇅</span></button></div>
+		<div class="pure-u-2-5 grid-head"><button type="button" class="sort-toggle" data-sort-col="modified" title="Sort by Modified">Modified <span class="sort-indicator" aria-hidden="true">⇅</span></button></div>
 	</li>
 
     <li class="pure-g grid-row">
@@ -322,45 +376,43 @@ func TestHandleDirectory(t *testing.T) {
 	</li>
 
     <li class="pure-g grid-row">
-	    <div class="pure-u-2-5"><a href="/gcs/test-bucket/pr-logs/12345/1/"><img src="/icons/dir.png"> 1/</a></div>
+	    <div class="pure-u-2-5"><a href="/gcs/test-bucket/pr-logs/12345/1/"><img src="/icons/dir.png"> 1/</a><button type="button" class="copy-btn" title="Copy link" aria-label="Copy link"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div>
 	    <div class="pure-u-1-5">-</div>
 	    <div class="pure-u-2-5">-</div>
 	</li>
 
     <li class="pure-g grid-row">
-	    <div class="pure-u-2-5"><a href="/gcs/test-bucket/pr-logs/12345/2/"><img src="/icons/dir.png"> 2/</a></div>
+	    <div class="pure-u-2-5"><a href="/gcs/test-bucket/pr-logs/12345/2/"><img src="/icons/dir.png"> 2/</a><button type="button" class="copy-btn" title="Copy link" aria-label="Copy link"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div>
 	    <div class="pure-u-1-5">-</div>
 	    <div class="pure-u-2-5">-</div>
 	</li>
 
-    <li class="pure-g grid-row">
-	    <div class="pure-u-2-5"><a href="/gcs/test-bucket/pr-logs/12345/file1"><img src="/icons/file.png"> file1</a></div>
-	    <div class="pure-u-1-5">0</div>
+    <li class="pure-g grid-row" data-size="0" data-mtime="946684800000">
+	    <div class="pure-u-2-5"><a href="https://storage.googleapis.com/test-bucket/pr-logs/12345/file1"><img src="/icons/file.png"> file1</a><button type="button" class="copy-btn" title="Copy link" aria-label="Copy link"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div>
+	    <div class="pure-u-1-5">0B</div>
 	    <div class="pure-u-2-5">Sat, 01 Jan 2000 00:00:00 UTC</div>
 	</li>
 
-    <li class="pure-g grid-row">
-	    <div class="pure-u-2-5"><a href="/gcs/test-bucket/pr-logs/12345/file2"><img src="/icons/file.png"> file2</a></div>
-	    <div class="pure-u-1-5">0</div>
+    <li class="pure-g grid-row" data-size="0" data-mtime="946764000000">
+	    <div class="pure-u-2-5"><a href="https://storage.googleapis.com/test-bucket/pr-logs/12345/file2"><img src="/icons/file.png"> file2</a><button type="button" class="copy-btn" title="Copy link" aria-label="Copy link"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div>
+	    <div class="pure-u-1-5">0B</div>
 	    <div class="pure-u-2-5">Sat, 01 Jan 2000 22:00:00 UTC</div>
 	</li>
 
-    <li class="pure-g grid-row">
-	    <div class="pure-u-2-5"><a href="/gcs/test-bucket/pr-logs/12345/file3"><img src="/icons/file.png"> file3</a></div>
-	    <div class="pure-u-1-5">0</div>
+    <li class="pure-g grid-row" data-size="0" data-mtime="946767600000">
+	    <div class="pure-u-2-5"><a href="https://storage.googleapis.com/test-bucket/pr-logs/12345/file3"><img src="/icons/file.png"> file3</a><button type="button" class="copy-btn" title="Copy link" aria-label="Copy link"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div>
+	    <div class="pure-u-1-5">0B</div>
 	    <div class="pure-u-2-5">Sat, 01 Jan 2000 23:00:00 UTC</div>
 	</li>
 </ul>
 <details>
 	<summary style="display: list-item; padding-left: 1em">Download</summary>
 	<div style="padding: 1em">
-		You can download this directory by running the following <a href="https://cloud.google.com/storage/docs/gsutil">gsutil</a> command:
-		<pre>gsutil -m cp -r gs://test-bucket/pr-logs/12345/ .</pre>
-		Or using the <a href="https://cloud.google.com/sdk/docs/install">gcloud storage</a> command:
+		You can download this directory by running the following <a href="https://cloud.google.com/sdk/docs/install">gcloud storage</a> command:
 		<pre>gcloud storage cp -r gs://test-bucket/pr-logs/12345/ .</pre>
 	</div>
 </details>
-</body></html>`,
+` + tmplPageFooterText,
 		},
 		{
 			id:          "happy S3 case",
@@ -396,6 +448,18 @@ func TestHandleDirectory(t *testing.T) {
 			margin-left: 10px;
 		}
 
+		header h3 a,
+		header h3 a:visited,
+		header h3 a:hover,
+		header h3 a:active {
+			color: black;
+			text-decoration: none;
+		}
+
+		header h3 a:hover {
+			text-decoration: underline;
+		}
+
 		.next-button {
 			margin: 10px 0;
 		}
@@ -422,20 +486,62 @@ func TestHandleDirectory(t *testing.T) {
 			border-left: none;
 		}
 
+		.sort-toggle {
+			background: none;
+			border: none;
+			padding: 0;
+			font: inherit;
+			color: inherit;
+			cursor: pointer;
+		}
+
+		.sort-indicator {
+			font-size: 0.85em;
+			opacity: 0.6;
+		}
+
+		.sort-toggle:hover .sort-indicator,
+		.sort-toggle[data-sort="asc"] .sort-indicator,
+		.sort-toggle[data-sort="desc"] .sort-indicator {
+			opacity: 1;
+		}
+
+		.copy-btn {
+			background: none;
+			border: none;
+			padding: 0 2px;
+			margin-left: 4px;
+			cursor: pointer;
+			color: #555;
+			vertical-align: middle;
+			line-height: 1;
+			opacity: 0.7;
+		}
+
+		.copy-btn:hover {
+			color: #000;
+			opacity: 1;
+		}
+
+		.copy-btn.copied {
+			color: #1a7f37;
+			opacity: 1;
+		}
+
 		</style>
    	</head>
    	<body>
 
     <header>
         <h1>test-bucket</h1>
-        <h3>/test-bucket/pr-logs/12345/</h3>
+        <h3>/<a href="/s3/test-bucket/">test-bucket</a>/<a href="/s3/test-bucket/pr-logs/">pr-logs</a>/<a href="/s3/test-bucket/pr-logs/12345/">12345</a>/</h3>
     </header>
     <ul class="resource-grid">
 
 	<li class="pure-g">
-		<div class="pure-u-2-5 grid-head">Name</div>
-		<div class="pure-u-1-5 grid-head">Size</div>
-		<div class="pure-u-2-5 grid-head">Modified</div>
+		<div class="pure-u-2-5 grid-head"><button type="button" class="sort-toggle" data-sort-col="name" title="Sort by Name">Name <span class="sort-indicator" aria-hidden="true">⇅</span></button></div>
+		<div class="pure-u-1-5 grid-head"><button type="button" class="sort-toggle" data-sort-col="size" title="Sort by Size">Size <span class="sort-indicator" aria-hidden="true">⇅</span></button></div>
+		<div class="pure-u-2-5 grid-head"><button type="button" class="sort-toggle" data-sort-col="modified" title="Sort by Modified">Modified <span class="sort-indicator" aria-hidden="true">⇅</span></button></div>
 	</li>
 
     <li class="pure-g grid-row">
@@ -445,36 +551,36 @@ func TestHandleDirectory(t *testing.T) {
 	</li>
 
     <li class="pure-g grid-row">
-	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/1/"><img src="/icons/dir.png"> 1/</a></div>
+	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/1/"><img src="/icons/dir.png"> 1/</a><button type="button" class="copy-btn" title="Copy link" aria-label="Copy link"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div>
 	    <div class="pure-u-1-5">-</div>
 	    <div class="pure-u-2-5">-</div>
 	</li>
 
     <li class="pure-g grid-row">
-	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/2/"><img src="/icons/dir.png"> 2/</a></div>
+	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/2/"><img src="/icons/dir.png"> 2/</a><button type="button" class="copy-btn" title="Copy link" aria-label="Copy link"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div>
 	    <div class="pure-u-1-5">-</div>
 	    <div class="pure-u-2-5">-</div>
 	</li>
 
-    <li class="pure-g grid-row">
-	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/file1"><img src="/icons/file.png"> file1</a></div>
-	    <div class="pure-u-1-5">0</div>
+    <li class="pure-g grid-row" data-size="0" data-mtime="946684800000">
+	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/file1"><img src="/icons/file.png"> file1</a><button type="button" class="copy-btn" title="Copy link" aria-label="Copy link"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div>
+	    <div class="pure-u-1-5">0B</div>
 	    <div class="pure-u-2-5">Sat, 01 Jan 2000 00:00:00 UTC</div>
 	</li>
 
-    <li class="pure-g grid-row">
-	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/file2"><img src="/icons/file.png"> file2</a></div>
-	    <div class="pure-u-1-5">0</div>
+    <li class="pure-g grid-row" data-size="0" data-mtime="946764000000">
+	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/file2"><img src="/icons/file.png"> file2</a><button type="button" class="copy-btn" title="Copy link" aria-label="Copy link"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div>
+	    <div class="pure-u-1-5">0B</div>
 	    <div class="pure-u-2-5">Sat, 01 Jan 2000 22:00:00 UTC</div>
 	</li>
 
-    <li class="pure-g grid-row">
-	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/file3"><img src="/icons/file.png"> file3</a></div>
-	    <div class="pure-u-1-5">0</div>
+    <li class="pure-g grid-row" data-size="0" data-mtime="946767600000">
+	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/file3"><img src="/icons/file.png"> file3</a><button type="button" class="copy-btn" title="Copy link" aria-label="Copy link"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><use href="#icon-copy"></use></svg></button></div>
+	    <div class="pure-u-1-5">0B</div>
 	    <div class="pure-u-2-5">Sat, 01 Jan 2000 23:00:00 UTC</div>
 	</li>
 </ul>
-</body></html>`,
+` + tmplPageFooterText,
 		},
 	}
 
@@ -814,6 +920,80 @@ func TestBucketAlias(t *testing.T) {
 			path := testCase.aliases.rewritePath(testCase.path)
 			if path != testCase.wantPath {
 				t.Fatalf("want path %q but got %q", testCase.wantPath, path)
+			}
+		})
+	}
+}
+
+func TestFormatSize(t *testing.T) {
+	testCases := []struct {
+		size     int64
+		expected string
+	}{
+		{size: 0, expected: "0B"},
+		{size: 242, expected: "242B"},
+		{size: 1023, expected: "1023B"},
+		{size: 1024, expected: "1.0K"},
+		{size: 11923, expected: "11.6K"},
+		{size: 1048525, expected: "1.0M"},
+		{size: 1048576, expected: "1.0M"},
+		{size: 64701909, expected: "61.7M"},
+		{size: 1073741824, expected: "1.0G"},
+		{size: 2684354560, expected: "2.5G"},
+		{size: 2048 * 1073741824, expected: "2048.0G"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%d", tc.size), func(t *testing.T) {
+			if actual := formatSize(tc.size); actual != tc.expected {
+				t.Fatalf("formatSize(%d) = %q, want %q", tc.size, actual, tc.expected)
+			}
+		})
+	}
+}
+
+func TestBuildBreadcrumbs(t *testing.T) {
+	testCases := []struct {
+		name        string
+		provPrefix  string
+		displayPath string
+		expected    []breadcrumb
+	}{
+		{
+			name:        "GCS nested path",
+			provPrefix:  "/gcs",
+			displayPath: "/test-bucket/pr-logs/12345/",
+			expected: []breadcrumb{
+				{Name: "test-bucket", URL: "/gcs/test-bucket/"},
+				{Name: "pr-logs", URL: "/gcs/test-bucket/pr-logs/"},
+				{Name: "12345", URL: "/gcs/test-bucket/pr-logs/12345/"},
+			},
+		},
+		{
+			name:        "GCS bucket root",
+			provPrefix:  "/gcs",
+			displayPath: "/test-bucket/",
+			expected: []breadcrumb{
+				{Name: "test-bucket", URL: "/gcs/test-bucket/"},
+			},
+		},
+		{
+			name:        "S3 nested path",
+			provPrefix:  "/s3",
+			displayPath: "/test-bucket/pr-logs/12345/",
+			expected: []breadcrumb{
+				{Name: "test-bucket", URL: "/s3/test-bucket/"},
+				{Name: "pr-logs", URL: "/s3/test-bucket/pr-logs/"},
+				{Name: "12345", URL: "/s3/test-bucket/pr-logs/12345/"},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := buildBreadcrumbs(tc.provPrefix, tc.displayPath)
+			if diff := cmp.Diff(tc.expected, actual); diff != "" {
+				t.Fatalf("unexpected breadcrumbs (-want +got):\n%s", diff)
 			}
 		})
 	}

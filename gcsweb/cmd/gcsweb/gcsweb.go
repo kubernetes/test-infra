@@ -24,6 +24,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"math"
 	"math/rand"
 	"net/http"
 	"os"
@@ -626,7 +627,9 @@ func (dir *gcsDir) Render(out http.ResponseWriter, inPath string) {
 		inPath += "/"
 	}
 
-	htmlContentHeader(out, dir.ProwPath.Bucket(), strings.TrimPrefix(inPath, providerPrefix(dir.ProwPath.StorageProvider())))
+	provPrefix := providerPrefix(dir.ProwPath.StorageProvider())
+	displayPath := strings.TrimPrefix(inPath, provPrefix)
+	htmlContentHeader(out, dir.ProwPath.Bucket(), provPrefix, displayPath)
 
 	if dir.NextMarker != "" {
 		htmlNextButton(out, inPath, dir.NextMarker)
@@ -634,13 +637,23 @@ func (dir *gcsDir) Render(out http.ResponseWriter, inPath string) {
 
 	htmlGridHeader(out)
 	if parent := getParent(inPath); parent != "" {
-		htmlGridItem(out, iconBack, parent, "..", "-", "-")
+		htmlGridItem(out, gridItem{
+			Icon:     iconBack,
+			URL:      parent,
+			Name:     "..",
+			Size:     "-",
+			Modified: "-",
+		})
 	}
 	for i := range dir.CommonPrefixes {
 		dir.CommonPrefixes[i].Render(out, inPath)
 	}
+	filePathPrefix := inPath
+	if dir.ProwPath.StorageProvider() == providers.GS {
+		filePathPrefix = "https://" + pkgio.GSAnonHost + displayPath
+	}
 	for i := range dir.Contents {
-		dir.Contents[i].Render(out, inPath)
+		dir.Contents[i].Render(out, filePathPrefix)
 	}
 
 	if dir.NextMarker != "" {
@@ -652,6 +665,21 @@ func (dir *gcsDir) Render(out http.ResponseWriter, inPath string) {
 	htmlPageFooter(out)
 }
 
+func formatSize(size int64) string {
+	const unit = 1024
+	if size < unit {
+		return fmt.Sprintf("%dB", size)
+	}
+	units := []string{"K", "M", "G"}
+	val := float64(size) / unit
+	i := 0
+	for i < len(units)-1 && math.Round(val*10)/10 >= unit {
+		val /= unit
+		i++
+	}
+	return fmt.Sprintf("%.1f%s", val, units[i])
+}
+
 // Record represents a single "Contents" entry in a GCS bucket.
 type Record struct {
 	Name  string
@@ -661,14 +689,17 @@ type Record struct {
 
 // Render writes HTML representing this Record to the provided output.
 func (rec *Record) Render(out http.ResponseWriter, inPath string) {
-	htmlGridItem(
-		out,
-		iconFile,
-		inPath+rec.Name,
-		rec.Name,
-		fmt.Sprintf("%v", rec.Size),
-		rec.MTime.Format(time.RFC1123),
-	)
+	htmlGridItem(out, gridItem{
+		Icon:     iconFile,
+		URL:      inPath + rec.Name,
+		Name:     rec.Name,
+		Size:     formatSize(rec.Size),
+		RawSize:  rec.Size,
+		Modified: rec.MTime.Format(time.RFC1123),
+		MTime:    rec.MTime.UnixMilli(),
+		IsFile:   true,
+		CanCopy:  true,
+	})
 }
 
 // Prefix represents a single "CommonPrefixes" entry in a GCS bucket.
@@ -679,7 +710,14 @@ type Prefix struct {
 // Render writes HTML representing this Prefix to the provided output.
 func (pfx *Prefix) Render(out http.ResponseWriter, inPath string) {
 	url := inPath + pfx.Prefix
-	htmlGridItem(out, iconDir, url, pfx.Prefix, "-", "-")
+	htmlGridItem(out, gridItem{
+		Icon:     iconDir,
+		URL:      url,
+		Name:     pfx.Prefix,
+		Size:     "-",
+		Modified: "-",
+		CanCopy:  true,
+	})
 }
 
 func newTxnLogger(r *http.Request) *logrus.Entry {
