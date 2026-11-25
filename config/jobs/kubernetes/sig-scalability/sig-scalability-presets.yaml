@@ -345,8 +345,6 @@ presets:
     value: "prow"
   - name: KUBE_SSH_KEY_PATH
     value: "/etc/ssh-key-secret/ssh-private"
-  - name: PROMETHEUS_SCRAPE_ETCD
-    value: "true"
 
 - labels:
     preset-kops-scalability-ec2-common: "true"
@@ -357,6 +355,8 @@ presets:
     value: "amazonvpc"
   - name: PROMETHEUS_PVC_STORAGE_CLASS
     value: "io2"
+  - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
+    value: "false"
   - name: KOPS_IRSA
     value: "true"
   - name: KUBE_PROXY_MODE
@@ -371,8 +371,8 @@ presets:
   env:
   - name: ENABLE_PROMETHEUS_SERVER
     value: "true"
-  # - name: PROMETHEUS_SCRAPE_ETCD # temporarily broken on AWS
-  #   value: "true"
+  - name: PROMETHEUS_SCRAPE_ETCD
+    value: "true"
   - name: GOPATH
     value: "/home/prow/go"
   - name: CL2_LOAD_TEST_THROUGHPUT

@@ -138,6 +138,7 @@ presubmits:
     labels:
       preset-aws-ssh: "true"
       preset-aws-credential-boskos-scale-001-kops: "true"
+      preset-kops-scalability-common: "true"
       preset-kops-scalability-ec2-common: "true"
       preset-kops-scalability-dra-common: "true"
       preset-kops-scalability-dra-500-node: "true"
