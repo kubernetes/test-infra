@@ -545,7 +545,7 @@ presets:
   - name: CONTROL_PLANE_SIZE
     value: "c8a.24xlarge,m8a.24xlarge,r8a.24xlarge"
   - name: ADDONS_NODE_SIZE
-    value: "m8a.12xlarge,r8a.12xlarge"
+    value: "m8a.12xlarge"
   - name: ETCD_QUOTA_BACKEND_BYTES
     value: "21474836480"
   - name: ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL
