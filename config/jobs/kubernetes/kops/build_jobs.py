@@ -1913,6 +1913,32 @@ def generate_presubmits_scale():
             },
         ),
         presubmit_test(
+            name='pull-kops-ec2-master-scale-performance-5000-experimental',
+            scenario='scalability',
+            build_cluster='eks-prow-build-cluster',
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='amazonvpc',
+            always_run=False,
+            optional=True,
+            test_timeout_minutes=450,
+            job_queue_name="5k-aws-scale-test",
+            use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
+            presets=[
+                'preset-kops-scalability-common',
+                'preset-kops-scalability-ec2-common',
+                'preset-kops-scalability-ec2-5000-node',
+                'preset-kops-scalability-ec2-experimental',
+            ],
+            tolerations=[{
+                'key': 'highmem',
+                'operator': 'Exists',
+            }],
+            resources={
+                'requests': {'cpu': 7, 'memory': '40Gi'},
+                'limits': {'cpu': 7, 'memory': '40Gi'},
+            },
+        ),
+        presubmit_test(
             name='pull-kops-ec2-master-scale-performance-100',
             scenario='scalability',
             build_cluster="eks-prow-build-cluster",
