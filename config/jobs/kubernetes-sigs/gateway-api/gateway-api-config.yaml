@@ -31,6 +31,37 @@ presubmits:
           requests:
             cpu: 1
             memory: 4Gi
+  - name: pull-gateway-api-verify-reports
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-network-gateway-api
+      testgrid-tab-name: verify-reports
+    labels:
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/gateway-api
+    run_if_changed: '^conformance/reports/'
+    skip_report: false
+    skip_branches:
+    - release-.*
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        command:
+          # generic runner script, handles DIND, bazelrc for caching, etc.
+          - runner.sh
+        args:
+          - hack/verify-reports.sh
+        # docker-in-docker needs privileged mode.
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
   - name: pull-gateway-api-test
     cluster: eks-prow-build-cluster
     annotations:
