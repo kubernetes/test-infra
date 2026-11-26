@@ -545,7 +545,9 @@ presets:
   - name: CONTROL_PLANE_SIZE
     value: "c8a.24xlarge,m8a.24xlarge,r8a.24xlarge"
   - name: ADDONS_NODE_SIZE
-    value: "m8a.12xlarge,r8a.12xlarge"
+    value: "m8a.12xlarge"
+    # value: "m8a.12xlarge,r8a.12xlarge"
+    # waiting on https://github.com/kubernetes/kops/pull/19091
   - name: ETCD_QUOTA_BACKEND_BYTES
     value: "21474836480"
   - name: ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL
@@ -589,6 +591,8 @@ presets:
     value: "true"
   - name: CL2_REALISTIC_POD_SIZE_KB
     value: "20"
+  - name: PROMETHEUS_SCRAPE_ETCD
+    value: "true"
 
 ### Env variables shared by the apiserver request cost benchmark jobs.
 - labels:
