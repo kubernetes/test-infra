@@ -13,8 +13,6 @@ presets:
     value: "true"
   - name: PROMETHEUS_SCRAPE_KUBELETS
     value: "true"
-  - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
-    value: "false"
 
 - labels:
     preset-kops-scalability-dra-500-node: "true"
