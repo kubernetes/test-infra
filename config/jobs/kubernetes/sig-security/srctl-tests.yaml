@@ -1,0 +1,56 @@
+---
+presubmits:
+  kubernetes/sig-security:
+    - name: pull-sig-security-srctl-tests
+      cluster: eks-prow-build-cluster
+      annotations:
+        testgrid-dashboards: sig-security-srctl
+        testgrid-create-test-group: "true"
+        description: Run unit tests for srctl
+      run_if_changed: "^sig-security-tooling/srctl/"
+      branches:
+        - main
+      decorate: true
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.25@sha256:ed520ab5bed37ce887012c050ced60f7d52dfcd212e3dc6fdd8951e9c4e25c1a
+            command: ['go']
+            workingDir: sig-security-tooling/srctl 
+            args: ['test', '-v', '-cover', './...']
+            resources:
+              limits:
+                cpu: 1
+                memory: "256Mi"
+              requests:
+                cpu: 1
+                memory: "256Mi"
+
+    - name: pull-sig-security-srctl-lint
+      cluster: eks-prow-build-cluster
+      annotations:
+        testgrid-dashboards: sig-security-srctl
+        testgrid-create-test-group: "true"
+        description: Run linters for srctl
+      run_if_changed: "^sig-security-tooling/srctl/"
+      branches:
+        - main
+      decorate: true
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.25@sha256:ed520ab5bed37ce887012c050ced60f7d52dfcd212e3dc6fdd8951e9c4e25c1a
+            command:
+              - /bin/bash
+              - -c
+              - |
+                set -euo pipefail
+                cd sig-security-tooling/srctl
+                go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.4
+                export PATH=$PATH:$(go env GOPATH)/bin
+                golangci-lint run ./...
+            resources:
+              limits:
+                cpu: 1
+                memory: "512Mi"
+              requests:
+                cpu: 1
+                memory: "512Mi"
