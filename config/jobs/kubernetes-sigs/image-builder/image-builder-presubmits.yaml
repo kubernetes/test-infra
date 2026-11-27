@@ -75,6 +75,45 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-packer-validate
+  - name: pull-qemu-node-conformance
+    cluster: k8s-infra-prow-build
+    optional: true
+    decorate: true
+    run_if_changed: 'images/capi/Makefile|images/capi/ansible/.*|images/capi/hack/run-e2e-node-conformance\.sh|images/capi/packer/(config/node-conformance\.json|qemu)/.*'
+    decoration_config:
+      timeout: 4h
+    max_concurrency: 2
+    path_alias: sigs.k8s.io/image-builder
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260629-f759c32706-master
+          args:
+            - runner.sh
+            - bash
+            - -ec
+            - |
+              if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
+                apt-get update
+                DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends qemu-system-x86 qemu-utils
+              fi
+
+              cd images/capi
+              export PATH="${PWD}/.local/bin:${PATH}"
+              make build-qemu-ubuntu-2404 PACKER_FLAGS="--var 'node_conformance=true'"
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["NET_ADMIN"]
+          resources:
+            requests:
+              memory: "8Gi"
+              cpu: 4000m
+            limits:
+              memory: "8Gi"
+              cpu: 4000m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-builder
+      testgrid-tab-name: pr-qemu-node-conformance
   - name: pull-lint
     cluster: eks-prow-build-cluster
     decorate: true
