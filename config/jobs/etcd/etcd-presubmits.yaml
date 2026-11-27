@@ -949,3 +949,42 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+
+  # Opt-in benchmark for PRs that touch the write path, e.g. raft async
+  # storage writes (https://github.com/etcd-io/etcd/issues/16291).
+  # Trigger with: /test pull-etcd-benchmark-put-high-concurrency-amd64
+  # Compare against the ci-etcd-benchmark-put-high-concurrency-amd64 periodic on perf-dash.
+  # Keep the benchmark ARGS in sync with etcd-benchmarks-periodic.yaml.
+  - name: pull-etcd-benchmark-put-high-concurrency-amd64
+    cluster: eks-prow-build-cluster
+    always_run: false
+    optional: true
+    branches:
+    - main
+    decorate: true
+    decoration_config:
+      timeout: 30m
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-benchmark-put-high-concurrency-amd64
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261116-33c2327245-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -euo pipefail
+          make install-benchmark
+          make bench-put ARGS="--conns=100 --clients=100 --total=1000000 --key-size=8 --val-size=256 --key-space-size=1000000 --sequential-keys"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+      nodeSelector:
+        kubernetes.io/arch: amd64

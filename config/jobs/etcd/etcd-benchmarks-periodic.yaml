@@ -1,7 +1,10 @@
 ---
 periodics:
 
-- name: ci-etcd-benchmark-put-amd64
+# PUT benchmark with the tool defaults: 1 client over 1 gRPC connection, so
+# only one request is in flight at a time. Measures per-request latency of the
+# write path without concurrency.
+- name: ci-etcd-benchmark-put-low-concurrency-amd64
   interval: 24h
   cluster: eks-prow-build-cluster
   decorate: true
@@ -35,5 +38,47 @@ periodics:
     nodeSelector:
       kubernetes.io/arch: amd64
   tags:
-    - "perfDashPrefix: etcd"
+    - "perfDashPrefix: etcd-put-low-concurrency"
+    - "perfDashJobType: etcdAPIBenchmark"
+
+# PUT benchmark with 100 concurrent clients (one per gRPC connection), so many
+# proposals pipeline through raft and the storage write path (WAL append +
+# fsync) is the bottleneck. Each PUT writes a new key.
+# Keep the ARGS in sync with pull-etcd-benchmark-put-high-concurrency-amd64
+# in etcd-presubmits.yaml.
+- name: ci-etcd-benchmark-put-high-concurrency-amd64
+  interval: 24h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 30m
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+  spec:
+    containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261116-33c2327245-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -euo pipefail
+          make install-benchmark
+          make bench-put ARGS="--conns=100 --clients=100 --total=1000000 --key-size=8 --val-size=256 --key-space-size=1000000 --sequential-keys"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  tags:
+    - "perfDashPrefix: etcd-put-high-concurrency"
     - "perfDashJobType: etcdAPIBenchmark"
