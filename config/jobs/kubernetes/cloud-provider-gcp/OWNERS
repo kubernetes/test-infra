@@ -6,7 +6,6 @@ reviewers:
 - jprzychodzen
 - mmamczur
 - YifeiZhuang
-- hdp617
 - LogicalShark
 approvers:
 - mikedanese
@@ -14,10 +13,10 @@ approvers:
 - jprzychodzen
 - mmamczur
 - YifeiZhuang
-- hdp617
 - LogicalShark
 emeritus_approvers:
 - amwat
+- hdp617
 labels:
 - sig/cloud-provider
 - area/provider/gcp
