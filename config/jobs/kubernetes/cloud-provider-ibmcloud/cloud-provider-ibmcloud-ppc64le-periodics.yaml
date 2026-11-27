@@ -425,3 +425,61 @@ periodics:
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --test=ginkgo -- --parallel 1 --test-package-dir ci --test-package-marker latest.txt \
                 --focus-regex='\[Serial\]|\[Disruptive\]' --skip-regex='\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]'
+  - name: ci-kubernetes-powervs-csi-driver-e2e
+    cron: "30 9-17/8 * * *" # every 8h starting at 09:30 UTC
+    cluster: k8s-infra-ppc64le-prow-build
+    labels:
+      preset-ibmcloud-cred: "true"
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    extra_refs:
+      - base_ref: main
+        org: kubernetes-sigs
+        repo: provider-ibmcloud-test-infra
+        workdir: true
+    annotations:
+      description: Runs E2E csi driver tests against kubernetes ci latest on IBM powervs
+      testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, ibm-k8s-e2e
+      testgrid-tab-name: ci-kubernetes-powervs-csi-driver-e2e
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260316-e86cefa561-master
+          resources:
+            requests:
+              cpu: 4
+              memory: "14Gi"
+            limits:
+              cpu: 4
+              memory: "14Gi"
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              set -o xtrace
+
+              #Setup of kubetest2 tf deployer and ginkgo tester
+              make install-deployer-tf
+              go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
+
+              CLUSTER_NAME="e2e-csi-$(date +%s)"
+              kubetest2 tf \
+                --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
+                --powervs-ssh-key k8s-infra-sshkey \
+                --ssh-private-key /etc/secret-volume/ssh-privatekey \
+                --workers-count 1 --cluster-name $CLUSTER_NAME \
+                --up --down --auto-approve --retry-on-tf-failure 3 \
+                --ignore-destroy-errors --set-kubeconfig \
+                --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
+                --test=exec -- \
+                  bash -c '
+                    set -e
+                    echo "Running CSI driver tests"
+                    export INSTANCE_LIST_JSON="$(pwd)/'"$CLUSTER_NAME"'/instance_list.json"
+                    echo "INSTANCE_LIST_JSON: $INSTANCE_LIST_JSON"
+                    ./hack/csi-driver.sh
+                  '  
