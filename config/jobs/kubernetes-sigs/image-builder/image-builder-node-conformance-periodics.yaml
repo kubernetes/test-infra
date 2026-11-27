@@ -1,0 +1,74 @@
+periodics:
+  - name: periodic-image-builder-qemu-ubuntu-2404-node-conformance
+    cluster: k8s-infra-prow-build
+    interval: 168h
+    decorate: true
+    decoration_config:
+      timeout: 6h
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes-sigs
+        slug: image-builder-maintainers
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: image-builder
+        base_ref: main
+        path_alias: "sigs.k8s.io/image-builder"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260706-7056f81a85-master
+          args:
+            - runner.sh
+            - "./images/capi/scripts/ci-qemu-node-conformance.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: "20Gi"
+              cpu: 7
+            limits:
+              memory: "20Gi"
+              cpu: 7
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-builder
+      testgrid-tab-name: periodic-image-builder-qemu-ubuntu-2404-node-conformance
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: "2"
+  - name: periodic-image-builder-qemu-ubuntu-2404-immutable-node-conformance
+    cluster: k8s-infra-prow-build
+    interval: 168h
+    decorate: true
+    decoration_config:
+      timeout: 8h
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes-sigs
+        slug: image-builder-maintainers
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: image-builder
+        base_ref: main
+        path_alias: "sigs.k8s.io/image-builder"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260706-7056f81a85-master
+          env:
+            - name: NODE_CONFORMANCE_TARGET
+              value: build-qemu-ubuntu-2404-immutable
+          args:
+            - runner.sh
+            - "./images/capi/scripts/ci-qemu-node-conformance.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: "20Gi"
+              cpu: 7
+            limits:
+              memory: "20Gi"
+              cpu: 7
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-builder
+      testgrid-tab-name: periodic-image-builder-qemu-ubuntu-2404-immutable-node-conformance
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: "2"
