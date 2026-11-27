@@ -27,6 +27,7 @@ readonly IMAGES=(
     agnhost:c3-highcpu-22
     apparmor-loader
     busybox
+    gmsa
     glibc-dns-testing
     ipc-utils
     kitten
