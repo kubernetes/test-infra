@@ -307,13 +307,44 @@ var getKube = func(url, version string, getSrc bool) error {
 	return err
 }
 
+const (
+	// ciGCSPrefix is the GCS location of the community CI builds, which
+	// ciDownloadURL serves over plain HTTPS.
+	ciGCSPrefix   = "k8s-release-dev/ci"
+	ciDownloadURL = "https://dl.k8s.io/ci"
+)
+
+// servedByDownloadURL is true when prefix (bucket/path, without gs://) is at
+// or below ciGCSPrefix.
+func servedByDownloadURL(prefix string) bool {
+	return prefix == ciGCSPrefix || strings.HasPrefix(prefix, ciGCSPrefix+"/")
+}
+
+// releaseURL converts a GCS prefix (bucket/path, without gs://) into the URL
+// builds are downloaded from. get-kube.sh only uses gcloud storage for
+// storage.googleapis.com URLs, so builds served by ciDownloadURL are
+// downloaded with curl.
+func releaseURL(prefix string) string {
+	if servedByDownloadURL(prefix) {
+		return ciDownloadURL + strings.TrimPrefix(prefix, ciGCSPrefix)
+	}
+	return fmt.Sprintf("https://storage.googleapis.com/%s", prefix)
+}
+
 // wrapper for gsutil cat
 var gsutilCat = func(url string) ([]byte, error) {
 	return control.Output(exec.Command("gsutil", "cat", url))
 }
 
 func setReleaseFromGcs(prefix, suffix string, getSrc bool) error {
-	url := fmt.Sprintf("https://storage.googleapis.com/%v", prefix)
+	if servedByDownloadURL(prefix) {
+		url, release, err := setReleaseFromHTTP(prefix, suffix)
+		if err != nil {
+			return err
+		}
+		return getKube(url, release, getSrc)
+	}
+	url := releaseURL(prefix)
 	catURL := fmt.Sprintf("gs://%v/%v.txt", prefix, suffix)
 	release, err := gsutilCat(catURL)
 	if err != nil {
@@ -343,7 +374,7 @@ var httpCat = func(url string) ([]byte, error) {
 }
 
 func setReleaseFromHTTP(prefix, suffix string) (string, string, error) {
-	url := fmt.Sprintf("https://storage.googleapis.com/%s", prefix)
+	url := releaseURL(prefix)
 	catURL := fmt.Sprintf("%s/%s.txt", url, suffix)
 	release, err := httpCat(catURL)
 	if err != nil {
@@ -559,7 +590,7 @@ func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket 
 		if re.FindStringSubmatch(release) != nil {
 			url = "https://storage.googleapis.com/gke-release-staging/kubernetes/release"
 		} else if strings.Contains(release, "+") {
-			url = fmt.Sprintf("https://storage.googleapis.com/%s/ci", ciBucket)
+			url = releaseURL(fmt.Sprintf("%s/ci", ciBucket))
 		} else {
 			url = fmt.Sprintf("https://storage.googleapis.com/%s/release", releaseBucket)
 		}
@@ -572,8 +603,7 @@ func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket 
 			suffix := strings.TrimSuffix(path.Base(withoutGS), filepath.Ext(withoutGS))
 			return setReleaseFromGcs(path.Dir(withoutGS), suffix, extractSrc)
 		}
-		url := "https://storage.googleapis.com" + "/" + path.Dir(withoutGS)
-		return getKube(url, path.Base(withoutGS), extractSrc)
+		return getKube(releaseURL(path.Dir(withoutGS)), path.Base(withoutGS), extractSrc)
 	case load:
 		return loadState(e.option, extractSrc)
 	case bazel:

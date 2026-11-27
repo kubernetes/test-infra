@@ -79,6 +79,10 @@ version. This saves a bunch of time compiling.
 The most common options are either a specific version`--extract=v1.7.0-beta.1`,
 a release `--extract=release/stable` or `--extract=ci/latest-1.8`.
 
+CI builds in `gs://k8s-release-dev/ci` (the default `--extract-ci-bucket`) are
+downloaded with curl from `https://dl.k8s.io/ci`, so they do not need `gsutil`
+or `gcloud`. Other buckets are still read from GCS.
+
 Note that you can extract 1 or 2 versions. Using 2 versions is useful for skew
 and upgrade testing.
 

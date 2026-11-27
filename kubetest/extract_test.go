@@ -165,7 +165,7 @@ func TestExtractStrategies(t *testing.T) {
 		},
 		{
 			"v1.8.0-alpha.2.899+2c624e590f5670",
-			"https://storage.googleapis.com/k8s-release-dev/ci",
+			"https://dl.k8s.io/ci",
 			"v1.8.0-alpha.2.899+2c624e590f5670",
 		},
 		{
@@ -175,12 +175,12 @@ func TestExtractStrategies(t *testing.T) {
 		},
 		{
 			"ci/latest",
-			"https://storage.googleapis.com/k8s-release-dev/ci",
+			"https://dl.k8s.io/ci",
 			"v1.2.3+abcde",
 		},
 		{
 			"ci/latest-fast",
-			"https://storage.googleapis.com/k8s-release-dev/ci/fast",
+			"https://dl.k8s.io/ci/fast",
 			"v1.2.3+abcde",
 		},
 		{
@@ -217,6 +217,16 @@ func TestExtractStrategies(t *testing.T) {
 			"gs://whatever-bucket/ci/latest.txt",
 			"https://storage.googleapis.com/whatever-bucket/ci",
 			"v1.2.3+abcde",
+		},
+		{
+			"gs://k8s-release-dev/ci/latest.txt",
+			"https://dl.k8s.io/ci",
+			"v1.2.3+abcde",
+		},
+		{
+			"gs://k8s-release-dev/ci/fast/v1.8.0-alpha.3.389+eab2f8f6c19fcb",
+			"https://dl.k8s.io/ci/fast",
+			"v1.8.0-alpha.3.389+eab2f8f6c19fcb",
 		},
 	}
 
@@ -312,11 +322,11 @@ func TestGciExtractStrategy(t *testing.T) {
 		},
 		{
 			"gci/gci-canary?project=test-project/latest",
-			"https://storage.googleapis.com/k8s-release-dev/ci",
+			"https://dl.k8s.io/ci",
 			"1.2.3+abcde",
 			"gci-canary",
 			"test-project",
-			"gs://k8s-release-dev/ci/latest.txt",
+			"https://dl.k8s.io/ci/latest.txt",
 		},
 	}
 
@@ -345,6 +355,13 @@ func TestGciExtractStrategy(t *testing.T) {
 		if !strings.HasPrefix(path.Dir(url), "gs:/") {
 			return []byte{}, fmt.Errorf("url %s must start with gs:/", path.Dir(url))
 		}
+		gotVersionMapBucket = url
+		return []byte("1.2.3+abcde"), nil
+	}
+
+	oldHTTPCat := httpCat
+	defer func() { httpCat = oldHTTPCat }()
+	httpCat = func(url string) ([]byte, error) {
 		gotVersionMapBucket = url
 		return []byte("1.2.3+abcde"), nil
 	}
@@ -378,7 +395,7 @@ func TestGciExtractStrategy(t *testing.T) {
 			t.Errorf("extractStrategies(%q).Extract() wanted setupGciVars(%q, %q), got setupGciVars(%q, %q)", tc.option, tc.expectFamily, tc.expectProject, gotFamily, gotProject)
 		}
 		if gotVersionMapBucket != tc.expectVersionMapBucket {
-			t.Errorf("extractStrategies(%q).Extract() wanted gsutilCat(%q), got gsutilCat(%q)", tc.option, tc.expectVersionMapBucket, gotVersionMapBucket)
+			t.Errorf("extractStrategies(%q).Extract() wanted version read from %q, got %q", tc.option, tc.expectVersionMapBucket, gotVersionMapBucket)
 		}
 		if gotURL != tc.expectURL || gotVersion != tc.expectVersion {
 			t.Errorf("extractStrategy(%q).Extract() wanted getKube(%q, %q), got getKube(%q, %q)", tc.option, tc.expectURL, tc.expectVersion, gotURL, gotVersion)
