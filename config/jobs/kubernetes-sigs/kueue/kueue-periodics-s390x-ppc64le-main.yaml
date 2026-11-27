@@ -3,6 +3,7 @@ periodics:
     name: periodic-kueue-build-s390x-ppc64le-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
