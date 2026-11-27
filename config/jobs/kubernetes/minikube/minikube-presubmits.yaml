@@ -246,6 +246,36 @@ presubmits:
           limits:
             memory: 2Gi
             cpu: 2
+  - name: pull-minikube-ssh-containerd-linux-x86
+    cluster: k8s-infra-prow-build
+    decorate: true
+    path_alias: "k8s.io/minikube"
+    always_run: false
+    optional: true # only run when maintainers explicitly trigger with /test <job_name>
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: minikube-presubmits
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20261116-33c2327245-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - integration-prow-ssh-containerd-linux-x86
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: 2
+          limits:
+            memory: 2Gi
+            cpu: 2
   - name: pull-minikube-none-docker-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
