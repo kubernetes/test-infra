@@ -19,6 +19,7 @@ postsubmits:
         timeout: 20m
       path_alias: sigs.k8s.io/kueue
       annotations:
+        karpenter.sh/do-not-disrupt: "5m"
         testgrid-dashboards: sig-scheduling-kueue
         testgrid-tab-name: post-kueue-test-unit-coverage-main
         testgrid-in-cell-metric: coverage

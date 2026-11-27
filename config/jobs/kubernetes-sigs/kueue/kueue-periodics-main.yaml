@@ -3,6 +3,7 @@ periodics:
     name: periodic-kueue-test-unit-shard-0-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-unit-shard-0-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -48,6 +49,7 @@ periodics:
     name: periodic-kueue-test-unit-shard-1-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-unit-shard-1-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -93,6 +95,7 @@ periodics:
     name: periodic-kueue-test-fuzz-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-fuzz-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -129,6 +132,7 @@ periodics:
     name: periodic-kueue-verify-website-links-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-verify-website-links-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -169,6 +173,7 @@ periodics:
     name: periodic-kueue-test-integration-shard-0-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-integration-shard-0-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -212,6 +217,7 @@ periodics:
     name: periodic-kueue-test-integration-shard-1-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-integration-shard-1-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -255,6 +261,7 @@ periodics:
     name: periodic-kueue-test-integration-shard-2-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-integration-shard-2-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -298,6 +305,7 @@ periodics:
     name: periodic-kueue-test-integration-shard-3-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-integration-shard-3-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -341,6 +349,7 @@ periodics:
     name: periodic-kueue-test-integration-multikueue-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-integration-multikueue-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -380,6 +389,7 @@ periodics:
     name: periodic-kueue-test-scheduling-perf-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-scheduling-perf-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -419,6 +429,7 @@ periodics:
     name: periodic-kueue-test-multikueue-perf-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-multikueue-perf-main
       # Enable TestGrid email alerts after calibrating expectations from at least five CI runs.
@@ -457,6 +468,7 @@ periodics:
     name: periodic-kueue-test-tas-scheduling-perf-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-tas-scheduling-perf-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -496,6 +508,7 @@ periodics:
     name: periodic-kueue-test-tas-dra-scheduling-perf-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-tas-dra-scheduling-perf-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -535,6 +548,7 @@ periodics:
     name: periodic-kueue-test-large-scale-scheduling-perf-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-large-scale-scheduling-perf-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -574,6 +588,7 @@ periodics:
     name: periodic-kueue-test-e2e-baseline-main-1-35
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-baseline-main-1-35
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -621,6 +636,7 @@ periodics:
     name: periodic-kueue-test-e2e-extended-shard-0-main-1-35
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-0-main-1-35
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -668,6 +684,7 @@ periodics:
     name: periodic-kueue-test-e2e-extended-shard-1-main-1-35
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-1-main-1-35
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -715,6 +732,7 @@ periodics:
     name: periodic-kueue-test-e2e-extended-shard-2-main-1-35
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-2-main-1-35
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -762,6 +780,7 @@ periodics:
     name: periodic-kueue-test-e2e-baseline-main-1-36
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-baseline-main-1-36
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -809,6 +828,7 @@ periodics:
     name: periodic-kueue-test-e2e-extended-shard-0-main-1-36
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-0-main-1-36
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -856,6 +876,7 @@ periodics:
     name: periodic-kueue-test-e2e-extended-shard-1-main-1-36
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-1-main-1-36
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -903,6 +924,7 @@ periodics:
     name: periodic-kueue-test-e2e-extended-shard-2-main-1-36
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-2-main-1-36
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -950,6 +972,7 @@ periodics:
     name: periodic-kueue-test-e2e-baseline-main-1-37
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-baseline-main-1-37
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -997,6 +1020,7 @@ periodics:
     name: periodic-kueue-test-e2e-extended-shard-0-main-1-37
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-0-main-1-37
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1044,6 +1068,7 @@ periodics:
     name: periodic-kueue-test-e2e-extended-shard-1-main-1-37
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-1-main-1-37
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1091,6 +1116,7 @@ periodics:
     name: periodic-kueue-test-e2e-extended-shard-2-main-1-37
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-extended-shard-2-main-1-37
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1138,6 +1164,7 @@ periodics:
     name: periodic-kueue-test-e2e-multikueue-baseline-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-baseline-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1183,6 +1210,7 @@ periodics:
     name: periodic-kueue-test-e2e-multikueue-extended-shard-0-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-extended-shard-0-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1228,6 +1256,7 @@ periodics:
     name: periodic-kueue-test-e2e-multikueue-extended-ray-autoscaling-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-extended-ray-autoscaling-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1271,6 +1300,7 @@ periodics:
     name: periodic-kueue-test-e2e-multikueue-extended-shard-1-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-extended-shard-1-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1316,6 +1346,7 @@ periodics:
     name: periodic-kueue-test-e2e-multikueue-sequential-shard-0-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-sequential-shard-0-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1361,6 +1392,7 @@ periodics:
     name: periodic-kueue-test-e2e-multikueue-sequential-shard-1-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-sequential-shard-1-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1406,6 +1438,7 @@ periodics:
     name: periodic-kueue-test-e2e-tas-baseline-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-tas-baseline-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1451,6 +1484,7 @@ periodics:
     name: periodic-kueue-test-e2e-tas-extended-shard-0-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-tas-extended-shard-0-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1496,6 +1530,7 @@ periodics:
     name: periodic-kueue-test-e2e-tas-extended-shard-1-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-tas-extended-shard-1-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1541,6 +1576,7 @@ periodics:
     name: periodic-kueue-test-e2e-tas-was-baseline-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-tas-was-baseline-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1586,6 +1622,7 @@ periodics:
     name: periodic-kueue-test-e2e-tas-was-extended-shard-0-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-tas-was-extended-shard-0-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1631,6 +1668,7 @@ periodics:
     name: periodic-kueue-test-e2e-tas-was-extended-shard-1-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-tas-was-extended-shard-1-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1677,6 +1715,7 @@ periodics:
     name: periodic-kueue-test-e2e-sequential-baseline-shard-0-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-sequential-baseline-shard-0-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1722,6 +1761,7 @@ periodics:
     name: periodic-kueue-test-e2e-sequential-baseline-shard-1-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-sequential-baseline-shard-1-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1767,6 +1807,7 @@ periodics:
     name: periodic-kueue-test-e2e-sequential-extended-shard-0-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-sequential-extended-shard-0-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1812,6 +1853,7 @@ periodics:
     name: periodic-kueue-test-e2e-sequential-extended-shard-1-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-sequential-extended-shard-1-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1857,6 +1899,7 @@ periodics:
     name: periodic-kueue-test-e2e-certmanager-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-certmanager-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1902,6 +1945,7 @@ periodics:
     name: periodic-kueue-test-e2e-dra-baseline-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-dra-baseline-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1947,6 +1991,7 @@ periodics:
     name: periodic-kueue-test-e2e-multikueue-dra-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-multikueue-dra-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -1992,6 +2037,7 @@ periodics:
     name: periodic-kueue-test-e2e-dra-counter-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-dra-counter-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -2037,6 +2083,7 @@ periodics:
     name: periodic-kueue-test-e2e-dra-capacity-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-dra-capacity-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -2082,6 +2129,7 @@ periodics:
     name: periodic-kueue-test-e2e-dra-tas-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-dra-tas-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -2127,6 +2175,7 @@ periodics:
     name: periodic-kueue-test-e2e-k8s-main-was
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-k8s-main-was
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -2170,6 +2219,7 @@ periodics:
     name: periodic-kueue-test-e2e-kueueviz-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-test-e2e-kueueviz-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
@@ -2215,6 +2265,7 @@ periodics:
     name: periodic-kueue-verify-ci-build-times-main
     cluster: eks-prow-build-cluster
     annotations:
+      karpenter.sh/do-not-disrupt: "5m"
       testgrid-dashboards: sig-scheduling-kueue, sig-scheduling-kueue-periodics
       testgrid-tab-name: periodic-kueue-verify-ci-build-times-main
       testgrid-alert-email: kueue-alerts@kubernetes.io
