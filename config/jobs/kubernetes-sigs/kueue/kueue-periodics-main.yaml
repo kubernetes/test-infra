@@ -153,7 +153,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           command:
             - runner.sh
           args:
@@ -609,7 +609,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.35"
@@ -657,7 +657,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.35"
@@ -705,7 +705,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.35"
@@ -753,7 +753,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.35"
@@ -801,7 +801,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.36"
@@ -849,7 +849,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.36"
@@ -897,7 +897,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.36"
@@ -945,7 +945,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.36"
@@ -993,7 +993,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.37"
@@ -1041,7 +1041,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.37"
@@ -1089,7 +1089,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.37"
@@ -1137,7 +1137,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.37"
@@ -1185,7 +1185,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1231,7 +1231,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1277,7 +1277,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1321,7 +1321,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1367,7 +1367,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1413,7 +1413,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1459,7 +1459,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1505,7 +1505,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1551,7 +1551,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1597,7 +1597,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1643,7 +1643,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1689,7 +1689,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1736,7 +1736,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1782,7 +1782,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1828,7 +1828,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1874,7 +1874,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1920,7 +1920,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -1966,7 +1966,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -2012,7 +2012,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -2058,7 +2058,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -2104,7 +2104,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -2150,7 +2150,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -2196,7 +2196,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -2240,7 +2240,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           env:
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
@@ -2286,7 +2286,7 @@ periodics:
       pod_unscheduled_timeout: 18m
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261116-33c2327245-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20261123-d263e7ee5b-master
           command:
             - runner.sh
           args:
