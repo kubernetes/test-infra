@@ -61,16 +61,16 @@ func TestParseInstanceGroupsFromGcloud(t *testing.T) {
 	urlZoneCTest := fmt.Sprintf(urlTemplate, zoneC, "test")
 
 	cases := []struct {
-		name                  string
-		input                 string
+		name                string
+		input               string
 		instanceGroupPrefix string
-		expected              []*ig
-		expectedError         bool
+		expected            []*ig
+		expectedError       bool
 	}{
 		// Zonal
 		{
-			name:                  "One instance group with default prefix",
-			input:                 urlZoneADefault,
+			name:                "One instance group with default prefix",
+			input:               urlZoneADefault,
 			instanceGroupPrefix: "",
 			expected: []*ig{
 				{
@@ -83,15 +83,15 @@ func TestParseInstanceGroupsFromGcloud(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name:                  "One instance group with default prefix, but not matching instanceGroupPrefix",
-			input:                 urlZoneADefault,
+			name:                "One instance group with default prefix, but not matching instanceGroupPrefix",
+			input:               urlZoneADefault,
 			instanceGroupPrefix: "test",
-			expected:              nil,
-			expectedError:         true,
+			expected:            nil,
+			expectedError:       true,
 		},
 		{
-			name:                  "One instance group with test prefix",
-			input:                 urlZoneATest,
+			name:                "One instance group with test prefix",
+			input:               urlZoneATest,
 			instanceGroupPrefix: "test",
 			expected: []*ig{
 				{
@@ -105,8 +105,8 @@ func TestParseInstanceGroupsFromGcloud(t *testing.T) {
 		},
 		// Regional
 		{
-			name:                  "Three instance groups with default prefix",
-			input:                 strings.Join([]string{urlZoneADefault, urlZoneBDefault, urlZoneCDefault}, ";"),
+			name:                "Three instance groups with default prefix",
+			input:               strings.Join([]string{urlZoneADefault, urlZoneBDefault, urlZoneCDefault}, ";"),
 			instanceGroupPrefix: "",
 			expected: []*ig{
 				{
@@ -131,15 +131,15 @@ func TestParseInstanceGroupsFromGcloud(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name:                  "Three instance groups with default prefix, but not matching instanceGroupPrefix",
-			input:                 strings.Join([]string{urlZoneADefault, urlZoneBDefault, urlZoneCDefault}, ";"),
+			name:                "Three instance groups with default prefix, but not matching instanceGroupPrefix",
+			input:               strings.Join([]string{urlZoneADefault, urlZoneBDefault, urlZoneCDefault}, ";"),
 			instanceGroupPrefix: "test",
-			expected:              nil,
-			expectedError:         true,
+			expected:            nil,
+			expectedError:       true,
 		},
 		{
-			name:                  "Three instance groups with test prefix",
-			input:                 strings.Join([]string{urlZoneATest, urlZoneBTest, urlZoneCTest}, ";"),
+			name:                "Three instance groups with test prefix",
+			input:               strings.Join([]string{urlZoneATest, urlZoneBTest, urlZoneCTest}, ";"),
 			instanceGroupPrefix: "test",
 			expected: []*ig{
 				{
